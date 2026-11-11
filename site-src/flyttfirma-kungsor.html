@@ -52,17 +52,19 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdro
 @media(max-width:900px){.menu{display:none}}
 
 /* Hero */
-.hero{background:radial-gradient(1100px 500px at 85% -10%,#1d5579 0%,transparent 60%),linear-gradient(160deg,var(--navy) 0%,#0a2032 100%);color:#fff;padding:64px 0 90px;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:auto -10% -120px auto;width:520px;height:520px;border-radius:50%;background:rgba(255,122,26,.10)}
+.hero{background:#eef2f5;color:var(--navy);padding:64px 0 90px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-24px;background:url(/img/hero-1280.jpg) center/cover no-repeat;filter:blur(4px) saturate(1.05)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.90) 0%,rgba(255,255,255,.72) 45%,rgba(255,255,255,.30) 100%)}
+.hero-grid{z-index:1}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;position:relative}
 .hero h1{font-size:clamp(2.1rem,4.6vw,3.4rem);font-weight:800}
 .hero h1 span{color:var(--accent)}
-.hero p.sub{font-size:1.12rem;color:#c9d7e2;margin:18px 0 26px;max-width:540px}
+.hero p.sub{font-size:1.12rem;color:#33475a;margin:18px 0 26px;max-width:540px}
 .badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
-.badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:8px 14px;border-radius:999px;font-size:.88rem;font-weight:600}
+.badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.85);border:1px solid #dfe6ec;color:var(--navy);box-shadow:0 4px 14px rgba(13,42,63,.06);padding:8px 14px;border-radius:999px;font-size:.88rem;font-weight:600}
 .badge svg{width:16px;height:16px;color:var(--accent)}
 .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
-.hero-cta .btn-ghost{color:#fff;border-color:rgba(255,255,255,.5)}
+.hero-cta .btn-ghost{color:var(--navy);border-color:var(--navy)}
 .hero-cta .btn-ghost:hover{background:#fff;color:var(--navy)}
 
 /* Quote form */
@@ -306,6 +308,7 @@ body.noscroll .mbar{display:none}
 /* Illustrations */
 .art-img{display:block;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);line-height:0}
 .art-img svg{width:100%;height:auto;display:block}
+.art-img.photo{background:#e9eef2}
 .hero-art{margin-top:34px;max-width:540px;box-shadow:0 24px 50px rgba(0,0,0,.3)}
 @media(max-width:900px){.hero-art{display:none}
   .hero p.sub{display:none}
@@ -412,52 +415,7 @@ body.noscroll .mbar{display:none}
       <p>FX Flytt AB har sitt kontor på Frejgatan i Kungsör. Det betyder korta avstånd när du flyttar inom orten, och att du kan nå oss på telefon eller komma förbi och prata om din flytt.</p><p>Vi hjälper både dig som flyttar inom Kungsör och dig som flyttar härifrån till exempelvis Eskilstuna, Arboga, Köping eller Västerås – eller åt andra hållet. Vi tar hand om bärhjälp, lastbil, packning, montering och flyttstäd, så att du kan fokusera på det nya hemmet.</p>
       <h3 style="color:var(--navy);margin-top:28px">Här hjälper vi till i Kungsör</h3>
       <div class="areas"><span>Kungsör centrum</span><span>Valskog</span><span>Kungsörs landsbygd</span><span>Mot Arboga</span><span>Mot Köping</span><span>Mot Eskilstuna</span></div>
-      <div class="art-img" style="margin-top:26px"><svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FX Flytt lastbil med flyttkartonger framför ett hus">
-  <defs>
-    <linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d5579"/><stop offset="1" stop-color="#123a56"/></linearGradient>
-    <linearGradient id="tbody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9eef3"/></linearGradient>
-  </defs>
-  <rect x="0" y="0" width="640" height="360" rx="28" fill="url(#tsky)"/>
-  <circle cx="540" cy="70" r="34" fill="#ff7a1a" opacity=".9"/>
-  <g fill="#ffffff" opacity=".12"><ellipse cx="140" cy="70" rx="60" ry="16"/><ellipse cx="190" cy="58" rx="40" ry="14"/><ellipse cx="420" cy="100" rx="52" ry="13"/></g>
-  <!-- hills -->
-  <path d="M0 250 C120 205 220 225 320 240 S520 210 640 232 V360 H0Z" fill="#0d2a3f" opacity=".55"/>
-  <!-- house -->
-  <g transform="translate(476 140)">
-    <rect x="0" y="50" width="150" height="110" fill="#f5f7f9"/>
-    <path d="M-12 56 L75 -6 L162 56Z" fill="#ff7a1a"/>
-    <rect x="22" y="78" width="34" height="30" rx="3" fill="#9fc3df"/><rect x="94" y="78" width="34" height="30" rx="3" fill="#9fc3df"/>
-    <rect x="58" y="108" width="34" height="52" rx="3" fill="#0d2a3f"/><circle cx="85" cy="135" r="2.5" fill="#ff7a1a"/>
-  </g>
-  <!-- trees -->
-    <!-- road -->
-  <rect x="0" y="296" width="640" height="64" fill="#0a2032"/>
-  <g fill="#ffffff" opacity=".5"><rect x="20" y="326" width="46" height="5" rx="2"/><rect x="110" y="326" width="46" height="5" rx="2"/><rect x="200" y="326" width="46" height="5" rx="2"/><rect x="290" y="326" width="46" height="5" rx="2"/><rect x="380" y="326" width="46" height="5" rx="2"/><rect x="470" y="326" width="46" height="5" rx="2"/><rect x="560" y="326" width="46" height="5" rx="2"/></g>
-  <!-- truck -->
-  <g transform="translate(46 150)">
-    <rect x="0" y="0" width="250" height="140" rx="10" fill="url(#tbody)"/>
-    <rect x="0" y="96" width="250" height="14" fill="#ff7a1a"/>
-    <rect x="22" y="26" width="52" height="52" rx="10" fill="#0d2a3f"/>
-    <text x="48" y="61" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="24" fill="#fff">FX</text>
-    <path d="M64 70 l12 12 v-12z" fill="#ff7a1a"/>
-    <text x="88" y="52" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="27" fill="#0d2a3f">FX Flytt</text>
-    <text x="89" y="74" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="700" font-size="13" letter-spacing="2" fill="#5b6b78">FLYTT EXPRESS</text>
-    <!-- cab -->
-    <path d="M254 34 H312 L350 80 V136 H254Z" fill="#0d2a3f"/>
-    <path d="M266 46 H306 L334 80 H266Z" fill="#9fc3df"/>
-    <rect x="338" y="104" width="14" height="10" rx="2" fill="#ffcf8a"/>
-    <rect x="254" y="118" width="98" height="8" fill="#ff7a1a"/>
-    <!-- wheels -->
-    <g><circle cx="62" cy="146" r="24" fill="#14212b"/><circle cx="62" cy="146" r="10" fill="#c9d7e2"/>
-       <circle cx="196" cy="146" r="24" fill="#14212b"/><circle cx="196" cy="146" r="10" fill="#c9d7e2"/>
-       <circle cx="306" cy="146" r="24" fill="#14212b"/><circle cx="306" cy="146" r="10" fill="#c9d7e2"/></g>
-  </g>
-  <!-- boxes -->
-  <g transform="translate(408 226)">
-    <rect x="0" y="22" width="58" height="48" rx="3" fill="#d9a066"/><rect x="0" y="22" width="58" height="10" fill="#c48a52"/><rect x="25" y="22" width="8" height="48" fill="#f2d3a8"/>
-    <rect x="12" y="-14" width="44" height="36" rx="3" fill="#e2b07c"/><rect x="12" y="-14" width="44" height="8" fill="#c48a52"/><rect x="30" y="-14" width="7" height="36" fill="#f2d3a8"/>
-  </g>
-</svg></div>
+      <div class="art-img photo" style="margin-top:26px"><img src="/img/movers-truck-1600.jpg" srcset="/img/movers-truck-800.jpg 800w, /img/movers-truck-1600.jpg 1600w" sizes="(max-width: 900px) 100vw, 760px" alt="Flyttare från FX Flytt bär kartonger till flyttbilen i Kungsör" loading="lazy" decoding="async" width="1600" height="900" style="width:100%;height:auto;aspect-ratio:2576/1093;object-fit:cover;object-position:center;display:block"></div>
       <div class="tipbox"><b>Tips inför flytten i Kungsör</b><ul><li>Prata med hyresvärden eller föreningen i god tid om hiss och nycklar.</li><li>Tänk på var lastbilen kan stå nära porten – säg till oss om det är långt att bära.</li><li>Bor du på landet? Berätta om grusväg eller smal infart så planerar vi rätt bil.</li></ul></div>
     </div>
     <aside class="side">

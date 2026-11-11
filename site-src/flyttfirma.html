@@ -52,17 +52,19 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdro
 @media(max-width:900px){.menu{display:none}}
 
 /* Hero */
-.hero{background:radial-gradient(1100px 500px at 85% -10%,#1d5579 0%,transparent 60%),linear-gradient(160deg,var(--navy) 0%,#0a2032 100%);color:#fff;padding:64px 0 90px;position:relative;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:auto -10% -120px auto;width:520px;height:520px;border-radius:50%;background:rgba(255,122,26,.10)}
+.hero{background:#eef2f5;color:var(--navy);padding:64px 0 90px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-24px;background:url(/img/hero-1280.jpg) center/cover no-repeat;filter:blur(4px) saturate(1.05)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.90) 0%,rgba(255,255,255,.72) 45%,rgba(255,255,255,.30) 100%)}
+.hero-grid{z-index:1}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;position:relative}
 .hero h1{font-size:clamp(2.1rem,4.6vw,3.4rem);font-weight:800}
 .hero h1 span{color:var(--accent)}
-.hero p.sub{font-size:1.12rem;color:#c9d7e2;margin:18px 0 26px;max-width:540px}
+.hero p.sub{font-size:1.12rem;color:#33475a;margin:18px 0 26px;max-width:540px}
 .badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
-.badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:8px 14px;border-radius:999px;font-size:.88rem;font-weight:600}
+.badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.85);border:1px solid #dfe6ec;color:var(--navy);box-shadow:0 4px 14px rgba(13,42,63,.06);padding:8px 14px;border-radius:999px;font-size:.88rem;font-weight:600}
 .badge svg{width:16px;height:16px;color:var(--accent)}
 .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
-.hero-cta .btn-ghost{color:#fff;border-color:rgba(255,255,255,.5)}
+.hero-cta .btn-ghost{color:var(--navy);border-color:var(--navy)}
 .hero-cta .btn-ghost:hover{background:#fff;color:var(--navy)}
 
 /* Quote form */
@@ -306,6 +308,7 @@ body.noscroll .mbar{display:none}
 /* Illustrations */
 .art-img{display:block;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);line-height:0}
 .art-img svg{width:100%;height:auto;display:block}
+.art-img.photo{background:#e9eef2}
 .hero-art{margin-top:34px;max-width:540px;box-shadow:0 24px 50px rgba(0,0,0,.3)}
 @media(max-width:900px){.hero-art{display:none}
   .hero p.sub{display:none}
@@ -455,60 +458,7 @@ body.noscroll .mbar{display:none}
 <section style="background:#fff">
   <div class="wrap about">
     <div>
-      <div class="art-img" style="margin-bottom:26px"><svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nytt hem med soffa, flyttkartonger och städutrustning">
-  <rect x="0" y="0" width="640" height="360" rx="28" fill="#fff4ea"/>
-  <!-- wall & floor -->
-  <rect x="0" y="262" width="640" height="98" fill="#f2dcc4"/>
-  <path d="M0 262 H640" stroke="#e5c5a4" stroke-width="4"/>
-  <g stroke="#e5c5a4" stroke-width="2" opacity=".7"><path d="M80 262 L40 360M220 262 L200 360M360 262 L370 360M500 262 L540 360"/></g>
-  <!-- window -->
-  <rect x="64" y="48" width="150" height="128" rx="10" fill="#ffffff" stroke="#0d2a3f" stroke-width="6"/>
-  <path d="M139 50 V174 M66 112 H212" stroke="#0d2a3f" stroke-width="5"/>
-  <circle cx="186" cy="80" r="14" fill="#ff7a1a" opacity=".85"/>
-  <!-- picture -->
-  <rect x="300" y="64" width="86" height="64" rx="6" fill="#0d2a3f"/>
-  <path d="M308 120 L332 92 L350 110 L362 98 L378 120Z" fill="#1a9e6a"/>
-  <circle cx="366" cy="82" r="7" fill="#ff7a1a"/>
-  <!-- lamp -->
-  <path d="M520 40 V96" stroke="#0d2a3f" stroke-width="3"/>
-  <path d="M496 96 H544 L532 122 H508Z" fill="#ff7a1a"/>
-  <!-- sofa -->
-  <g transform="translate(250 176)">
-    <rect x="0" y="22" width="220" height="62" rx="18" fill="#123a56"/>
-    <rect x="16" y="0" width="188" height="48" rx="16" fill="#1d5579"/>
-    <rect x="-14" y="34" width="34" height="56" rx="14" fill="#0d2a3f"/>
-    <rect x="200" y="34" width="34" height="56" rx="14" fill="#0d2a3f"/>
-    <rect x="30" y="20" width="40" height="30" rx="8" fill="#ff7a1a"/>
-    <rect x="8" y="90" width="10" height="10" fill="#0d2a3f"/><rect x="202" y="90" width="10" height="10" fill="#0d2a3f"/>
-  </g>
-  <!-- plant -->
-  <g transform="translate(578 186)">
-    <path d="M18 6 C-8 -30 4 -50 18 -60 C32 -50 44 -30 18 6Z" fill="#1a9e6a"/>
-    <path d="M18 6 C0 -10 -18 -14 -24 -30 C-6 -32 10 -20 18 6Z" fill="#168a5c"/>
-    <path d="M18 6 C34 -10 52 -14 58 -30 C40 -32 26 -20 18 6Z" fill="#168a5c"/>
-    <path d="M0 6 H36 L30 70 H6Z" fill="#0d2a3f"/>
-  </g>
-  <!-- boxes -->
-  <g transform="translate(58 196)">
-    <rect x="0" y="22" width="92" height="70" rx="4" fill="#d9a066"/><rect x="0" y="22" width="92" height="12" fill="#c48a52"/><rect x="40" y="22" width="12" height="70" fill="#f2d3a8"/>
-    <text x="46" y="74" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="12" fill="#7a4e22">KÖK</text>
-    <rect x="100" y="40" width="70" height="52" rx="4" fill="#e2b07c"/><rect x="100" y="40" width="70" height="10" fill="#c48a52"/><rect x="130" y="40" width="10" height="52" fill="#f2d3a8"/>
-    <rect x="14" y="-24" width="66" height="46" rx="4" fill="#e2b07c"/><rect x="14" y="-24" width="66" height="9" fill="#c48a52"/><rect x="42" y="-24" width="10" height="46" fill="#f2d3a8"/>
-  </g>
-  <!-- bucket & mop -->
-  <g transform="translate(500 268)">
-    <path d="M0 0 H54 L46 54 H8Z" fill="#ff7a1a"/>
-    <path d="M6 0 C10 -20 44 -20 48 0" fill="none" stroke="#0d2a3f" stroke-width="4"/>
-    <rect x="62" y="-128" width="6" height="176" rx="3" fill="#0d2a3f" transform="rotate(-10 65 48)"/>
-    <path d="M52 44 h30 l4 14 h-38z" fill="#9fc3df"/>
-  </g>
-  <!-- sparkles -->
-  <g fill="#ff7a1a">
-    <path d="M470 150 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/>
-    <path d="M590 150 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
-    <path d="M240 150 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z"/>
-  </g>
-</svg></div>
+      <div class="art-img photo" style="margin-bottom:26px"><img src="/img/truck-street-1600.jpg" srcset="/img/truck-street-800.jpg 800w, /img/truck-street-1600.jpg 1600w" sizes="(max-width: 900px) 100vw, 560px" alt="Flyttbil från FX Flytt på en gata med flyttkartonger" loading="lazy" decoding="async" width="1600" height="900" style="width:100%;height:auto;aspect-ratio:2576/1093;object-fit:cover;object-position:center;display:block"></div>
       <span class="eyebrow">Varför en lokal flyttfirma?</span>
       <h2>Vi känner regionen</h2>
       <p>Vi kör vägarna mellan Örebro, Kungsör, Eskilstuna, Västerås och Katrineholm hela tiden. Det gör att vi kan planera rutter och tider realistiskt – och ge dig ett pris som håller.</p>

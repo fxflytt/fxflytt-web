@@ -121,6 +121,13 @@ CITIES += EXTRA
 
 TRUCK = open("art_truck.svg", encoding="utf-8").read().strip()
 
+from photo import photo
+def CITY_PHOTO(c):
+    i = [x["slug"] for x in CITIES].index(c["slug"])
+    if i % 2 == 0:
+        return photo("movers-truck", f"Flyttare från FX Flytt bär kartonger till flyttbilen i {c['name']}", "margin-top:26px", "center", "2576/1093")
+    return photo("truck-street", f"Flyttbil från FX Flytt med flyttkartonger i {c['name']}", "margin-top:26px", "center", "2576/1093")
+
 def city_page(c):
     others = "".join(f'<a class="city" href="flyttfirma-{o["slug"]}.html"><svg><use href="#i-pin"/></svg>{o["name"]}</a>'
                      for o in CITIES if o["slug"] != c["slug"])
@@ -179,7 +186,7 @@ def city_page(c):
       {"".join(f"<p>{p}</p>" for p in c["intro"])}
       <h3 style="color:var(--navy);margin-top:28px">Här hjälper vi till i {c["name"]}</h3>
       <div class="areas">{"".join(f"<span>{a}</span>" for a in c["areas"])}</div>
-      <div class="art-img" style="margin-top:26px">{TRUCK}</div>
+      {CITY_PHOTO(c)}
       <div class="tipbox"><b>Tips inför flytten i {c["name"]}</b><ul>{"".join(f"<li>{t}</li>" for t in c["tips"])}</ul></div>
     </div>
     <aside class="side">

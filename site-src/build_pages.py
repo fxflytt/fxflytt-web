@@ -156,6 +156,7 @@ chk = '<svg><use href="#i-check"/></svg>'
 TRUCK = open("art_truck.svg", encoding="utf-8").read().strip()
 HOME = open("art_home.svg", encoding="utf-8").read().strip()
 def art(svg, style=""): return f'<div class="art-img" style="{style}">{svg}</div>'
+from photo import photo
 def ico(i): return f'<div class="ico"><svg><use href="#i-{i}"/></svg></div>'
 
 # ---------------------------------------------------------------- Vår tjänst
@@ -186,7 +187,7 @@ tjanster = page("tjanster.html",
       <div class="how"><div class="num">2</div><h3>Vi planerar</h3><p>Vi går igenom datum, tillval och detaljer med dig och bokar rätt bil och rätt antal flyttare.</p></div>
       <div class="how"><div class="num">3</div><h3>Vi flyttar</h3><p>Vårt team bär, lastar, kör och ställer in allt på plats – och städar om du vill.</p></div>
     </div>
-    {art(TRUCK, "max-width:760px;margin:40px auto 0")}
+    {photo("packing", "Flyttare packar porslin i en flyttkartong", "max-width:760px;margin:40px auto 0", "center 45%")}
   </div>
 </section>
 <section style="background:#fff">
@@ -223,7 +224,7 @@ flyttfirma = page("flyttfirma.html",
 <section style="background:#fff">
   <div class="wrap about">
     <div>
-      {art(HOME, "margin-bottom:26px")}
+      {photo("truck-street", "Flyttbil från FX Flytt på en gata med flyttkartonger", "margin-bottom:26px", "center", "2576/1093", "(max-width: 900px) 100vw, 560px")}
       <span class="eyebrow">Varför en lokal flyttfirma?</span>
       <h2>Vi känner regionen</h2>
       <p>Vi kör vägarna mellan Örebro, Kungsör, Eskilstuna, Västerås och Katrineholm hela tiden. Det gör att vi kan planera rutter och tider realistiskt – och ge dig ett pris som håller.</p>
@@ -267,7 +268,7 @@ paket = page("paket.html",
  f"""
 <section style="background:#fff">
   <div class="wrap center">
-    {art(HOME, "max-width:760px;margin:0 auto 36px")}
+    {photo("couple", "Glatt par i sitt nya hem bland flyttkartonger", "max-width:760px;margin:0 auto 36px", "center 40%")}
     <span class="eyebrow">Paket</span><h2>Bas, Premium eller Deluxe</h2>
     <div style="text-align:left">{pk}</div>
   </div>
@@ -318,7 +319,7 @@ om = page("om-oss.html",
 <section style="background:#fff">
   <div class="wrap about">
     <div>
-      {art(TRUCK, "margin-bottom:26px")}
+      {photo("movers-truck", "Flyttare från FX Flytt bär kartonger till flyttbilen", "margin-bottom:26px", "center", "2576/1093", "(max-width: 900px) 100vw, 560px")}
       <span class="eyebrow">Vilka vi är</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
       <p>FX Flytt AB hjälper privatpersoner och företag i Mälardalen och Örebro län med flytt, flyttstäd, packning och bortforsling.</p>
@@ -378,7 +379,7 @@ radgivare = page("radgivare.html",
  f"""
 <section>
   <div class="wrap">
-    {art(HOME, "max-width:760px;margin:0 auto 36px")}
+    {photo("booking", "Par planerar sin flytt vid datorn", "max-width:760px;margin:0 auto 36px", "center 30%")}
     <div class="center"><span class="eyebrow">Checklista</span><h2>Steg för steg inför flytten</h2></div>
     <div class="guide">
       {tip("6–8 veckor innan","Planera",["Säg upp din gamla bostad i tid","Begär offert och boka flyttdatum","Rensa ut det du inte vill ta med","Boka flyttstäd och bortforsling"])}
@@ -614,6 +615,7 @@ flyttstad = page("flyttstad.html",
 <section>
   <div class="wrap about">
     <div>
+      {photo("cleaning", "Städare från FX Flytt putsar fönster i en tom lägenhet", "margin-bottom:26px", "62% center", "4/3", "(max-width: 900px) 100vw, 560px")}
       <span class="eyebrow">Flyttstäd</span>
       <h2>Lämna bostaden i fint skick</h2>
       <p>När du flyttar ska bostaden lämnas städad till nästa ägare eller hyresgäst. Vi gör städningen åt dig enligt en checklista som följer det hyresvärdar och mäklare brukar kräva.</p>
