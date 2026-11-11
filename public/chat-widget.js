@@ -89,6 +89,7 @@
       } catch (e) { aiAvailable = false; }
     }
     if (!reply) reply = faq(text);
+    reply = String(reply).replace(/\*\*(.+?)\*\*/g, "$1").replace(/^#+\s*/gm, "").replace(/^\s*[-*]\s+/gm, "• ");
     wait.textContent = reply;
     history.push({ role: "assistant", content: reply });
     busy = false;
