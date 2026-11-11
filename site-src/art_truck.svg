@@ -1,0 +1,46 @@
+<svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FX Flytt lastbil med flyttkartonger framför ett hus">
+  <defs>
+    <linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d5579"/><stop offset="1" stop-color="#123a56"/></linearGradient>
+    <linearGradient id="tbody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9eef3"/></linearGradient>
+  </defs>
+  <rect x="0" y="0" width="640" height="360" rx="28" fill="url(#tsky)"/>
+  <circle cx="540" cy="70" r="34" fill="#ff7a1a" opacity=".9"/>
+  <g fill="#ffffff" opacity=".12"><ellipse cx="140" cy="70" rx="60" ry="16"/><ellipse cx="190" cy="58" rx="40" ry="14"/><ellipse cx="420" cy="100" rx="52" ry="13"/></g>
+  <!-- hills -->
+  <path d="M0 250 C120 205 220 225 320 240 S520 210 640 232 V360 H0Z" fill="#0d2a3f" opacity=".55"/>
+  <!-- house -->
+  <g transform="translate(476 140)">
+    <rect x="0" y="50" width="150" height="110" fill="#f5f7f9"/>
+    <path d="M-12 56 L75 -6 L162 56Z" fill="#ff7a1a"/>
+    <rect x="22" y="78" width="34" height="30" rx="3" fill="#9fc3df"/><rect x="94" y="78" width="34" height="30" rx="3" fill="#9fc3df"/>
+    <rect x="58" y="108" width="34" height="52" rx="3" fill="#0d2a3f"/><circle cx="85" cy="135" r="2.5" fill="#ff7a1a"/>
+  </g>
+  <!-- trees -->
+    <!-- road -->
+  <rect x="0" y="296" width="640" height="64" fill="#0a2032"/>
+  <g fill="#ffffff" opacity=".5"><rect x="20" y="326" width="46" height="5" rx="2"/><rect x="110" y="326" width="46" height="5" rx="2"/><rect x="200" y="326" width="46" height="5" rx="2"/><rect x="290" y="326" width="46" height="5" rx="2"/><rect x="380" y="326" width="46" height="5" rx="2"/><rect x="470" y="326" width="46" height="5" rx="2"/><rect x="560" y="326" width="46" height="5" rx="2"/></g>
+  <!-- truck -->
+  <g transform="translate(46 150)">
+    <rect x="0" y="0" width="250" height="140" rx="10" fill="url(#tbody)"/>
+    <rect x="0" y="96" width="250" height="14" fill="#ff7a1a"/>
+    <rect x="22" y="26" width="52" height="52" rx="10" fill="#0d2a3f"/>
+    <text x="48" y="61" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="24" fill="#fff">FX</text>
+    <path d="M64 70 l12 12 v-12z" fill="#ff7a1a"/>
+    <text x="88" y="52" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="27" fill="#0d2a3f">FX Flytt</text>
+    <text x="89" y="74" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="700" font-size="13" letter-spacing="2" fill="#5b6b78">FLYTT EXPRESS</text>
+    <!-- cab -->
+    <path d="M254 34 H312 L350 80 V136 H254Z" fill="#0d2a3f"/>
+    <path d="M266 46 H306 L334 80 H266Z" fill="#9fc3df"/>
+    <rect x="338" y="104" width="14" height="10" rx="2" fill="#ffcf8a"/>
+    <rect x="254" y="118" width="98" height="8" fill="#ff7a1a"/>
+    <!-- wheels -->
+    <g><circle cx="62" cy="146" r="24" fill="#14212b"/><circle cx="62" cy="146" r="10" fill="#c9d7e2"/>
+       <circle cx="196" cy="146" r="24" fill="#14212b"/><circle cx="196" cy="146" r="10" fill="#c9d7e2"/>
+       <circle cx="306" cy="146" r="24" fill="#14212b"/><circle cx="306" cy="146" r="10" fill="#c9d7e2"/></g>
+  </g>
+  <!-- boxes -->
+  <g transform="translate(408 226)">
+    <rect x="0" y="22" width="58" height="48" rx="3" fill="#d9a066"/><rect x="0" y="22" width="58" height="10" fill="#c48a52"/><rect x="25" y="22" width="8" height="48" fill="#f2d3a8"/>
+    <rect x="12" y="-14" width="44" height="36" rx="3" fill="#e2b07c"/><rect x="12" y="-14" width="44" height="8" fill="#c48a52"/><rect x="30" y="-14" width="7" height="36" fill="#f2d3a8"/>
+  </g>
+</svg>
