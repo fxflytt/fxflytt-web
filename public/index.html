@@ -87,6 +87,8 @@ textarea{min-height:80px;resize:vertical}
 .privacy{font-size:.75rem;color:var(--muted);margin-top:12px;text-align:center}
 .done{display:none;text-align:center;padding:10px 0}
 .done.show{display:block}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.done.sent #summary,.done.sent #mailbtn,.done.sent #copyline{display:none}
 .done .ok{width:62px;height:62px;border-radius:50%;background:#e6f7ef;color:var(--green);display:grid;place-items:center;margin:0 auto 14px}
 .done pre{white-space:pre-wrap;text-align:left;background:var(--bg);border-radius:12px;padding:14px;font-family:inherit;font-size:.82rem;margin:14px 0;max-height:180px;overflow:auto}
 .done .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
@@ -467,6 +469,7 @@ body.noscroll .mbar{display:none}
             <div><label class="f" for="tel">Telefon</label><input id="tel" name="Telefon" type="tel" required placeholder="07X-XXX XX XX"></div>
             <div><label class="f" for="email">E-post</label><input id="email" name="E-post" type="email" placeholder="namn@mail.se"></div>
             <div class="full"><label class="f" for="msg">Övrigt (valfritt)</label><textarea id="msg" name="Övrigt" placeholder="T.ex. antal tunga möbler, parkering, förråd…"></textarea></div>
+            <div class="hp" aria-hidden="true"><label for="website">Lämna tomt</label><input id="website" tabindex="-1" autocomplete="off"></div>
           </div>
         </div>
 
@@ -479,14 +482,14 @@ body.noscroll .mbar{display:none}
 
       <div class="done" id="done">
         <div class="ok"><svg width="30" height="30"><use href="#i-check"/></svg></div>
-        <h3>Nästan klart!</h3>
-        <p class="hint">Skicka din förfrågan till oss via e-post – eller ring så tar vi den direkt.</p>
+        <h3 id="done-h">Nästan klart!</h3>
+        <p class="hint" id="done-p">Skicka din förfrågan till oss via e-post – eller ring så tar vi den direkt.</p>
         <pre id="summary"></pre>
         <div class="row">
           <a id="mailbtn" class="btn btn-accent" href="#">Skicka via e-post</a>
           <a href="tel:+46763000723" class="btn btn-ghost">Ring 076-300 07 23</a>
         </div>
-        <p class="privacy">E-post: info@fxflytt.se · <a href="#" id="copybtn">Kopiera text</a></p>
+        <p class="privacy" id="copyline">E-post: info@fxflytt.se · <a href="#" id="copybtn">Kopiera text</a></p>
       </div>
     </div>
   </div>
@@ -895,8 +898,25 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     const txt = buildText();
     document.getElementById('summary').textContent = txt;
     document.getElementById('mailbtn').href = 'mailto:'+EMAIL+'?subject='+encodeURIComponent('Offertförfrågan – '+(document.getElementById('name').value||''))+'&body='+encodeURIComponent(txt);
-    form.style.display='none';
-    document.getElementById('done').classList.add('show');
+    const done = document.getElementById('done');
+    const showDone = sent => {
+      if(sent){
+        done.classList.add('sent');
+        document.getElementById('done-h').textContent = 'Tack! Vi har fått din förfrågan';
+        document.getElementById('done-p').textContent = 'Vi återkommer så snart vi kan. Brådskande? Ring oss direkt.';
+      }
+      form.style.display='none';
+      done.classList.add('show');
+    };
+    next.disabled = true; next.textContent = 'Skickar…';
+    fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      name:document.getElementById('name').value, phone:document.getElementById('tel').value,
+      email:document.getElementById('email').value, website:document.getElementById('website').value, text:txt
+    })}).then(r=>r.ok).catch(()=>false).then(ok=>{
+      next.disabled=false; show(cur);
+      showDone(ok);
+      if(ok && window.gtag) try{ gtag('event','generate_lead',{value:window.fxPrice?window.fxPrice.total:undefined,currency:'SEK'}); }catch(_){}
+    });
   });
   back.addEventListener('click',()=>{ if(cur>0){cur--;show(cur);} });
   form.addEventListener('submit',e=>e.preventDefault());
