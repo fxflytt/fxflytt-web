@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://fxflytt.se/sitemap.xml
+Sitemap: https://www.fxflytt.se/sitemap.xml

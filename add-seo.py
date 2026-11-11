@@ -1,7 +1,7 @@
 # Adds canonical URL, og:url and (home page) LocalBusiness data to every page in public/,
 # and writes sitemap.xml + robots.txt. Run by build-site.sh.
 import glob, json, os, datetime
-BASE = "https://fxflytt.se"
+BASE = "https://www.fxflytt.se"
 def url_for(f):
     name = os.path.basename(f)[:-5]
     return BASE + "/" if name == "index" else f"{BASE}/{name}"
