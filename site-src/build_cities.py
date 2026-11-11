@@ -28,6 +28,7 @@ for name, slug in [("Kungsör","kungsor"),("Örebro","orebro"),("Eskilstuna","es
                     f'<li><a href="flyttfirma-{slug}.html">Flyttfirma {name}</a></li>', footer)
 
 extra_css = """
+<style>.side-trust{list-style:none;margin-top:16px;display:grid;gap:6px;font-size:.85rem;color:var(--navy);font-weight:600}</style>
 <style>
 .c-hero{background:linear-gradient(160deg,var(--navy) 0%,#0a2032 100%);color:#fff;padding:56px 0 64px}
 .c-hero h1{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:800;max-width:780px}
@@ -216,6 +217,7 @@ def city_page(c):
       <div class="row"><span>Flyttstäd, fast pris</span><b>från 2 000 kr*</b></div>
       <p class="small">* Inkl. moms efter RUT-avdrag. Körsträcka 12 kr/km från 15 km mellan adresserna. Per timme minst 3 timmar. Premium −10 %, Deluxe −20 % på flytt och städ.</p>
       <a href="index.html#prisraknare" class="btn btn-accent" style="width:100%">Räkna ut ditt pris</a>
+      <ul class="side-trust"><li>✓ Trafiktillstånd från Transportstyrelsen</li><li>✓ Försäkrade hos Trygg-Hansa (upp till 10 milj. kr)</li><li>✓ Inga dolda avgifter</li></ul>
     </aside>
   </div>
 </section>

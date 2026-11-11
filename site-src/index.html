@@ -209,6 +209,13 @@ footer .logo{color:#fff}
 .f-bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:40px;padding-top:22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.84rem}
 
 /* Mobile call bar */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.trust-b{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.trust-b .ti{flex:none;width:42px;height:42px;border-radius:12px;background:var(--navy);color:#fff;display:grid;place-items:center}
+.trust-b .ti svg{width:22px;height:22px}
+.trust-b b{display:block;color:var(--navy);font-size:.95rem}.trust-b span{color:var(--muted);font-size:.83rem}
+.trust-sec{padding:28px 0;background:var(--bg)}
+@media(max-width:900px){.trust{grid-template-columns:1fr}}
 .mbar{display:none}
 .nav-cta{padding:11px 20px;margin-left:8px;white-space:nowrap}
 @media(max-width:900px){.nav-cta{display:none}}
@@ -492,10 +499,16 @@ body.noscroll .mbar{display:none}
   <div class="wrap strip-grid">
     <div class="strip-item"><div class="ico"><svg><use href="#i-user"/></svg></div><div>Personlig flyttkoordinator<span>En kontakt hela vägen</span></div></div>
     <div class="strip-item"><div class="ico"><svg><use href="#i-pct"/></svg></div><div>RUT-avdrag<span>Vi sköter ansökan åt dig</span></div></div>
-    <div class="strip-item"><div class="ico"><svg><use href="#i-cal"/></svg></div><div>Flexibel bokning<span>Ändra fram till 14 dagar innan</span></div></div>
+    <div class="strip-item"><div class="ico"><svg><use href="#i-cal"/></svg></div><div>Flexibel bokning<span>Avboka gratis fram till 6 dagar innan</span></div></div>
     <div class="strip-item"><div class="ico"><svg><use href="#i-truck"/></svg></div><div>Egna lastbilar<span>Utrustade för flytt</span></div></div>
   </div>
 </div>
+
+<section class="trust-sec" aria-label="Tillstånd och försäkring"><div class="wrap"><div class="trust">
+  <div class="trust-b"><div class="ti"><svg><use href="#i-truck"/></svg></div><div><b>Trafiktillstånd</b><span>från Transportstyrelsen</span></div></div>
+  <div class="trust-b"><div class="ti"><svg><use href="#i-shield"/></svg></div><div><b>Försäkrade hos Trygg-Hansa</b><span>Ersättning upp till 10 miljoner kr</span></div></div>
+  <div class="trust-b"><div class="ti"><svg><use href="#i-check"/></svg></div><div><b>Inga dolda avgifter</b><span>Priset i bokningen är det du betalar</span></div></div>
+</div></div></section>
 
 <!-- How it works -->
 <section>
@@ -752,7 +765,9 @@ body.noscroll .mbar{display:none}
     <div class="faq">
       <details open><summary>Hur fungerar RUT-avdraget?</summary><p>Du betalar bara halva arbetskostnaden. Vi drar av RUT direkt på fakturan och ansöker hos Skatteverket åt dig. Du behöver bara uppge ditt personnummer vid bokningen. Transport och material omfattas inte av RUT.</p></details>
       <details><summary>Är offerten bindande?</summary><p>Nej. Offerten är helt gratis och utan förpliktelser. Du bestämmer själv om du vill boka.</p></details>
-      <details><summary>Kan jag ändra eller avboka min flytt?</summary><p>Ja, du kan ändra datum eller avboka kostnadsfritt fram till 14 dagar före flytten.</p></details>
+      <details><summary>Kan jag ändra eller avboka min flytt?</summary><p>Ja, du kan ändra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen. Avbokar du 5 dagar eller mindre före debiteras 10 % av priset.</p></details>
+      <details><summary>Är ni försäkrade om något går sönder?</summary><p>Ja. Om något skadas under flytten ersätter vi det. FX Flytt AB är försäkrat hos Trygg-Hansa med ersättning upp till 10 miljoner kronor och har trafiktillstånd från Transportstyrelsen.</p></details>
+      <details><summary>Tillkommer det några extra avgifter?</summary><p>Nej. Vi går igenom alla detaljer innan flytten, och priset i din bokningsbekräftelse är det du betalar. Våning och hiss påverkar inte priset.</p></details>
       <details><summary>Hur lång tid tar en flytt?</summary><p>En 2:a tar oftast 4–5 timmar med två flyttare, beroende på mängd, våningsplan och avstånd. I offerten får du en tydlig uppskattning.</p></details>
       <details><summary>Ingår flyttkartonger?</summary><p>Du kan köpa 50 flyttkartonger för 2 000 kr eller hyra 50 st för 750 kr. Leverans ingår. Välj det i prisräknaren.</p></details>
       <details><summary>Flyttar ni även långa sträckor?</summary><p>Ja. Vi utgår från Kungsör men flyttar i hela Sverige. Priset är det fasta priset för din boyta plus 12 kr/km – räkna ut det direkt i prisräknaren.</p></details>

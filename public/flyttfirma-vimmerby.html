@@ -213,6 +213,13 @@ footer .logo{color:#fff}
 .f-bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:40px;padding-top:22px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.84rem}
 
 /* Mobile call bar */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.trust-b{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.trust-b .ti{flex:none;width:42px;height:42px;border-radius:12px;background:var(--navy);color:#fff;display:grid;place-items:center}
+.trust-b .ti svg{width:22px;height:22px}
+.trust-b b{display:block;color:var(--navy);font-size:.95rem}.trust-b span{color:var(--muted);font-size:.83rem}
+.trust-sec{padding:28px 0;background:var(--bg)}
+@media(max-width:900px){.trust{grid-template-columns:1fr}}
 .mbar{display:none}
 .nav-cta{padding:11px 20px;margin-left:8px;white-space:nowrap}
 @media(max-width:900px){.nav-cta{display:none}}
@@ -329,6 +336,7 @@ body.noscroll .mbar{display:none}
   .hero-grid{gap:26px}}
 </style>
 
+<style>.side-trust{list-style:none;margin-top:16px;display:grid;gap:6px;font-size:.85rem;color:var(--navy);font-weight:600}</style>
 <style>
 .c-hero{background:linear-gradient(160deg,var(--navy) 0%,#0a2032 100%);color:#fff;padding:56px 0 64px}
 .c-hero h1{font-size:clamp(2rem,4.4vw,3.1rem);font-weight:800;max-width:780px}
@@ -450,6 +458,7 @@ body.noscroll .mbar{display:none}
       <div class="row"><span>Flyttstäd, fast pris</span><b>från 2 000 kr*</b></div>
       <p class="small">* Inkl. moms efter RUT-avdrag. Körsträcka 12 kr/km från 15 km mellan adresserna. Per timme minst 3 timmar. Premium −10 %, Deluxe −20 % på flytt och städ.</p>
       <a href="index.html#prisraknare" class="btn btn-accent" style="width:100%">Räkna ut ditt pris</a>
+      <ul class="side-trust"><li>✓ Trafiktillstånd från Transportstyrelsen</li><li>✓ Försäkrade hos Trygg-Hansa (upp till 10 milj. kr)</li><li>✓ Inga dolda avgifter</li></ul>
     </aside>
   </div>
 </section>

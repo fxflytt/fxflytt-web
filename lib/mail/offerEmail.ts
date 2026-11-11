@@ -168,7 +168,7 @@ export function customerConfirmation(d: OfferData) {
     <a href="tel:+46763000723" style="display:inline-block;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;background:${ACCENT};color:#fff">Ring oss: 076-300 07 23</a>
   </td></tr>
   <tr><td style="padding:16px 28px 22px;border-top:1px solid ${LINE};color:${MUTED};font-size:12px;line-height:18px">
-    Du kan ändra datum eller avboka kostnadsfritt fram till 14 dagar före flyttdagen. Har du frågor? Svara bara på det här mejlet.<br>
+    Du kan ändra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen. Har du frågor? Svara bara på det här mejlet.<br>
     <a href="https://www.fxflytt.se/villkor" style="color:${NAVY}">Villkor</a> · <a href="https://www.fxflytt.se/integritetspolicy" style="color:${NAVY}">Integritetspolicy</a>
   </td></tr>
 </table>

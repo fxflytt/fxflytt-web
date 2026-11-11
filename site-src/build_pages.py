@@ -355,6 +355,8 @@ om = page("om-oss.html",
         <div><span>Telefon</span><b><a href="tel:+46763000723" style="text-decoration:none">076-300 07 23</a></b></div>
         <div><span>E-post</span><b style="word-break:break-all">info@fxflytt.se</b></div>
         <div><span>F-skatt</span><b>Ja</b></div>
+        <div><span>Trafiktillstånd</span><b>Transportstyrelsen</b></div>
+        <div><span>Försäkring</span><b>Trygg-Hansa, upp till 10 milj. kr</b></div>
       </div>
     </div>
     <div class="map-card">
@@ -552,7 +554,7 @@ villkor = page("villkor.html",
  """
 <section>
   <div class="wrap legal">
-    <p class="upd">Senast uppdaterad: 2026-11-11</p>
+    <p class="upd">Senast uppdaterad: 2026-11-11 (avbokning, skador och försäkring)</p>
 
     <h2>1. Offert</h2>
     <p>Offerten är gratis och inte bindande. Priserna i prislistan och prisräknaren är fasta priser som bygger på de uppgifter du lämnar, till exempel boyta och avstånd. Det pris som gäller är det som står i din bokningsbekräftelse.</p>
@@ -562,25 +564,37 @@ villkor = page("villkor.html",
       <li>Alla priser anges i svenska kronor inklusive moms.</li>
       <li>Fast pris gäller för den boyta kunden uppger. Vid timpris debiteras minst 3 timmar, och påbörjad timme räknas som hel.</li>
       <li>Körsträcka debiteras med 12 kr/km när avståndet mellan adresserna är 15 km eller mer. Övriga tillval enligt prislista eller offert.</li>
+      <li><b>Inga dolda avgifter.</b> Vi går igenom alla detaljer med dig innan flytten. Det pris som står i din bokningsbekräftelse är det du betalar – inga extra avgifter tillkommer i efterhand.</li>
     </ul>
 
     <h2>3. RUT-avdrag</h2>
     <p>RUT-avdrag gäller arbetskostnaden för privatpersoner, inte lastbil, körsträcka eller material. Vi drar av den beräknade skattereduktionen direkt på fakturan och ansöker hos Skatteverket. Om Skatteverket helt eller delvis nekar avdraget, till exempel för att du redan har använt ditt utrymme för året, betalar du mellanskillnaden.</p>
 
     <h2>4. Ändring och avbokning</h2>
-    <p>Du kan ändra datum eller avboka kostnadsfritt fram till 14 dagar före flyttdagen. Kontakta oss på telefon eller e-post.</p>
+    <ul>
+      <li>Ändring av datum och avbokning är <b>kostnadsfritt fram till 6 dagar före flyttdagen</b>.</li>
+      <li>Avbokar du <b>5 dagar eller mindre</b> före flyttdagen debiteras <b>10 % av det bokade priset</b>.</li>
+      <li>Kontakta oss på telefon 076-300 07 23 eller e-post info@fxflytt.se. Avbokningen gäller från den dag vi tar emot den.</li>
+    </ul>
 
     <h2>5. Inför flyttdagen</h2>
     <ul>
-      <li>Lämna korrekta uppgifter om bostad, våning, hiss, bärsträcka och mängd bohag. Ändrade förutsättningar kan påverka tid och pris.</li>
+      <li>Lämna korrekta uppgifter om bostad, våning, hiss, bärsträcka och mängd bohag. Vi använder uppgifterna för att planera rätt antal flyttare och rätt bil.</li>
       <li>Se till att det finns möjlighet att parkera lastbilen nära porten.</li>
       <li>Värdesaker, kontanter, smycken och viktiga dokument transporterar du själv.</li>
     </ul>
 
     <h2>6. Skador och reklamation</h2>
-    <p>Kontrollera ditt gods när flytten är klar. Upptäcker du en skada ska du meddela oss så snart som möjligt, helst samma dag och med bilder.</p>
+    <ul>
+      <li>Om något går sönder eller skadas när vi flyttar, <b>ersätter vi skadan</b>.</li>
+      <li>FX Flytt AB är försäkrat hos <b>Trygg-Hansa</b> med ersättning upp till <b>10 miljoner kronor</b>.</li>
+      <li>Kontrollera ditt gods när flytten är klar. Upptäcker du en skada, meddela oss så snart som möjligt – helst samma dag och med bilder – så hanterar vi ärendet snabbt.</li>
+    </ul>
 
-    <h2>7. Kontakt</h2>
+    <h2>7. Tillstånd och försäkring</h2>
+    <p>FX Flytt AB har <b>trafiktillstånd från Transportstyrelsen</b> och är <b>försäkrat hos Trygg-Hansa</b> med ersättning upp till 10 miljoner kronor.</p>
+
+    <h2>8. Kontakt</h2>
     <p>FX Flytt AB, Frejgatan 9B, Kungsör · 076-300 07 23 · info@fxflytt.se</p>
   </div>
 </section>""")
