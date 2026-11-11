@@ -18,6 +18,7 @@ export type Mail = {
   replyTo?: string;
   subject: string;
   text: string;
+  html?: string;
 };
 
 const clean = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
@@ -27,7 +28,8 @@ const encWord = (s: string) => `=?UTF-8?B?${b64(clean(s))}?=`;
 export function buildMessage(m: Mail, date = new Date()): string {
   const domain = m.from.split("@")[1] || "localhost";
   const id = `${Date.now().toString(36)}.${Math.random().toString(36).slice(2)}@${domain}`;
-  const body = b64(m.text).replace(/.{1,76}/g, "$&\r\n");
+  const wrap = (t: string) => b64(t).replace(/.{1,76}/g, "$&\r\n");
+  const boundary = "fx-" + Math.random().toString(36).slice(2);
   const headers = [
     `From: ${encWord("FX Flytt – webbplats")} <${clean(m.from)}>`,
     `To: <${clean(m.to)}>`,
@@ -36,10 +38,15 @@ export function buildMessage(m: Mail, date = new Date()): string {
     `Date: ${date.toUTCString().replace("GMT", "+0000")}`,
     `Message-ID: <${id}>`,
     "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=UTF-8",
-    "Content-Transfer-Encoding: base64",
   ];
-  return headers.join("\r\n") + "\r\n\r\n" + body;
+  if (!m.html) {
+    headers.push("Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: base64");
+    return headers.join("\r\n") + "\r\n\r\n" + wrap(m.text);
+  }
+  headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+  const part = (type: string, t: string) =>
+    `--${boundary}\r\nContent-Type: ${type}; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${wrap(t)}`;
+  return headers.join("\r\n") + "\r\n\r\n" + part("text/plain", m.text) + "\r\n" + part("text/html", m.html) + `\r\n--${boundary}--`;
 }
 
 export async function sendMail(opt: SmtpOptions, mail: Mail): Promise<void> {

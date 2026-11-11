@@ -909,10 +909,16 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       done.classList.add('show');
     };
     next.disabled = true; next.textContent = 'Skickar…';
-    fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      name:document.getElementById('name').value, phone:document.getElementById('tel').value,
-      email:document.getElementById('email').value, website:document.getElementById('website').value, text:txt
-    })}).then(r=>r.ok).catch(()=>false).then(ok=>{
+    const v = id => (document.getElementById(id)||{}).value || '';
+    const data = {
+      name:v('name'), phone:v('tel'), email:v('email'), from:v('from'), to:v('to'),
+      distanceKm: window.fxDistance ? Number(window.fxDistance) : undefined,
+      size:v('storlek'), areaM2:v('kvm'), home:v('typ'), date:v('date'), dateType:v('flexdate'),
+      floorFrom:v('vf'), floorTo:v('vt'), message:v('msg'),
+      extras:[...form.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value),
+      price: window.fxPrice || undefined, volume: window.fxVolume || undefined
+    };
+    fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data, website:v('website')})}).then(r=>r.ok).catch(()=>false).then(ok=>{
       next.disabled=false; show(cur);
       showDone(ok);
       if(ok && window.gtag) try{ gtag('event','generate_lead',{value:window.fxPrice?window.fxPrice.total:undefined,currency:'SEK'}); }catch(_){}
