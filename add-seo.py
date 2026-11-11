@@ -26,6 +26,7 @@ for f in pages:
              f'<meta property="og:image" content="{BASE}/og-image.png">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
              '<meta property="og:image:alt" content="FX Flytt – Flytt Express">\n<meta name="twitter:card" content="summary_large_image">\n')
     if f.endswith("index.html"):
+        tags += '<meta name="google-site-verification" content="s8p94rfif3ZzcQMY0-f3TqiQohiwWQq0y-PDJSRbZ4I" />\n'
         ld = BUSINESS | {"url": BASE + "/", "logo": BASE + "/icon-512.png", "image": BASE + "/og-image.png"}
         tags += '<script type="application/ld+json">' + json.dumps(ld, ensure_ascii=False) + "</script>\n"
     else:
