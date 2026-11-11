@@ -165,14 +165,14 @@ SERVICES = [
  ("box","Packning & uppackning","Vi packar ditt hem med rätt material så att inget går sönder – och packar upp i nya hemmet om du vill.",["Ömtåligt packas extra","Kartonger märks per rum","RUT-avdrag"]),
  ("tool","Ned- & montering","Sängar, garderober, bord och hyllor tas isär före flytten och sätts ihop igen på plats.",["Verktyg ingår","Skruvar märks","RUT-avdrag"]),
  ("music","Piano & tunga lyft","Piano, kassaskåp och andra tunga eller otympliga föremål flyttas med rätt utrustning och tillräckligt många personer.",["Rätt utrustning","Pris enligt offert"]),
- ("spark","Flyttstäd","Grundlig städning av bostaden du lämnar, enligt checklista, så att du är redo för besiktningen.",["Kök & badrum","Fönster enligt överenskommelse","RUT-avdrag"]),
+ ("spark","Flyttstäd","Grundlig städning av bostaden du lämnar, enligt checklista, så att du är redo för besiktningen.",["Kök & badrum","Fönster och balkong ingår","RUT-avdrag"]),
  ("trash","Bortforsling","Vi kör bort möbler och saker du inte vill ta med – till återvinning eller tipp.",["Sorteras rätt","Pris enligt offert"]),
  ("box","Flyttkartonger","Köp eller hyr 50 flyttkartonger av oss.",["Köpa 2 000 kr","Hyra 750 kr","Leverans ingår"]),
 ]
 rows = "".join(f'''<div class="svc-row">{ico(i)}<div><h3>{t}</h3><p>{p}</p><ul>{"".join(f'<li class="{"tag-rut" if x=="RUT-avdrag" else ""}">{x}</li>' for x in tags)}</ul></div>
 <a href="{"flyttstad.html" if t=="Flyttstäd" else "index.html#offert"}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t=="Flyttstäd" else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
 tjanster = page("tjanster.html",
- "Våra tjänster – flytt, packning, flyttstäd & bortforsling | FX Flytt",
+ "Tjänster – flytt, packning, flyttstäd & bortforsling | FX Flytt",
  "FX Flytt hjälper dig med bohagsflytt, kontorsflytt, packning, montering, pianoflytt, flyttstäd och bortforsling. Gratis offert och RUT-avdrag direkt på fakturan.",
  "Vår tjänst", "Allt för din flytt – <span>från en och samma firma</span>",
  "Boka bara det du behöver, eller låt oss ta hand om hela flytten. Du får en fast kontaktperson och ett tydligt pris innan vi börjar.",
@@ -208,7 +208,7 @@ CITY += [(c["slug"], c["name"], c["lead"].split(". ")[0].rstrip(".") + ".") for 
 cards = "".join(f'<a class="city-card" href="flyttfirma-{s}.html"><h3><svg><use href="#i-pin"/></svg>Flyttfirma {n}</h3><p>{t}</p><span class="go">Läs mer →</span></a>' for s,n,t in CITY)
 flyttfirma = page("flyttfirma.html",
  "Flyttfirma i Mälardalen & Örebro län | FX Flytt",
- "FX Flytt är en flyttfirma med bas i Kungsör. Vi flyttar i Kungsör, Örebro, Eskilstuna, Västerås, Katrineholm, Linköping, Norrköping, Jönköping, Karlstad m.fl. – och längre sträckor i hela Sverige.",
+ "FX Flytt flyttar i Kungsör, Örebro, Eskilstuna, Västerås, Linköping, Norrköping, Jönköping, Karlstad och fler orter – fasta priser efter boyta.",
  "Flyttfirma", "Din flyttfirma i <span>Mälardalen och Örebro län</span>",
  "Vi utgår från Kungsör och flyttar dagligen i regionen – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
  f"""
@@ -216,7 +216,7 @@ flyttfirma = page("flyttfirma.html",
   <div class="wrap">
     <div class="center"><span class="eyebrow">Våra orter</span><h2>Här flyttar vi</h2></div>
     <div class="city-cards">{cards}
-      <a class="city-card" href="index.html#offert"><h3><svg><use href="#i-truck"/></svg>Hela Sverige</h3><p>Längre flyttar mellan städer – kontakta oss för pris.</p><span class="go">Få offert →</span></a>
+      <a class="city-card" href="index.html#offert"><h3><svg><use href="#i-truck"/></svg>Hela Sverige</h3><p>Längre flyttar mellan städer – fast pris plus 12 kr/km. Räkna ut priset direkt.</p><span class="go">Få offert →</span></a>
     </div>
   </div>
 </section>
@@ -554,7 +554,7 @@ villkor = page("villkor.html",
     <p class="upd">Senast uppdaterad: 2026-11-10</p>
 
     <h2>1. Offert</h2>
-    <p>Offerten är gratis och inte bindande. Priser som visas på webbplatsen och i prisräknaren är uppskattningar. Det pris som gäller är det som står i din skriftliga offert eller bokningsbekräftelse.</p>
+    <p>Offerten är gratis och inte bindande. Priserna i prislistan och prisräknaren är fasta priser som bygger på de uppgifter du lämnar, till exempel boyta och avstånd. Det pris som gäller är det som står i din bokningsbekräftelse.</p>
 
     <h2>2. Priser</h2>
     <ul>
@@ -607,7 +607,7 @@ import json as _json
 faq_ld = '<script type="application/ld+json">' + _json.dumps({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}} for q,a in FAQ]}, ensure_ascii=False) + '</script>'
 flyttstad = page("flyttstad.html",
  "Flyttstäd med RUT-avdrag – i alla våra orter | FX Flytt",
- "Flyttstäd enligt checklista inför besiktningen. Fast pris från 2 000 kr efter RUT-avdrag. FX Flytt städar i Kungsör, Örebro, Västerås, Eskilstuna, Linköping, Norrköping, Jönköping, Karlstad m.fl.",
+ "Flyttstäd enligt checklista inför besiktningen – fönster och balkong ingår. Fast pris från 2 000 kr efter RUT-avdrag, samma pris i alla våra orter.",
  "Flyttstäd", "Flyttstäd – <span>redo för besiktningen</span>",
  "Vi städar bostaden du lämnar enligt en tydlig checklista. RUT-avdraget dras direkt på fakturan.",
  f"""

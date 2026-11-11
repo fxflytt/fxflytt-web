@@ -71,7 +71,7 @@ CITIES = [
   desc="Ska du flytta i Örebro? FX Flytt hjälper dig med bohagsflytt, packning, montering, flyttstäd och bortforsling i hela Örebro. Gratis offert och RUT-avdrag direkt på fakturan.",
   h1="Flyttfirma i <span>Örebro</span>",
   lead="Från lägenheten i centrum till villan i ytterområdet – vi planerar din flytt i Örebro så att den blir enkel, trygg och utan överraskningar.",
-  intro=["Örebro är en stad med många flerfamiljshus, studentbostäder och villaområden. Varje flytt är olika: ibland är det trappor utan hiss, ibland lång bärsträcka från parkeringen. Därför frågar vi om våningsplan, hiss och avstånd redan i offerten, så att priset stämmer från början.",
+  intro=["Örebro är en stad med många flerfamiljshus, studentbostäder och villaområden. Varje flytt är olika: ibland är det trappor utan hiss, ibland lång bärsträcka från parkeringen. Därför frågar vi om våningsplan, hiss och avstånd i förväg, så att rätt team och rätt bil kommer på flyttdagen.",
          "Vi hjälper privatpersoner, studenter och företag i Örebro – både när du flyttar inom staden och när du flyttar till eller från Örebro, till exempel till Kumla, Hallsberg, Arboga eller Mälardalen."],
   areas=["Centrum","Väster","Öster","Adolfsberg","Brickebacken","Varberga","Vivalla","Baronbackarna","Mosås","Lillån","Rynninge","Tybble","Sörbyängen","Hjärsta","Markbacken"],
   tips=["Studentbostad? Kolla med hyresvärden när du får nycklar och när du måste lämna – det styr flyttdagen.","Många hus i centrum har begränsad parkering. Berätta hur nära porten lastbilen kan stå.","Flyttar många samtidigt i slutet av månaden – boka tidigt eller välj ett flexibelt datum."],
