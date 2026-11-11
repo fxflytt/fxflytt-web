@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     if (e instanceof ChatInputError) return Response.json({ error: "Ogiltig förfrågan" }, { status: 400 });
     console.error("chat failed", e instanceof Error ? e.message : e);   // no customer text in logs
     const m = e instanceof Error ? /Claude API (\d+)/.exec(e.message) : null;
-    lastError = { at: new Date().toISOString(), kind: m ? `claude_${m[1]}` : (e instanceof Error ? e.name : "unknown") };
+    lastError = { at: new Date().toISOString(), kind: m ? `claude_${m[1]}` : (e instanceof Error ? (e.message.startsWith("empty reply") ? e.message : e.name) : "unknown") };
     return Response.json({ fallback: true }, { status: 502 });
   }
 }

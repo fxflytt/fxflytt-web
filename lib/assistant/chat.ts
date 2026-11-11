@@ -42,7 +42,7 @@ export async function askClaude(messages: ChatMessage[], apiKey: string, fetchIm
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 500,
+      max_tokens: 1500,
       // The fixed instructions are cached between requests, which makes each chat cheaper.
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
       messages: messages.map((m) => ({ role: m.role, content: redact(m.content) })),
@@ -53,8 +53,11 @@ export async function askClaude(messages: ChatMessage[], apiKey: string, fetchIm
     const detail = await res.text().catch(() => "");
     throw new Error(`Claude API ${res.status}: ${detail.slice(0, 300)}`);
   }
-  const data = await res.json() as { content?: { type: string; text?: string }[] };
+  const data = await res.json() as { content?: { type: string; text?: string }[]; stop_reason?: string };
   const text = (data.content ?? []).filter((b) => b.type === "text").map((b) => b.text ?? "").join("").trim();
-  if (!text) throw new Error("empty reply");
+  if (!text) {
+    const types = (data.content ?? []).map((b) => b.type).join("+") || "none";
+    throw new Error(`empty reply (stop=${data.stop_reason ?? "?"}, blocks=${types})`);
+  }
   return text;
 }
