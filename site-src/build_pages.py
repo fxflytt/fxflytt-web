@@ -362,7 +362,7 @@ om = page("om-oss.html",
         <h3>Frejgatan 9B, Kungsör</h3>
         <p style="color:#c9d7e2;margin-top:8px">Centralt mellan Eskilstuna, Västerås, Örebro och Katrineholm.</p>
       </div>
-      <a class="btn btn-accent" href="https://www.google.com/maps/search/?api=1&query=Frejgatan+9B+Kung%C3%B6r" target="_blank" rel="noopener">Öppna i Google Maps</a>
+      <a class="btn btn-accent" href="https://www.google.com/maps/search/?api=1&query=Frejgatan+9B+Kungs%C3%B6r" target="_blank" rel="noopener">Öppna i Google Maps</a>
     </div>
   </div>
 </section>""")

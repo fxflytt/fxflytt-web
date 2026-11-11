@@ -4,6 +4,9 @@ import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 
 export const runtime = "nodejs";
 
+// Last error kind (status code only, never customer text) – shown by GET for troubleshooting.
+let lastError: { at: string; kind: string } | null = null;
+
 export async function POST(req: Request) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -23,6 +26,12 @@ export async function POST(req: Request) {
   } catch (e) {
     if (e instanceof ChatInputError) return Response.json({ error: "Ogiltig förfrågan" }, { status: 400 });
     console.error("chat failed", e instanceof Error ? e.message : e);   // no customer text in logs
+    const m = e instanceof Error ? /Claude API (\d+)/.exec(e.message) : null;
+    lastError = { at: new Date().toISOString(), kind: m ? `claude_${m[1]}` : (e instanceof Error ? e.name : "unknown") };
     return Response.json({ fallback: true }, { status: 502 });
   }
+}
+
+export async function GET() {
+  return Response.json({ configured: Boolean(process.env.ANTHROPIC_API_KEY), lastError });
 }

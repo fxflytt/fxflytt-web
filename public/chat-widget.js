@@ -10,11 +10,11 @@
 
   // Built-in answers, used when the AI isn't connected yet or can't be reached.
   var FAQ = [
-    { k: ["pris", "kost", "kosta", "timpris", "price", "سعر", "كلف"], a: "Ungefärliga priser efter RUT-avdrag: 2 flyttare + lastbil 695 kr/tim, 3 flyttare + lastbil 945 kr/tim, flyttstäd 25 kr/m². Minsta debitering 3 timmar. Exakt pris får du i en gratis offert." },
+    { k: ["pris", "kost", "kosta", "timpris", "price", "سعر", "كلف"], a: "Vi har fasta priser efter boyta, efter RUT-avdrag: flytt från 2 800 kr (upp till 30 m²) och flyttstäd från 2 000 kr. Från 15 km mellan adresserna tillkommer 12 kr/km. Per timme: 2 flyttare 595 kr/tim, minst 3 timmar. Räkna ut ditt exakta pris i prisräknaren på startsidan." },
     { k: ["rut", "avdrag", "skatteverket", "خصم"], a: "RUT ger 50 % avdrag på arbetskostnaden för flytt och flyttstäd (inte lastbil, körsträcka eller material). Vi drar av det direkt på fakturan och sköter ansökan hos Skatteverket." },
     { k: ["ort", "stad", "område", "var ", "örebro", "eskilstuna", "västerås", "katrineholm", "kungsör", "مدين"], a: "Vi flyttar i Kungsör, Örebro, Eskilstuna, Västerås och Katrineholm – och längre sträckor i hela Sverige efter offert." },
     { k: ["avbok", "ändra", "omboka", "cancel", "إلغ"], a: "Du kan ändra datum eller avboka kostnadsfritt fram till 14 dagar före flyttdagen." },
-    { k: ["städ", "flyttstäd", "clean", "تنظيف"], a: "Ja, vi gör flyttstäd enligt checklista – ca 25 kr/m² efter RUT-avdrag. Det kan bokas med flytten eller separat." },
+    { k: ["städ", "flyttstäd", "clean", "تنظيف"], a: "Ja, vi gör flyttstäd enligt checklista – fönster och balkong ingår. Fast pris från 2 000 kr efter RUT-avdrag. Bokar du flytt och städ tillsammans får du 10 % rabatt (Premium)." },
     { k: ["boka", "offert", "book", "quote", "حجز", "عرض"], a: "Fyll i offertformuläret högst upp på sidan – det tar två minuter och är gratis och inte bindande. Du kan också ringa " + PHONE + "." },
     { k: ["flex", "rabatt", "billig", "discount"], a: "Med FlexFlytt anger du ett tidsfönster i stället för ett exakt datum och kan spara upp till 15 %." },
     { k: ["tid", "lång", "timmar", "hours"], a: "En 2:a tar oftast 4–5 timmar med två flyttare, beroende på mängd, våning och avstånd." },
