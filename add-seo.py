@@ -12,9 +12,13 @@ for f in pages:
         continue
     u = url_for(f)
     tags = f'<link rel="canonical" href="{u}">\n<meta property="og:url" content="{u}">\n<meta property="og:site_name" content="FX Flytt">\n'
+    tags += ('<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="icon" href="/favicon.ico" sizes="32x32">\n'
+             '<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n<meta name="theme-color" content="#0d2a3f">\n'
+             f'<meta property="og:image" content="{BASE}/og-image.png">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
+             '<meta property="og:image:alt" content="FX Flytt – Flytt Express">\n<meta name="twitter:card" content="summary_large_image">\n')
     if f.endswith("index.html"):
         ld = {"@context": "https://schema.org", "@type": "MovingCompany", "name": "FX Flytt AB",
-              "url": BASE + "/", "telephone": "+46763000723",
+              "url": BASE + "/", "logo": BASE + "/icon-512.png", "image": BASE + "/og-image.png", "telephone": "+46763000723",
               "address": {"@type": "PostalAddress", "streetAddress": "Frejgatan 9B", "postalCode": "736 30",
                           "addressLocality": "Kungsör", "addressCountry": "SE"},
               "areaServed": ["Kungsör", "Örebro", "Eskilstuna", "Västerås", "Katrineholm"]}
