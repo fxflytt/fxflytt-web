@@ -56,7 +56,7 @@ extra_css = """
 CITIES = [
  dict(slug="kungsor", name="Kungsör", lan="Västmanlands län",
   title="Flyttfirma i Kungsör – flytt, flyttstäd & bortforsling | FX Flytt",
-  desc="Flyttfirma med bas i Kungsör. FX Flytt hjälper dig med bohagsflytt, packning, flyttstäd och bortforsling i Kungsör och Valskog. Gratis offert, RUT-avdrag på fakturan.",
+  desc="Flyttfirma med kontor i Kungsör. Flytt, packning och flyttstäd till fast pris i Kungsör och Valskog – se priset direkt, RUT-avdrag på fakturan.",
   h1="Flyttfirma i <span>Kungsör</span> – här finns vi",
   lead="Kungsör är vår hemmabas. Härifrån planerar vi och kör ut till hela Mälardalen – och när du flyttar inom kommunen har vi nära till dig.",
   intro=["FX Flytt har sitt kontor på Frejgatan i Kungsör. Det betyder korta avstånd när du flyttar inom orten, och att du kan nå oss på telefon eller komma förbi och prata om din flytt.",
@@ -68,7 +68,7 @@ CITIES = [
        ("Hjälper ni till med flyttstäd i Kungsör?","Ja, flyttstäd kan bokas tillsammans med flytten eller separat. RUT-avdraget dras direkt på fakturan.")]),
  dict(slug="orebro", name="Örebro", lan="Örebro län",
   title="Flyttfirma i Örebro – trygg flytt & flyttstäd | FX Flytt",
-  desc="Ska du flytta i Örebro? FX Flytt hjälper dig med bohagsflytt, packning, montering, flyttstäd och bortforsling i hela Örebro. Gratis offert och RUT-avdrag direkt på fakturan.",
+  desc="Flyttfirma i Örebro: bohagsflytt, packning, montering och flyttstäd till fast pris. Se priset direkt på sidan – RUT-avdrag på fakturan.",
   h1="Flyttfirma i <span>Örebro</span>",
   lead="Från lägenheten i centrum till villan i ytterområdet – vi planerar din flytt i Örebro så att den blir enkel, trygg och utan överraskningar.",
   intro=["Örebro är en stad med många flerfamiljshus, studentbostäder och villaområden. Varje flytt är olika: ibland är det trappor utan hiss, ibland lång bärsträcka från parkeringen. Därför frågar vi om våningsplan, hiss och avstånd i förväg, så att rätt team och rätt bil kommer på flyttdagen.",
@@ -80,7 +80,7 @@ CITIES = [
        ("Kan ni flytta från Örebro till Mälardalen?","Ja, vi kör regelbundet mellan Örebro och orter som Kungsör, Arboga, Eskilstuna och Västerås.")]),
  dict(slug="eskilstuna", name="Eskilstuna", lan="Södermanlands län",
   title="Flyttfirma i Eskilstuna – flytthjälp & flyttstäd | FX Flytt",
-  desc="Flyttfirma i Eskilstuna. FX Flytt hjälper dig med bohagsflytt, packning, montering, flyttstäd och bortforsling i Eskilstuna och Torshälla. Gratis offert, RUT-avdrag direkt.",
+  desc="Flyttfirma i Eskilstuna och Torshälla: flytt, packning och flyttstäd till fast pris. Se priset direkt – RUT-avdrag dras på fakturan.",
   h1="Flyttfirma i <span>Eskilstuna</span>",
   lead="Eskilstuna ligger nära vår bas i Kungsör. Vi hjälper dig med hela flytten – från första kartongen till nycklarna i nya hemmet.",
   intro=["Eskilstuna har allt från höghusområden till villakvarter och Torshälla med sina äldre hus. Vi anpassar bemanning och tid efter hur din bostad ser ut, och berättar i offerten vad som ingår.",
@@ -92,7 +92,7 @@ CITIES = [
        ("Kan jag boka flyttstäd i Eskilstuna utan flytt?","Ja, flyttstäd kan bokas separat. RUT-avdraget dras direkt på fakturan.")]),
  dict(slug="vasteras", name="Västerås", lan="Västmanlands län",
   title="Flyttfirma i Västerås – bohagsflytt & flyttstäd | FX Flytt",
-  desc="Flyttfirma i Västerås. FX Flytt hjälper dig med flytt av lägenhet, villa och kontor, packning, montering, flyttstäd och bortforsling. Gratis offert, RUT-avdrag direkt.",
+  desc="Flyttfirma i Västerås för lägenhet, villa och kontor. Flytt, packning och flyttstäd till fast pris – se priset direkt, RUT-avdrag på fakturan.",
   h1="Flyttfirma i <span>Västerås</span>",
   lead="Ska du flytta i Västerås eller till Västerås? Vi planerar flytten tillsammans med dig och ger dig ett tydligt pris innan vi börjar.",
   intro=["Västerås är en stor stad med många olika boendeformer – från lägenheter i centrum till villor i ytterområdena. Vi frågar om våning, hiss och bärsträcka för att kunna skicka rätt antal flyttare och rätt bil.",
@@ -104,7 +104,7 @@ CITIES = [
        ("Ingår packmaterial?","Vid packning per timme ingår material. Kartonger kan du köpa (50 st, 2 000 kr) eller hyra (50 st, 750 kr) – leverans ingår.")]),
  dict(slug="katrineholm", name="Katrineholm", lan="Södermanlands län",
   title="Flyttfirma i Katrineholm – flytt & flyttstäd | FX Flytt",
-  desc="Flyttfirma i Katrineholm. FX Flytt hjälper dig med bohagsflytt, packning, montering, flyttstäd och bortforsling i Katrineholm med omnejd. Gratis offert, RUT-avdrag direkt.",
+  desc="Flyttfirma i Katrineholm med omnejd: flytt, packning, montering och flyttstäd till fast pris. Se priset direkt – RUT-avdrag på fakturan.",
   h1="Flyttfirma i <span>Katrineholm</span>",
   lead="Vi hjälper dig att flytta i Katrineholm och omnejd – med tydligt pris, en fast kontaktperson och hjälp med allt från packning till flyttstäd.",
   intro=["Katrineholm har både stadskärna och landsbygd med mindre orter runt omkring. Flyttar du till eller från landet planerar vi tid och fordon efter vägar och infarter, så att allt går smidigt på flyttdagen.",
@@ -122,6 +122,25 @@ CITIES += EXTRA
 TRUCK = open("art_truck.svg", encoding="utf-8").read().strip()
 
 from photo import photo
+import subprocess
+EX = json.loads(subprocess.check_output(["node", "price_examples.mjs"]))
+def kr(n): return f"{n:,}".replace(",", " ") + " kr"
+def price_examples(c):
+    rows = "".join(f"<tr><th scope='row'>{e['m2']} m²</th><td>{kr(e['bas'])}</td><td>{kr(e['stad'])}</td><td><b>{kr(e['premium'])}</b></td></tr>" for e in EX)
+    return f"""
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2 style="font-size:1.5rem;margin-bottom:6px">Exempelpriser för flytt i {c["name"]}</h2>
+    <p style="color:var(--muted);margin-bottom:14px">Fasta priser för en flytt inom {c["name"]} (under 15 km mellan adresserna), inkl. moms efter RUT-avdrag.</p>
+    <div class="cmp-scroll"><table class="cmp ex">
+      <thead><tr><th>Boyta</th><th>Flytt (Bas)</th><th>Flyttstäd</th><th class="hot">Flytt + städ (Premium −10 %)</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table></div>
+    <p class="cmp-note">Flyttar du längre, till exempel från {c["name"]} till en annan ort, tillkommer 12 kr/km när avståndet är 15 km eller mer. Våning och hiss påverkar inte priset. <a href="index.html#prisraknare">Räkna ut exakt pris</a></p>
+  </div>
+</section>
+"""
+
 def CITY_PHOTO(c):
     i = [x["slug"] for x in CITIES].index(c["slug"])
     if i % 2 == 0:
@@ -134,13 +153,14 @@ def city_page(c):
     faq = "".join(f"<details{' open' if i==0 else ''}><summary>{html.escape(q)}</summary><p>{html.escape(a)}</p></details>"
                   for i,(q,a) in enumerate(c["faq"]))
     ld = {
-      "@context":"https://schema.org","@type":"MovingCompany","name":"FX Flytt","legalName":"FX Flytt AB",
-      "telephone":"+46763000723","email":"info@fxflytt.se",
-      "address":{"@type":"PostalAddress","streetAddress":"Frejgatan 9B","addressLocality":"Kungsör","addressCountry":"SE"},
+      "@context":"https://schema.org","@type":"MovingCompany","@id":"https://www.fxflytt.se/#foretag","name":"FX Flytt","legalName":"FX Flytt AB",
+      "url":"https://www.fxflytt.se/","telephone":"+46763000723","email":"info@fxflytt.se","priceRange":"2 000–14 700 kr",
+      "address":{"@type":"PostalAddress","streetAddress":"Frejgatan 9B","postalCode":"736 30","addressLocality":"Kungsör","addressCountry":"SE"},
+      "openingHoursSpecification":[
+        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"07:00","closes":"19:00"},
+        {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"09:00","closes":"17:00"}],
       "areaServed":{"@type":"City","name":c["name"]},
-      "openingHoursSpecification":[]  # filled when opening hours are confirmed
     }
-    ld.pop("openingHoursSpecification")
     ld_faq = {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
         {"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}} for q,a in c["faq"]]}
     return f"""<!DOCTYPE html>
@@ -200,6 +220,7 @@ def city_page(c):
   </div>
 </section>
 
+{price_examples(c)}
 <section style="background:#fff">
   <div class="wrap">
     <div class="center">

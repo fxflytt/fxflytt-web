@@ -12,7 +12,7 @@ def C(slug, name, lan, desc, lead, intro, areas, tips, faq, far=False):
 
 EXTRA = [
  C("karlstad", "Karlstad", "Värmlands län",
-   "Flyttfirma i Karlstad. FX Flytt hjälper dig med bohagsflytt, packning, montering och flyttstäd i Karlstad och Värmland. Gratis offert, RUT-avdrag direkt på fakturan.",
+   "Flyttfirma i Karlstad och Värmland: flytt, packning, montering och flyttstäd till fast pris. Se priset direkt – RUT-avdrag på fakturan.",
    "Ska du flytta i Karlstad eller till Värmland? Vi planerar flytten med dig och ger ett tydligt pris innan vi börjar.",
    ["Karlstad ligger vid Vänern och har allt från lägenheter i centrum till villaområden och studentbostäder nära universitetet. Vi frågar alltid om våning, hiss och bärsträcka, så att rätt antal flyttare och rätt bil kommer på flyttdagen.",
     "Vi hjälper både dig som flyttar inom Karlstad och dig som flyttar mellan Värmland och Mälardalen eller Örebro län – en sträcka vi kör regelbundet."],

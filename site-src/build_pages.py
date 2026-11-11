@@ -174,7 +174,7 @@ rows = "".join(f'''<div class="svc-row">{ico(i)}<div><h3>{t}</h3><p>{p}</p><ul>{
 <a href="{"flyttstad.html" if t=="Flyttstäd" else "index.html#offert"}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t=="Flyttstäd" else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
 tjanster = page("tjanster.html",
  "Tjänster – flytt, packning, flyttstäd & bortforsling | FX Flytt",
- "FX Flytt hjälper dig med bohagsflytt, kontorsflytt, packning, montering, pianoflytt, flyttstäd och bortforsling. Gratis offert och RUT-avdrag direkt på fakturan.",
+ "Bohagsflytt, kontorsflytt, packning, montering, pianoflytt, flyttstäd och bortforsling – fasta priser och RUT-avdrag direkt på fakturan.",
  "Vår tjänst", "Allt för din flytt – <span>från en och samma firma</span>",
  "Boka bara det du behöver, eller låt oss ta hand om hela flytten. Du får en fast kontaktperson och ett tydligt pris innan vi börjar.",
  f"""
