@@ -17,7 +17,7 @@ for f in pages:
              f'<meta property="og:image" content="{BASE}/og-image.png">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
              '<meta property="og:image:alt" content="FX Flytt – Flytt Express">\n<meta name="twitter:card" content="summary_large_image">\n')
     if f.endswith("index.html"):
-        ld = {"@context": "https://schema.org", "@type": "MovingCompany", "name": "FX Flytt AB",
+        ld = {"@context": "https://schema.org", "@type": "MovingCompany", "name": "FX Flytt", "legalName": "FX Flytt AB",
               "url": BASE + "/", "logo": BASE + "/icon-512.png", "image": BASE + "/og-image.png", "telephone": "+46763000723",
               "address": {"@type": "PostalAddress", "streetAddress": "Frejgatan 9B", "postalCode": "736 30",
                           "addressLocality": "Kungsör", "addressCountry": "SE"},

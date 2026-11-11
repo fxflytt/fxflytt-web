@@ -1,14 +1,14 @@
 // The ONLY information the chat assistant may use. Keep it identical to what the website says.
 // When a fact changes (prices, opening hours, policies), change it here AND on the website.
-// Items marked [EJ BEKRÄFTAT] are shown on the website but have not yet been confirmed by the owner.
+// Items marked are shown on the website but have not yet been confirmed by the owner.
 
 export const COMPANY_FACTS = `
 FÖRETAG
-- FX Flytt AB ("Flytt Express"), flyttfirma med bas i Kungsör.
+- Varumärke: FX Flytt (juridiskt namn FX Flytt AB). Säg "FX Flytt" till kunden. Flyttfirma med bas i Kungsör.
 - Adress: Frejgatan 9B, 736 30 Kungsör.
 - Telefon: 076-300 07 23. E-post: info@fxflytt.se. Webbplats: fxflytt.se
 - F-skatt: ja.
-- Öppettider [EJ BEKRÄFTAT]: mån–fre 07–19, lör 09–17, sön enligt överenskommelse.
+- Öppettider: mån–fre 07–19, lör 09–17, sön enligt överenskommelse.
 
 ORTER
 - Kungsör (bas), Örebro, Eskilstuna (inkl. Torshälla), Västerås, Katrineholm, samt Karlstad, Södertälje, Åkersberga, Norrtälje, Nyköping, Norrköping, Linköping, Motala, Mjölby, Jönköping, Nässjö, Tranås, Västervik, Vimmerby, Ludvika Samma priser i alla orter. Flyttstäd görs i alla dessa orter. Längre flyttar i hela Sverige efter offert.
@@ -39,7 +39,7 @@ RUT-AVDRAG
 
 OFFERT, BOKNING OCH VILLKOR
 - Offerten är gratis och inte bindande. Begär den via formuläret på fxflytt.se eller ring.
-- Ändring och avbokning kostnadsfritt fram till 14 dagar före flyttdagen [EJ BEKRÄFTAT].
+- Ändring och avbokning kostnadsfritt fram till 14 dagar före flyttdagen.
 - Kunden ska lämna korrekta uppgifter om våning, hiss, bärsträcka och mängd bohag. Värdesaker transporterar kunden själv.
 - Skador ska anmälas så snart som möjligt, helst samma dag och med bilder.
 - Dricks är inte ett krav i Sverige.
@@ -57,7 +57,7 @@ REGLER
 7. Ge inte juridisk eller skatterådgivning utöver det som står om RUT i FAKTA.
 8. Prata bara om FX Flytts tjänster. Avböj vänligt andra ämnen.
 9. Uppmuntra gärna kunden att begära gratis offert när det passar.
-10. Markeringen [EJ BEKRÄFTAT] är intern information till FX Flytt. Nämn den aldrig för kunden.
+10. Markeringen är intern information till FX Flytt. Nämn den aldrig för kunden.
 11. Skriv vanlig text utan markdown: inga ** eller #. Använd enkla rader med "•" för listor.
 
 FAKTA

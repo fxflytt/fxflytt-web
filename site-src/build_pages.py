@@ -311,10 +311,10 @@ paket = page("paket.html",
 
 # ---------------------------------------------------------------- Om oss
 om = page("om-oss.html",
- "Om oss – FX Flytt AB, flyttfirma i Kungsör",
- "FX Flytt AB är en flyttfirma med bas i Kungsör som hjälper privatpersoner och företag i Mälardalen och Örebro län med flytt, flyttstäd och bortforsling.",
+ "Om oss – FX Flytt, flyttfirma i Kungsör",
+ "FX Flytt är en flyttfirma med bas i Kungsör som hjälper privatpersoner och företag i Mälardalen och Örebro län med flytt, flyttstäd och bortforsling.",
  "Om oss", "Om <span>FX Flytt</span>",
- "FX Flytt – Flytt Express – är en flyttfirma med bas i Kungsör. Vi gör flytten enkel, trygg och tydlig.",
+ "FX Flytt är en flyttfirma med bas i Kungsör. Vi gör flytten enkel, trygg och tydlig.",
  f"""
 <section style="background:#fff">
   <div class="wrap about">
@@ -322,7 +322,7 @@ om = page("om-oss.html",
       {photo("movers-truck", "Flyttare från FX Flytt bär kartonger till flyttbilen", "margin-bottom:26px", "center", "2576/1093", "(max-width: 900px) 100vw, 560px")}
       <span class="eyebrow">Vilka vi är</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
-      <p>FX Flytt AB hjälper privatpersoner och företag i Mälardalen och Örebro län med flytt, flyttstäd, packning och bortforsling.</p>
+      <p>FX Flytt hjälper privatpersoner och företag i Mälardalen och Örebro län med flytt, flyttstäd, packning och bortforsling.</p>
       <p>Vi tror på enkla priser, tydlig kommunikation och att göra det vi lovar. Därför får du en fast kontaktperson som följer din flytt från första samtalet till sista kartongen.</p>
     </div>
     <div class="vals">
@@ -348,7 +348,7 @@ om = page("om-oss.html",
   <div class="wrap contact-grid">
     <div>
       <span class="eyebrow">Företagsuppgifter</span>
-      <h2>FX Flytt AB</h2>
+      <h2>FX Flytt</h2>
       <div class="facts" style="margin-top:20px">
         <div><span>Företag</span><b>FX Flytt AB</b></div>
         <div><span>Adress</span><b>Frejgatan 9B, Kungsör</b></div>
@@ -492,7 +492,7 @@ radgivare = page("radgivare.html",
 
 # ---------------------------------------------------------------- Integritetspolicy
 integritet = page("integritetspolicy.html",
- "Integritetspolicy | FX Flytt AB",
+ "Integritetspolicy | FX Flytt",
  "Så behandlar FX Flytt AB dina personuppgifter enligt dataskyddsförordningen (GDPR).",
  "Integritetspolicy", "Integritetspolicy",
  "Här beskriver vi vilka personuppgifter vi samlar in, varför, hur länge vi sparar dem och vilka rättigheter du har.",
@@ -545,7 +545,7 @@ integritet = page("integritetspolicy.html",
 
 # ---------------------------------------------------------------- Villkor
 villkor = page("villkor.html",
- "Villkor för offert och bokning | FX Flytt AB",
+ "Villkor för offert och bokning | FX Flytt",
  "Villkor för offerter och bokningar hos FX Flytt AB: priser, RUT-avdrag, ändring och avbokning.",
  "Villkor", "Villkor för offert och bokning",
  "Här är de viktigaste villkoren när du begär offert och bokar flytt eller flyttstäd hos FX Flytt AB.",

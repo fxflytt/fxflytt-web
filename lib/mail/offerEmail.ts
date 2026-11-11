@@ -93,11 +93,11 @@ export function offerEmail(d: OfferData, sentAt: Date) {
   ${priceBlock}
   ${section("Kund", rows([["Namn", d.name], ["Telefon", d.phone], ["E-post", d.email]]))}
   ${section("Flytten", rows([
-    ["Från", d.from], ["Till", d.to], ["Avstånd", d.distanceKm ? `ca ${d.distanceKm} km` : undefined],
+    ["Tjänst", d.size], ["Från", d.from], ["Till", d.to], ["Avstånd", d.distanceKm ? `ca ${d.distanceKm} km` : undefined],
     ["Önskat datum", fmtDate(d.date)], ["Datumtyp", d.dateType],
   ]))}
   ${section("Bostaden", rows([
-    ["Boyta", [d.areaM2 ? d.areaM2 + " m²" : "", d.size].filter(Boolean).join(" · ")], ["Bostad", d.home],
+    ["Boyta", d.areaM2 ? d.areaM2 + " m²" : undefined], ["Bostad", d.home],
     ["Våning (från)", d.floorFrom], ["Våning (till)", d.floorTo],
     ["Tillval", d.extras?.length ? d.extras.join(", ") : undefined],
     ["Volym", d.volume ? `${String(d.volume.m3).replace(".", ",")} m³ · ${d.volume.items} föremål` : undefined],
@@ -118,11 +118,68 @@ export function offerEmail(d: OfferData, sentAt: Date) {
     t("Namn", d.name) + t("Telefon", d.phone) + t("E-post", d.email) + "\n" +
     t("Från", d.from) + t("Till", d.to) + t("Avstånd", d.distanceKm ? `ca ${d.distanceKm} km` : "") +
     t("Önskat datum", fmtDate(d.date)) + t("Datumtyp", d.dateType) + "\n" +
-    t("Boyta", [d.areaM2 ? d.areaM2 + " m²" : "", d.size].filter(Boolean).join(" · ")) + t("Bostad", d.home) +
+    t("Tjänst", d.size) + t("Boyta", d.areaM2 ? d.areaM2 + " m²" : "") + t("Bostad", d.home) +
     t("Våning (från)", d.floorFrom) + t("Våning (till)", d.floorTo) + t("Tillval", d.extras?.join(", ")) +
     (d.price ? `\nPris efter RUT: ${kr(d.price.total)}\n` + d.price.lines.map((l) => `  ${l.label}: ${kr(l.amount)}`).join("\n") + "\n" : "") +
     (d.message ? `\nMeddelande:\n${d.message}\n` : "") +
     "\n— Skickat från fxflytt.se";
 
+  return { subject, html, text };
+}
+
+// Automatic confirmation sent to the customer (only when they gave an e-mail address).
+export function customerConfirmation(d: OfferData) {
+  const first = (d.name.split(/\s+/)[0] || "").slice(0, 40);
+  const subject = "Tack! Vi har tagit emot din förfrågan – FX Flytt";
+  const summary = rows([
+    ["Tjänst", d.size], ["Från", d.from], ["Till", d.to],
+    ["Boyta", d.areaM2 ? d.areaM2 + " m²" : undefined], ["Önskat datum", fmtDate(d.date)],
+  ]);
+  const price = d.price ? `
+  <tr><td style="padding:0 28px 22px">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${BG};border-radius:12px;border:1px solid ${LINE}">
+      <tr><td style="padding:16px 18px">
+        <div style="color:${MUTED};font-size:13px">Ditt pris enligt prisräknaren · efter RUT, inkl. moms</div>
+        <div style="color:${NAVY};font-size:26px;font-weight:800;margin:4px 0 8px">${esc(kr(d.price.total))}</div>
+        ${d.price.lines.map((l) => `<div style="color:${INK};font-size:13px;line-height:20px">${esc(l.label)} <span style="float:right">${esc(kr(l.amount))}</span></div>`).join("")}
+        <div style="color:${MUTED};font-size:12px;margin-top:10px">Priset bygger på uppgifterna du lämnat. Det slutliga priset står i din bokningsbekräftelse.</div>
+      </td></tr>
+    </table>
+  </td></tr>` : "";
+  const step = (n: string, t: string) =>
+    `<tr><td style="padding:6px 0;vertical-align:top;width:34px"><span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:${ACCENT};color:#fff;font-size:13px;font-weight:800">${n}</span></td><td style="padding:8px 0;font-size:14px;color:${INK};line-height:20px">${t}</td></tr>`;
+
+  const html = `<!DOCTYPE html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head>
+<body style="margin:0;padding:0;background:${BG};font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${BG}"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid ${LINE}">
+  <tr><td style="background:${NAVY};padding:20px 28px">
+    <span style="display:inline-block;background:#fff;color:${NAVY};font-weight:900;font-style:italic;font-size:18px;padding:6px 10px;border-radius:8px;border-left:4px solid ${ACCENT}">FX</span>
+    <span style="color:#fff;font-size:18px;font-weight:800;margin-left:10px;vertical-align:middle">FX Flytt</span>
+  </td></tr>
+  <tr><td style="padding:28px 28px 8px">
+    <h1 style="margin:0 0 8px;font-size:24px;color:${INK}">Tack${first ? " " + esc(first) : ""}!</h1>
+    <p style="margin:0;color:${MUTED};font-size:15px;line-height:22px">Vi har tagit emot din förfrågan och återkommer inom 24 timmar – oftast samma dag.</p>
+  </td></tr>
+  ${price}
+  ${section("Din förfrågan", summary)}
+  ${section("Så går det till", step("1", "Vi går igenom dina uppgifter och ringer eller mejlar dig.") + step("2", "Du får en bokningsbekräftelse med fast pris och datum.") + step("3", "Vi flyttar – och RUT-avdraget dras direkt på fakturan."))}
+  <tr><td style="padding:0 28px 24px">
+    <a href="tel:+46763000723" style="display:inline-block;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;background:${ACCENT};color:#fff">Ring oss: 076-300 07 23</a>
+  </td></tr>
+  <tr><td style="padding:16px 28px 22px;border-top:1px solid ${LINE};color:${MUTED};font-size:12px;line-height:18px">
+    Du kan ändra datum eller avboka kostnadsfritt fram till 14 dagar före flyttdagen. Har du frågor? Svara bara på det här mejlet.<br>
+    <a href="https://www.fxflytt.se/villkor" style="color:${NAVY}">Villkor</a> · <a href="https://www.fxflytt.se/integritetspolicy" style="color:${NAVY}">Integritetspolicy</a>
+  </td></tr>
+</table>
+<div style="color:#9aa8b4;font-size:11px;padding:14px">FX Flytt AB · Frejgatan 9B, 736 30 Kungsör · 076-300 07 23 · info@fxflytt.se</div>
+</td></tr></table></body></html>`;
+
+  const text =
+    `Tack${first ? " " + first : ""}!\n\nVi har tagit emot din förfrågan och återkommer inom 24 timmar – oftast samma dag.\n\n` +
+    (d.size ? `Tjänst: ${d.size}\n` : "") + (d.from ? `Från: ${d.from}\n` : "") + (d.to ? `Till: ${d.to}\n` : "") +
+    (d.areaM2 ? `Boyta: ${d.areaM2} m²\n` : "") + (d.date ? `Önskat datum: ${fmtDate(d.date)}\n` : "") +
+    (d.price ? `\nPris enligt prisräknaren (efter RUT): ${kr(d.price.total)}\nDet slutliga priset står i din bokningsbekräftelse.\n` : "") +
+    `\nFrågor? Ring 076-300 07 23 eller svara på det här mejlet.\n\nVänliga hälsningar\nFX Flytt\nFrejgatan 9B, 736 30 Kungsör`;
   return { subject, html, text };
 }

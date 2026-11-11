@@ -59,11 +59,11 @@ CITIES = [
   desc="Flyttfirma med bas i Kungsör. FX Flytt hjälper dig med bohagsflytt, packning, flyttstäd och bortforsling i Kungsör och Valskog. Gratis offert, RUT-avdrag på fakturan.",
   h1="Flyttfirma i <span>Kungsör</span> – här finns vi",
   lead="Kungsör är vår hemmabas. Härifrån planerar vi och kör ut till hela Mälardalen – och när du flyttar inom kommunen har vi nära till dig.",
-  intro=["FX Flytt AB har sitt kontor på Frejgatan i Kungsör. Det betyder korta avstånd när du flyttar inom orten, och att du kan nå oss på telefon eller komma förbi och prata om din flytt.",
+  intro=["FX Flytt har sitt kontor på Frejgatan i Kungsör. Det betyder korta avstånd när du flyttar inom orten, och att du kan nå oss på telefon eller komma förbi och prata om din flytt.",
          "Vi hjälper både dig som flyttar inom Kungsör och dig som flyttar härifrån till exempelvis Eskilstuna, Arboga, Köping eller Västerås – eller åt andra hållet. Vi tar hand om bärhjälp, lastbil, packning, montering och flyttstäd, så att du kan fokusera på det nya hemmet."],
   areas=["Kungsör centrum","Valskog","Kungsörs landsbygd","Mot Arboga","Mot Köping","Mot Eskilstuna"],
   tips=["Prata med hyresvärden eller föreningen i god tid om hiss och nycklar.","Tänk på var lastbilen kan stå nära porten – säg till oss om det är långt att bära.","Bor du på landet? Berätta om grusväg eller smal infart så planerar vi rätt bil."],
-  faq=[("Har ni kontor i Kungsör?","Ja, FX Flytt AB finns på Frejgatan 9B i Kungsör. Ring gärna innan du kommer förbi så att någon är på plats."),
+  faq=[("Har ni kontor i Kungsör?","Ja, FX Flytt finns på Frejgatan 9B i Kungsör. Ring gärna innan du kommer förbi så att någon är på plats."),
        ("Flyttar ni från Kungsör till andra orter?","Ja. Vi flyttar dagligen i Mälardalen och Örebro län, och även längre sträckor i hela Sverige."),
        ("Hjälper ni till med flyttstäd i Kungsör?","Ja, flyttstäd kan bokas tillsammans med flytten eller separat. RUT-avdraget dras direkt på fakturan.")]),
  dict(slug="orebro", name="Örebro", lan="Örebro län",
@@ -134,7 +134,7 @@ def city_page(c):
     faq = "".join(f"<details{' open' if i==0 else ''}><summary>{html.escape(q)}</summary><p>{html.escape(a)}</p></details>"
                   for i,(q,a) in enumerate(c["faq"]))
     ld = {
-      "@context":"https://schema.org","@type":"MovingCompany","name":"FX Flytt AB",
+      "@context":"https://schema.org","@type":"MovingCompany","name":"FX Flytt","legalName":"FX Flytt AB",
       "telephone":"+46763000723","email":"info@fxflytt.se",
       "address":{"@type":"PostalAddress","streetAddress":"Frejgatan 9B","addressLocality":"Kungsör","addressCountry":"SE"},
       "areaServed":{"@type":"City","name":c["name"]},

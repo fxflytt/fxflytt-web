@@ -1,7 +1,7 @@
 // POST /api/offer – sends the customer's quote request as an e-mail to the company inbox.
 // Needs SMTP_USER and SMTP_PASS in the Vercel environment (never in the code).
 import { sendMail } from "@/lib/mail/smtp.ts";
-import { offerEmail, type OfferData } from "@/lib/mail/offerEmail.ts";
+import { offerEmail, customerConfirmation, type OfferData } from "@/lib/mail/offerEmail.ts";
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 
 export const runtime = "nodejs";
@@ -56,12 +56,27 @@ export async function POST(req: Request) {
       { from: user, to: TO, replyTo: data.email || undefined, subject: mail.subject, text: mail.text, html: mail.html },
     );
     lastError = "";
-    return Response.json({ ok: true });
   } catch (e) {
     lastError = (e as Error).message;
     console.error("offer mail failed", lastError);
     return Response.json({ error: "send-failed" }, { status: 502 });
   }
+  // Confirmation to the customer. A failure here must not fail the request – we already have it.
+  let confirmed = false;
+  if (data.email) {
+    try {
+      const c = customerConfirmation(data);
+      await sendMail(
+        { host: process.env.SMTP_HOST || "mail.inleed.com", port: Number(process.env.SMTP_PORT || 465), user, pass },
+        { from: user, to: data.email, replyTo: TO, subject: c.subject, text: c.text, html: c.html },
+      );
+      confirmed = true;
+    } catch (e) {
+      lastError = "confirmation: " + (e as Error).message;
+      console.error("confirmation mail failed", lastError);
+    }
+  }
+  return Response.json({ ok: true, confirmed });
 }
 
 export async function GET() {

@@ -122,6 +122,18 @@ textarea{min-height:80px;resize:vertical}
 .pk ul{list-style:none;display:grid;gap:10px;margin-bottom:24px;flex:1}
 .pk li{display:flex;gap:10px;font-size:.93rem}
 .pk li svg{flex:none;width:20px;height:20px;color:var(--green);margin-top:1px}
+.cmp-wrap{margin-top:44px}.cmp-h{font-size:1.3rem;margin-bottom:14px}
+.cmp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:14px}
+.cmp{width:100%;border-collapse:collapse;min-width:560px;font-size:.93rem}
+.cmp th,.cmp td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+.cmp th[scope=row]{text-align:left;font-weight:500;color:var(--ink)}
+.cmp thead th{background:var(--bg);font-weight:800;color:var(--navy)}
+.cmp thead th.hot{background:var(--navy);color:#fff}
+.cmp tbody tr:last-child th,.cmp tbody tr:last-child td{border-bottom:0;background:#fff7f0}
+.cmp td.y{color:var(--green);font-weight:800}.cmp td.n{color:#b5c0c9}
+.cmp small{display:block;font-weight:500;color:var(--muted);font-size:.78rem}
+.cmp-note{font-size:.85rem;color:var(--muted);margin-top:12px}
+@media(max-width:600px){.cmp{min-width:0;font-size:.78rem}.cmp th,.cmp td{padding:9px 5px}.cmp th[scope=row]{width:38%;padding-left:10px}.cmp small{display:none}}
 .pk li.no{color:#9aa7b2}.pk li.no svg{color:#c3ccd4}
 
 /* Prices */
@@ -202,6 +214,8 @@ footer .logo{color:#fff}
 
 /* Mobile call bar */
 .mbar{display:none}
+.nav-cta{padding:11px 20px;margin-left:8px;white-space:nowrap}
+@media(max-width:900px){.nav-cta{display:none}}
 @media(max-width:900px){
   section{padding:60px 0}
   .hero{padding:40px 0 60px}
@@ -255,6 +269,8 @@ footer .logo{color:#fff}
 .drawer .d-cta{padding:22px 24px;display:grid;gap:10px;margin-top:auto}
 body.noscroll{overflow:hidden}
 body.noscroll .mbar{display:none}
+.nav-cta{padding:11px 20px;margin-left:8px;white-space:nowrap}
+@media(max-width:900px){.nav-cta{display:none}}
 .menu a.on{color:var(--accent-d)}
 .drawer a.item.on{color:var(--accent-d)}
 @media(max-width:900px){.burger{display:flex}.nav{gap:8px}.logo{margin-right:auto}}
@@ -337,7 +353,7 @@ body.noscroll .mbar{display:none}
 .other a{text-decoration:none}
 @media(max-width:900px){.two{grid-template-columns:1fr}.side{position:static}}
 </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "MovingCompany", "name": "FX Flytt AB", "telephone": "+46763000723", "email": "info@fxflytt.se", "address": {"@type": "PostalAddress", "streetAddress": "Frejgatan 9B", "addressLocality": "Kungsör", "addressCountry": "SE"}, "areaServed": {"@type": "City", "name": "Nässjö"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "MovingCompany", "name": "FX Flytt", "legalName": "FX Flytt AB", "telephone": "+46763000723", "email": "info@fxflytt.se", "address": {"@type": "PostalAddress", "streetAddress": "Frejgatan 9B", "addressLocality": "Kungsör", "addressCountry": "SE"}, "areaServed": {"@type": "City", "name": "Nässjö"}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Flyttar ni ut till Bodafors och Forserum?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, hela Nässjö kommun ingår."}}, {"@type": "Question", "name": "Kan ni flytta till Jönköping?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, och även längre sträckor."}}, {"@type": "Question", "name": "Hur bokar jag?", "acceptedAnswer": {"@type": "Answer", "text": "Fyll i formuläret eller ring oss."}}, {"@type": "Question", "name": "Är det dyrare att anlita er i Nässjö?", "acceptedAnswer": {"@type": "Answer", "text": "Nej, du betalar samma fasta pris som i alla våra orter. Är avståndet mellan din gamla och nya adress 15 km eller mer tillkommer 12 kr per km."}}]}</script>
 </head>
 <body>
@@ -364,7 +380,7 @@ body.noscroll .mbar{display:none}
 <header>
   <div class="wrap nav">
     <button class="burger" id="burger" aria-label="Meny" aria-expanded="false"><span></span><span></span><span></span></button>
-    <a href="index.html" class="logo" aria-label="FX Flytt AB">
+    <a href="index.html" class="logo" aria-label="FX Flytt – till startsidan">
       <div class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="28" fill="#0d2a3f"/><rect x="12" y="43" width="24" height="8" rx="4" fill="#ff7a1a"/><rect x="6" y="57" width="32" height="8" rx="4" fill="#ff7a1a"/><rect x="16" y="71" width="20" height="8" rx="4" fill="#ff7a1a"/><path transform="translate(40 78)" d="M2.60546875 0.0H10.5341796875L13.09068359375 -12.173828125H26.45494140625L27.785078125 -18.5078125H14.4208203125L16.20376953125 -26.998046875H31.02798828125L32.38642578125 -33.466796875H9.63349609375ZM27.03125 0.0H36.2177734375L41.897021484375 -6.4013671875C43.93265625 -8.71484375 44.758320312500004 -9.97265625 45.828583984375 -11.4326171875C46.285664062500004 -9.97265625 46.6055078125 -8.71484375 47.602099609375 -6.4013671875L50.435546875 0.0H59.8466796875L51.67359375 -17.33984375L65.72919921875 -33.466796875H56.78974609375L52.481064453125 -28.4580078125C50.626240234375004 -26.2568359375 49.462763671874995 -24.4599609375 48.318154296875 -22.7529296875C47.890498046874995 -24.4599609375 47.504169921875004 -26.2568359375 46.573837890625 -28.4580078125L44.43623046875 -33.466796875H35.24970703125L42.66451171875 -17.115234375Z" fill="#ffffff"/></svg></div>
       <div>FX Flytt<small>Flytt Express</small></div>
     </a>
@@ -376,6 +392,7 @@ body.noscroll .mbar{display:none}
       <li><a href="radgivare.html">Rådgivare</a></li>
     </ul>
     <a href="tel:+46763000723" class="btn btn-phone"><svg width="18" height="18"><use href="#i-phone"/></svg><span class="txt">076-300 07 23</span></a>
+    <a href="index.html#offert" class="btn btn-accent nav-cta">Få offert</a>
   </div>
 </header>
 <nav class="drawer" id="drawer" aria-label="Meny">
@@ -483,7 +500,7 @@ body.noscroll .mbar{display:none}
 </footer>
 <div class="mbar">
   <a href="tel:+46763000723" class="btn btn-phone"><svg width="18" height="18"><use href="#i-phone"/></svg>Ring oss</a>
-  <a href="index.html#offert" class="btn btn-accent">Gratis offert</a>
+  <a href="index.html#offert" class="btn btn-accent">Få offert</a>
 </div>
 
 <script>
