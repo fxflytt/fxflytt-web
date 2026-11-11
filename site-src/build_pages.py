@@ -353,7 +353,7 @@ om = page("om-oss.html",
         <div><span>Företag</span><b>FX Flytt AB</b></div>
         <div><span>Adress</span><b>Frejgatan 9B, Kungsör</b></div>
         <div><span>Telefon</span><b><a href="tel:+46763000723" style="text-decoration:none">076-300 07 23</a></b></div>
-        <div><span>E-post</span><b style="word-break:break-all">Ammar.alahmad94@hotmail.com</b></div>
+        <div><span>E-post</span><b style="word-break:break-all">info@fxflytt.se</b></div>
         <div><span>F-skatt</span><b>Ja</b></div>
       </div>
     </div>
@@ -502,7 +502,7 @@ integritet = page("integritetspolicy.html",
     <p class="upd">Senast uppdaterad: 2026-11-10</p>
 
     <h2>1. Personuppgiftsansvarig</h2>
-    <p>FX Flytt AB, Frejgatan 9B, Kungsör, är personuppgiftsansvarig för behandlingen av dina personuppgifter. Kontakt: Ammar.alahmad94@hotmail.com, telefon 076-300 07 23.</p>
+    <p>FX Flytt AB, Frejgatan 9B, Kungsör, är personuppgiftsansvarig för behandlingen av dina personuppgifter. Kontakt: info@fxflytt.se, telefon 076-300 07 23.</p>
 
     <h2>2. Vilka uppgifter vi samlar in</h2>
     <ul>
@@ -581,7 +581,7 @@ villkor = page("villkor.html",
     <p>Kontrollera ditt gods när flytten är klar. Upptäcker du en skada ska du meddela oss så snart som möjligt, helst samma dag och med bilder.</p>
 
     <h2>7. Kontakt</h2>
-    <p>FX Flytt AB, Frejgatan 9B, Kungsör · 076-300 07 23 · Ammar.alahmad94@hotmail.com</p>
+    <p>FX Flytt AB, Frejgatan 9B, Kungsör · 076-300 07 23 · info@fxflytt.se</p>
   </div>
 </section>""")
 

@@ -6,7 +6,7 @@ export const COMPANY_FACTS = `
 FÖRETAG
 - FX Flytt AB ("Flytt Express"), flyttfirma med bas i Kungsör.
 - Adress: Frejgatan 9B, 736 30 Kungsör.
-- Telefon: 076-300 07 23. E-post: Ammar.alahmad94@hotmail.com. Webbplats: fxflytt.se
+- Telefon: 076-300 07 23. E-post: info@fxflytt.se. Webbplats: fxflytt.se
 - F-skatt: ja.
 - Öppettider [EJ BEKRÄFTAT]: mån–fre 07–19, lör 09–17, sön enligt överenskommelse.
 

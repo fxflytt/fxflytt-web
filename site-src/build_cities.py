@@ -135,7 +135,7 @@ def city_page(c):
                   for i,(q,a) in enumerate(c["faq"]))
     ld = {
       "@context":"https://schema.org","@type":"MovingCompany","name":"FX Flytt AB",
-      "telephone":"+46763000723","email":"Ammar.alahmad94@hotmail.com",
+      "telephone":"+46763000723","email":"info@fxflytt.se",
       "address":{"@type":"PostalAddress","streetAddress":"Frejgatan 9B","addressLocality":"Kungsör","addressCountry":"SE"},
       "areaServed":{"@type":"City","name":c["name"]},
       "openingHoursSpecification":[]  # filled when opening hours are confirmed
