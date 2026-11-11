@@ -8,6 +8,7 @@ for f in *.html; do [ "$f" = "preview.html" ] || cp "$f" ../public/; done
 cp art_*.svg ../public/
 cd ..
 # Chat assistant: this ONE line adds it to every page. Delete the next line to remove the assistant.
+python3 add-prices.py
 python3 add-chat.py
 python3 add-seo.py
 echo "site built"

@@ -110,7 +110,7 @@ textarea{min-height:80px;resize:vertical}
 
 /* Packages */
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;align-items:stretch}
-.pk{background:#fff;border-radius:20px;padding:30px;border:2px solid var(--line);display:flex;flex-direction:column}
+.pk{background:#fff;border-radius:20px;padding:30px;border:2px solid var(--line);display:flex;flex-direction:column;position:relative}
 .pk.hot{border-color:var(--accent);box-shadow:0 20px 40px rgba(255,122,26,.15);position:relative}
 .pk .tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.75rem;font-weight:800;padding:5px 14px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .pk h3{font-size:1.3rem;color:var(--navy)}
@@ -162,6 +162,7 @@ textarea{min-height:80px;resize:vertical}
 .city.home{background:var(--navy);color:#fff;border-color:var(--navy)}
 
 /* FAQ */
+.pk-price{margin:14px 0 4px;color:var(--muted);font-size:.95rem}.pk-price b{color:var(--navy);font-size:1.15rem}
 .faq{max-width:820px;margin:40px auto 0;display:grid;gap:12px}
 details{background:#fff;border-radius:14px;border:1px solid var(--line);padding:0 22px}
 summary{cursor:pointer;list-style:none;font-weight:700;color:var(--navy);padding:18px 0;display:flex;justify-content:space-between;gap:12px}
@@ -339,7 +340,7 @@ body.noscroll .mbar{display:none}
 @media(max-width:900px){.two{grid-template-columns:1fr}.side{position:static}}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "MovingCompany", "name": "FX Flytt AB", "telephone": "+46763000723", "email": "Ammar.alahmad94@hotmail.com", "address": {"@type": "PostalAddress", "streetAddress": "Frejgatan 9B", "addressLocality": "Kungsör", "addressCountry": "SE"}, "areaServed": {"@type": "City", "name": "Ludvika"}}</script>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Flyttar ni mellan Ludvika och Västerås?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, vi kör regelbundet mellan Bergslagen och Mälardalen."}}, {"@type": "Question", "name": "Flyttar ni i Grängesberg?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, orterna i Ludvika kommun ingår."}}, {"@type": "Question", "name": "Ingår montering?", "acceptedAnswer": {"@type": "Answer", "text": "Ned- och montering ingår i Premium och Deluxe."}}, {"@type": "Question", "name": "Är det dyrare att anlita er i Ludvika?", "acceptedAnswer": {"@type": "Answer", "text": "Arbetet kostar samma timpris som överallt. Eftersom vi utgår från Kungsör tillkommer framkörning, och den står tydligt i offerten innan du bokar."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Flyttar ni mellan Ludvika och Västerås?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, vi kör regelbundet mellan Bergslagen och Mälardalen."}}, {"@type": "Question", "name": "Flyttar ni i Grängesberg?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, orterna i Ludvika kommun ingår."}}, {"@type": "Question", "name": "Ingår montering?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, i Deluxe-paketet eller per timme från 595 kr/tim efter RUT."}}, {"@type": "Question", "name": "Är det dyrare att anlita er i Ludvika?", "acceptedAnswer": {"@type": "Answer", "text": "Nej, du betalar samma fasta pris som i alla våra orter. Är avståndet mellan din gamla och nya adress 15 km eller mer tillkommer 12 kr per km."}}]}</script>
 <link rel="canonical" href="https://fxflytt.se/flyttfirma-ludvika">
 <meta property="og:url" content="https://fxflytt.se/flyttfirma-ludvika">
 <meta property="og:site_name" content="FX Flytt">
@@ -464,11 +465,11 @@ body.noscroll .mbar{display:none}
     </div>
     <aside class="side">
       <h3>Priser i Ludvika</h3>
-      <div class="row"><span>2 flyttare + lastbil</span><b>695 kr/tim*</b></div>
-      <div class="row"><span>3 flyttare + lastbil</span><b>945 kr/tim*</b></div>
-      <div class="row"><span>Flyttstäd</span><b>25 kr/m²*</b></div>
-      <p class="small">* Efter RUT-avdrag på arbetskostnaden. Minsta debitering 3 timmar. Körsträcka och tillval enligt offert.</p>
-      <a href="index.html#offert" class="btn btn-accent" style="width:100%">Räkna ut ditt pris</a>
+      <div class="row"><span>Flytt, fast pris</span><b>från 2 800 kr*</b></div>
+      <div class="row"><span>Flytt per timme</span><b>från 595 kr/tim*</b></div>
+      <div class="row"><span>Flyttstäd, fast pris</span><b>från 2 000 kr*</b></div>
+      <p class="small">* Inkl. moms efter RUT-avdrag. Körsträcka 12 kr/km från 15 km mellan adresserna. Per timme minst 3 timmar. Premium −10 %, Deluxe −20 % på flytt och städ.</p>
+      <a href="index.html#prisraknare" class="btn btn-accent" style="width:100%">Räkna ut ditt pris</a>
     </aside>
   </div>
 </section>
@@ -495,7 +496,7 @@ body.noscroll .mbar{display:none}
 <section>
   <div class="wrap">
     <div class="center"><span class="eyebrow">Vanliga frågor</span><h2>Frågor om flytt i Ludvika</h2></div>
-    <div class="faq"><details open><summary>Flyttar ni mellan Ludvika och Västerås?</summary><p>Ja, vi kör regelbundet mellan Bergslagen och Mälardalen.</p></details><details><summary>Flyttar ni i Grängesberg?</summary><p>Ja, orterna i Ludvika kommun ingår.</p></details><details><summary>Ingår montering?</summary><p>Ned- och montering ingår i Premium och Deluxe.</p></details><details><summary>Är det dyrare att anlita er i Ludvika?</summary><p>Arbetet kostar samma timpris som överallt. Eftersom vi utgår från Kungsör tillkommer framkörning, och den står tydligt i offerten innan du bokar.</p></details></div>
+    <div class="faq"><details open><summary>Flyttar ni mellan Ludvika och Västerås?</summary><p>Ja, vi kör regelbundet mellan Bergslagen och Mälardalen.</p></details><details><summary>Flyttar ni i Grängesberg?</summary><p>Ja, orterna i Ludvika kommun ingår.</p></details><details><summary>Ingår montering?</summary><p>Ja, i Deluxe-paketet eller per timme från 595 kr/tim efter RUT.</p></details><details><summary>Är det dyrare att anlita er i Ludvika?</summary><p>Nej, du betalar samma fasta pris som i alla våra orter. Är avståndet mellan din gamla och nya adress 15 km eller mer tillkommer 12 kr per km.</p></details></div>
     <div class="center" style="margin-top:44px">
       <h3 style="color:var(--navy)">Vi flyttar även i</h3>
       <div class="cities"><a class="city" href="flyttfirma-kungsor.html"><svg><use href="#i-pin"/></svg>Kungsör</a><a class="city" href="flyttfirma-orebro.html"><svg><use href="#i-pin"/></svg>Örebro</a><a class="city" href="flyttfirma-eskilstuna.html"><svg><use href="#i-pin"/></svg>Eskilstuna</a><a class="city" href="flyttfirma-vasteras.html"><svg><use href="#i-pin"/></svg>Västerås</a><a class="city" href="flyttfirma-katrineholm.html"><svg><use href="#i-pin"/></svg>Katrineholm</a><a class="city" href="flyttfirma-karlstad.html"><svg><use href="#i-pin"/></svg>Karlstad</a><a class="city" href="flyttfirma-sodertalje.html"><svg><use href="#i-pin"/></svg>Södertälje</a><a class="city" href="flyttfirma-akersberga.html"><svg><use href="#i-pin"/></svg>Åkersberga</a><a class="city" href="flyttfirma-norrtalje.html"><svg><use href="#i-pin"/></svg>Norrtälje</a><a class="city" href="flyttfirma-nykoping.html"><svg><use href="#i-pin"/></svg>Nyköping</a><a class="city" href="flyttfirma-norrkoping.html"><svg><use href="#i-pin"/></svg>Norrköping</a><a class="city" href="flyttfirma-linkoping.html"><svg><use href="#i-pin"/></svg>Linköping</a><a class="city" href="flyttfirma-motala.html"><svg><use href="#i-pin"/></svg>Motala</a><a class="city" href="flyttfirma-mjolby.html"><svg><use href="#i-pin"/></svg>Mjölby</a><a class="city" href="flyttfirma-jonkoping.html"><svg><use href="#i-pin"/></svg>Jönköping</a><a class="city" href="flyttfirma-nassjo.html"><svg><use href="#i-pin"/></svg>Nässjö</a><a class="city" href="flyttfirma-tranas.html"><svg><use href="#i-pin"/></svg>Tranås</a><a class="city" href="flyttfirma-vastervik.html"><svg><use href="#i-pin"/></svg>Västervik</a><a class="city" href="flyttfirma-vimmerby.html"><svg><use href="#i-pin"/></svg>Vimmerby</a></div>

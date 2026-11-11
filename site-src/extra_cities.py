@@ -5,7 +5,7 @@ def C(slug, name, lan, desc, lead, intro, areas, tips, faq, far=False):
     title = f"Flyttfirma i {name} – flytt, packning & flyttstäd | FX Flytt"
     if far:
         faq = faq + [("Är det dyrare att anlita er i " + name + "?",
-                      "Arbetet kostar samma timpris som överallt. Eftersom vi utgår från Kungsör tillkommer framkörning, och den står tydligt i offerten innan du bokar.")]
+                      "Nej, du betalar samma fasta pris som i alla våra orter. Är avståndet mellan din gamla och nya adress 15 km eller mer tillkommer 12 kr per km.")]
     return dict(slug=slug, name=name, lan=lan, title=title, desc=desc,
                 h1=f"Flyttfirma i <span>{name}</span>", lead=lead, intro=intro,
                 areas=areas, tips=tips, faq=faq)
@@ -20,7 +20,7 @@ EXTRA = [
    ["Studentflytt nära universitetet? Boka i god tid inför terminsstart.", "Kolla med hyresvärden om hissen behöver bokas.", "Flyttar du mellan Värmland och Mälardalen – välj gärna FlexFlytt för lägre pris."],
    [("Flyttar ni inom Karlstad?", "Ja, i alla stadsdelar och i orter runt Karlstad."),
     ("Kan ni flytta från Karlstad till Örebro eller Västerås?", "Ja, vi kör regelbundet mellan Värmland, Örebro län och Mälardalen."),
-    ("Kan jag boka flyttstäd i Karlstad?", "Ja, flyttstäd kan bokas tillsammans med flytten. RUT-avdraget dras direkt på fakturan.")], far=True),
+    ("Kan jag boka flyttstäd i Karlstad?", "Ja, från 2 000 kr efter RUT. Bokar du flytt och städ tillsammans får du 10 % rabatt (Premium).")], far=True),
 
  C("sodertalje", "Södertälje", "Stockholms län",
    "Flyttfirma i Södertälje. FX Flytt hjälper dig med flytt, packning, montering, flyttstäd och bortforsling i Södertälje och Järna. Gratis offert och RUT-avdrag.",
@@ -41,8 +41,8 @@ EXTRA = [
    ["Åkersberga centrum", "Österskär", "Täljö", "Margretelund", "Hacksta", "Tunagård", "Svinninge", "Runö"],
    ["Villaflytt: glöm inte garage, förråd och vind när du räknar volym.", "Smal infart eller grusväg? Berätta det i förfrågan.", "Boka bortforsling samtidigt om du vill bli av med saker."],
    [("Flyttar ni i hela Österåker?", "Ja, Åkersberga och orterna runt omkring ingår."),
-    ("Kan ni packa åt mig?", "Ja, välj Premium eller Deluxe, eller lägg till packning som tillval."),
-    ("Gör ni flyttstäd i Åkersberga?", "Ja, flyttstäd kan bokas tillsammans med flytten med RUT-avdrag.")], far=True),
+    ("Kan ni packa åt mig?", "Ja, välj Deluxe-paketet eller boka packning per timme från 595 kr/tim efter RUT."),
+    ("Gör ni flyttstäd i Åkersberga?", "Ja, från 2 000 kr efter RUT. Med Premium får du 10 % rabatt på flytt och städ.")], far=True),
 
  C("norrtalje", "Norrtälje", "Stockholms län",
    "Flyttfirma i Norrtälje och Roslagen. FX Flytt hjälper dig med flytt, packning, montering och flyttstäd. Gratis offert och RUT-avdrag direkt på fakturan.",
@@ -64,7 +64,7 @@ EXTRA = [
    ["Flyttar du till Nyköping från en annan ort – boka i god tid före tillträdet.", "Lämnar du en hyresrätt? Boka flyttstäd före besiktningen.", "Märk kartongerna med rum så går uppackningen snabbare."],
    [("Flyttar ni mellan Nyköping och Eskilstuna?", "Ja, vi kör regelbundet inom Södermanlands län."),
     ("Flyttar ni även till Oxelösund?", "Ja, Oxelösund och orterna runt Nyköping ingår."),
-    ("Ingår kartonger?", "I Premium och Deluxe ingår kartonger – se våra paket.")]),
+    ("Ingår kartonger?", "Du kan köpa 50 kartonger för 2 000 kr eller hyra 50 st för 750 kr. Leverans ingår.")]),
 
  C("norrkoping", "Norrköping", "Östergötlands län",
    "Flyttfirma i Norrköping. FX Flytt hjälper dig med flytt av lägenhet, villa och kontor, packning, montering och flyttstäd. Gratis offert och RUT-avdrag.",
@@ -97,7 +97,7 @@ EXTRA = [
    ["Bor du utanför tätorten – beskriv vägen fram till huset.", "Boka flyttstäd samtidigt så slipper du en extra kontakt.", "Packa en låda med det viktigaste för första dygnet."],
    [("Flyttar ni även i Borensberg?", "Ja, Borensberg och orterna runt Motala ingår."),
     ("Kan ni flytta från Motala till Örebro?", "Ja, vi kör regelbundet mot Örebro län."),
-    ("Ingår montering?", "Ned- och montering ingår i Premium och Deluxe.")], far=True),
+    ("Ingår montering?", "Ja, i Deluxe-paketet eller per timme från 595 kr/tim efter RUT.")], far=True),
 
  C("mjolby", "Mjölby", "Östergötlands län",
    "Flyttfirma i Mjölby. FX Flytt hjälper dig med flytt, packning, montering och flyttstäd i Mjölby, Skänninge och Mantorp. Gratis offert och RUT-avdrag.",
@@ -141,7 +141,7 @@ EXTRA = [
    ["Hus på landet: beskriv vägen och avståndet från parkering till entré.", "Fritidshus vid Sommen? Kolla framkomligheten för lastbil.", "Välj FlexFlytt om datumet är flexibelt."],
    [("Flyttar ni på landsbygden runt Tranås?", "Ja, berätta om tillfarten så planerar vi rätt."),
     ("Kan ni flytta från Tranås till Linköping?", "Ja, vi kör mellan orterna."),
-    ("Ingår kartonger?", "I Premium och Deluxe ingår kartonger.")], far=True),
+    ("Ingår kartonger?", "Du kan köpa 50 kartonger för 2 000 kr eller hyra 50 st för 750 kr. Leverans ingår.")], far=True),
 
  C("vastervik", "Västervik", "Kalmar län",
    "Flyttfirma i Västervik. FX Flytt hjälper dig med flytt, packning, montering och flyttstäd i Västervik, Gamleby och Ankarsrum. Gratis offert och RUT-avdrag.",
@@ -174,5 +174,5 @@ EXTRA = [
    ["Vinterflytt: se till att det är skottat vid entrén.", "Hus på landet – beskriv tillfarten.", "Välj FlexFlytt för lägre pris om datumet är flexibelt."],
    [("Flyttar ni mellan Ludvika och Västerås?", "Ja, vi kör regelbundet mellan Bergslagen och Mälardalen."),
     ("Flyttar ni i Grängesberg?", "Ja, orterna i Ludvika kommun ingår."),
-    ("Ingår montering?", "Ned- och montering ingår i Premium och Deluxe.")], far=True),
+    ("Ingår montering?", "Ja, i Deluxe-paketet eller per timme från 595 kr/tim efter RUT.")], far=True),
 ]

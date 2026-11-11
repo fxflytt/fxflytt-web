@@ -167,7 +167,7 @@ SERVICES = [
  ("music","Piano & tunga lyft","Piano, kassaskåp och andra tunga eller otympliga föremål flyttas med rätt utrustning och tillräckligt många personer.",["Rätt utrustning","Pris enligt offert"]),
  ("spark","Flyttstäd","Grundlig städning av bostaden du lämnar, enligt checklista, så att du är redo för besiktningen.",["Kök & badrum","Fönster enligt överenskommelse","RUT-avdrag"]),
  ("trash","Bortforsling","Vi kör bort möbler och saker du inte vill ta med – till återvinning eller tipp.",["Sorteras rätt","Pris enligt offert"]),
- ("box","Flyttkartonger","Köp eller hyr kartonger, tejp och packmaterial av oss.",["Leverans med flytten","Pris enligt offert"]),
+ ("box","Flyttkartonger","Köp eller hyr 50 flyttkartonger av oss.",["Köpa 2 000 kr","Hyra 750 kr","Leverans ingår"]),
 ]
 rows = "".join(f'''<div class="svc-row">{ico(i)}<div><h3>{t}</h3><p>{p}</p><ul>{"".join(f'<li class="{"tag-rut" if x=="RUT-avdrag" else ""}">{x}</li>' for x in tags)}</ul></div>
 <a href="{"flyttstad.html" if t=="Flyttstäd" else "index.html#offert"}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t=="Flyttstäd" else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
@@ -239,20 +239,31 @@ flyttfirma = page("flyttfirma.html",
 </section>""")
 
 # ---------------------------------------------------------------- Våra paket
-pk = part('<div class="pk-grid"', '<a href="#offert" class="btn btn-ghost">Välj Deluxe</a>\n      </div>\n    </div>')
-pk = pk.replace('href="#offert"', 'href="index.html#offert"')
+pk = part('<div class="pk-grid"', 'data-pkg="deluxe">Räkna pris</a>\n      </div>\n    </div>')
+pk = pk.replace('href="#prisraknare"', 'href="index.html#prisraknare"')
 prices = part('<div class="price-grid"', '<p class="note">')
 prices = prices[:prices.rindex('<p class="note">')]
 Y = f'<svg class="y"><use href="#i-check"/></svg>'; N = f'<svg class="n"><use href="#i-x"/></svg>'
 CMP = [("Lastbil med förare",Y,Y,Y),("Bärhjälp, lastning & lossning",Y,Y,Y),("Möbelskydd",Y,Y,Y),("Personlig kontaktperson",Y,Y,Y),
-       ("Ned- och montering",N,Y,Y),("Packning av ömtåligt",N,Y,Y),("Flyttkartonger",N,Y,Y),("Packning av hela hemmet",N,N,Y),
-       ("Uppackning",N,N,Y),("Flyttstäd",N,N,Y),("Bortforsling",N,N,Y)]
+       ("Flyttstäd (fönster och balkong ingår)",N,Y,Y),("Packning, ned- och montering (minst 3 tim)",N,N,Y),
+       ("Rabatt på flytt, städ och körsträcka",N,"<b>10 %</b>","<b>20 %</b>")]
+import json as _j
+PL = _j.load(open("../lib/pricing/prices.json", encoding="utf-8"))
+def _k(n): return f"{n:,}".replace(",", "\u00a0") + " kr"
+def _rows(t, cars=False):
+    out, lo = [], 0
+    for row in t:
+        rng = f"{lo}–{row[0]} m²" if lo else f"upp till {row[0]} m²"
+        out.append(f"<tr><td>{rng}</td>" + (f"<td>{row[2]}</td>" if cars else "") + f"<td>{_k(row[1])}</td></tr>")
+        lo = row[0] + 1
+    return "".join(out)
+move_tbl = _rows(PL["moveFixed"], True); clean_tbl = _rows(PL["cleaning"])
 cmp = "".join(f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td></tr>" for r in CMP)
 paket = page("paket.html",
  "Flyttpaket & priser – Bas, Premium, Deluxe | FX Flytt",
- "Jämför FX Flytts flyttpaket Bas, Premium och Deluxe. Tydliga timpriser, RUT-avdrag på arbetskostnaden och gratis offert.",
+ "Jämför FX Flytts flyttpaket Bas, Premium och Deluxe. Fasta priser efter boyta, flyttstäd, timpriser och RUT-avdrag – hela prislistan.",
  "Våra paket", "Välj det paket som <span>passar din flytt</span>",
- "Alla paket inkluderar lastbil, flyttpersonal och skydd av möbler. Välj hur mycket hjälp du vill ha.",
+ "Fast pris efter boyta. Välj flytt, flytt + städ eller allt-i-ett – och se priset direkt.",
  f"""
 <section style="background:#fff">
   <div class="wrap center">
@@ -270,13 +281,32 @@ paket = page("paket.html",
 <section class="prices">
   <div class="wrap center">
     <span class="eyebrow" style="color:#ffb37a">Priser</span>
-    <h2>Timpriser</h2>
-    <p class="lead">RUT-avdraget gäller arbetskostnaden – inte lastbil, körsträcka eller material.</p>
+    <h2>Priser i korthet</h2>
+    <p class="lead">Alla priser inkl. moms efter RUT-avdrag. RUT gäller arbetskostnaden för privatpersoner.</p>
     <div style="text-align:left">{prices}</div>
-    <p class="note">Minsta debitering 3 timmar. Körsträcka och tillval enligt offert. Exakt pris anges i din offert.</p>
     <a href="index.html#prisraknare" class="btn btn-accent" style="margin-top:22px">Räkna ut ditt pris</a>
   </div>
-</section>""")
+</section>
+<section id="prislista" style="background:#fff">
+  <div class="wrap">
+    <div class="center"><span class="eyebrow">Prislista</span><h2>Hela prislistan</h2>
+      <p class="lead">Priser inkl. moms efter RUT-avdrag. Boytan avrundas uppåt till närmaste steg.</p></div>
+    <div class="pl-grid">
+      <div><h3>Flytt – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Flyttbilar</th><th>Pris</th></tr></thead><tbody>{move_tbl}</tbody></table>
+        <p class="small">Över 240 m²: pris enligt offert. Körsträcka 12 kr/km tillkommer när avståndet mellan adresserna är 15 km eller mer. Våning och hiss påverkar inte priset.</p></div>
+      <div><h3>Flyttstäd – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody>{clean_tbl}</tbody></table>
+        <p class="small">Fönster och balkong ingår. Över 300 m²: pris enligt offert.</p></div>
+    </div>
+    <div class="pl-grid" style="margin-top:28px">
+      <div><h3>Per timme</h3><table class="cmp"><tbody>
+        <tr><td>2 personer + 1 bil</td><td>595 kr/tim</td></tr><tr><td>3 personer + 1 bil</td><td>849 kr/tim</td></tr><tr><td>4 personer + 2 bilar</td><td>1 199 kr/tim</td></tr></tbody></table>
+        <p class="small">Minst 3 timmar, påbörjad timme räknas som hel. Samma pris för packning och uppackning – material ingår.</p></div>
+      <div><h3>Flyttkartonger</h3><table class="cmp"><tbody>
+        <tr><td>Köpa 50 st</td><td>2 000 kr</td></tr><tr><td>Hyra 50 st</td><td>750 kr</td></tr></tbody></table>
+        <p class="small">Leverans ingår.</p></div>
+    </div>
+  </div>
+</section>""", extra_head="<style>.pl-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.pl-grid h3{color:var(--navy);margin-bottom:10px}.pl-grid .small{color:var(--muted);font-size:.88rem;margin-top:8px}@media(max-width:800px){.pl-grid{grid-template-columns:1fr}}</style>")
 
 # ---------------------------------------------------------------- Om oss
 om = page("om-oss.html",
@@ -297,7 +327,7 @@ om = page("om-oss.html",
     <div class="vals">
       <div class="val">{ico("user")}<b>Personlig kontakt</b><span>En person som svarar på dina frågor hela vägen.</span></div>
       <div class="val">{ico("truck")}<b>Rätt utrustning</b><span>Filtar, remmar och kärror för en säker flytt.</span></div>
-      <div class="val">{ico("pct")}<b>Tydliga priser</b><span>Timpriser och RUT-avdrag direkt på fakturan.</span></div>
+      <div class="val">{ico("pct")}<b>Tydliga priser</b><span>Fasta priser och RUT-avdrag direkt på fakturan.</span></div>
       <div class="val">{ico("pin")}<b>Lokalkännedom</b><span>Vi känner vägarna och orterna i regionen.</span></div>
     </div>
   </div>
@@ -529,8 +559,8 @@ villkor = page("villkor.html",
     <h2>2. Priser</h2>
     <ul>
       <li>Alla priser anges i svenska kronor inklusive moms.</li>
-      <li>Timpris debiteras med minst 3 timmar per uppdrag.</li>
-      <li>Körsträcka, material och tillval debiteras enligt offert.</li>
+      <li>Fast pris gäller för den boyta kunden uppger. Vid timpris debiteras minst 3 timmar, och påbörjad timme räknas som hel.</li>
+      <li>Körsträcka debiteras med 12 kr/km när avståndet mellan adresserna är 15 km eller mer. Övriga tillval enligt prislista eller offert.</li>
     </ul>
 
     <h2>3. RUT-avdrag</h2>
@@ -561,13 +591,14 @@ CHECK = [
  ("Kök", ["Spis, ugn och plåtar rengörs in- och utvändigt","Kylskåp och frys rengörs (avfrostade av dig)","Skåp och lådor torkas ur","Fläkt och filter rengörs","Diskbänk, kakel och blandare"]),
  ("Badrum", ["Toalett, handfat och dusch/badkar","Kakel och fogar","Golvbrunn rensas","Speglar och skåp","Tvättmaskin och torktumlare utvändigt"]),
  ("Alla rum", ["Golv dammsugs och våttorkas","Lister, dörrar och karmar torkas","Eluttag och strömbrytare","Garderober in- och utvändigt","Element och fönsterbänkar"]),
- ("Fönster", ["Fönster putsas in- och utvändigt samt mellan glasen","Enligt överenskommelse i offerten"]),
+ ("Fönster & balkong", ["Fönster putsas in- och utvändigt samt mellan glasen","Balkong städas","Ingår i priset"]),
 ]
 checklist = "".join(tip("Ingår", t, items) for t, items in CHECK)
 FAQ = [
- ("Vad kostar flyttstäd?", "Riktpriset är 50 kr per kvadratmeter före RUT-avdrag, alltså cirka 25 kr per kvadratmeter efter RUT för privatpersoner. Exakt pris står i offerten."),
+ ("Vad kostar flyttstäd?", "Fast pris efter boyta, från 2 000 kr (upp till 30 m²) efter RUT-avdrag. Till exempel 3 100 kr för 51–70 m² och 4 000 kr för 91–100 m². Över 300 m² ger vi offert."),
  ("Hur fungerar RUT-avdraget för flyttstäd?", "Privatpersoner betalar bara halva arbetskostnaden. Vi drar av RUT direkt på fakturan och ansöker hos Skatteverket åt dig."),
- ("I vilka orter gör ni flyttstäd?", "I alla orter där vi flyttar – se listan på den här sidan. Längre bort tillkommer framkörning, som står i offerten."),
+ ("I vilka orter gör ni flyttstäd?", "I alla orter där vi flyttar – se listan på den här sidan. Samma fasta pris gäller i alla orter."),
+ ("Blir det billigare om jag bokar flytt och städ tillsammans?", "Ja. Med Premium får du 10 % rabatt på flytt och städ, och med Deluxe 20 %."),
  ("Kan jag boka flyttstäd utan flytt?", "Ja, flyttstäd kan bokas separat eller tillsammans med flytten."),
  ("Vad behöver jag göra före städningen?", "Töm bostaden, frosta av kyl och frys och se till att vi kommer in. Berätta om det finns förråd eller balkong som ska städas."),
 ]
@@ -576,7 +607,7 @@ import json as _json
 faq_ld = '<script type="application/ld+json">' + _json.dumps({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}} for q,a in FAQ]}, ensure_ascii=False) + '</script>'
 flyttstad = page("flyttstad.html",
  "Flyttstäd med RUT-avdrag – i alla våra orter | FX Flytt",
- "Flyttstäd enligt checklista inför besiktningen. Cirka 25 kr/m² efter RUT-avdrag. FX Flytt städar i Kungsör, Örebro, Västerås, Eskilstuna, Linköping, Norrköping, Jönköping, Karlstad m.fl.",
+ "Flyttstäd enligt checklista inför besiktningen. Fast pris från 2 000 kr efter RUT-avdrag. FX Flytt städar i Kungsör, Örebro, Västerås, Eskilstuna, Linköping, Norrköping, Jönköping, Karlstad m.fl.",
  "Flyttstäd", "Flyttstäd – <span>redo för besiktningen</span>",
  "Vi städar bostaden du lämnar enligt en tydlig checklista. RUT-avdraget dras direkt på fakturan.",
  f"""
@@ -586,10 +617,10 @@ flyttstad = page("flyttstad.html",
       <span class="eyebrow">Flyttstäd</span>
       <h2>Lämna bostaden i fint skick</h2>
       <p>När du flyttar ska bostaden lämnas städad till nästa ägare eller hyresgäst. Vi gör städningen åt dig enligt en checklista som följer det hyresvärdar och mäklare brukar kräva.</p>
-      <p>Du kan boka flyttstäd tillsammans med flytten – då har du en kontakt och en faktura – eller boka städningen separat.</p>
+      <p>Du kan boka flyttstäd tillsammans med flytten – då får du 10 % rabatt med Premium eller 20 % med Deluxe – eller boka städningen separat.</p>
     </div>
     <div class="vals">
-      <div class="val">{ico("pct")}<b>ca 25 kr/m²</b><span>efter RUT-avdrag (50 kr/m² före).</span></div>
+      <div class="val">{ico("pct")}<b>Från 2 000 kr</b><span>Fast pris efter boyta, efter RUT-avdrag.</span></div>
       <div class="val">{ico("spark")}<b>Checklista</b><span>Kök, badrum, alla rum och fönster.</span></div>
       <div class="val">{ico("user")}<b>En kontakt</b><span>Samma person för flytt och städ.</span></div>
       <div class="val">{ico("cal")}<b>Flexibelt</b><span>Boka dagen som passar dig.</span></div>
@@ -600,6 +631,13 @@ flyttstad = page("flyttstad.html",
   <div class="wrap">
     <div class="center"><span class="eyebrow">Checklista</span><h2>Det här ingår</h2></div>
     <div class="tips">{checklist}</div>
+  </div>
+</section>
+<section>
+  <div class="wrap" style="max-width:640px">
+    <div class="center"><span class="eyebrow">Priser</span><h2>Fast pris efter boyta</h2><p class="lead">Inkl. moms efter RUT-avdrag. Samma pris i alla orter.</p></div>
+    <table class="cmp" style="margin-top:24px"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody>{clean_tbl}</tbody></table>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:10px">Över 300 m²: pris enligt offert. <a href="index.html#prisraknare">Räkna ut ditt pris</a></p>
   </div>
 </section>
 <section>

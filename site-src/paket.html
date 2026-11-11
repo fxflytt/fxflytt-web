@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flyttpaket &amp; priser – Bas, Premium, Deluxe | FX Flytt</title>
-<meta name="description" content="Jämför FX Flytts flyttpaket Bas, Premium och Deluxe. Tydliga timpriser, RUT-avdrag på arbetskostnaden och gratis offert.">
+<meta name="description" content="Jämför FX Flytts flyttpaket Bas, Premium och Deluxe. Fasta priser efter boyta, flyttstäd, timpriser och RUT-avdrag – hela prislistan.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Flyttpaket &amp; priser – Bas, Premium, Deluxe | FX Flytt">
-<meta property="og:description" content="Jämför FX Flytts flyttpaket Bas, Premium och Deluxe. Tydliga timpriser, RUT-avdrag på arbetskostnaden och gratis offert.">
+<meta property="og:description" content="Jämför FX Flytts flyttpaket Bas, Premium och Deluxe. Fasta priser efter boyta, flyttstäd, timpriser och RUT-avdrag – hela prislistan.">
 <meta property="og:locale" content="sv_SE">
 <!-- canonical + og:url are added when the domain is decided -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,7 +110,7 @@ textarea{min-height:80px;resize:vertical}
 
 /* Packages */
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;align-items:stretch}
-.pk{background:#fff;border-radius:20px;padding:30px;border:2px solid var(--line);display:flex;flex-direction:column}
+.pk{background:#fff;border-radius:20px;padding:30px;border:2px solid var(--line);display:flex;flex-direction:column;position:relative}
 .pk.hot{border-color:var(--accent);box-shadow:0 20px 40px rgba(255,122,26,.15);position:relative}
 .pk .tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.75rem;font-weight:800;padding:5px 14px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .pk h3{font-size:1.3rem;color:var(--navy)}
@@ -162,6 +162,7 @@ textarea{min-height:80px;resize:vertical}
 .city.home{background:var(--navy);color:#fff;border-color:var(--navy)}
 
 /* FAQ */
+.pk-price{margin:14px 0 4px;color:var(--muted);font-size:.95rem}.pk-price b{color:var(--navy);font-size:1.15rem}
 .faq{max-width:820px;margin:40px auto 0;display:grid;gap:12px}
 details{background:#fff;border-radius:14px;border:1px solid var(--line);padding:0 22px}
 summary{cursor:pointer;list-style:none;font-weight:700;color:var(--navy);padding:18px 0;display:flex;justify-content:space-between;gap:12px}
@@ -380,7 +381,7 @@ body.noscroll .mbar{display:none}
 @media(max-width:520px){.boxes4{grid-template-columns:1fr}}
 @media(max-width:900px){.svc-row{grid-template-columns:1fr}.city-cards,.guide,.rut-ex{grid-template-columns:1fr}.cmp{font-size:.82rem}.cmp th,.cmp td{padding:10px 8px}}
 </style>
-
+<style>.pl-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.pl-grid h3{color:var(--navy);margin-bottom:10px}.pl-grid .small{color:var(--muted);font-size:.88rem;margin-top:8px}@media(max-width:800px){.pl-grid{grid-template-columns:1fr}}</style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute">
@@ -435,7 +436,7 @@ body.noscroll .mbar{display:none}
   <div class="wrap">
     <div class="crumbs"><a href="index.html">Start</a> › Våra paket</div>
     <h1>Välj det paket som <span>passar din flytt</span></h1>
-    <p>Alla paket inkluderar lastbil, flyttpersonal och skydd av möbler. Välj hur mycket hjälp du vill ha.</p>
+    <p>Fast pris efter boyta. Välj flytt, flytt + städ eller allt-i-ett – och se priset direkt.</p>
     <div class="hero-cta">
       <a href="index.html#offert" class="btn btn-accent">Få gratis offert</a>
       <a href="tel:+46763000723" class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.5)">Ring 076-300 07 23</a>
@@ -502,41 +503,40 @@ body.noscroll .mbar{display:none}
     <span class="eyebrow">Paket</span><h2>Bas, Premium eller Deluxe</h2>
     <div style="text-align:left"><div class="pk-grid" style="text-align:left">
       <div class="pk">
-        <h3>Bas</h3><p class="for">Du packar – vi bär och kör</p>
+        <h3>Bas</h3><p class="for">Flytt till fast pris</p>
         <ul>
           <li><svg><use href="#i-check"/></svg>Lastbil med förare</li>
           <li><svg><use href="#i-check"/></svg>Bärhjälp, lastning & lossning</li>
           <li><svg><use href="#i-check"/></svg>Filtar och skydd för möbler</li>
           <li><svg><use href="#i-check"/></svg>Personlig kontaktperson</li>
-          <li class="no"><svg><use href="#i-x"/></svg>Packning</li>
           <li class="no"><svg><use href="#i-x"/></svg>Flyttstäd</li>
+          <li class="no"><svg><use href="#i-x"/></svg>Packning och montering</li>
         </ul>
-        <a href="index.html#offert" class="btn btn-ghost">Välj Bas</a>
+        <p class="pk-price">Från <b>2 800 kr</b> efter RUT</p>
+        <a href="index.html#prisraknare" class="btn btn-ghost" data-pkg="bas">Räkna pris</a>
       </div>
       <div class="pk hot">
-        <span class="tag">Mest populär</span>
-        <h3>Premium</h3><p class="for">Vi gör det tunga – du slipper stressen</p>
+        <span class="tag">10 % rabatt</span>
+        <h3>Premium</h3><p class="for">Flytt + flyttstäd</p>
         <ul>
           <li><svg><use href="#i-check"/></svg>Allt i Bas</li>
-          <li><svg><use href="#i-check"/></svg>Ned- och montering av möbler</li>
-          <li><svg><use href="#i-check"/></svg>Packning av ömtåligt (porslin, glas)</li>
-          <li><svg><use href="#i-check"/></svg>Flyttkartonger ingår</li>
-          <li><svg><use href="#i-check"/></svg>Möbler placeras på rätt plats</li>
-          <li class="no"><svg><use href="#i-x"/></svg>Flyttstäd</li>
+          <li><svg><use href="#i-check"/></svg>Flyttstäd enligt checklista, fönster och balkong ingår</li>
+          <li><svg><use href="#i-check"/></svg>10 % rabatt på flytt, flyttstäd och körsträcka</li>
+          <li class="no"><svg><use href="#i-x"/></svg>Packning och montering</li>
         </ul>
-        <a href="index.html#offert" class="btn btn-accent">Välj Premium</a>
+        <p class="pk-price">Flytt + städ med <b>−10 %</b></p>
+        <a href="index.html#prisraknare" class="btn btn-accent" data-pkg="premium">Räkna pris</a>
       </div>
       <div class="pk">
-        <h3>Deluxe</h3><p class="for">Helhetslösning – nyckel in, nyckel ut</p>
+        <span class="tag">20 % rabatt</span>
+        <h3>Deluxe</h3><p class="for">Flytt + flyttstäd + packning & montering</p>
         <ul>
           <li><svg><use href="#i-check"/></svg>Allt i Premium</li>
-          <li><svg><use href="#i-check"/></svg>Packning av hela hemmet</li>
-          <li><svg><use href="#i-check"/></svg>Uppackning i nya hemmet</li>
-          <li><svg><use href="#i-check"/></svg>Flyttstäd med städgaranti</li>
-          <li><svg><use href="#i-check"/></svg>Bortforsling av det du inte vill ha kvar</li>
-          <li><svg><use href="#i-check"/></svg>Prioriterad bokning</li>
+          <li><svg><use href="#i-check"/></svg>Packning, ned- och montering – du väljer antal timmar (minst 3)</li>
+          <li><svg><use href="#i-check"/></svg>20 % rabatt på flytt, flyttstäd och körsträcka</li>
         </ul>
-        <a href="index.html#offert" class="btn btn-ghost">Välj Deluxe</a>
+        <p class="pk-price">Flytt + städ med <b>−20 %</b></p>
+        <a href="index.html#prisraknare" class="btn btn-ghost" data-pkg="deluxe">Räkna pris</a>
       </div>
     </div></div>
   </div>
@@ -544,34 +544,53 @@ body.noscroll .mbar{display:none}
 <section>
   <div class="wrap">
     <div class="center"><span class="eyebrow">Jämför</span><h2>Vad ingår i paketen?</h2></div>
-    <div style="overflow-x:auto"><table class="cmp"><thead><tr><th>Ingår</th><th>Bas</th><th class="hot">Premium</th><th>Deluxe</th></tr></thead><tbody><tr><td>Lastbil med förare</td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Bärhjälp, lastning & lossning</td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Möbelskydd</td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Personlig kontaktperson</td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Ned- och montering</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Packning av ömtåligt</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Flyttkartonger</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Packning av hela hemmet</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Uppackning</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Flyttstäd</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Bortforsling</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr></tbody></table></div>
+    <div style="overflow-x:auto"><table class="cmp"><thead><tr><th>Ingår</th><th>Bas</th><th class="hot">Premium</th><th>Deluxe</th></tr></thead><tbody><tr><td>Lastbil med förare</td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Bärhjälp, lastning & lossning</td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Möbelskydd</td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Personlig kontaktperson</td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Flyttstäd (fönster och balkong ingår)</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Packning, ned- och montering (minst 3 tim)</td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="n"><use href="#i-x"/></svg></td><td><svg class="y"><use href="#i-check"/></svg></td></tr><tr><td>Rabatt på flytt, städ och körsträcka</td><td><svg class="n"><use href="#i-x"/></svg></td><td><b>10 %</b></td><td><b>20 %</b></td></tr></tbody></table></div>
   </div>
 </section>
 <section class="prices">
   <div class="wrap center">
     <span class="eyebrow" style="color:#ffb37a">Priser</span>
-    <h2>Timpriser</h2>
-    <p class="lead">RUT-avdraget gäller arbetskostnaden – inte lastbil, körsträcka eller material.</p>
+    <h2>Priser i korthet</h2>
+    <p class="lead">Alla priser inkl. moms efter RUT-avdrag. RUT gäller arbetskostnaden för privatpersoner.</p>
     <div style="text-align:left"><div class="price-grid" style="text-align:left">
       <div class="price">
-        <h3>2 flyttare + lastbil</h3><p class="small">Passar 1–2 rok</p>
-        <div class="amount">695 <small>kr/tim</small></div>
-        <p class="before">1 195 kr/tim före RUT-avdrag</p>
+        <h3>Flytt – fast pris</h3><p class="small">Pris efter boyta</p>
+        <div class="amount"><small>från</small> 2 800 <small>kr</small></div>
+        <p class="before">Upp till 30 m² · 1 flyttbil</p>
       </div>
       <div class="price" style="border-color:var(--accent)">
-        <h3>3 flyttare + lastbil</h3><p class="small">Passar 3 rok, villa & kontor</p>
-        <div class="amount">945 <small>kr/tim</small></div>
-        <p class="before">1 695 kr/tim före RUT-avdrag</p>
+        <h3>Flytt per timme</h3><p class="small">2 flyttare + bil</p>
+        <div class="amount">595 <small>kr/tim</small></div>
+        <p class="before">3 flyttare 849 kr/tim · 4 flyttare + 2 bilar 1 199 kr/tim</p>
       </div>
       <div class="price">
-        <h3>Flyttstäd</h3><p class="small">Komplett städ enligt checklista</p>
-        <div class="amount">25 <small>kr/m²</small></div>
-        <p class="before">50 kr/m² före RUT-avdrag</p>
+        <h3>Flyttstäd</h3><p class="small">Fönster och balkong ingår</p>
+        <div class="amount"><small>från</small> 2 000 <small>kr</small></div>
+        <p class="before">Upp till 30 m² · fast pris efter boyta</p>
       </div>
     </div>
     </div>
-    <p class="note">Minsta debitering 3 timmar. Körsträcka och tillval enligt offert. Exakt pris anges i din offert.</p>
     <a href="index.html#prisraknare" class="btn btn-accent" style="margin-top:22px">Räkna ut ditt pris</a>
+  </div>
+</section>
+<section id="prislista" style="background:#fff">
+  <div class="wrap">
+    <div class="center"><span class="eyebrow">Prislista</span><h2>Hela prislistan</h2>
+      <p class="lead">Priser inkl. moms efter RUT-avdrag. Boytan avrundas uppåt till närmaste steg.</p></div>
+    <div class="pl-grid">
+      <div><h3>Flytt – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Flyttbilar</th><th>Pris</th></tr></thead><tbody><tr><td>upp till 30 m²</td><td>1</td><td>2 800 kr</td></tr><tr><td>31–40 m²</td><td>1</td><td>3 000 kr</td></tr><tr><td>41–50 m²</td><td>1</td><td>3 550 kr</td></tr><tr><td>51–60 m²</td><td>1</td><td>3 950 kr</td></tr><tr><td>61–70 m²</td><td>2</td><td>4 700 kr</td></tr><tr><td>71–80 m²</td><td>2</td><td>5 000 kr</td></tr><tr><td>81–90 m²</td><td>2</td><td>5 625 kr</td></tr><tr><td>91–100 m²</td><td>2</td><td>6 250 kr</td></tr><tr><td>101–110 m²</td><td>2</td><td>6 875 kr</td></tr><tr><td>111–120 m²</td><td>3</td><td>7 500 kr</td></tr><tr><td>121–130 m²</td><td>3</td><td>8 250 kr</td></tr><tr><td>131–140 m²</td><td>3</td><td>8 750 kr</td></tr><tr><td>141–150 m²</td><td>3</td><td>9 375 kr</td></tr><tr><td>151–160 m²</td><td>3</td><td>10 000 kr</td></tr><tr><td>161–170 m²</td><td>3</td><td>10 500 kr</td></tr><tr><td>171–180 m²</td><td>3</td><td>11 000 kr</td></tr><tr><td>181–190 m²</td><td>4</td><td>11 700 kr</td></tr><tr><td>191–200 m²</td><td>4</td><td>12 200 kr</td></tr><tr><td>201–220 m²</td><td>4</td><td>13 100 kr</td></tr><tr><td>221–240 m²</td><td>4</td><td>14 700 kr</td></tr></tbody></table>
+        <p class="small">Över 240 m²: pris enligt offert. Körsträcka 12 kr/km tillkommer när avståndet mellan adresserna är 15 km eller mer. Våning och hiss påverkar inte priset.</p></div>
+      <div><h3>Flyttstäd – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody><tr><td>upp till 30 m²</td><td>2 000 kr</td></tr><tr><td>31–50 m²</td><td>2 600 kr</td></tr><tr><td>51–70 m²</td><td>3 100 kr</td></tr><tr><td>71–90 m²</td><td>3 650 kr</td></tr><tr><td>91–100 m²</td><td>4 000 kr</td></tr><tr><td>101–120 m²</td><td>4 500 kr</td></tr><tr><td>121–140 m²</td><td>4 800 kr</td></tr><tr><td>141–150 m²</td><td>5 100 kr</td></tr><tr><td>151–170 m²</td><td>5 950 kr</td></tr><tr><td>171–190 m²</td><td>6 300 kr</td></tr><tr><td>191–200 m²</td><td>6 600 kr</td></tr><tr><td>201–220 m²</td><td>6 950 kr</td></tr><tr><td>221–240 m²</td><td>7 550 kr</td></tr><tr><td>241–260 m²</td><td>7 950 kr</td></tr><tr><td>261–280 m²</td><td>8 500 kr</td></tr><tr><td>281–300 m²</td><td>9 200 kr</td></tr></tbody></table>
+        <p class="small">Fönster och balkong ingår. Över 300 m²: pris enligt offert.</p></div>
+    </div>
+    <div class="pl-grid" style="margin-top:28px">
+      <div><h3>Per timme</h3><table class="cmp"><tbody>
+        <tr><td>2 personer + 1 bil</td><td>595 kr/tim</td></tr><tr><td>3 personer + 1 bil</td><td>849 kr/tim</td></tr><tr><td>4 personer + 2 bilar</td><td>1 199 kr/tim</td></tr></tbody></table>
+        <p class="small">Minst 3 timmar, påbörjad timme räknas som hel. Samma pris för packning och uppackning – material ingår.</p></div>
+      <div><h3>Flyttkartonger</h3><table class="cmp"><tbody>
+        <tr><td>Köpa 50 st</td><td>2 000 kr</td></tr><tr><td>Hyra 50 st</td><td>750 kr</td></tr></tbody></table>
+        <p class="small">Leverans ingår.</p></div>
+    </div>
   </div>
 </section>
 <div class="band">

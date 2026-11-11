@@ -105,7 +105,7 @@ textarea{min-height:80px;resize:vertical}
 
 /* Packages */
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;align-items:stretch}
-.pk{background:#fff;border-radius:20px;padding:30px;border:2px solid var(--line);display:flex;flex-direction:column}
+.pk{background:#fff;border-radius:20px;padding:30px;border:2px solid var(--line);display:flex;flex-direction:column;position:relative}
 .pk.hot{border-color:var(--accent);box-shadow:0 20px 40px rgba(255,122,26,.15);position:relative}
 .pk .tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.75rem;font-weight:800;padding:5px 14px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .pk h3{font-size:1.3rem;color:var(--navy)}
@@ -157,6 +157,7 @@ textarea{min-height:80px;resize:vertical}
 .city.home{background:var(--navy);color:#fff;border-color:var(--navy)}
 
 /* FAQ */
+.pk-price{margin:14px 0 4px;color:var(--muted);font-size:.95rem}.pk-price b{color:var(--navy);font-size:1.15rem}
 .faq{max-width:820px;margin:40px auto 0;display:grid;gap:12px}
 details{background:#fff;border-radius:14px;border:1px solid var(--line);padding:0 22px}
 summary{cursor:pointer;list-style:none;font-weight:700;color:var(--navy);padding:18px 0;display:flex;justify-content:space-between;gap:12px}
@@ -552,45 +553,45 @@ body.noscroll .mbar{display:none}
   <div class="wrap center">
     <span class="eyebrow">Flyttpaket</span>
     <h2>Välj den nivå av hjälp som passar dig</h2>
-    <p class="lead">Alla paket inkluderar lastbil, flyttpersonal, skydd av möbler och RUT-avdrag på arbetskostnaden.</p>
+    <p class="lead">Alla paket har fast pris efter boyta. Priserna gäller efter RUT-avdrag på arbetskostnaden.</p>
     <div class="pk-grid" style="text-align:left">
       <div class="pk">
-        <h3>Bas</h3><p class="for">Du packar – vi bär och kör</p>
+        <h3>Bas</h3><p class="for">Flytt till fast pris</p>
         <ul>
           <li><svg><use href="#i-check"/></svg>Lastbil med förare</li>
           <li><svg><use href="#i-check"/></svg>Bärhjälp, lastning & lossning</li>
           <li><svg><use href="#i-check"/></svg>Filtar och skydd för möbler</li>
           <li><svg><use href="#i-check"/></svg>Personlig kontaktperson</li>
-          <li class="no"><svg><use href="#i-x"/></svg>Packning</li>
           <li class="no"><svg><use href="#i-x"/></svg>Flyttstäd</li>
+          <li class="no"><svg><use href="#i-x"/></svg>Packning och montering</li>
         </ul>
-        <a href="#offert" class="btn btn-ghost">Välj Bas</a>
+        <p class="pk-price">Från <b>2 800 kr</b> efter RUT</p>
+        <a href="#prisraknare" class="btn btn-ghost" data-pkg="bas">Räkna pris</a>
       </div>
       <div class="pk hot">
-        <span class="tag">Mest populär</span>
-        <h3>Premium</h3><p class="for">Vi gör det tunga – du slipper stressen</p>
+        <span class="tag">10 % rabatt</span>
+        <h3>Premium</h3><p class="for">Flytt + flyttstäd</p>
         <ul>
           <li><svg><use href="#i-check"/></svg>Allt i Bas</li>
-          <li><svg><use href="#i-check"/></svg>Ned- och montering av möbler</li>
-          <li><svg><use href="#i-check"/></svg>Packning av ömtåligt (porslin, glas)</li>
-          <li><svg><use href="#i-check"/></svg>Flyttkartonger ingår</li>
-          <li><svg><use href="#i-check"/></svg>Möbler placeras på rätt plats</li>
-          <li class="no"><svg><use href="#i-x"/></svg>Flyttstäd</li>
+          <li><svg><use href="#i-check"/></svg>Flyttstäd enligt checklista, fönster och balkong ingår</li>
+          <li><svg><use href="#i-check"/></svg>10 % rabatt på flytt, flyttstäd och körsträcka</li>
+          <li class="no"><svg><use href="#i-x"/></svg>Packning och montering</li>
         </ul>
-        <a href="#offert" class="btn btn-accent">Välj Premium</a>
+        <p class="pk-price">Flytt + städ med <b>−10 %</b></p>
+        <a href="#prisraknare" class="btn btn-accent" data-pkg="premium">Räkna pris</a>
       </div>
       <div class="pk">
-        <h3>Deluxe</h3><p class="for">Helhetslösning – nyckel in, nyckel ut</p>
+        <span class="tag">20 % rabatt</span>
+        <h3>Deluxe</h3><p class="for">Flytt + flyttstäd + packning & montering</p>
         <ul>
           <li><svg><use href="#i-check"/></svg>Allt i Premium</li>
-          <li><svg><use href="#i-check"/></svg>Packning av hela hemmet</li>
-          <li><svg><use href="#i-check"/></svg>Uppackning i nya hemmet</li>
-          <li><svg><use href="#i-check"/></svg>Flyttstäd med städgaranti</li>
-          <li><svg><use href="#i-check"/></svg>Bortforsling av det du inte vill ha kvar</li>
-          <li><svg><use href="#i-check"/></svg>Prioriterad bokning</li>
+          <li><svg><use href="#i-check"/></svg>Packning, ned- och montering – du väljer antal timmar (minst 3)</li>
+          <li><svg><use href="#i-check"/></svg>20 % rabatt på flytt, flyttstäd och körsträcka</li>
         </ul>
-        <a href="#offert" class="btn btn-ghost">Välj Deluxe</a>
+        <p class="pk-price">Flytt + städ med <b>−20 %</b></p>
+        <a href="#prisraknare" class="btn btn-ghost" data-pkg="deluxe">Räkna pris</a>
       </div>
+    </div>
     </div>
   </div>
 </section>
@@ -599,26 +600,26 @@ body.noscroll .mbar{display:none}
 <section class="prices" id="priser">
   <div class="wrap center">
     <span class="eyebrow" style="color:#ffb37a">Priser</span>
-    <h2>Tydliga timpriser – inga överraskningar</h2>
-    <p class="lead">Priserna nedan gäller efter RUT-avdrag. RUT ger 50 % avdrag på arbetskostnaden.</p>
+    <h2>Fasta priser – inga överraskningar</h2>
+    <p class="lead">Priserna nedan gäller efter RUT-avdrag. RUT ger 50 % avdrag på arbetskostnaden för privatpersoner.</p>
     <div class="price-grid" style="text-align:left">
       <div class="price">
-        <h3>2 flyttare + lastbil</h3><p class="small">Passar 1–2 rok</p>
-        <div class="amount">695 <small>kr/tim</small></div>
-        <p class="before">1 195 kr/tim före RUT-avdrag</p>
+        <h3>Flytt – fast pris</h3><p class="small">Pris efter boyta</p>
+        <div class="amount"><small>från</small> 2 800 <small>kr</small></div>
+        <p class="before">Upp till 30 m² · 1 flyttbil</p>
       </div>
       <div class="price" style="border-color:var(--accent)">
-        <h3>3 flyttare + lastbil</h3><p class="small">Passar 3 rok, villa & kontor</p>
-        <div class="amount">945 <small>kr/tim</small></div>
-        <p class="before">1 695 kr/tim före RUT-avdrag</p>
+        <h3>Flytt per timme</h3><p class="small">2 flyttare + bil</p>
+        <div class="amount">595 <small>kr/tim</small></div>
+        <p class="before">3 flyttare 849 kr/tim · 4 flyttare + 2 bilar 1 199 kr/tim</p>
       </div>
       <div class="price">
-        <h3>Flyttstäd</h3><p class="small">Komplett städ enligt checklista</p>
-        <div class="amount">25 <small>kr/m²</small></div>
-        <p class="before">50 kr/m² före RUT-avdrag</p>
+        <h3>Flyttstäd</h3><p class="small">Fönster och balkong ingår</p>
+        <div class="amount"><small>från</small> 2 000 <small>kr</small></div>
+        <p class="before">Upp till 30 m² · fast pris efter boyta</p>
       </div>
     </div>
-    <p class="note">Minsta debitering 3 timmar. Framkörning och eventuell milersättning tillkommer för längre sträckor. Exakt pris anges i din offert.</p>
+    <p class="note">Alla priser inkl. moms efter RUT-avdrag. Fast pris: körsträcka 12 kr/km tillkommer när avståndet mellan adresserna är 15 km eller mer. Per timme: minst 3 timmar, påbörjad timme räknas som hel. <a href="paket.html#prislista" style="color:#ffb37a">Se hela prislistan</a></p>
   </div>
 </section>
 
@@ -627,34 +628,36 @@ body.noscroll .mbar{display:none}
   <div class="wrap">
     <div class="center">
       <span class="eyebrow">Prisräknare</span>
-      <h2>Räkna ut ett ungefärligt pris</h2>
-      <p class="lead">Få en snabb uppskattning direkt. Det slutliga priset bekräftas i din offert.</p>
+      <h2>Räkna ut ditt pris</h2>
+      <p class="lead">Fasta priser efter boyta – du ser priset direkt, utan att vänta på offert.</p>
     </div>
     <div class="calc">
       <div class="fgrid">
-        <div class="full"><label class="f" for="c-typ">Bostadsstorlek</label>
-          <select id="c-typ">
-            <option value="1">1 rok (ca 25–40 m²)</option>
-            <option value="2" selected>2 rok (ca 45–65 m²)</option>
-            <option value="3">3 rok (ca 65–85 m²)</option>
-            <option value="4">4 rok (ca 85–110 m²)</option>
-            <option value="5">Villa / radhus</option>
+        <div class="full"><label class="f" for="c-svc">Vad behöver du?</label>
+          <select id="c-svc">
+            <option value="move" selected>Flytt – fast pris</option>
+            <option value="hourly">Flytt per timme</option>
+            <option value="cleaning">Endast flyttstäd</option>
           </select></div>
-        <div><label class="f" for="c-hiss">Hiss?</label>
-          <select id="c-hiss"><option value="0">Ja / bottenplan</option><option value="1">Nej, trappor</option></select></div>
-        <div><label class="f" for="c-kvm">Boyta för flyttstäd (m²)</label><input id="c-kvm" type="number" value="55" min="0"></div>
-        <div class="full checks">
-          <label class="chk"><input type="checkbox" id="c-pack">Packning</label>
-          <label class="chk"><input type="checkbox" id="c-stad">Flyttstäd</label>
-          <label class="chk"><input type="checkbox" id="c-mont">Ned-/montering</label>
-          <label class="chk"><input type="checkbox" id="c-flex">FlexFlytt (−15 %)</label>
-        </div>
+        <div class="c-move c-cleaning"><label class="f" for="c-kvm">Boyta (m²)</label><input id="c-kvm" type="number" value="60" min="1" max="2000" inputmode="numeric"></div>
+        <div class="c-move"><label class="f" for="c-km">Avstånd mellan adresserna (km)</label><input id="c-km" type="number" value="10" min="0" max="3000" inputmode="numeric"></div>
+        <div class="full c-move"><label class="f" for="c-pkg">Paket</label>
+          <select id="c-pkg">
+            <option value="bas">Bas – flytt</option>
+            <option value="premium">Premium – flytt + flyttstäd (−10 %)</option>
+            <option value="deluxe">Deluxe – flytt + flyttstäd + packning/montering (−20 %)</option>
+          </select></div>
+        <div class="c-hourly c-deluxe"><label class="f" for="c-crew">Antal personer</label>
+          <select id="c-crew"><option value="2">2 personer – 595 kr/tim</option><option value="3">3 personer – 849 kr/tim</option><option value="4">4 personer – 1 199 kr/tim</option></select></div>
+        <div class="c-hourly c-deluxe"><label class="f" for="c-h">Antal timmar (minst 3)</label><input id="c-h" type="number" value="3" min="3" max="48" inputmode="numeric"></div>
+        <div class="full"><label class="f" for="c-box">Flyttkartonger (50 st, leverans ingår)</label>
+          <select id="c-box"><option value="none">Nej tack</option><option value="buy">Köpa – 2 000 kr</option><option value="rent">Hyra – 750 kr</option></select></div>
       </div>
       <div class="calc-out">
-        <div class="lbl">Uppskattat pris efter RUT</div>
+        <div class="lbl">Ditt pris efter RUT-avdrag</div>
         <div class="big" id="c-res">–</div>
         <div class="det" id="c-det"></div>
-        <a href="#offert" class="btn btn-accent">Få exakt offert</a>
+        <a href="#offert" class="btn btn-accent" id="c-book">Boka med detta pris</a>
       </div>
     </div>
   </div>
@@ -805,7 +808,7 @@ body.noscroll .mbar{display:none}
     <div class="vals">
       <div class="val"><div class="ico"><svg><use href="#i-user"/></svg></div><b>Personlig kontakt</b><span>En person som svarar på dina frågor hela vägen.</span></div>
       <div class="val"><div class="ico"><svg><use href="#i-truck"/></svg></div><b>Egna lastbilar</b><span>Rymliga bilar utrustade med filtar, remmar och kärror.</span></div>
-      <div class="val"><div class="ico"><svg><use href="#i-pct"/></svg></div><b>Tydliga priser</b><span>Fasta timpriser och RUT-avdrag direkt på fakturan.</span></div>
+      <div class="val"><div class="ico"><svg><use href="#i-pct"/></svg></div><b>Tydliga priser</b><span>Fasta priser och RUT-avdrag direkt på fakturan.</span></div>
       <div class="val"><div class="ico"><svg><use href="#i-pin"/></svg></div><b>Lokalkännedom</b><span>Vi känner vägarna, husen och parkeringarna i regionen.</span></div>
     </div>
   </div>
@@ -856,7 +859,7 @@ body.noscroll .mbar{display:none}
       <details><summary>Kan jag ändra eller avboka min flytt?</summary><p>Ja, du kan ändra datum eller avboka kostnadsfritt fram till 14 dagar före flytten.</p></details>
       <details><summary>Vad är FlexFlytt?</summary><p>Du anger ett tidsfönster i stället för ett exakt datum. Vi kan då samordna flytten med andra uppdrag och ger dig upp till 15 % rabatt.</p></details>
       <details><summary>Hur lång tid tar en flytt?</summary><p>En 2:a tar oftast 4–5 timmar med två flyttare, beroende på mängd, våningsplan och avstånd. I offerten får du en tydlig uppskattning.</p></details>
-      <details><summary>Ingår flyttkartonger?</summary><p>I Premium och Deluxe ingår kartonger. I Bas kan du köpa eller hyra kartonger av oss till ett fast pris.</p></details>
+      <details><summary>Ingår flyttkartonger?</summary><p>Du kan köpa 50 flyttkartonger för 2 000 kr eller hyra 50 st för 750 kr. Leverans ingår. Välj det i prisräknaren.</p></details>
       <details><summary>Flyttar ni även långa sträckor?</summary><p>Ja. Vi utgår från Kungsör men flyttar i hela Sverige. Kontakta oss för pris på längre sträckor.</p></details>
     </div>
   </div>
@@ -929,6 +932,7 @@ body.noscroll .mbar{display:none}
   <a href="#offert" class="btn btn-accent">Gratis offert</a>
 </div>
 
+<script src="/price-calc.js"></script>
 <script>
 document.getElementById('yr').textContent = new Date().getFullYear();
 
@@ -966,6 +970,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     });
     Object.keys(seen).forEach(k=>lines.push(k+': '+seen[k].join(', ')));
     if(window.fxDistance) lines.push('Avstånd: ca '+window.fxDistance+' km');
+    if(window.fxPrice){ lines.push(''); lines.push('Pris från prisräknaren (efter RUT): '+window.fxPrice.total.toLocaleString('sv-SE')+' kr'); window.fxPrice.lines.forEach(l=>lines.push('  '+l.label+': '+l.amount.toLocaleString('sv-SE')+' kr')); lines.push('  Prislista: '+window.fxPrice.version); }
     if(window.fxVolume){ lines.push('Beräknad volym: '+String(window.fxVolume.m3).replace('.',',')+' m³ ('+window.fxVolume.items+' föremål)'); lines.push('Möbellista: '+window.fxVolume.list.join(', ')); }
     return lines.join('\n');
   }
@@ -993,59 +998,37 @@ document.getElementById('yr').textContent = new Date().getFullYear();
 })();
 
 /* ---- Price calculator ----
-   The price comes from the server (/api/quote), so it always uses the current price list.
-   If the server can't be reached (e.g. in a preview), a local estimate is shown instead. */
+   Same code as the server (lib/pricing/pricelist.js, copied to /price-calc.js at build time). */
 (function(){
-  const $ = id=>document.getElementById(id);
-  const fmt = n=>Math.round(n/10)*10;
-  const SIZE = {1:'1rok',2:'2rok',3:'3rok',4:'4rok',5:'villa'};
-  // Local fallback (same numbers as the current price list)
-  const P = {crew2:695, crew3:945, stad:25};
-  const base = {1:[3,2],2:[4.5,2],3:[5,3],4:[6.5,3],5:[8,3]};
-  function nextWeekday(){ const d=new Date(); d.setDate(d.getDate()+14); while([0,6].includes(d.getDay())) d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); }
-  function show(after, crew, hours, stadM2, flex, note){
-    const lo=fmt(after*0.9), hi=fmt(after*1.1);
-    $('c-res').textContent = lo.toLocaleString('sv-SE')+' – '+hi.toLocaleString('sv-SE')+' kr';
-    $('c-det').innerHTML =
-      '<div>• '+crew+' flyttare + lastbil, ca '+String(hours).replace('.',',')+' tim</div>'+
-      (stadM2?'<div>• Flyttstäd '+stadM2+' m²</div>':'')+
-      (flex?'<div>• FlexFlytt-rabatt 15 %</div>':'')+
-      '<div style="opacity:.7;margin-top:6px">'+(note||'Ungefärligt pris inkl. moms efter RUT-avdrag. Körsträcka tillkommer. Slutpris anges i offerten.')+'</div>';
+  const $=id=>document.getElementById(id);
+  const kr=n=>n.toLocaleString('sv-SE')+' kr';
+  function vis(){
+    const s=$('c-svc').value, deluxe=s==='move'&&$('c-pkg').value==='deluxe';
+    document.querySelectorAll('.calc .fgrid > [class*="c-"]').forEach(el=>{
+      const on=el.classList.contains('c-'+s)||(deluxe&&el.classList.contains('c-deluxe'));
+      el.style.display=on?'':'none';
+    });
   }
-  function local(){
-    let [h,crew] = base[$('c-typ').value];
-    if($('c-hiss').value==='1') h += 1;
-    if($('c-pack').checked) h += crew===2 ? 2.5 : 3;
-    if($('c-mont').checked) h += 1;
-    h = Math.max(3,h);
-    let total = h*(crew===2?P.crew2:P.crew3);
-    const m2 = $('c-stad').checked ? Math.max(0,+$('c-kvm').value||0) : 0;
-    total += m2*P.stad;
-    if($('c-flex').checked) total *= 0.85;
-    show(total, crew, h, m2, $('c-flex').checked);
+  function calc(){
+    vis();
+    if(!window.fxComputePrice) return;
+    const s=$('c-svc').value;
+    const inp={service:s,areaM2:Math.max(1,+$('c-kvm').value||1),distanceKm:Math.max(0,+$('c-km').value||0),
+      pkg:$('c-pkg').value,crew:+$('c-crew').value,hours:Math.max(3,+$('c-h').value||3),boxes:$('c-box').value};
+    let q; try{ q=window.fxComputePrice(inp,window.FX_PRICES); }catch(e){ $('c-res').textContent='–'; $('c-det').textContent=e.message; return; }
+    if(q.totalAfterRut==null){
+      $('c-res').textContent='Pris enligt offert';
+      $('c-det').innerHTML='<div>'+q.onRequest+'.</div><div style="opacity:.7;margin-top:6px">Fyll i formuläret eller ring 076-300 07 23.</div>';
+      window.fxPrice=null; return;
+    }
+    $('c-res').textContent=kr(q.totalAfterRut);
+    $('c-det').innerHTML=q.lines.map(l=>'<div>• '+l.label+': '+kr(l.amount)+'</div>').join('')+
+      '<div style="opacity:.7;margin-top:6px">Inkl. moms efter RUT-avdrag (privatpersoner). '+(s==='move'?'Körsträcka under 15 km ingår.':'')+'</div>';
+    window.fxPrice={total:q.totalAfterRut,lines:q.lines,version:q.version};
   }
-  let seq=0, timer=null;
-  async function server(){
-    const id=++seq;
-    const m2 = $('c-stad').checked ? Math.max(0,Math.min(2000,+$('c-kvm').value||0)) : 0;
-    const extras=[]; if($('c-pack').checked) extras.push('packing'); if($('c-mont').checked) extras.push('assembly');
-    const noLift = $('c-hiss').value==='1';
-    const body = {
-      kind:'private', propertyType: $('c-typ').value==='5'?'house':'apartment', size: SIZE[$('c-typ').value],
-      date: nextWeekday(), pickup:{floor:noLift?2:0,elevator:!noLift,carryDistanceM:10},
-      delivery:{floor:0,elevator:true,carryDistanceM:10}, drivingDistanceKm:0,
-      inventory:[], extras, cleaningM2:m2||null, wantsRut:true, flex:$('c-flex').checked
-    };
-    try{
-      const r = await fetch('/api/quote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(!r.ok) return;
-      const {quote} = await r.json();
-      if(id!==seq) return;
-      show(quote.totalAfterRutSek, quote.crew, quote.hours, m2, $('c-flex').checked);
-    }catch(_){ /* offline or preview: keep the local estimate */ }
-  }
-  function calc(){ local(); clearTimeout(timer); timer=setTimeout(server,250); }
-  ['c-typ','c-hiss','c-kvm','c-pack','c-stad','c-mont','c-flex'].forEach(id=>$(id).addEventListener('input',calc));
+  ['c-svc','c-kvm','c-km','c-pkg','c-crew','c-h','c-box'].forEach(id=>$(id).addEventListener('input',calc));
+  document.querySelectorAll('a[data-pkg]').forEach(a=>a.addEventListener('click',()=>{$('c-svc').value='move';$('c-pkg').value=a.dataset.pkg;calc();}));
+  window.addEventListener('fx-distance',()=>{ if(window.fxDistance){ $('c-km').value=window.fxDistance; calc(); } });
   calc();
 })();
 
@@ -1122,7 +1105,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     const min=Math.round(road<20?road*1.6+5:road*0.85+10);
     const tid=min<60?min+' min':Math.floor(min/60)+' tim '+(min%60?min%60+' min':'');
     txt.textContent='Avstånd ca '+road+' km · körtid ca '+tid;
-    window.fxDistance=road; box.classList.add('show');
+    window.fxDistance=road; box.classList.add('show'); window.dispatchEvent(new Event('fx-distance'));
     if(window.L&&netOK){
       mp.classList.add('show');
       if(!map){map=L.map(mp,{zoomControl:false,attributionControl:true,scrollWheelZoom:false});

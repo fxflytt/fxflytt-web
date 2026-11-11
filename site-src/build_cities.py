@@ -101,7 +101,7 @@ CITIES = [
   tips=["Bor du i centrum – tänk på parkering för lastbilen och berätta om avståndet till porten.","Kontorsflytt? Märk alla kartonger med rum och skrivbord så går uppackningen snabbt.","Rensa innan flytten – mindre att bära betyder lägre pris."],
   faq=[("Gör ni kontorsflytt i Västerås?","Ja, vi flyttar kontor och lokaler. Berätta om tider och omfattning så får ni en offert."),
        ("Flyttar ni till Västerås från andra orter?","Ja, till exempel från Kungsör, Köping, Arboga, Eskilstuna och Örebro."),
-       ("Ingår packmaterial?","Det beror på paket. I Premium och Deluxe ingår kartonger – se våra paket.")]),
+       ("Ingår packmaterial?","Vid packning per timme ingår material. Kartonger kan du köpa (50 st, 2 000 kr) eller hyra (50 st, 750 kr) – leverans ingår.")]),
  dict(slug="katrineholm", name="Katrineholm", lan="Södermanlands län",
   title="Flyttfirma i Katrineholm – flytt & flyttstäd | FX Flytt",
   desc="Flyttfirma i Katrineholm. FX Flytt hjälper dig med bohagsflytt, packning, montering, flyttstäd och bortforsling i Katrineholm med omnejd. Gratis offert, RUT-avdrag direkt.",
@@ -184,11 +184,11 @@ def city_page(c):
     </div>
     <aside class="side">
       <h3>Priser i {c["name"]}</h3>
-      <div class="row"><span>2 flyttare + lastbil</span><b>695 kr/tim*</b></div>
-      <div class="row"><span>3 flyttare + lastbil</span><b>945 kr/tim*</b></div>
-      <div class="row"><span>Flyttstäd</span><b>25 kr/m²*</b></div>
-      <p class="small">* Efter RUT-avdrag på arbetskostnaden. Minsta debitering 3 timmar. Körsträcka och tillval enligt offert.</p>
-      <a href="index.html#offert" class="btn btn-accent" style="width:100%">Räkna ut ditt pris</a>
+      <div class="row"><span>Flytt, fast pris</span><b>från 2 800 kr*</b></div>
+      <div class="row"><span>Flytt per timme</span><b>från 595 kr/tim*</b></div>
+      <div class="row"><span>Flyttstäd, fast pris</span><b>från 2 000 kr*</b></div>
+      <p class="small">* Inkl. moms efter RUT-avdrag. Körsträcka 12 kr/km från 15 km mellan adresserna. Per timme minst 3 timmar. Premium −10 %, Deluxe −20 % på flytt och städ.</p>
+      <a href="index.html#prisraknare" class="btn btn-accent" style="width:100%">Räkna ut ditt pris</a>
     </aside>
   </div>
 </section>
