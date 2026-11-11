@@ -116,6 +116,9 @@ CITIES = [
        ("Hur får jag ett pris?","Fyll i formuläret på startsidan eller ring oss – offerten är gratis och inte bindande.")]),
 ]
 
+from extra_cities import EXTRA
+CITIES += EXTRA
+
 TRUCK = open("art_truck.svg", encoding="utf-8").read().strip()
 
 def city_page(c):

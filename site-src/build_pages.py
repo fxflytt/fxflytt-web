@@ -170,7 +170,7 @@ SERVICES = [
  ("box","Flyttkartonger","Köp eller hyr kartonger, tejp och packmaterial av oss.",["Leverans med flytten","Pris enligt offert"]),
 ]
 rows = "".join(f'''<div class="svc-row">{ico(i)}<div><h3>{t}</h3><p>{p}</p><ul>{"".join(f'<li class="{"tag-rut" if x=="RUT-avdrag" else ""}">{x}</li>' for x in tags)}</ul></div>
-<a href="index.html#offert" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">Boka</a></div>''' for i,t,p,tags in SERVICES)
+<a href="{"flyttstad.html" if t=="Flyttstäd" else "index.html#offert"}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t=="Flyttstäd" else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
 tjanster = page("tjanster.html",
  "Våra tjänster – flytt, packning, flyttstäd & bortforsling | FX Flytt",
  "FX Flytt hjälper dig med bohagsflytt, kontorsflytt, packning, montering, pianoflytt, flyttstäd och bortforsling. Gratis offert och RUT-avdrag direkt på fakturan.",
@@ -203,10 +203,12 @@ CITY = [("kungsor","Kungsör","Vår hemmabas. Korta avstånd och kontor på Frej
         ("eskilstuna","Eskilstuna","Hela Eskilstuna och Torshälla – nära vår bas."),
         ("vasteras","Västerås","Privatflytt och kontorsflytt i hela Västerås."),
         ("katrineholm","Katrineholm","Tätorten och landsbygden runt Katrineholm.")]
+from extra_cities import EXTRA
+CITY += [(c["slug"], c["name"], c["lead"].split(". ")[0].rstrip(".") + ".") for c in EXTRA]
 cards = "".join(f'<a class="city-card" href="flyttfirma-{s}.html"><h3><svg><use href="#i-pin"/></svg>Flyttfirma {n}</h3><p>{t}</p><span class="go">Läs mer →</span></a>' for s,n,t in CITY)
 flyttfirma = page("flyttfirma.html",
  "Flyttfirma i Mälardalen & Örebro län | FX Flytt",
- "FX Flytt är en flyttfirma med bas i Kungsör. Vi flyttar i Kungsör, Örebro, Eskilstuna, Västerås, Katrineholm och längre sträckor i hela Sverige.",
+ "FX Flytt är en flyttfirma med bas i Kungsör. Vi flyttar i Kungsör, Örebro, Eskilstuna, Västerås, Katrineholm, Linköping, Norrköping, Jönköping, Karlstad m.fl. – och längre sträckor i hela Sverige.",
  "Flyttfirma", "Din flyttfirma i <span>Mälardalen och Örebro län</span>",
  "Vi utgår från Kungsör och flyttar dagligen i regionen – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
  f"""
@@ -552,5 +554,67 @@ villkor = page("villkor.html",
   </div>
 </section>""")
 
-for f, s in [("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
+# ---------------------------------------------------------------- Flyttstäd (one page for all cities)
+ALLC = [("kungsor","Kungsör"),("orebro","Örebro"),("eskilstuna","Eskilstuna"),("vasteras","Västerås"),("katrineholm","Katrineholm")] + [(c["slug"],c["name"]) for c in EXTRA]
+chips = "".join(f'<a class="city" href="flyttfirma-{s}.html" style="text-decoration:none"><svg><use href="#i-pin"/></svg>{n}</a>' for s,n in ALLC)
+CHECK = [
+ ("Kök", ["Spis, ugn och plåtar rengörs in- och utvändigt","Kylskåp och frys rengörs (avfrostade av dig)","Skåp och lådor torkas ur","Fläkt och filter rengörs","Diskbänk, kakel och blandare"]),
+ ("Badrum", ["Toalett, handfat och dusch/badkar","Kakel och fogar","Golvbrunn rensas","Speglar och skåp","Tvättmaskin och torktumlare utvändigt"]),
+ ("Alla rum", ["Golv dammsugs och våttorkas","Lister, dörrar och karmar torkas","Eluttag och strömbrytare","Garderober in- och utvändigt","Element och fönsterbänkar"]),
+ ("Fönster", ["Fönster putsas in- och utvändigt samt mellan glasen","Enligt överenskommelse i offerten"]),
+]
+checklist = "".join(tip("Ingår", t, items) for t, items in CHECK)
+FAQ = [
+ ("Vad kostar flyttstäd?", "Riktpriset är 50 kr per kvadratmeter före RUT-avdrag, alltså cirka 25 kr per kvadratmeter efter RUT för privatpersoner. Exakt pris står i offerten."),
+ ("Hur fungerar RUT-avdraget för flyttstäd?", "Privatpersoner betalar bara halva arbetskostnaden. Vi drar av RUT direkt på fakturan och ansöker hos Skatteverket åt dig."),
+ ("I vilka orter gör ni flyttstäd?", "I alla orter där vi flyttar – se listan på den här sidan. Längre bort tillkommer framkörning, som står i offerten."),
+ ("Kan jag boka flyttstäd utan flytt?", "Ja, flyttstäd kan bokas separat eller tillsammans med flytten."),
+ ("Vad behöver jag göra före städningen?", "Töm bostaden, frosta av kyl och frys och se till att vi kommer in. Berätta om det finns förråd eller balkong som ska städas."),
+]
+faq_html = "".join(f"<details{' open' if i==0 else ''}><summary>{html.escape(q)}</summary><p>{html.escape(a)}</p></details>" for i,(q,a) in enumerate(FAQ))
+import json as _json
+faq_ld = '<script type="application/ld+json">' + _json.dumps({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}} for q,a in FAQ]}, ensure_ascii=False) + '</script>'
+flyttstad = page("flyttstad.html",
+ "Flyttstäd med RUT-avdrag – i alla våra orter | FX Flytt",
+ "Flyttstäd enligt checklista inför besiktningen. Cirka 25 kr/m² efter RUT-avdrag. FX Flytt städar i Kungsör, Örebro, Västerås, Eskilstuna, Linköping, Norrköping, Jönköping, Karlstad m.fl.",
+ "Flyttstäd", "Flyttstäd – <span>redo för besiktningen</span>",
+ "Vi städar bostaden du lämnar enligt en tydlig checklista. RUT-avdraget dras direkt på fakturan.",
+ f"""
+<section>
+  <div class="wrap about">
+    <div>
+      <span class="eyebrow">Flyttstäd</span>
+      <h2>Lämna bostaden i fint skick</h2>
+      <p>När du flyttar ska bostaden lämnas städad till nästa ägare eller hyresgäst. Vi gör städningen åt dig enligt en checklista som följer det hyresvärdar och mäklare brukar kräva.</p>
+      <p>Du kan boka flyttstäd tillsammans med flytten – då har du en kontakt och en faktura – eller boka städningen separat.</p>
+    </div>
+    <div class="vals">
+      <div class="val">{ico("pct")}<b>ca 25 kr/m²</b><span>efter RUT-avdrag (50 kr/m² före).</span></div>
+      <div class="val">{ico("spark")}<b>Checklista</b><span>Kök, badrum, alla rum och fönster.</span></div>
+      <div class="val">{ico("user")}<b>En kontakt</b><span>Samma person för flytt och städ.</span></div>
+      <div class="val">{ico("cal")}<b>Flexibelt</b><span>Boka dagen som passar dig.</span></div>
+    </div>
+  </div>
+</section>
+<section style="background:#fff">
+  <div class="wrap">
+    <div class="center"><span class="eyebrow">Checklista</span><h2>Det här ingår</h2></div>
+    <div class="tips">{checklist}</div>
+  </div>
+</section>
+<section>
+  <div class="wrap center">
+    <span class="eyebrow">Orter</span><h2>Vi gör flyttstäd i alla våra orter</h2>
+    <p class="lead">Välj din ort för att läsa mer om flytt där.</p>
+    <div class="cities">{chips}</div>
+  </div>
+</section>
+<section style="background:#fff">
+  <div class="wrap">
+    <div class="center"><span class="eyebrow">Frågor</span><h2>Vanliga frågor om flyttstäd</h2></div>
+    <div class="faq">{faq_html}</div>
+  </div>
+</section>""", extra_head=faq_ld)
+
+for f, s in [("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)

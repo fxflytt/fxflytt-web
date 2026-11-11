@@ -11,7 +11,7 @@ FÖRETAG
 - Öppettider [EJ BEKRÄFTAT]: mån–fre 07–19, lör 09–17, sön enligt överenskommelse.
 
 ORTER
-- Kungsör (bas), Örebro, Eskilstuna (inkl. Torshälla), Västerås, Katrineholm. Längre flyttar i hela Sverige efter offert.
+- Kungsör (bas), Örebro, Eskilstuna (inkl. Torshälla), Västerås, Katrineholm, samt Karlstad, Södertälje, Åkersberga, Norrtälje, Nyköping, Norrköping, Linköping, Motala, Mjölby, Jönköping, Nässjö, Tranås, Västervik, Vimmerby, Ludvika (framkörning kan tillkomma för orter längre bort, står i offerten). Flyttstäd görs i alla dessa orter. Längre flyttar i hela Sverige efter offert.
 
 TJÄNSTER
 - Bohagsflytt (lägenhet, villa, radhus), kontorsflytt, packning och uppackning, ned- och montering av möbler,
