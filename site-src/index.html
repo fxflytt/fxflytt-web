@@ -140,12 +140,6 @@ textarea{min-height:80px;resize:vertical}
 .calc-out .det{font-size:.88rem;color:#c9d7e2;margin-top:10px;display:grid;gap:4px}
 .calc-out .btn{margin-top:20px}
 
-/* Flex */
-.flex-box{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;background:linear-gradient(120deg,#fff4ea,#fff);border:2px solid #ffd9bd;border-radius:24px;padding:44px}
-.flex-box .pct{font-size:4.5rem;font-weight:800;color:var(--accent);line-height:1}
-.flex-list{list-style:none;display:grid;gap:12px;margin-top:18px}
-.flex-list li{display:flex;gap:10px;align-items:flex-start}
-.flex-list svg{flex:none;width:22px;height:22px;color:var(--accent-d)}
 
 /* Services */
 .svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:40px}
@@ -207,12 +201,11 @@ footer .logo{color:#fff}
 @media(max-width:900px){
   section{padding:60px 0}
   .hero{padding:40px 0 60px}
-  .hero-grid,.calc,.flex-box,.contact-grid{grid-template-columns:1fr}
+  .hero-grid,.calc,.contact-grid{grid-template-columns:1fr}
   .how-grid,.pk-grid,.price-grid{grid-template-columns:1fr}
   .strip-grid{grid-template-columns:1fr 1fr}
   .svc-grid{grid-template-columns:1fr 1fr}
   .f-grid{grid-template-columns:1fr 1fr}
-  .flex-box{padding:28px}
   .calc{padding:22px}
   .mbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;padding:10px 12px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(0,0,0,.08)}
   .mbar .btn{padding:12px}
@@ -415,11 +408,6 @@ body.noscroll .mbar{display:none}
         <div class="form-step" data-step="2">
           <div class="fgrid">
             <div><label class="f" for="date">Önskat datum</label><input id="date" name="Datum" type="date"></div>
-            <div><label class="f" for="flexdate">Datumtyp</label>
-              <select id="flexdate" name="Datumtyp">
-                <option>Fast datum</option>
-                <option>FlexFlytt (flexibelt, rabatt)</option>
-              </select></div>
             <div><label class="f" for="typ">Bostad</label>
               <select id="typ" name="Bostad">
                 <option>1 rok</option><option selected>2 rok</option><option>3 rok</option><option>4 rok</option><option>Villa / radhus</option><option>Kontor / lokal</option>
@@ -621,29 +609,7 @@ body.noscroll .mbar{display:none}
   </div>
 </section>
 
-<!-- Flex -->
-<section style="padding-top:0">
-  <div class="wrap">
-    <div class="flex-box">
-      <div>
-        <span class="eyebrow">FlexFlytt</span>
-        <h2>Flexibel med datumet? Spara pengar.</h2>
-        <p class="lead">Ge oss ett tidsfönster i stället för ett exakt datum. Då kan vi planera våra rutter smartare – och du får lägre pris.</p>
-        <ul class="flex-list">
-          <li><svg><use href="#i-check"/></svg>Välj ett fönster på några dagar</li>
-          <li><svg><use href="#i-check"/></svg>Vi bekräftar exakt dag i god tid före flytten</li>
-          <li><svg><use href="#i-check"/></svg>Samma kvalitet och samma team – bara billigare</li>
-        </ul>
-        <a href="#offert" class="btn btn-accent" style="margin-top:22px">Boka FlexFlytt</a>
-      </div>
-      <div class="center">
-        <div style="color:var(--muted);font-weight:700">Spara upp till</div>
-        <div class="pct">15 %</div>
-        <div style="color:var(--muted);font-weight:600;margin-top:6px">på hela flytten</div>
-      </div>
-    </div>
-  </div>
-</section>
+
 
 <!-- Services -->
 <section id="tjanster" style="background:#fff">
@@ -762,7 +728,6 @@ body.noscroll .mbar{display:none}
       <details open><summary>Hur fungerar RUT-avdraget?</summary><p>Du betalar bara halva arbetskostnaden. Vi drar av RUT direkt på fakturan och ansöker hos Skatteverket åt dig. Du behöver bara uppge ditt personnummer vid bokningen. Transport och material omfattas inte av RUT.</p></details>
       <details><summary>Är offerten bindande?</summary><p>Nej. Offerten är helt gratis och utan förpliktelser. Du bestämmer själv om du vill boka.</p></details>
       <details><summary>Kan jag ändra eller avboka min flytt?</summary><p>Ja, du kan ändra datum eller avboka kostnadsfritt fram till 14 dagar före flytten.</p></details>
-      <details><summary>Vad är FlexFlytt?</summary><p>Du anger ett tidsfönster i stället för ett exakt datum. Vi kan då samordna flytten med andra uppdrag och ger dig upp till 15 % rabatt.</p></details>
       <details><summary>Hur lång tid tar en flytt?</summary><p>En 2:a tar oftast 4–5 timmar med två flyttare, beroende på mängd, våningsplan och avstånd. I offerten får du en tydlig uppskattning.</p></details>
       <details><summary>Ingår flyttkartonger?</summary><p>Du kan köpa 50 flyttkartonger för 2 000 kr eller hyra 50 st för 750 kr. Leverans ingår. Välj det i prisräknaren.</p></details>
       <details><summary>Flyttar ni även långa sträckor?</summary><p>Ja. Vi utgår från Kungsör men flyttar i hela Sverige. Priset är det fasta priset för din boyta plus 12 kr/km – räkna ut det direkt i prisräknaren.</p></details>
@@ -900,7 +865,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     const data = {
       name:v('name'), phone:v('tel'), email:v('email'), from:v('from'), to:v('to'),
       distanceKm: window.fxDistance ? Number(window.fxDistance) : undefined,
-      size:v('storlek'), areaM2:v('kvm'), home:v('typ'), date:v('date'), dateType:v('flexdate'),
+      size:v('storlek'), areaM2:v('kvm'), home:v('typ'), date:v('date'),
       floorFrom:v('vf'), floorTo:v('vt'), message:v('msg'),
       extras:[...form.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value),
       price: window.fxPrice || undefined, volume: window.fxVolume || undefined
@@ -917,10 +882,6 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     e.preventDefault();
     try{ await navigator.clipboard.writeText(document.getElementById('summary').textContent); e.target.textContent='Kopierat!'; }
     catch(_){ e.target.textContent='Markera texten ovan och kopiera'; }
-  });
-  // FlexFlytt quick link
-  document.querySelectorAll('a[href="#offert"]').forEach(a=>{
-    if(a.textContent.includes('FlexFlytt')) a.addEventListener('click',()=>{document.getElementById('flexdate').selectedIndex=1;});
   });
   show(0);
 })();

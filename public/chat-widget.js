@@ -16,7 +16,6 @@
     { k: ["avbok", "ändra", "omboka", "cancel", "إلغ"], a: "Du kan ändra datum eller avboka kostnadsfritt fram till 14 dagar före flyttdagen." },
     { k: ["städ", "flyttstäd", "clean", "تنظيف"], a: "Ja, vi gör flyttstäd enligt checklista – fönster och balkong ingår. Fast pris från 2 000 kr efter RUT-avdrag. Bokar du flytt och städ tillsammans får du 10 % rabatt (Premium)." },
     { k: ["boka", "offert", "book", "quote", "حجز", "عرض"], a: "Fyll i offertformuläret högst upp på sidan – det tar två minuter och är gratis och inte bindande. Du kan också ringa " + PHONE + "." },
-    { k: ["flex", "rabatt", "billig", "discount"], a: "Med FlexFlytt anger du ett tidsfönster i stället för ett exakt datum och kan spara upp till 15 %." },
     { k: ["tid", "lång", "timmar", "hours"], a: "En 2:a tar oftast 4–5 timmar med två flyttare, beroende på mängd, våning och avstånd." },
     { k: ["kontakt", "telefon", "ring", "mail", "adress", "اتصال", "رقم"], a: "Ring oss på " + PHONE + " eller besök oss på Frejgatan 9B i Kungsör." }
   ];

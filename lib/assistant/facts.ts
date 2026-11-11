@@ -24,7 +24,7 @@ PRISER – alla priser inkl. moms och EFTER RUT-avdrag (privatpersoner). Hela pr
 - Packning och uppackning per timme: samma priser (595/849/1 199 kr/tim), material ingår.
 - Flyttstäd, fast pris efter boyta: upp till 30 m² 2 000 kr, 31–50 2 600, 51–70 3 100, 71–90 3 650, 91–100 4 000, 101–120 4 500, 121–140 4 800, 141–150 5 100, 151–170 5 950, 171–190 6 300, 191–200 6 600, 201–220 6 950, 221–240 7 550, 241–260 7 950, 261–280 8 500, 281–300 9 200. Fönster och balkong ingår. Över 300 m²: offert.
 - Flyttkartonger 50 st: köpa 2 000 kr, hyra 750 kr, leverans ingår.
-- FlexFlytt [EJ BEKRÄFTAT]: flexibelt datumfönster kan ge rabatt – kunden får bekräftelse av FX Flytt.
+- FlexFlytt / flexibelt datum med rabatt: erbjuds INTE. Om kunden frågar: säg att vi inte har det, men hänvisa till paketrabatterna (Premium −10 %, Deluxe −20 %).
 
 PAKET
 - Bas: flytt till fast pris (lastbil med förare, bärhjälp, lastning/lossning, möbelskydd, personlig kontaktperson).
