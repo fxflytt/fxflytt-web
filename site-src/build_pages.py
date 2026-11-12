@@ -169,6 +169,7 @@ SERVICES = [
  ("spark","Flyttstäd","Grundlig städning av bostaden du lämnar, enligt checklista, så att du är redo för besiktningen.",["Kök & badrum","Fönster och balkong ingår","RUT-avdrag"]),
  ("trash","Bortforsling","Vi kör bort möbler och saker du inte vill ta med – till återvinning eller tipp.",["Sorteras rätt","Pris enligt offert"]),
  ("box","Flyttkartonger","Köp eller hyr 50 flyttkartonger av oss.",["Köpa 2 000 kr","Hyra 750 kr","Leverans ingår"]),
+ ("box","Magasinering","Behöver du förvara möbler och kartonger mellan två boenden, vid renovering eller längre? Vi hämtar, förvarar och kör ut när du behöver.",["Kort eller lång tid","Pris enligt offert"]),
 ]
 rows = "".join(f'''<div class="svc-row">{ico(i)}<div><h3>{t}</h3><p>{p}</p><ul>{"".join(f'<li class="{"tag-rut" if x=="RUT-avdrag" else ""}">{x}</li>' for x in tags)}</ul></div>
 <a href="{"flyttstad.html" if t=="Flyttstäd" else "index.html#offert"}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t=="Flyttstäd" else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
@@ -588,6 +589,7 @@ villkor = page("villkor.html",
     <ul>
       <li>Om något går sönder eller skadas när vi flyttar, <b>ersätter vi skadan</b>.</li>
       <li>FX Flytt AB är försäkrat hos <b>Trygg-Hansa</b> med ersättning upp till <b>10 miljoner kronor</b>.</li>
+      <li><b>7 dagars städgaranti:</b> Är du eller hyresvärden inte nöjd med flyttstädningen, kontakta oss inom 7 dagar så kommer vi tillbaka och åtgärdar det utan kostnad.</li>
       <li>Kontrollera ditt gods när flytten är klar. Upptäcker du en skada, meddela oss så snart som möjligt – helst samma dag och med bilder – så hanterar vi ärendet snabbt.</li>
     </ul>
 
@@ -598,6 +600,58 @@ villkor = page("villkor.html",
     <p>FX Flytt AB, Frejgatan 9B, Kungsör · 076-300 07 23 · info@fxflytt.se</p>
   </div>
 </section>""")
+
+# ---------------------------------------------------------------- RUT-avdrag (sources: Skatteverket rules 2026)
+rutpage = page("rut-avdrag.html",
+ "RUT-avdrag för flytt och flyttstäd 2026 – så fungerar det | FX Flytt",
+ "Så fungerar RUT-avdraget för flytt och flyttstäd 2026: 50 % av arbetskostnaden, max 75 000 kr per person och år. Vi drar av det direkt på fakturan.",
+ "RUT-avdrag", "RUT-avdrag – <span>halva arbetskostnaden betalar du inte</span>",
+ "Alla våra priser visas redan efter RUT-avdrag. Här förklarar vi hur avdraget fungerar och vad du behöver tänka på.",
+ """
+<section>
+  <div class="wrap" style="max-width:860px">
+    <h2 style="font-size:1.5rem;margin-bottom:10px">Så fungerar det</h2>
+    <ul class="ticks" style="display:grid;gap:10px">
+      <li><b>50 % av arbetskostnaden.</b> RUT-avdraget är en skattereduktion för privatpersoner på hälften av arbetskostnaden för flytt och flyttstäd.</li>
+      <li><b>Vi drar av det direkt på fakturan.</b> Du betalar bara din del. Vi ansöker om resten hos Skatteverket – du behöver inte göra något.</li>
+      <li><b>Du lämnar ditt personnummer</b> när du bokar, så att vi kan göra ansökan.</li>
+      <li><b>Betala fakturan elektroniskt</b>, t.ex. via din bank. Kontant betalning ger inte rätt till avdrag.</li>
+    </ul>
+
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Hur mycket kan jag få?</h2>
+    <div class="cmp-scroll"><table class="cmp ex">
+      <tbody>
+        <tr><th scope="row">RUT + ROT tillsammans</th><td><b>högst 75 000 kr per person och år</b></td></tr>
+        <tr><th scope="row">Varav ROT</th><td>högst 50 000 kr per person och år</td></tr>
+        <tr><th scope="row">Avdrag för flytt och flyttstäd</th><td>50 % av arbetskostnaden</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cmp-note">Taket gäller per person. Är ni två i hushållet kan ni dela på fakturan – då har ni var sitt tak. Du kan inte få mer i avdrag än du betalar i skatt under året.</p>
+
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Vad ger avdrag – och vad gör det inte?</h2>
+    <div class="cmp-scroll"><table class="cmp ex">
+      <thead><tr><th>Ger RUT-avdrag ✓</th><th>Ger inte RUT-avdrag –</th></tr></thead>
+      <tbody>
+        <tr><td>Bära, lasta och lossa</td><td>Flyttbil och drivmedel</td></tr>
+        <tr><td>Packa och packa upp</td><td>Flyttkartonger och material</td></tr>
+        <tr><td>Ned- och montering av möbler</td><td>Magasinering (förvaringshyra)</td></tr>
+        <tr><td>Flyttstädning</td><td>Flytt för företag</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Om Skatteverket säger nej</h2>
+    <p>Om du redan har använt ditt utrymme för året, eller om Skatteverket av någon annan anledning nekar avdraget helt eller delvis, betalar du mellanskillnaden. Du kan se hur mycket du har kvar genom att logga in på Skatteverkets e-tjänst.</p>
+
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Våra priser är redan efter RUT</h2>
+    <p>Alla priser på fxflytt.se visas inklusive moms och efter RUT-avdrag. Exempel: flytt av en bostad på 60 m² kostar 3 950 kr efter avdrag.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
+      <a href="index.html#prisraknare" class="btn btn-accent">Räkna ut ditt pris →</a>
+      <a href="index.html#offert" class="btn btn-ghost">Begär offert</a>
+    </div>
+    <p class="cmp-note" style="margin-top:22px">Det här är allmän information. Läs mer och kontrollera vad som gäller dig hos <a href="https://www.skatteverket.se/rotochrut" target="_blank" rel="noopener">Skatteverket</a>.</p>
+  </div>
+</section>
+""")
 
 # ---------------------------------------------------------------- Kubikräknare
 kubik = page("kubikraknare.html",
@@ -653,6 +707,7 @@ CHECK = [
 checklist = "".join(tip("Ingår", t, items) for t, items in CHECK)
 FAQ = [
  ("Vad kostar flyttstäd?", "Fast pris efter boyta, från 2 000 kr (upp till 30 m²) efter RUT-avdrag. Till exempel 3 100 kr för 51–70 m² och 4 000 kr för 91–100 m². Över 300 m² ger vi offert."),
+ ("Har ni städgaranti?", "Ja, 7 dagars städgaranti. Är du eller hyresvärden inte nöjd med flyttstädningen, hör av dig inom 7 dagar så kommer vi tillbaka och åtgärdar det utan kostnad."),
  ("Hur fungerar RUT-avdraget för flyttstäd?", "Privatpersoner betalar bara halva arbetskostnaden. Vi drar av RUT direkt på fakturan och ansöker hos Skatteverket åt dig."),
  ("I vilka orter gör ni flyttstäd?", "I alla orter där vi flyttar – se listan på den här sidan. Samma fasta pris gäller i alla orter."),
  ("Blir det billigare om jag bokar flytt och städ tillsammans?", "Ja. Med Premium får du 10 % rabatt på flytt och städ, och med Deluxe 20 %."),
@@ -681,7 +736,7 @@ flyttstad = page("flyttstad.html",
       <div class="val">{ico("pct")}<b>Från 2 000 kr</b><span>Fast pris efter boyta, efter RUT-avdrag.</span></div>
       <div class="val">{ico("spark")}<b>Checklista</b><span>Kök, badrum, alla rum och fönster.</span></div>
       <div class="val">{ico("user")}<b>En kontakt</b><span>Samma person för flytt och städ.</span></div>
-      <div class="val">{ico("cal")}<b>Flexibelt</b><span>Boka dagen som passar dig.</span></div>
+      <div class="val">{ico("shield")}<b>7 dagars städgaranti</b><span>Inte nöjd? Vi kommer tillbaka och åtgärdar det utan kostnad.</span></div>
     </div>
   </div>
 </section>
@@ -712,5 +767,5 @@ flyttstad = page("flyttstad.html",
   </div>
 </section>""", extra_head=faq_ld)
 
-for f, s in [("kubikraknare.html", kubik), ("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
+for f, s in [("rut-avdrag.html", rutpage), ("kubikraknare.html", kubik), ("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)

@@ -218,7 +218,7 @@ def city_page(c):
       <p class="small">* Inkl. moms efter RUT-avdrag. Körsträcka 12 kr/km från 15 km mellan adresserna. Per timme minst 3 timmar. Premium −10 %, Deluxe −20 % på flytt och städ.</p>
       <a href="index.html#prisraknare" class="btn btn-accent" style="width:100%">Räkna ut ditt pris</a>
       <a href="index.html#ring-mig" data-callback class="btn btn-ghost" style="width:100%;margin-top:8px">Bli uppringd</a>
-      <ul class="side-trust"><li>✓ Trafiktillstånd från Transportstyrelsen</li><li>✓ Försäkrade hos Trygg-Hansa (upp till 10 milj. kr)</li><li>✓ Inga dolda avgifter</li></ul>
+      <ul class="side-trust"><li>✓ Trafiktillstånd från Transportstyrelsen</li><li>✓ Försäkrade hos Trygg-Hansa (upp till 10 milj. kr)</li><li>✓ 7 dagars städgaranti</li><li>✓ Inga dolda avgifter</li></ul>
     </aside>
   </div>
 </section>
