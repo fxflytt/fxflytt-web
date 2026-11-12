@@ -599,6 +599,48 @@ villkor = page("villkor.html",
   </div>
 </section>""")
 
+# ---------------------------------------------------------------- Kubikräknare
+kubik = page("kubikraknare.html",
+ "Kubikräknare för flytt – räkna ut volymen i m³ | FX Flytt",
+ "Räkna ut hur många kubikmeter ditt bohag tar, rum för rum. Se hur stor flyttbil du behöver och skicka listan direkt med din offertförfrågan.",
+ "Kubikräknare", "Kubikräknare – <span>hur mycket ska flyttas?</span>",
+ "Lägg till dina möbler rum för rum, eller börja med en typisk bostad och justera. Du ser volymen i m³ direkt – och listan följer med när du begär offert.",
+ """
+<section>
+  <div class="wrap" style="max-width:860px">
+    <div id="kubik-full" style="border:1.5px solid var(--line);border-radius:16px;overflow:hidden;background:#fff"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
+      <a href="index.html#offert" class="btn btn-accent">Begär offert med min lista →</a>
+      <a href="index.html#prisraknare" class="btn btn-ghost">Se priser</a>
+    </div>
+    <p style="color:var(--muted);font-size:.88rem;margin-top:14px">Listan sparas i din webbläsare, så du kan fortsätta senare. Den skickas med automatiskt när du fyller i offertformuläret.</p>
+
+    <h2 style="font-size:1.4rem;margin:40px 0 10px">Så mycket brukar en flytt ta</h2>
+    <div class="cmp-scroll"><table class="cmp ex">
+      <thead><tr><th>Bostad</th><th>Boyta</th><th>Ungefärlig volym</th><th>Flyttbilar</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1 rok</th><td>upp till 35 m²</td><td>8–12 m³</td><td>1</td></tr>
+        <tr><th scope="row">2 rok</th><td>36–55 m²</td><td>12–18 m³</td><td>1</td></tr>
+        <tr><th scope="row">3 rok</th><td>56–75 m²</td><td>18–25 m³</td><td>1–2</td></tr>
+        <tr><th scope="row">4 rok</th><td>76–100 m²</td><td>25–35 m³</td><td>2</td></tr>
+        <tr><th scope="row">Villa</th><td>100 m² +</td><td>35 m³ +</td><td>2–3</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cmp-note">Tumregel: ett normalmöblerat hem tar ca 0,35–0,5 m³ per m² boyta. En flyttkartong är ca 0,06 m³. Fullt förråd, många bokhyllor eller hobbysaker ger mer.</p>
+
+    <h2 style="font-size:1.4rem;margin:36px 0 10px">Tips för en rätt beräkning</h2>
+    <ul class="ticks" style="display:grid;gap:8px">
+      <li>Glöm inte förråd, källare, vind, balkong och garage.</li>
+      <li>Räkna kartongerna: ungefär 30 för en 2:a och 50 för en 3:a.</li>
+      <li>Har du något ovanligt? Lägg till det med egna mått (längd × bredd × höjd).</li>
+      <li>Är du osäker – skicka listan ändå. Vi går igenom den med dig innan flytten.</li>
+    </ul>
+  </div>
+</section>
+<script src="/kubik.js"></script>
+<script>FXKubik.mount(document.getElementById('kubik-full'),{full:true});</script>
+""")
+
 # ---------------------------------------------------------------- Flyttstäd (one page for all cities)
 ALLC = [("kungsor","Kungsör"),("orebro","Örebro"),("eskilstuna","Eskilstuna"),("vasteras","Västerås"),("katrineholm","Katrineholm")] + [(c["slug"],c["name"]) for c in EXTRA]
 chips = "".join(f'<a class="city" href="flyttfirma-{s}.html" style="text-decoration:none"><svg><use href="#i-pin"/></svg>{n}</a>' for s,n in ALLC)
@@ -670,5 +712,5 @@ flyttstad = page("flyttstad.html",
   </div>
 </section>""", extra_head=faq_ld)
 
-for f, s in [("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
+for f, s in [("kubikraknare.html", kubik), ("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)
