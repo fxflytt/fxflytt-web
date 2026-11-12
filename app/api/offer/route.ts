@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     name: str(d.name, 120), phone: str(d.phone, 40), email: str(d.email, 200),
     from: str(d.from, 200), to: str(d.to, 200), distanceKm: num(d.distanceKm),
     size: str(d.size, 80), areaM2: str(d.areaM2, 10), home: str(d.home, 60),
-    date: str(d.date, 20), dateType: str(d.dateType, 60), floorFrom: str(d.floorFrom, 60), floorTo: str(d.floorTo, 60),
+    date: str(d.date, 20), dateType: str(d.dateType, 60), floorFrom: str(d.floorFrom, 140), floorTo: str(d.floorTo, 140),
     extras: Array.isArray(d.extras) ? d.extras.slice(0, 12).map((x) => str(x, 60)).filter(Boolean) : [],
     message: str(d.message, 3000),
     price: price && num(price.total) !== undefined && Array.isArray(price.lines) ? {
