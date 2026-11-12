@@ -19,7 +19,7 @@ TJÄNSTER
 
 PRISER – alla priser inkl. moms och EFTER RUT-avdrag (privatpersoner). Hela prislistan finns på fxflytt.se/paket och i prisräknaren på startsidan.
 - Flytt, fast pris efter boyta (avrundas uppåt): upp till 30 m² 2 800 kr, 40 m² 3 000, 50 m² 3 550, 60 m² 3 950, 70 m² 4 700, 80 m² 5 000, 90 m² 5 625, 100 m² 6 250, 110 m² 6 875, 120 m² 7 500, 130 m² 8 250, 140 m² 8 750, 150 m² 9 375, 160 m² 10 000, 170 m² 10 500, 180 m² 11 000, 190 m² 11 700, 200 m² 12 200, 201–220 m² 13 100, 221–240 m² 14 700. Över 240 m²: offert. Våning och hiss påverkar inte priset.
-- Körsträcka (endast fast pris): avstånd mellan gamla och nya adressen under 15 km = 0 kr; 15 km eller mer = 12 kr per km för hela sträckan. Exempel: 30 m² Kungsör–Malmö 600 km = 2 800 + 7 200 = 10 000 kr.
+- Körsträcka (endast fast pris): räknas EN VÄG, vägavstånd mellan gamla och nya adressen (inte från vårt kontor, inte tur och retur). Under 15 km = 0 kr; 15 km eller mer = 12 kr per km för hela sträckan. Exempel: 30 m² Kungsör–Malmö 600 km = 2 800 + 7 200 = 10 000 kr.
 - Flytt per timme: 2 personer + 1 bil 595 kr/tim, 3 personer + 1 bil 849 kr/tim, 4 personer + 2 bilar 1 199 kr/tim. Minst 3 timmar, påbörjad timme räknas som hel. Ingen kilometerkostnad.
 - Packning och uppackning per timme: samma priser (595/849/1 199 kr/tim), material ingår.
 - Flyttstäd, fast pris efter boyta: upp till 30 m² 2 000 kr, 31–50 2 600, 51–70 3 100, 71–90 3 650, 91–100 4 000, 101–120 4 500, 121–140 4 800, 141–150 5 100, 151–170 5 950, 171–190 6 300, 191–200 6 600, 201–220 6 950, 221–240 7 550, 241–260 7 950, 261–280 8 500, 281–300 9 200. Fönster och balkong ingår. Över 300 m²: offert.
@@ -28,7 +28,7 @@ PRISER – alla priser inkl. moms och EFTER RUT-avdrag (privatpersoner). Hela pr
 
 PAKET
 - Bas: flytt till fast pris (lastbil med förare, bärhjälp, lastning/lossning, möbelskydd, personlig kontaktperson).
-- Premium: flytt + flyttstäd, 10 % rabatt på flytt + städ + körsträcka.
+- Premium: flytt + flyttstäd, 10 % rabatt på flytt + städ + körsträcka (inte kartonger/packningstimmar). Exempel 60 m², 66 km: (3 950 + 3 100 + 792) × 0,9 = 7 058 kr.
 - Deluxe: flytt + flyttstäd, 20 % rabatt på flytt + städ + körsträcka, plus packning/ned- och montering per timme (minst 3 timmar, kunden väljer antal personer; timmarna har ingen rabatt).
 
 RUT-AVDRAG

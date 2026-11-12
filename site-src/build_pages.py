@@ -304,7 +304,7 @@ paket = page("paket.html",
       <p class="lead">Priser inkl. moms efter RUT-avdrag. Boytan avrundas uppåt till närmaste steg.</p></div>
     <div class="pl-grid">
       <div><h3>Flytt – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Flyttbilar</th><th>Pris</th></tr></thead><tbody>{move_tbl}</tbody></table>
-        <p class="small">Över 240 m²: pris enligt offert. Körsträcka 12 kr/km tillkommer när avståndet mellan adresserna är 15 km eller mer. Våning och hiss påverkar inte priset.</p></div>
+        <p class="small">Över 240 m²: pris enligt offert. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km: 0 kr. 15 km eller mer: 12 kr/km för hela sträckan – till exempel 66 km × 12 kr = 792 kr. Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt. Exempel 60 m², 66 km med Premium: (3 950 + 3 100 + 792 kr) − 10 % = 7 058 kr. Våning och hiss påverkar inte priset.</p></div>
       <div><h3>Flyttstäd – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody>{clean_tbl}</tbody></table>
         <p class="small">Fönster och balkong ingår. Över 300 m²: pris enligt offert.</p></div>
     </div>
@@ -573,7 +573,9 @@ villkor = page("villkor.html",
     <ul>
       <li>Alla priser anges i svenska kronor inklusive moms.</li>
       <li>Fast pris gäller för den boyta kunden uppger. Vid timpris debiteras minst 3 timmar, och påbörjad timme räknas som hel.</li>
-      <li>Körsträcka debiteras med 12 kr/km när avståndet mellan adresserna är 15 km eller mer. Övriga tillval enligt prislista eller offert.</li>
+      <li>Körsträcka räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km debiteras ingen körsträcka. Vid 15 km eller mer debiteras 12 kr/km för hela sträckan, till exempel 66 km × 12 kr = 792 kr.</li>
+      <li>Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt.</li>
+      <li>Övriga tillval enligt prislista eller offert.</li>
       <li><b>Inga dolda avgifter.</b> Vi går igenom alla detaljer med dig innan flytten. Det pris som står i din bokningsbekräftelse är det du betalar – inga extra avgifter tillkommer i efterhand.</li>
     </ul>
 
@@ -794,7 +796,7 @@ FAQ = [
  ("Har ni städgaranti?", "Ja, 7 dagars städgaranti. Är du eller hyresvärden inte nöjd med flyttstädningen, hör av dig inom 7 dagar så kommer vi tillbaka och åtgärdar det utan kostnad."),
  ("Hur fungerar RUT-avdraget för flyttstäd?", "Privatpersoner betalar bara halva arbetskostnaden. Vi drar av RUT direkt på fakturan och ansöker hos Skatteverket åt dig."),
  ("I vilka orter gör ni flyttstäd?", "I alla orter där vi flyttar – se listan på den här sidan. Samma fasta pris gäller i alla orter."),
- ("Blir det billigare om jag bokar flytt och städ tillsammans?", "Ja. Med Premium får du 10 % rabatt på flytt och städ, och med Deluxe 20 %."),
+ ("Blir det billigare om jag bokar flytt och städ tillsammans?", "Ja. Med Premium får du 10 % rabatt och med Deluxe 20 %. Rabatten dras på flytt, flyttstäd och körsträcka – inte på kartonger eller packningstimmar."),
  ("Kan jag boka flyttstäd utan flytt?", "Ja, flyttstäd kan bokas separat eller tillsammans med flytten."),
  ("Vad behöver jag göra före städningen?", "Töm bostaden, frosta av kyl och frys och se till att vi kommer in. Berätta om det finns förråd eller balkong som ska städas."),
 ]

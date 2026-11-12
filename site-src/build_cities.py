@@ -137,7 +137,7 @@ def price_examples(c):
       <thead><tr><th>Boyta</th><th>Flytt (Bas)</th><th>Flyttstäd</th><th class="hot">Flytt + städ (Premium −10 %)</th></tr></thead>
       <tbody>{rows}</tbody>
     </table></div>
-    <p class="cmp-note">Flyttar du längre, till exempel från {c["name"]} till en annan ort, tillkommer 12 kr/km när avståndet är 15 km eller mer. Våning och hiss påverkar inte priset. <a href="index.html#prisraknare">Räkna ut exakt pris</a></p>
+    <p class="cmp-note">Flyttar du längre, till exempel från {c["name"]} till en annan ort, tillkommer 12 kr/km för hela sträckan när avståndet mellan adresserna (en väg) är 15 km eller mer. Våning och hiss påverkar inte priset. <a href="index.html#prisraknare">Räkna ut exakt pris</a></p>
   </div>
 </section>
 """
@@ -215,7 +215,7 @@ def city_page(c):
       <div class="row"><span>Flytt, fast pris</span><b>från 2 800 kr*</b></div>
       <div class="row"><span>Flytt per timme</span><b>från 595 kr/tim*</b></div>
       <div class="row"><span>Flyttstäd, fast pris</span><b>från 2 000 kr*</b></div>
-      <p class="small">* Inkl. moms efter RUT-avdrag. Körsträcka 12 kr/km från 15 km mellan adresserna. Per timme minst 3 timmar. Premium −10 %, Deluxe −20 % på flytt och städ.</p>
+      <p class="small">* Inkl. moms efter RUT-avdrag. Körsträcka 12 kr/km för hela sträckan när avståndet mellan adresserna (en väg) är 15 km eller mer. Per timme minst 3 timmar. Premium −10 %, Deluxe −20 % på flytt, städ och körsträcka.</p>
       <a href="index.html#prisraknare" class="btn btn-accent" style="width:100%">Räkna ut ditt pris</a>
       <a href="index.html#ring-mig" data-callback class="btn btn-ghost" style="width:100%;margin-top:8px">Bli uppringd</a>
       <ul class="side-trust"><li>✓ Trafiktillstånd från Transportstyrelsen</li><li>✓ Försäkrade hos Trygg-Hansa (upp till 10 milj. kr)</li><li>✓ 7 dagars städgaranti</li><li>✓ Inga dolda avgifter</li></ul>
