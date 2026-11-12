@@ -20,21 +20,21 @@
 
   function draw() {
     var L = window.L;
-    var map = L.map(el, { scrollWheelZoom: false, dragging: !L.Browser.mobile, tap: false, zoomControl: true, attributionControl: true });
+    var map = L.map(el, { zoomSnap: 0.25, scrollWheelZoom: false, dragging: !L.Browser.mobile, tap: false, zoomControl: true, attributionControl: true });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 12, attribution: "© OpenStreetMap" }).addTo(map);
     var pts = [];
     ORTER.forEach(function (o) {
       var home = !!o[4];
       var icon = L.divIcon({
         className: "ok-pin" + (home ? " ok-home" : ""),
-        html: '<span class="ok-dot">' + TRUCK + "</span>" + (home ? '<span class="ok-lbl">Kontor</span>' : ""),
-        iconSize: [34, 34], iconAnchor: [17, 17], popupAnchor: [0, -16]
+        html: '<span class="ok-dot">' + TRUCK + "</span>",
+        iconSize: home ? [40, 40] : [30, 30], iconAnchor: home ? [20, 20] : [15, 15], popupAnchor: [0, -16]
       });
-      L.marker([o[2], o[3]], { icon: icon, title: o[1], keyboard: true }).addTo(map)
+      L.marker([o[2], o[3]], { icon: icon, title: home ? o[1] + " – kontor" : o[1], keyboard: true, zIndexOffset: home ? 1000 : 0 }).addTo(map)
         .bindPopup('<b>' + (home ? "FX Flytt – kontor i " : "Flyttfirma ") + o[1] + '</b><br><a href="flyttfirma-' + o[0] + '.html">Läs mer →</a>');
       pts.push([o[2], o[3]]);
     });
-    map.fitBounds(pts, { padding: [24, 24] });
+    map.fitBounds(pts, { padding: [18, 18] });
   }
   function load() {
     if (window.L) return draw();
