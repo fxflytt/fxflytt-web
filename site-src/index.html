@@ -479,13 +479,14 @@ body.noscroll .mbar{display:none}
             <div class="full" id="map"></div>
             <div class="full"><label class="f" for="fsvc">Vad behöver du?</label>
               <select id="fsvc" name="Tjänst" required>
-                <option value="move|bas">Flytt – Bas</option>
-                <option value="move|premium">Flytt + flyttstäd – Premium (−10 %)</option>
-                <option value="move|deluxe">Flytt + flyttstäd + packning – Deluxe (−20 %)</option>
+                <option value="move|bas">Bara flytt – Bas</option>
+                <option value="move|premium">Flytt + flyttstäd – Premium, 10 % rabatt</option>
+                <option value="move|deluxe">Flytt + flyttstäd + packning – Deluxe, 20 % rabatt</option>
                 <option value="hourly|">Flytt per timme</option>
-                <option value="cleaning|">Endast flyttstäd</option>
+                <option value="cleaning|">Bara flyttstäd</option>
                 <option value="other|">Kontorsflytt, piano eller annat</option>
-              </select></div>
+              </select>
+              <p id="fsvc-info" aria-live="polite" style="margin:8px 0 0;padding:10px 12px;border-radius:10px;background:#f1f6fb;font-size:.88rem;line-height:1.45;color:#1d3247"></p></div>
             <div class="full"><label class="f" for="kvm">Boyta (m²)</label><input id="kvm" name="Boyta m²" type="number" min="1" max="2000" inputmode="numeric" required placeholder="t.ex. 65"></div>
           </div>
         </div>
@@ -497,10 +498,21 @@ body.noscroll .mbar{display:none}
               <select id="typ" name="Bostad">
                 <option>1 rok</option><option selected>2 rok</option><option>3 rok</option><option>4 rok</option><option>Villa / radhus</option><option>Kontor / lokal</option>
               </select></div>
-            <div><label class="f" for="vf">Våning (från)</label>
-              <select id="vf" name="Våning från"><option>Bottenplan</option><option>1–2 tr, hiss</option><option>1–2 tr, utan hiss</option><option>3+ tr, hiss</option><option>3+ tr, utan hiss</option></select></div>
-            <div><label class="f" for="vt">Våning (till)</label>
-              <select id="vt" name="Våning till"><option>Bottenplan</option><option>1–2 tr, hiss</option><option>1–2 tr, utan hiss</option><option>3+ tr, hiss</option><option>3+ tr, utan hiss</option></select></div>
+            <div class="full" style="font-weight:700;margin-top:6px">Gamla bostaden</div>
+            <div><label class="f" for="vf">Våning</label>
+              <select id="vf" name="Våning från"><option>Bottenplan</option><option>1 tr</option><option>2 tr</option><option>3 tr</option><option>4 tr</option><option>5 tr</option><option>6 tr</option><option>7 tr</option><option>8 tr</option><option>9 tr</option><option>10 tr eller högre</option></select></div>
+            <div><label class="f" for="hf">Hiss</label>
+              <select id="hf" name="Hiss från"><option>Ingen hiss</option><option>Liten hiss (stora möbler får inte plats)</option><option>Stor hiss</option></select></div>
+            <div class="full"><label class="f" for="bf">Hur långt från lastbilen till porten?</label>
+              <select id="bf" name="Bärsträcka från"><option>Under 10 m</option><option>10–30 m</option><option>Över 30 m</option></select></div>
+            <div class="full" style="font-weight:700;margin-top:6px">Nya bostaden</div>
+            <div><label class="f" for="vt">Våning</label>
+              <select id="vt" name="Våning till"><option>Bottenplan</option><option>1 tr</option><option>2 tr</option><option>3 tr</option><option>4 tr</option><option>5 tr</option><option>6 tr</option><option>7 tr</option><option>8 tr</option><option>9 tr</option><option>10 tr eller högre</option></select></div>
+            <div><label class="f" for="ht">Hiss</label>
+              <select id="ht" name="Hiss till"><option>Ingen hiss</option><option>Liten hiss (stora möbler får inte plats)</option><option>Stor hiss</option></select></div>
+            <div class="full"><label class="f" for="bt">Hur långt från lastbilen till porten?</label>
+              <select id="bt" name="Bärsträcka till"><option>Under 10 m</option><option>10–30 m</option><option>Över 30 m</option></select></div>
+            <p class="full" style="margin:0;font-size:.85rem;color:var(--muted)">Våning och hiss påverkar inte priset – vi använder uppgifterna för att skicka rätt antal flyttare.</p>
             <div class="full">
               <label class="f">Tillval</label>
               <div class="checks">
@@ -977,7 +989,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       name:v('name'), phone:v('tel'), email:v('email'), from:v('from'), to:v('to'),
       distanceKm: window.fxDistance ? Number(window.fxDistance) : undefined,
       size:(document.getElementById('fsvc').selectedOptions[0]||{}).text||'', areaM2:v('kvm'), home:v('typ'), date:v('date'),
-      floorFrom:v('vf'), floorTo:v('vt'), message:v('msg'),
+      floorFrom:[v('vf'),v('hf'),'bärsträcka '+v('bf')].join(' · '), floorTo:[v('vt'),v('ht'),'bärsträcka '+v('bt')].join(' · '), message:v('msg'),
       extras:[...form.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value),
       price: v('fsvc').startsWith('other') ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined
     };
@@ -1044,12 +1056,21 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     if(+fkvm.value>0) $('c-kvm').value=fkvm.value;
     calc();
   }
+  const SVC_INFO={
+    'move|bas':'<b>Ingår:</b> lastbil med förare, bärhjälp, lastning och lossning, filtar och möbelskydd. Flyttstäd och packning ingår inte.',
+    'move|premium':'<b>Ingår:</b> allt i Bas + flyttstäd (fönster och balkong) med 7 dagars städgaranti. <b>10 % rabatt</b> på flytt, städ och körsträcka.',
+    'move|deluxe':'<b>Ingår:</b> allt i Premium + packning, ned- och montering (minst 3 timmar). <b>20 % rabatt</b> på flytt, städ och körsträcka.',
+    'hourly|':'<b>Per timme:</b> 2 flyttare + bil från 595 kr/tim efter RUT, minst 3 timmar.',
+    'cleaning|':'<b>Ingår:</b> flyttstäd enligt checklista, fönster och balkong – med 7 dagars städgaranti. Från 2 000 kr efter RUT.',
+    'other|':'Beskriv vad du behöver i nästa steg, så återkommer vi med ett pris.'};
+  const svcInfo=()=>{const el=$('fsvc-info'); if(el) el.innerHTML=SVC_INFO[fsvc.value]||'';};
+  fsvc.addEventListener('change',svcInfo); svcInfo();
   fsvc.addEventListener('change',formToCalc); fkvm.addEventListener('input',formToCalc);
   $('c-book').addEventListener('click',()=>{
     const svc=$('c-svc').value, pkg=svc==='move'?$('c-pkg').value:'';
-    fsvc.value=svc+'|'+pkg; fkvm.value=$('c-kvm').value; formToCalc();
+    fsvc.value=svc+'|'+pkg; svcInfo(); fkvm.value=$('c-kvm').value; formToCalc();
   });
-  document.querySelectorAll('a[data-pkg]').forEach(a=>a.addEventListener('click',()=>{fsvc.value='move|'+a.dataset.pkg;}));
+  document.querySelectorAll('a[data-pkg]').forEach(a=>a.addEventListener('click',()=>{fsvc.value='move|'+a.dataset.pkg; svcInfo();}));
   calc();
 })();
 
