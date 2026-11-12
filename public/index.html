@@ -843,7 +843,7 @@ body.noscroll .mbar{display:none}
       <h2>Har du frågor? Vi har svar.</h2>
     </div>
     <div class="faq">
-      <details open><summary>Hur fungerar RUT-avdraget?</summary><p>Du betalar bara halva arbetskostnaden. Vi drar av RUT direkt på fakturan och ansöker hos Skatteverket åt dig. Du behöver bara uppge ditt personnummer vid bokningen. Transport och material omfattas inte av RUT. <a href="rut-avdrag.html">Läs mer om RUT-avdraget →</a></p></details>
+      <details open><summary>Hur fungerar RUT-avdraget?</summary><p>Du betalar bara halva arbetskostnaden. Vi drar av RUT direkt på fakturan och ansöker hos Skatteverket åt dig. Du behöver bara uppge ditt personnummer vid bokningen. Transport och material omfattas inte av RUT. Priset efter RUT förutsätter att du har rätt till avdraget och utrymme kvar för året. <a href="rut-avdrag.html">Läs mer om RUT-avdraget →</a></p></details>
       <details><summary>Är offerten bindande?</summary><p>Nej. Offerten är helt gratis och utan förpliktelser. Du bestämmer själv om du vill boka.</p></details>
       <details><summary>Kan jag ändra eller avboka min flytt?</summary><p>Ja, du kan ändra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen. Avbokar du 5 dagar eller mindre före debiteras 10 % av priset.</p></details>
       <details><summary>Är ni försäkrade om något går sönder?</summary><p>Ja. Om något skadas under flytten ersätter vi det. FX Flytt AB är försäkrat hos Trygg-Hansa med ersättning upp till 10 miljoner kronor och har trafiktillstånd från Transportstyrelsen.</p></details>
@@ -1041,7 +1041,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     $('c-res').textContent=kr(q.totalAfterRut);
     $('c-det').innerHTML=q.lines.map(l=>'<div>• '+l.label+': '+kr(l.amount)+'</div>').join('')+
       (inp.volumeM3?'<div style="margin-top:6px">📦 Priset tar hänsyn till din volym från kubikräknaren: '+String(inp.volumeM3).replace('.',',')+' m³ ('+Math.ceil(inp.volumeM3/(window.FX_PRICES.truckM3||20))+' × 20 m³-bil).</div>':'')+
-      '<div style="opacity:.7;margin-top:6px">Inkl. moms efter RUT-avdrag (privatpersoner). '+(s==='move'?'Körsträcka under 15 km ingår.':'')+'</div>';
+      '<div style="opacity:.7;margin-top:6px">Inkl. moms efter RUT-avdrag (privatpersoner), om du har rätt till avdraget. '+(s==='move'?'Körsträcka under 15 km ingår.':'')+'</div>';
     window.fxPrice={total:q.totalAfterRut,lines:q.lines,version:q.version};
   }
   ['c-svc','c-kvm','c-km','c-pkg','c-crew','c-h','c-box'].forEach(id=>$(id).addEventListener('input',calc));

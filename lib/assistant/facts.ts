@@ -45,6 +45,8 @@ OFFERT, BOKNING OCH VILLKOR
 - Skador: om något skadas under flytten ersätter FX Flytt skadan. Försäkrade hos Trygg-Hansa, ersättning upp till 10 miljoner kr.
 - FX Flytt AB har trafiktillstånd från Transportstyrelsen.
 - Inga dolda eller extra avgifter: priset i bokningsbekräftelsen gäller. Undantag: om kunden lägger till en tjänst eller har betydligt mer saker än angivet, kommer vi överens om nytt pris INNAN arbetet görs – aldrig i efterhand utan kundens godkännande.
+- Villkor: vid bohagsflytt inom Sverige för privatpersoner gäller Bohag 2010 (SÅ, SMF och Konsumentverket) i övrigt; våra villkor och bokningsbekräftelsen gäller i första hand.
+- Pris efter RUT förutsätter att kunden har rätt till RUT-avdrag och utrymme kvar för året.
 - 7 dagars städgaranti: är kunden eller hyresvärden inte nöjd med flyttstädningen, kontakta oss inom 7 dagar så åtgärdar vi det utan kostnad.
 - Magasinering (förvaring) erbjuds, kort eller lång tid – pris enligt offert.
 - Tömning av dödsbo: sortering, flytt till anhöriga, bortforsling, magasinering och flyttstäd – fast pris enligt offert. Sida: fxflytt.se/dodsbo

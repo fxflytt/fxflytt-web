@@ -142,7 +142,7 @@ export function customerConfirmation(d: OfferData) {
         <div style="color:${MUTED};font-size:13px">Ditt pris enligt prisräknaren · efter RUT, inkl. moms</div>
         <div style="color:${NAVY};font-size:26px;font-weight:800;margin:4px 0 8px">${esc(kr(d.price.total))}</div>
         ${d.price.lines.map((l) => `<div style="color:${INK};font-size:13px;line-height:20px">${esc(l.label)} <span style="float:right">${esc(kr(l.amount))}</span></div>`).join("")}
-        <div style="color:${MUTED};font-size:12px;margin-top:10px">Priset bygger på uppgifterna du lämnat. Det slutliga priset står i din bokningsbekräftelse.</div>
+        <div style="color:${MUTED};font-size:12px;margin-top:10px">Priset bygger på uppgifterna du lämnat. Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året. Det slutliga priset står i din bokningsbekräftelse.</div>
       </td></tr>
     </table>
   </td></tr>` : "";
@@ -179,7 +179,7 @@ export function customerConfirmation(d: OfferData) {
     `Tack${first ? " " + first : ""}!\n\nVi har tagit emot din förfrågan och återkommer inom 24 timmar – oftast samma dag.\n\n` +
     (d.size ? `Tjänst: ${d.size}\n` : "") + (d.from ? `Från: ${d.from}\n` : "") + (d.to ? `Till: ${d.to}\n` : "") +
     (d.areaM2 ? `Boyta: ${d.areaM2} m²\n` : "") + (d.date ? `Önskat datum: ${fmtDate(d.date)}\n` : "") +
-    (d.price ? `\nPris enligt prisräknaren (efter RUT): ${kr(d.price.total)}\nDet slutliga priset står i din bokningsbekräftelse.\n` : "") +
+    (d.price ? `\nPris enligt prisräknaren (efter RUT): ${kr(d.price.total)}\nPriset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året.\nDet slutliga priset står i din bokningsbekräftelse.\n` : "") +
     `\nFrågor? Ring 076-300 07 23 eller svara på det här mejlet.\n\nVänliga hälsningar\nFX Flytt\nFrejgatan 9B, 736 30 Kungsör`;
   return { subject, html, text };
 }
