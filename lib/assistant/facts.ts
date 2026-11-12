@@ -43,6 +43,7 @@ OFFERT, BOKNING OCH VILLKOR
 - Skador: om något skadas under flytten ersätter FX Flytt skadan. Försäkrade hos Trygg-Hansa, ersättning upp till 10 miljoner kr.
 - FX Flytt AB har trafiktillstånd från Transportstyrelsen.
 - Inga dolda eller extra avgifter: priset i bokningsbekräftelsen gäller.
+- Volym: en flyttbil rymmer 20 m³. Ett normalt hem på 60 m² är ca 18 m³. Har kunden mer saker än vad boytan ger antal bilar för (t.ex. 60 m² men 25 m³ = 2 bilar), gäller det billigaste priset i prislistan för det antalet bilar (2 bilar = 4 700 kr, 3 bilar = 7 500 kr, 4 bilar = 11 700 kr). Mer än 80 m³ = offert. Kubikräknare: fxflytt.se/kubikraknare.
 - Kunden ska lämna korrekta uppgifter om våning, hiss, bärsträcka och mängd bohag. Värdesaker transporterar kunden själv.
 - Skador ska anmälas så snart som möjligt, helst samma dag och med bilder.
 - Dricks är inte ett krav i Sverige.

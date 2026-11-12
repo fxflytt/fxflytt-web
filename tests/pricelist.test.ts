@@ -53,3 +53,24 @@ test("bad input is rejected", () => {
   assert.throws(() => computePrice({ service: "move", areaM2: -5 }, P), PriceError);
   assert.throws(() => computePrice({ service: "hourly", crew: 7 } as any, P), PriceError);
 });
+
+test("volume: 60 m² with 25 m³ needs 2 trucks -> cheapest 2-truck price (4700)", () => {
+  const r = computePrice({ service: "move", areaM2: 60, distanceKm: 0, pkg: "bas", volumeM3: 25 }, P as any);
+  assert.equal(r.totalAfterRut, 4700); assert.equal(r.cars, 2);
+});
+test("volume within the area's trucks keeps the area price", () => {
+  const r = computePrice({ service: "move", areaM2: 60, distanceKm: 0, pkg: "bas", volumeM3: 18 }, P as any);
+  assert.equal(r.totalAfterRut, 3950); assert.equal(r.cars, 1);
+});
+test("volume never lowers the price (big area, small volume)", () => {
+  const r = computePrice({ service: "move", areaM2: 120, distanceKm: 0, pkg: "bas", volumeM3: 10 }, P as any);
+  assert.equal(r.totalAfterRut, 7500);
+});
+test("volume over 4 trucks -> quote", () => {
+  const r = computePrice({ service: "move", areaM2: 60, pkg: "bas", volumeM3: 85 }, P as any);
+  assert.equal(r.totalAfterRut, null); assert.ok(r.onRequest);
+});
+test("volume + Premium discount applies to the truck price", () => {
+  const r = computePrice({ service: "move", areaM2: 60, distanceKm: 0, pkg: "premium", volumeM3: 25 }, P as any);
+  assert.equal(r.totalAfterRut, Math.round((4700 + 3100) * 0.9));
+});

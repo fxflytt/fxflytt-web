@@ -989,7 +989,8 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     if(!window.fxComputePrice) return;
     const s=$('c-svc').value;
     const inp={service:s,areaM2:Math.max(1,+$('c-kvm').value||1),distanceKm:Math.max(0,+$('c-km').value||0),
-      pkg:$('c-pkg').value,crew:+$('c-crew').value,hours:Math.max(3,+$('c-h').value||3),boxes:$('c-box').value};
+      pkg:$('c-pkg').value,crew:+$('c-crew').value,hours:Math.max(3,+$('c-h').value||3),boxes:$('c-box').value,
+      volumeM3:(s==='move'&&window.fxVolume&&window.fxVolume.m3>0)?window.fxVolume.m3:null};
     let q; try{ q=window.fxComputePrice(inp,window.FX_PRICES); }catch(e){ $('c-res').textContent='–'; $('c-det').textContent=e.message; return; }
     if(q.totalAfterRut==null){
       $('c-res').textContent='Pris enligt offert';
@@ -998,10 +999,12 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     }
     $('c-res').textContent=kr(q.totalAfterRut);
     $('c-det').innerHTML=q.lines.map(l=>'<div>• '+l.label+': '+kr(l.amount)+'</div>').join('')+
+      (inp.volumeM3?'<div style="margin-top:6px">📦 Priset tar hänsyn till din volym från kubikräknaren: '+String(inp.volumeM3).replace('.',',')+' m³ ('+Math.ceil(inp.volumeM3/(window.FX_PRICES.truckM3||20))+' × 20 m³-bil).</div>':'')+
       '<div style="opacity:.7;margin-top:6px">Inkl. moms efter RUT-avdrag (privatpersoner). '+(s==='move'?'Körsträcka under 15 km ingår.':'')+'</div>';
     window.fxPrice={total:q.totalAfterRut,lines:q.lines,version:q.version};
   }
   ['c-svc','c-kvm','c-km','c-pkg','c-crew','c-h','c-box'].forEach(id=>$(id).addEventListener('input',calc));
+  window.addEventListener('fx-volume',calc);
   document.querySelectorAll('a[data-pkg]').forEach(a=>a.addEventListener('click',()=>{$('c-svc').value='move';$('c-pkg').value=a.dataset.pkg;calc();}));
   window.addEventListener('fx-distance',()=>{ if(window.fxDistance){ $('c-km').value=window.fxDistance; calc(); } });
   // Sync quote form <-> price calculator so the price in the request matches what the customer chose

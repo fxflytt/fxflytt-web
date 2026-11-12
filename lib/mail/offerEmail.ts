@@ -76,9 +76,9 @@ export function offerEmail(d: OfferData, sentAt: Date) {
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
       <td style="vertical-align:middle">
         <span style="display:inline-block;background:#fff;color:${NAVY};font-weight:900;font-style:italic;font-size:18px;padding:6px 10px;border-radius:8px;border-left:4px solid ${ACCENT}">FX</span>
-        <span style="color:#fff;font-size:18px;font-weight:800;margin-left:10px;vertical-align:middle">FX Flytt</span>
+        <span style="color:#fff;font-size:18px;font-weight:800;margin-left:10px;vertical-align:middle;white-space:nowrap">FX&nbsp;Flytt</span>
       </td>
-      <td align="right" style="color:#b9c7d3;font-size:12px;vertical-align:middle">${esc(when)}</td>
+      <td align="right" style="color:#b9c7d3;font-size:12px;vertical-align:middle;white-space:nowrap">${esc(when)}</td>
     </tr></table>
   </td></tr>
   <tr><td style="padding:26px 28px 6px">
@@ -155,7 +155,7 @@ export function customerConfirmation(d: OfferData) {
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid ${LINE}">
   <tr><td style="background:${NAVY};padding:20px 28px">
     <span style="display:inline-block;background:#fff;color:${NAVY};font-weight:900;font-style:italic;font-size:18px;padding:6px 10px;border-radius:8px;border-left:4px solid ${ACCENT}">FX</span>
-    <span style="color:#fff;font-size:18px;font-weight:800;margin-left:10px;vertical-align:middle">FX Flytt</span>
+    <span style="color:#fff;font-size:18px;font-weight:800;margin-left:10px;vertical-align:middle;white-space:nowrap">FX&nbsp;Flytt</span>
   </td></tr>
   <tr><td style="padding:28px 28px 8px">
     <h1 style="margin:0 0 8px;font-size:24px;color:${INK}">Tack${first ? " " + esc(first) : ""}!</h1>

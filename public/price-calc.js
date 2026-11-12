@@ -12,6 +12,8 @@
 //  - Bas = moving. Premium = moving + cleaning, 10 % off moving + cleaning + km.
 //    Deluxe = moving + cleaning, 20 % off moving + cleaning + km, plus packing/assembly hours (min 3, no discount).
 //  - Boxes (50 pcs, delivery included): buy 2000 kr, rent 750 kr. No discount.
+// Rule added 2026-11-12: one truck holds 20 m³. If the customer's own volume (kubikräknare) needs more trucks
+//  than the area price gives, the price is the CHEAPEST step on the list with that many trucks. More than 4 trucks -> quote.
 
 class PriceError extends Error {
   constructor(field, message) { super(message); this.name = "PriceError"; this.field = field; }
@@ -31,7 +33,7 @@ function num(v, field, min, max) {
 
 /**
  * @param {{service:"move"|"hourly"|"cleaning", areaM2?:number, distanceKm?:number|null, pkg?:"bas"|"premium"|"deluxe",
- *          crew?:2|3|4, hours?:number, boxes?:"none"|"buy"|"rent"}} input
+ *          crew?:2|3|4, hours?:number, boxes?:"none"|"buy"|"rent", volumeM3?:number|null}} input
  * @param {any} P  prices.json
  */
 function computePrice(input, P) {
@@ -61,7 +63,16 @@ function computePrice(input, P) {
     if (service === "move") {
       const row = pick(P.moveFixed, m2);
       if (!row) onRequest = `Flytt över ${P.moveFixed[P.moveFixed.length - 1][0]} m² – pris enligt offert`;
-      else { cars = row[2]; lines.push({ label: `Flytt ${m2} m² (${row[2]} ${row[2] === 1 ? "flyttbil" : "flyttbilar"})`, amount: row[1], discounted: true }); }
+      else {
+        const vol = input.volumeM3 == null ? null : num(input.volumeM3, "volumeM3", 0, 1000);
+        const need = vol ? Math.ceil(vol / (P.truckM3 || 20)) : 0;
+        const carsTxt = (n) => `${n} ${n === 1 ? "flyttbil" : "flyttbilar"}`;
+        if (need > row[2]) {
+          const step = P.moveFixed.find((x) => x[2] >= need);
+          if (!step) onRequest = `Volym ${String(vol).replace(".", ",")} m³ kräver fler än ${P.moveFixed[P.moveFixed.length - 1][2]} flyttbilar – pris enligt offert`;
+          else { cars = step[2]; lines.push({ label: `Flytt ${m2} m², ${String(vol).replace(".", ",")} m³ (${carsTxt(step[2])})`, amount: step[1], discounted: true }); }
+        } else { cars = row[2]; lines.push({ label: `Flytt ${m2} m² (${carsTxt(row[2])})`, amount: row[1], discounted: true }); }
+      }
 
       const km = input.distanceKm == null ? null : num(input.distanceKm, "distanceKm", 0, 3000);
       if (km != null && km >= P.km.freeBelowKm) {
@@ -104,6 +115,6 @@ function computePrice(input, P) {
   };
 }
 
-window.FX_PRICES={"version": "2026-11-11-prislista-v2", "note": "Alla belopp i SEK inkl. moms, EFTER RUT-avdrag, enligt FX Flytt AB:s prislista 2026-11-11. Fördelning arbete/transport för RUT på fakturan granskas av revisor före lansering.", "moveFixed": [[30, 2800, 1], [40, 3000, 1], [50, 3550, 1], [60, 3950, 1], [70, 4700, 2], [80, 5000, 2], [90, 5625, 2], [100, 6250, 2], [110, 6875, 2], [120, 7500, 3], [130, 8250, 3], [140, 8750, 3], [150, 9375, 3], [160, 10000, 3], [170, 10500, 3], [180, 11000, 3], [190, 11700, 4], [200, 12200, 4], [220, 13100, 4], [240, 14700, 4]], "cleaning": [[30, 2000], [50, 2600], [70, 3100], [90, 3650], [100, 4000], [120, 4500], [140, 4800], [150, 5100], [170, 5950], [190, 6300], [200, 6600], [220, 6950], [240, 7550], [260, 7950], [280, 8500], [300, 9200]], "km": {"pricePerKm": 12, "freeBelowKm": 15}, "hourly": {"2": 595, "3": 849, "4": 1199, "minHours": 3}, "packages": {"bas": {"cleaning": false, "discountPct": 0, "hours": false}, "premium": {"cleaning": true, "discountPct": 10, "hours": false}, "deluxe": {"cleaning": true, "discountPct": 20, "hours": true}}, "boxes": {"buy": 2000, "rent": 750, "qty": 50}};
+window.FX_PRICES={"version": "2026-11-12-prislista-v3", "note": "Alla belopp i SEK inkl. moms, EFTER RUT-avdrag, enligt FX Flytt AB:s prislista 2026-11-11. Fördelning arbete/transport för RUT på fakturan granskas av revisor före lansering.", "moveFixed": [[30, 2800, 1], [40, 3000, 1], [50, 3550, 1], [60, 3950, 1], [70, 4700, 2], [80, 5000, 2], [90, 5625, 2], [100, 6250, 2], [110, 6875, 2], [120, 7500, 3], [130, 8250, 3], [140, 8750, 3], [150, 9375, 3], [160, 10000, 3], [170, 10500, 3], [180, 11000, 3], [190, 11700, 4], [200, 12200, 4], [220, 13100, 4], [240, 14700, 4]], "cleaning": [[30, 2000], [50, 2600], [70, 3100], [90, 3650], [100, 4000], [120, 4500], [140, 4800], [150, 5100], [170, 5950], [190, 6300], [200, 6600], [220, 6950], [240, 7550], [260, 7950], [280, 8500], [300, 9200]], "km": {"pricePerKm": 12, "freeBelowKm": 15}, "hourly": {"2": 595, "3": 849, "4": 1199, "minHours": 3}, "packages": {"bas": {"cleaning": false, "discountPct": 0, "hours": false}, "premium": {"cleaning": true, "discountPct": 10, "hours": false}, "deluxe": {"cleaning": true, "discountPct": 20, "hours": true}}, "boxes": {"buy": 2000, "rent": 750, "qty": 50}, "truckM3": 20};
 window.fxComputePrice=computePrice;
 })();
