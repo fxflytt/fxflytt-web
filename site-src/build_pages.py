@@ -692,7 +692,7 @@ utland = page("utlandsflytt.html",
 
 # ---------------------------------------------------------------- RUT-avdrag (sources: Skatteverket rules 2026)
 rutpage = page("rut-avdrag.html",
- "RUT-avdrag för flytt och flyttstäd 2026 – så fungerar det | FX Flytt",
+ "RUT-avdrag för flytt och flyttstäd 2026 | FX Flytt",
  "Så fungerar RUT-avdraget för flytt och flyttstäd 2026: 50 % av arbetskostnaden, max 75 000 kr per person och år. Vi drar av det direkt på fakturan.",
  "RUT-avdrag", "RUT-avdrag – <span>halva arbetskostnaden betalar du inte</span>",
  "Alla våra priser visas redan efter RUT-avdrag. Här förklarar vi hur avdraget fungerar och vad du behöver tänka på.",
