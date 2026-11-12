@@ -169,10 +169,13 @@ SERVICES = [
  ("spark","Flyttstäd","Grundlig städning av bostaden du lämnar, enligt checklista, så att du är redo för besiktningen.",["Kök & badrum","Fönster och balkong ingår","RUT-avdrag"]),
  ("trash","Bortforsling","Vi kör bort möbler och saker du inte vill ta med – till återvinning eller tipp.",["Sorteras rätt","Pris enligt offert"]),
  ("box","Flyttkartonger","Köp eller hyr 50 flyttkartonger av oss.",["Köpa 2 000 kr","Hyra 750 kr","Leverans ingår"]),
+ ("trash","Tömning av dödsbo","Vi tömmer bostaden med omtanke: sortering, flytt till anhöriga, bortforsling och flyttstäd.",["Sortering","Bortforsling","Flyttstäd"]),
+ ("truck","Utlandsflytt","Flytt från Sverige till utlandet – eller hem till Sverige – med egna lastbilar.",["Egna lastbilar","Pris enligt offert"]),
  ("box","Magasinering","Behöver du förvara möbler och kartonger mellan två boenden, vid renovering eller längre? Vi hämtar, förvarar och kör ut när du behöver.",["Kort eller lång tid","Pris enligt offert"]),
 ]
+SVC_LINK = {"Flyttstäd":"flyttstad.html","Tömning av dödsbo":"dodsbo.html","Utlandsflytt":"utlandsflytt.html"}
 rows = "".join(f'''<div class="svc-row">{ico(i)}<div><h3>{t}</h3><p>{p}</p><ul>{"".join(f'<li class="{"tag-rut" if x=="RUT-avdrag" else ""}">{x}</li>' for x in tags)}</ul></div>
-<a href="{"flyttstad.html" if t=="Flyttstäd" else "index.html#offert"}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t=="Flyttstäd" else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
+<a href="{SVC_LINK.get(t,"index.html#offert")}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t in SVC_LINK else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
 tjanster = page("tjanster.html",
  "Tjänster – flytt, packning, flyttstäd & bortforsling | FX Flytt",
  "Bohagsflytt, kontorsflytt, packning, montering, pianoflytt, flyttstäd och bortforsling – fasta priser och RUT-avdrag direkt på fakturan.",
@@ -601,6 +604,81 @@ villkor = page("villkor.html",
   </div>
 </section>""")
 
+# ---------------------------------------------------------------- Dödsbo
+dodsbo = page("dodsbo.html",
+ "Tömning av dödsbo – flytt, bortforsling & städ | FX Flytt",
+ "Vi hjälper dig att tömma ett dödsbo med respekt: sortering, flytt till anhöriga, bortforsling till återvinning och flyttstäd. Kostnadsfri offert.",
+ "Dödsbo", "Tömning av dödsbo – <span>med omtanke och ordning</span>",
+ "När någon nära har gått bort finns mycket att ta hand om. Vi hjälper er att tömma bostaden lugnt och ordentligt – ni bestämmer vad som ska sparas.",
+ """
+<section>
+  <div class="wrap" style="max-width:860px">
+    <h2 style="font-size:1.5rem;margin-bottom:10px">Så hjälper vi till</h2>
+    <ul class="ticks" style="display:grid;gap:10px">
+      <li><b>Genomgång tillsammans med er.</b> Vi går igenom bostaden med dödsbodelägarna och märker upp vad som ska sparas, delas ut, skänkas eller slängas.</li>
+      <li><b>Flytt till anhöriga.</b> Möbler och saker som ska sparas kör vi till de anhöriga – i samma ort eller till andra delar av Sverige.</li>
+      <li><b>Bortforsling.</b> Det som inte ska sparas sorterar vi och kör till återvinning, second hand eller tipp.</li>
+      <li><b>Magasinering.</b> Behöver ni mer tid att bestämma? Vi kan förvara saker tills vidare.</li>
+      <li><b>Flyttstäd.</b> Vi städar bostaden så att den kan lämnas tillbaka eller säljas – med 7 dagars städgaranti.</li>
+    </ul>
+
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Så går det till</h2>
+    <div class="how-grid">
+      <div class="how"><div class="num">1</div><h3>Kontakta oss</h3><p>Ring eller skicka en förfrågan. Berätta var bostaden ligger och ungefär hur stor den är.</p></div>
+      <div class="how"><div class="num">2</div><h3>Fast pris</h3><p>Vi tittar på bostaden – på plats eller via bilder – och ger ett fast pris innan vi börjar.</p></div>
+      <div class="how"><div class="num">3</div><h3>Vi tömmer och städar</h3><p>Vi sköter allt på den dag som passar er och lämnar bostaden tom och städad.</p></div>
+    </div>
+
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Bra att veta</h2>
+    <ul class="ticks" style="display:grid;gap:10px">
+      <li>Ta hand om värdesaker, dokument, foton och smycken innan vi börjar – eller säg till, så lägger vi undan det vi hittar.</li>
+      <li>Kontrollera med hyresvärden när bostaden senast måste vara tömd.</li>
+      <li>Det är dödsbodelägarna som tillsammans bestämmer över saker i dödsboet – se till att alla är överens innan tömningen.</li>
+    </ul>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:24px">
+      <a href="index.html#offert" class="btn btn-accent">Begär kostnadsfri offert →</a>
+      <a href="index.html#ring-mig" data-callback class="btn btn-ghost">Bli uppringd</a>
+    </div>
+  </div>
+</section>
+""")
+
+# ---------------------------------------------------------------- Utlandsflytt
+utland = page("utlandsflytt.html",
+ "Utlandsflytt – flytt från Sverige till utlandet | FX Flytt",
+ "Ska du flytta utomlands eller till Sverige? FX Flytt planerar, packar och kör din flytt med egna lastbilar. Fast pris enligt offert.",
+ "Utlandsflytt", "Utlandsflytt – <span>vi tar dina saker hela vägen</span>",
+ "Flyttar du från Sverige till ett annat land – eller hem till Sverige? Vi planerar, packar och kör din flytt med egna lastbilar och ger dig ett fast pris i förväg.",
+ """
+<section>
+  <div class="wrap" style="max-width:860px">
+    <h2 style="font-size:1.5rem;margin-bottom:10px">Det här ingår</h2>
+    <ul class="ticks" style="display:grid;gap:10px">
+      <li><b>Planering.</b> Vi går igenom datum, adresser, volym och vad som ska med – och ger ett fast pris innan vi börjar.</li>
+      <li><b>Packning och skydd.</b> Vi packar säkert, skyddar möblerna och märker kartongerna.</li>
+      <li><b>Ned- och montering</b> av sängar, garderober och andra möbler.</li>
+      <li><b>Transport med egna lastbilar</b> – och lossning och bärhjälp på den nya adressen.</li>
+      <li><b>Magasinering</b> om det nya boendet inte är klart i tid.</li>
+    </ul>
+
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Så får du rätt pris</h2>
+    <p>Priset för en utlandsflytt beror på avstånd, volym och vilka tjänster du vill ha. Börja gärna med vår <a href="kubikraknare.html">kubikräknare</a> – listan följer med när du begär offert, så kan vi ge ett exakt pris snabbare.</p>
+
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Bra att tänka på</h2>
+    <ul class="ticks" style="display:grid;gap:10px">
+      <li><b>RUT-avdrag</b> gäller arbetskostnaden när flytten sker inom EU/EES eller till Schweiz. <a href="rut-avdrag.html">Läs mer om RUT</a>.</li>
+      <li><b>Flyttar du utanför EU</b> (till exempel till Norge eller Storbritannien) kan tullpapper och en inventarielista behövas. Kolla vad som gäller i landet du flyttar till.</li>
+      <li><b>Folkbokföring:</b> anmäl utflyttning till Skatteverket om du ska bo utomlands i minst ett år.</li>
+      <li>Ta med pass, viktiga dokument, mediciner och värdesaker själv.</li>
+    </ul>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:24px">
+      <a href="index.html#offert" class="btn btn-accent">Begär offert →</a>
+      <a href="kubikraknare.html" class="btn btn-ghost">Räkna ut volymen</a>
+    </div>
+  </div>
+</section>
+""")
+
 # ---------------------------------------------------------------- RUT-avdrag (sources: Skatteverket rules 2026)
 rutpage = page("rut-avdrag.html",
  "RUT-avdrag för flytt och flyttstäd 2026 – så fungerar det | FX Flytt",
@@ -767,5 +845,5 @@ flyttstad = page("flyttstad.html",
   </div>
 </section>""", extra_head=faq_ld)
 
-for f, s in [("rut-avdrag.html", rutpage), ("kubikraknare.html", kubik), ("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
+for f, s in [("dodsbo.html", dodsbo), ("utlandsflytt.html", utland), ("rut-avdrag.html", rutpage), ("kubikraknare.html", kubik), ("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)

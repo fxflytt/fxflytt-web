@@ -1,7 +1,7 @@
 /* FX Flytt – snabbkontakt "Bli uppringd". Inline form in #snabbkontakt and a pop-up for any [data-callback] link. */
 (function () {
   "use strict";
-  var TOPICS = ["Flytt", "Flyttstäd", "Flytt + flyttstäd", "Packning / montering", "Kontorsflytt", "Bortforsling", "Magasinering", "Annat"];
+  var TOPICS = ["Flytt", "Flyttstäd", "Flytt + flyttstäd", "Packning / montering", "Kontorsflytt", "Bortforsling", "Magasinering", "Dödsbo", "Utlandsflytt", "Annat"];
   var TIMES = ["Så snart som möjligt", "Förmiddag (07–12)", "Eftermiddag (12–17)", "Kväll (17–19)"];
   var n = 0;
   function opts(a) { return a.map(function (x) { return "<option>" + x + "</option>"; }).join(""); }
