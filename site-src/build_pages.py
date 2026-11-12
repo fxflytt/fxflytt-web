@@ -212,10 +212,10 @@ from extra_cities import EXTRA
 CITY += [(c["slug"], c["name"], c["lead"].split(". ")[0].rstrip(".") + ".") for c in EXTRA]
 cards = "".join(f'<a class="city-card" href="flyttfirma-{s}.html"><h3><svg><use href="#i-pin"/></svg>Flyttfirma {n}</h3><p>{t}</p><span class="go">Läs mer →</span></a>' for s,n,t in CITY)
 flyttfirma = page("flyttfirma.html",
- "Flyttfirma i Mälardalen & Örebro län | FX Flytt",
+ "Flyttfirma i Mellansverige – 20 orter | FX Flytt",
  "FX Flytt flyttar i Kungsör, Örebro, Eskilstuna, Västerås, Linköping, Norrköping, Jönköping, Karlstad och fler orter – fasta priser efter boyta.",
- "Flyttfirma", "Din flyttfirma i <span>Mälardalen och Örebro län</span>",
- "Vi utgår från Kungsör och flyttar dagligen i regionen – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
+ "Flyttfirma", "Din flyttfirma i <span>Mellansverige</span>",
+ "Vi utgår från Kungsör och flyttar i hela Mellansverige – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
  f"""
 <section style="padding-bottom:0">
   <div class="wrap">
@@ -322,7 +322,7 @@ paket = page("paket.html",
 # ---------------------------------------------------------------- Om oss
 om = page("om-oss.html",
  "Om oss – FX Flytt, flyttfirma i Kungsör",
- "FX Flytt är en flyttfirma med bas i Kungsör som hjälper privatpersoner och företag i Mälardalen och Örebro län med flytt, flyttstäd och bortforsling.",
+ "FX Flytt är en flyttfirma med bas i Kungsör som hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd och bortforsling.",
  "Om oss", "Om <span>FX Flytt</span>",
  "FX Flytt är en flyttfirma med bas i Kungsör. Vi gör flytten enkel, trygg och tydlig.",
  f"""
@@ -332,7 +332,7 @@ om = page("om-oss.html",
       {photo("movers-truck", "Flyttare från FX Flytt bär kartonger till flyttbilen", "margin-bottom:26px", "center", "2576/1093", "(max-width: 900px) 100vw, 560px")}
       <span class="eyebrow">Vilka vi är</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
-      <p>FX Flytt hjälper privatpersoner och företag i Mälardalen och Örebro län med flytt, flyttstäd, packning och bortforsling.</p>
+      <p>FX Flytt hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd, packning och bortforsling.</p>
       <p>Vi tror på enkla priser, tydlig kommunikation och att göra det vi lovar. Därför får du en fast kontaktperson som följer din flytt från första samtalet till sista kartongen.</p>
     </div>
     <div class="vals">
@@ -472,7 +472,7 @@ radgivare = page("radgivare.html",
           <tr><td>150–200 m²</td><td>80–100</td></tr>
           <tr><td>Över 200 m²</td><td>100 eller fler</td></tr>
         </tbody></table></div>
-      <p class="sub" style="margin-top:14px">Använd vår <a href="index.html#offert">volymräknare i offertformuläret</a> för att räkna mer exakt.</p>
+      <p class="sub" style="margin-top:14px">Använd vår <a href="kubikraknare.html">kubikräknare</a> för att räkna mer exakt.</p>
     </div>
 
     <div class="art" id="guide-dricks">
@@ -511,7 +511,7 @@ integritet = page("integritetspolicy.html",
  """
 <section>
   <div class="wrap legal">
-    <p class="upd">Senast uppdaterad: 2026-11-10</p>
+    <p class="upd">Senast uppdaterad: 2026-11-12</p>
 
     <h2>1. Personuppgiftsansvarig</h2>
     <p>FX Flytt AB, Frejgatan 9B, Kungsör, är personuppgiftsansvarig för behandlingen av dina personuppgifter. Kontakt: info@fxflytt.se, telefon 076-300 07 23.</p>
@@ -535,7 +535,7 @@ integritet = page("integritetspolicy.html",
     <h2>4. Vilka som får ta del av uppgifterna</h2>
     <ul>
       <li>Skatteverket, när vi ansöker om RUT-avdrag åt dig.</li>
-      <li>Leverantörer som hjälper oss att driva webbplatsen och ta emot förfrågningar (t.ex. webbhotell och e-posttjänst). De får bara behandla uppgifterna för vår räkning.</li>
+      <li>Leverantörer som hjälper oss att driva webbplatsen och ta emot förfrågningar (t.ex. webbhotell, e-posttjänst och AI-tjänsten för chatten). De får bara behandla uppgifterna för vår räkning.</li>
     </ul>
     <p>Vi säljer aldrig dina uppgifter.</p>
 
@@ -547,7 +547,8 @@ integritet = page("integritetspolicy.html",
     </ul>
 
     <h2>6. Kakor (cookies) och tredjepartstjänster</h2>
-    <p>Webbplatsen använder i dag inga kakor för spårning eller marknadsföring. Typsnitt hämtas från Google Fonts och adressförslag och karta hämtas från OpenStreetMap-tjänster, vilket innebär att din IP-adress skickas till dessa leverantörer när sidan laddas. Om vi senare inför statistik eller annonsspårning ber vi om ditt samtycke först.</p>
+    <p>Webbplatsen använder i dag inga kakor för spårning eller marknadsföring. Typsnitt hämtas från Google Fonts, adressförslag från Photon (Komoot), kartan från OpenStreetMap och kartverktyget från Cloudflare (cdnjs). Det innebär att din IP-adress skickas till dessa leverantörer när sidan laddas.</p>
+    <p><b>Chattassistenten:</b> Om du skriver i chatten på webbplatsen skickas ditt meddelande till Anthropic (leverantör av AI-tjänsten Claude) för att ta fram ett svar. Skriv inte personnummer eller andra känsliga uppgifter i chatten. Om vi senare inför statistik eller annonsspårning ber vi om ditt samtycke först.</p>
 
     <h2>7. Dina rättigheter</h2>
     <p>Du har rätt att få veta vilka uppgifter vi har om dig, få felaktiga uppgifter rättade, få uppgifter raderade när de inte längre behövs, invända mot behandling och begära att behandlingen begränsas. Kontakta oss så hjälper vi dig.</p>

@@ -65,7 +65,7 @@ CITIES = [
   areas=["Kungsör centrum","Valskog","Kungsörs landsbygd","Mot Arboga","Mot Köping","Mot Eskilstuna"],
   tips=["Prata med hyresvärden eller föreningen i god tid om hiss och nycklar.","Tänk på var lastbilen kan stå nära porten – säg till oss om det är långt att bära.","Bor du på landet? Berätta om grusväg eller smal infart så planerar vi rätt bil."],
   faq=[("Har ni kontor i Kungsör?","Ja, FX Flytt finns på Frejgatan 9B i Kungsör. Ring gärna innan du kommer förbi så att någon är på plats."),
-       ("Flyttar ni från Kungsör till andra orter?","Ja. Vi flyttar dagligen i Mälardalen och Örebro län, och även längre sträckor i hela Sverige."),
+       ("Flyttar ni från Kungsör till andra orter?","Ja. Vi flyttar i hela Mellansverige, och även längre sträckor i hela Sverige."),
        ("Hjälper ni till med flyttstäd i Kungsör?","Ja, flyttstäd kan bokas tillsammans med flytten eller separat. RUT-avdraget dras direkt på fakturan.")]),
  dict(slug="orebro", name="Örebro", lan="Örebro län",
   title="Flyttfirma i Örebro – trygg flytt & flyttstäd | FX Flytt",
