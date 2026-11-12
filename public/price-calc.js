@@ -81,10 +81,11 @@ function computePrice(input, P) {
       }
     }
 
-    if (service === "cleaning" || pkg.cleaning) {
+    const extraCleaning = service === "move" && input.extraCleaning === true && !pkg.cleaning;
+    if (service === "cleaning" || pkg.cleaning || extraCleaning) {
       const row = pick(P.cleaning, m2);
       if (!row) onRequest = onRequest || `Flyttstäd över ${P.cleaning[P.cleaning.length - 1][0]} m² – pris enligt offert`;
-      else lines.push({ label: `Flyttstäd ${m2} m²`, amount: row[1], discounted: true });
+      else lines.push({ label: extraCleaning ? `Flyttstäd ${m2} m² (tillval)` : `Flyttstäd ${m2} m²`, amount: row[1], discounted: true });
     }
 
     if (pkg && pkg.discountPct > 0 && !onRequest) {

@@ -523,6 +523,9 @@ body.noscroll .mbar{display:none}
                 <label class="chk"><input type="checkbox" name="Tillval" value="Pianoflytt">Piano / tunga föremål</label>
                 <label class="chk"><input type="checkbox" name="Tillval" value="Bortforsling">Bortforsling</label>
               </div>
+              <div id="f-box-wrap" style="display:none;margin-top:8px"><label class="f" for="f-box">Flyttkartonger (50 st, leverans ingår)</label>
+                <select id="f-box"><option value="buy">Köpa – 2 000 kr</option><option value="rent">Hyra – 750 kr</option></select></div>
+              <div id="f-extras-note" aria-live="polite" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#f1f6fb;font-size:.88rem;line-height:1.45;color:#1d3247"></div>
             </div>
             <div class="full">
               <details class="vol" id="vol">
@@ -963,7 +966,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     });
     Object.keys(seen).forEach(k=>lines.push(k+': '+seen[k].join(', ')));
     if(window.fxDistance) lines.push('Avstånd: ca '+window.fxDistance+' km');
-    if(window.fxPrice){ lines.push(''); lines.push('Pris från prisräknaren (efter RUT): '+window.fxPrice.total.toLocaleString('sv-SE')+' kr'); window.fxPrice.lines.forEach(l=>lines.push('  '+l.label+': '+l.amount.toLocaleString('sv-SE')+' kr')); lines.push('  Prislista: '+window.fxPrice.version); }
+    if(window.fxPrice){ lines.push(''); lines.push('Pris från prisräknaren (efter RUT): '+window.fxPrice.total.toLocaleString('sv-SE')+' kr'); window.fxPrice.lines.forEach(l=>lines.push('  '+l.label+': '+l.amount.toLocaleString('sv-SE')+' kr')); lines.push('  Prislista: '+window.fxPrice.version); (window.fxPrice.notIncluded||[]).forEach((t,i)=>{ if(!i) lines.push('Ingår inte i priset:'); lines.push('  '+t); }); }
     if(window.fxVolume){ lines.push('Beräknad volym: '+String(window.fxVolume.m3).replace('.',',')+' m³ ('+window.fxVolume.items+' föremål)'); lines.push('Möbellista: '+window.fxVolume.list.join(', ')); }
     return lines.join('\n');
   }
@@ -1029,19 +1032,55 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     const s=$('c-svc').value;
     const inp={service:s,areaM2:Math.max(1,+$('c-kvm').value||1),distanceKm:Math.max(0,+$('c-km').value||0),
       pkg:$('c-pkg').value,crew:+$('c-crew').value,hours:Math.max(3,+$('c-h').value||3),boxes:$('c-box').value,
-      volumeM3:(s==='move'&&window.fxVolume&&window.fxVolume.m3>0)?window.fxVolume.m3:null};
+      volumeM3:(s==='move'&&window.fxVolume&&window.fxVolume.m3>0)?window.fxVolume.m3:null,
+      extraCleaning:s==='move'&&fxExtras().includes('Flyttstäd')};
     let q; try{ q=window.fxComputePrice(inp,window.FX_PRICES); }catch(e){ $('c-res').textContent='–'; $('c-det').textContent=e.message; return; }
     if(q.totalAfterRut==null){
       $('c-res').textContent='Pris enligt offert';
       $('c-det').innerHTML='<div>'+q.onRequest+'.</div><div style="opacity:.7;margin-top:6px">Fyll i formuläret eller ring 076-300 07 23.</div>';
-      window.fxPrice=null; return;
+      window.fxPrice=null; const fn=$('f-extras-note'); if(fn) fn.style.display='none'; return;
     }
     $('c-res').textContent=kr(q.totalAfterRut);
     $('c-det').innerHTML=q.lines.map(l=>'<div>• '+l.label+': '+kr(l.amount)+'</div>').join('')+
       (inp.volumeM3?'<div style="margin-top:6px">📦 Priset tar hänsyn till din volym från kubikräknaren: '+String(inp.volumeM3).replace('.',',')+' m³ ('+Math.ceil(inp.volumeM3/(window.FX_PRICES.truckM3||20))+' × 20 m³-bil).</div>':'')+
       '<div style="opacity:.7;margin-top:6px">Inkl. moms efter RUT-avdrag (privatpersoner), om du har rätt till avdraget. '+(s==='move'?'Körsträcka under 15 km ingår.':'')+'</div>';
-    window.fxPrice={total:q.totalAfterRut,lines:q.lines,version:q.version};
+    const ni=notIncluded(s,inp.pkg);
+    if(ni.length) $('c-det').innerHTML+='<div style="margin-top:8px"><b>Ingår inte i priset ovan:</b>'+ni.map(t=>'<div>• '+t+'</div>').join('')+'</div>';
+    window.fxPrice={total:q.totalAfterRut,lines:q.lines,version:q.version,notIncluded:ni};
+    let tip='';
+    if(s==='move'&&inp.pkg==='bas'&&inp.extraCleaning){
+      try{ const q2=window.fxComputePrice(Object.assign({},inp,{pkg:'premium'}),window.FX_PRICES);
+        const save=q.totalAfterRut-q2.totalAfterRut;
+        if(q2.totalAfterRut!=null&&save>0) tip='<div style="margin-top:8px">💡 <b>Tips:</b> Välj Premium (flytt + flyttstäd) så sparar du '+kr(save)+'. <a href="#" id="f-to-premium" style="font-weight:700">Byt till Premium</a></div>';
+      }catch(_){}
+    }
+    formNote(q.totalAfterRut,ni,tip);
   }
+  function fxExtras(){ return [...document.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value); }
+  function notIncluded(s,pkg){
+    const ex=fxExtras(), ni=[], deluxe=s==='move'&&pkg==='deluxe';
+    if(ex.includes('Packning')&&!deluxe) ni.push('Packning – 595 kr/tim (2 pers) efter RUT, du betalar bara för den tid det tar');
+    if(ex.includes('Montering')&&!deluxe) ni.push('Ned- och montering – 595 kr/tim (2 pers) efter RUT, du betalar bara för den tid det tar');
+    if(ex.includes('Flyttstäd')&&s==='hourly') ni.push('Flyttstäd – fast pris efter boyta, från 2 000 kr efter RUT');
+    if(ex.includes('Pianoflytt')) ni.push('Piano / tunga föremål – pris enligt offert');
+    if(ex.includes('Bortforsling')) ni.push('Bortforsling – pris enligt offert');
+    return ni;
+  }
+  function formNote(total,ni,tip){
+    const el=$('f-extras-note'); if(!el) return;
+    if(!fxExtras().length||$('fsvc').value.startsWith('other')){ el.style.display='none'; return; }
+    el.style.display='';
+    el.innerHTML='<b>Pris med dina tillval: '+kr(total)+'</b> <span style="opacity:.75">(efter RUT)</span>'+
+      (ni.length?'<div style="margin-top:6px"><b>Ingår inte i priset:</b>'+ni.map(t=>'<div>• '+t+'</div>').join('')+'</div>':'')+tip;
+    const a=$('f-to-premium'); if(a) a.addEventListener('click',e=>{e.preventDefault(); $('fsvc').value='move|premium'; $('fsvc').dispatchEvent(new Event('change'));});
+  }
+  document.querySelectorAll('input[name="Tillval"]').forEach(x=>x.addEventListener('change',()=>{
+    const on=fxExtras().includes('Flyttkartonger');
+    $('f-box-wrap').style.display=on?'':'none';
+    $('c-box').value=on?$('f-box').value:'none';
+    calc();
+  }));
+  $('f-box').addEventListener('change',()=>{ $('c-box').value=$('f-box').value; calc(); });
   ['c-svc','c-kvm','c-km','c-pkg','c-crew','c-h','c-box'].forEach(id=>$(id).addEventListener('input',calc));
   window.addEventListener('fx-volume',calc);
   document.querySelectorAll('a[data-pkg]').forEach(a=>a.addEventListener('click',()=>{$('c-svc').value='move';$('c-pkg').value=a.dataset.pkg;calc();}));

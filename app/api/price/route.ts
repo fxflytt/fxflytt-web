@@ -5,7 +5,7 @@ import P from "@/lib/pricing/prices.json";
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 
 export const runtime = "nodejs";
-const ALLOWED = new Set(["service", "areaM2", "distanceKm", "pkg", "crew", "hours", "boxes", "volumeM3"]);
+const ALLOWED = new Set(["service", "areaM2", "distanceKm", "pkg", "crew", "hours", "boxes", "volumeM3", "extraCleaning"]);
 
 export async function POST(req: Request) {
   if (rateLimited("price:" + clientIp(req), 60, 60_000)) return Response.json({ error: "För många förfrågningar." }, { status: 429 });

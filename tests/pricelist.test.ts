@@ -74,3 +74,10 @@ test("volume + Premium discount applies to the truck price", () => {
   const r = computePrice({ service: "move", areaM2: 60, distanceKm: 0, pkg: "premium", volumeM3: 25 }, P as any);
   assert.equal(r.totalAfterRut, Math.round((4700 + 3100) * 0.9));
 });
+
+test("Bas + flyttstäd som tillval läggs till utan rabatt", () => {
+  const q = computePrice({ service: "move", pkg: "bas", areaM2: 60, distanceKm: 10, extraCleaning: true }, P);
+  assert.equal(q.totalAfterRut, 3950 + 3100);
+  const p = computePrice({ service: "move", pkg: "premium", areaM2: 60, distanceKm: 10, extraCleaning: true }, P);
+  assert.equal(p.totalAfterRut, 6345);
+});
