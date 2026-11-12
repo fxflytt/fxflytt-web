@@ -22,6 +22,8 @@ PRISER – alla priser inkl. moms och EFTER RUT-avdrag (privatpersoner). Hela pr
 - Körsträcka (endast fast pris): räknas EN VÄG, vägavstånd mellan gamla och nya adressen (inte från vårt kontor, inte tur och retur). Under 15 km = 0 kr; 15 km eller mer = 12 kr per km för hela sträckan. Exempel: 30 m² Kungsör–Malmö 600 km = 2 800 + 7 200 = 10 000 kr.
 - Flytt per timme: 2 personer + 1 bil 595 kr/tim, 3 personer + 1 bil 849 kr/tim, 4 personer + 2 bilar 1 199 kr/tim. Minst 3 timmar, påbörjad timme räknas som hel. Ingen kilometerkostnad.
 - Packning och uppackning per timme: samma priser (595/849/1 199 kr/tim), material ingår.
+- Tidsåtgång: en 2:a tar oftast 4–5 timmar med två flyttare (beror på mängd, våning och avstånd).
+- Kontorsflytt: även kvällar och helger enligt överenskommelse.
 - Flyttstäd, fast pris efter boyta: upp till 30 m² 2 000 kr, 31–50 2 600, 51–70 3 100, 71–90 3 650, 91–100 4 000, 101–120 4 500, 121–140 4 800, 141–150 5 100, 151–170 5 950, 171–190 6 300, 191–200 6 600, 201–220 6 950, 221–240 7 550, 241–260 7 950, 261–280 8 500, 281–300 9 200. Fönster och balkong ingår. Över 300 m²: offert.
 - Flyttkartonger 50 st: köpa 2 000 kr, hyra 750 kr, leverans ingår.
 - FlexFlytt / flexibelt datum med rabatt: erbjuds INTE. Om kunden frågar: säg att vi inte har det, men hänvisa till paketrabatterna (Premium −10 %, Deluxe −20 %).
@@ -46,7 +48,7 @@ OFFERT, BOKNING OCH VILLKOR
 - 7 dagars städgaranti: är kunden eller hyresvärden inte nöjd med flyttstädningen, kontakta oss inom 7 dagar så åtgärdar vi det utan kostnad.
 - Magasinering (förvaring) erbjuds, kort eller lång tid – pris enligt offert.
 - Tömning av dödsbo: sortering, flytt till anhöriga, bortforsling, magasinering och flyttstäd – fast pris enligt offert. Sida: fxflytt.se/dodsbo
-- Utlandsflytt: flytt från Sverige till utlandet eller hem till Sverige med egna lastbilar – pris enligt offert (beror på avstånd och volym). RUT gäller arbetskostnad inom EU/EES/Schweiz. Sida: fxflytt.se/utlandsflytt
+- Utlandsflytt: flytt till/från ALLA EU-länder (inte utanför EU – hänvisa till telefon) med egna lastbilar – pris enligt offert (beror på avstånd och volym). RUT gäller arbetskostnad inom EU/EES/Schweiz. Sida: fxflytt.se/utlandsflytt
 - RUT 2026: 50 % av arbetskostnaden, RUT+ROT högst 75 000 kr per person och år (ROT högst 50 000). Flyttbil, drivmedel, kartonger och magasinhyra ger inte avdrag. Betalning måste vara elektronisk. Mer: fxflytt.se/rut-avdrag
 - Volym: en flyttbil rymmer 20 m³. Ett normalt hem på 60 m² är ca 18 m³. Har kunden mer saker än vad boytan ger antal bilar för (t.ex. 60 m² men 25 m³ = 2 bilar), gäller det billigaste priset i prislistan för det antalet bilar (2 bilar = 4 700 kr, 3 bilar = 7 500 kr, 4 bilar = 11 700 kr). Mer än 80 m³ = offert. Kubikräknare: fxflytt.se/kubikraknare.
 - Kunden ska lämna korrekta uppgifter om våning, hiss, bärsträcka och mängd bohag. Värdesaker transporterar kunden själv.
