@@ -217,6 +217,12 @@ flyttfirma = page("flyttfirma.html",
  "Flyttfirma", "Din flyttfirma i <span>Mälardalen och Örebro län</span>",
  "Vi utgår från Kungsör och flyttar dagligen i regionen – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
  f"""
+<section style="padding-bottom:0">
+  <div class="wrap">
+    <div class="ok-wrap" style="margin-top:0"><div class="ok-map" data-ortkarta role="region" aria-label="Karta över orter där FX Flytt kör"></div>
+      <p class="ok-legend"><span class="ok-k ok-k-home"></span>Kontor i Kungsör <span class="ok-k"></span>Här kör våra flyttbilar – tryck på en ort</p></div>
+  </div>
+</section>
 <section>
   <div class="wrap">
     <div class="center"><span class="eyebrow">Våra orter</span><h2>Här flyttar vi</h2></div>

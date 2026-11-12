@@ -371,6 +371,18 @@ body.noscroll .mbar{display:none}
 @media(max-width:800px){.cb-card{grid-template-columns:1fr;padding:20px}}
 @media(max-width:520px){.cb-grid{grid-template-columns:1fr}}
 
+/* Ortkarta */
+.ok-wrap{margin:26px 0 22px;text-align:left}
+.ok-map{height:460px;border-radius:18px;overflow:hidden;border:1.5px solid var(--line);background:#e8eef3;z-index:0}
+.ok-pin{background:none;border:0}
+.ok-dot{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 4px 12px #0d2a3f55}
+.ok-home .ok-dot{background:var(--navy);width:38px;height:38px;margin:-2px}
+.ok-lbl{position:absolute;top:38px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap}
+.ok-legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;color:var(--muted);font-size:.85rem;margin-top:10px}
+.ok-k{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--accent);margin-left:6px}.ok-k-home{background:var(--navy);margin-left:0}
+.leaflet-popup-content a{color:var(--accent-d);font-weight:700}
+@media(max-width:600px){.ok-map{height:380px}}
+
 /* Illustrations */
 .art-img{display:block;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);line-height:0}
 .art-img svg{width:100%;height:auto;display:block}
@@ -596,6 +608,7 @@ body.noscroll .mbar{display:none}
     </div>
   </div>
 <script src="/kontakt.js" defer></script>
+<script src="/ortkarta.js" defer></script>
 </footer>
 <div class="mbar">
   <a href="tel:+46763000723" class="btn btn-phone"><svg width="18" height="18"><use href="#i-phone"/></svg>Ring oss</a>
