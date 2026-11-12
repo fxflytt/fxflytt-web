@@ -15,7 +15,7 @@ export type OfferData = {
   floorTo?: string;
   extras?: string[];
   message?: string;
-  price?: { total: number; lines: { label: string; amount: number }[]; version?: string; notIncluded?: string[] };
+  price?: { total: number; lines: { label: string; amount: number }[]; version?: string; notIncluded?: string[]; note?: string };
   volume?: { m3: number; items: number; list: string[] };
 };
 
@@ -60,6 +60,7 @@ export function offerEmail(d: OfferData, sentAt: Date) {
         <div style="color:#b9c7d3;font-size:13px">Pris enligt prisräknaren · efter RUT, inkl. moms</div>
         <div style="color:#fff;font-size:30px;font-weight:800;margin:4px 0 10px">${esc(kr(d.price.total))}</div>
         ${d.price.lines.map((l) => `<div style="color:#dbe4ec;font-size:13px;line-height:20px">${esc(l.label)} <span style="float:right;color:#fff">${esc(kr(l.amount))}</span></div>`).join("")}
+        ${d.price.note ? `<div style="color:#ffb27a;font-size:13px;font-weight:700;margin-top:10px">${esc(d.price.note)}</div>` : ""}
         ${d.price.notIncluded?.length ? `<div style="color:#ffb27a;font-size:13px;font-weight:700;margin-top:10px">Ingår inte i priset – fråga kunden:</div>${d.price.notIncluded.map((t) => `<div style="color:#dbe4ec;font-size:13px;line-height:20px">• ${esc(t)}</div>`).join("")}` : ""}
         ${d.price.version ? `<div style="color:#8aa0b2;font-size:11px;margin-top:10px">Prislista ${esc(d.price.version)}</div>` : ""}
       </td></tr>
@@ -121,7 +122,7 @@ export function offerEmail(d: OfferData, sentAt: Date) {
     t("Önskat datum", fmtDate(d.date)) + t("Datumtyp", d.dateType) + "\n" +
     t("Tjänst", d.size) + t("Boyta", d.areaM2 ? d.areaM2 + " m²" : "") + t("Bostad", d.home) +
     t("Våning (från)", d.floorFrom) + t("Våning (till)", d.floorTo) + t("Tillval", d.extras?.join(", ")) +
-    (d.price ? `\nPris efter RUT: ${kr(d.price.total)}\n` + d.price.lines.map((l) => `  ${l.label}: ${kr(l.amount)}`).join("\n") + "\n" + (d.price.notIncluded?.length ? "Ingår inte i priset:\n" + d.price.notIncluded.map((t) => `  ${t}`).join("\n") + "\n" : "") : "") +
+    (d.price ? `\nPris efter RUT: ${kr(d.price.total)}\n` + d.price.lines.map((l) => `  ${l.label}: ${kr(l.amount)}`).join("\n") + "\n" + (d.price.note ? d.price.note + "\n" : "") + (d.price.notIncluded?.length ? "Ingår inte i priset:\n" + d.price.notIncluded.map((t) => `  ${t}`).join("\n") + "\n" : "") : "") +
     (d.message ? `\nMeddelande:\n${d.message}\n` : "") +
     "\n— Skickat från fxflytt.se";
 
@@ -143,6 +144,7 @@ export function customerConfirmation(d: OfferData) {
         <div style="color:${MUTED};font-size:13px">Ditt pris enligt prisräknaren · efter RUT, inkl. moms</div>
         <div style="color:${NAVY};font-size:26px;font-weight:800;margin:4px 0 8px">${esc(kr(d.price.total))}</div>
         ${d.price.lines.map((l) => `<div style="color:${INK};font-size:13px;line-height:20px">${esc(l.label)} <span style="float:right">${esc(kr(l.amount))}</span></div>`).join("")}
+        ${d.price.note ? `<div style="color:${INK};font-size:13px;font-weight:700;margin-top:10px">${esc(d.price.note)}</div>` : ""}
         ${d.price.notIncluded?.length ? `<div style="color:${INK};font-size:13px;font-weight:700;margin-top:10px">Ingår inte i priset ovan:</div>${d.price.notIncluded.map((t) => `<div style="color:${INK};font-size:13px;line-height:20px">• ${esc(t)}</div>`).join("")}` : ""}
         <div style="color:${MUTED};font-size:12px;margin-top:10px">Priset bygger på uppgifterna du lämnat. Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året. Det slutliga priset står i din bokningsbekräftelse.</div>
       </td></tr>
@@ -181,7 +183,7 @@ export function customerConfirmation(d: OfferData) {
     `Tack${first ? " " + first : ""}!\n\nVi har tagit emot din förfrågan och återkommer inom 24 timmar – oftast samma dag.\n\n` +
     (d.size ? `Tjänst: ${d.size}\n` : "") + (d.from ? `Från: ${d.from}\n` : "") + (d.to ? `Till: ${d.to}\n` : "") +
     (d.areaM2 ? `Boyta: ${d.areaM2} m²\n` : "") + (d.date ? `Önskat datum: ${fmtDate(d.date)}\n` : "") +
-    (d.price ? `\nPris enligt prisräknaren (efter RUT): ${kr(d.price.total)}\n${d.price.notIncluded?.length ? "Ingår inte i priset ovan:\n" + d.price.notIncluded.map((t) => `  ${t}`).join("\n") + "\n" : ""}Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året.\nDet slutliga priset står i din bokningsbekräftelse.\n` : "") +
+    (d.price ? `\nPris enligt prisräknaren (efter RUT): ${kr(d.price.total)}\n${d.price.note ? d.price.note + "\n" : ""}${d.price.notIncluded?.length ? "Ingår inte i priset ovan:\n" + d.price.notIncluded.map((t) => `  ${t}`).join("\n") + "\n" : ""}Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året.\nDet slutliga priset står i din bokningsbekräftelse.\n` : "") +
     `\nFrågor? Ring 076-300 07 23 eller svara på det här mejlet.\n\nVänliga hälsningar\nFX Flytt\nFrejgatan 9B, 736 30 Kungsör`;
   return { subject, html, text };
 }

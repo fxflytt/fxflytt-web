@@ -40,6 +40,7 @@ export async function POST(req: Request) {
     price: price && num(price.total) !== undefined && Array.isArray(price.lines) ? {
       total: num(price.total)!, version: str(price.version, 60),
       lines: price.lines.slice(0, 12).map((l: any) => ({ label: str(l?.label, 120), amount: num(l?.amount) ?? 0 })),
+      note: str(price.note, 200) || undefined,
       notIncluded: Array.isArray(price.notIncluded) ? price.notIncluded.slice(0, 8).map((t: unknown) => str(t, 140)).filter(Boolean) as string[] : undefined,
     } : undefined,
     volume: volume && num(volume.m3) !== undefined ? {

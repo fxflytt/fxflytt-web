@@ -33,7 +33,7 @@ function num(v, field, min, max) {
 
 /**
  * @param {{service:"move"|"hourly"|"cleaning", areaM2?:number, distanceKm?:number|null, pkg?:"bas"|"premium"|"deluxe",
- *          crew?:2|3|4, hours?:number, boxes?:"none"|"buy"|"rent", volumeM3?:number|null}} input
+ *          crew?:2|3|4, hours?:number, boxes?:"none"|"buy"|"rent", volumeM3?:number|null, extraCleaning?:boolean}} input
  * @param {any} P  prices.json
  */
 function computePrice(input, P) {

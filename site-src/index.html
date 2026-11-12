@@ -487,6 +487,9 @@ body.noscroll .mbar{display:none}
                 <option value="other|">Kontorsflytt, piano eller annat</option>
               </select>
               <p id="fsvc-info" aria-live="polite" style="margin:8px 0 0;padding:10px 12px;border-radius:10px;background:#f1f6fb;font-size:.88rem;line-height:1.45;color:#1d3247"></p></div>
+            <div class="full" id="f-hours-wrap" style="display:none"><label class="f" for="f-hours">Hur många timmar packning och montering?</label>
+              <select id="f-hours" name="Packningstimmar"><option value="3">3 timmar</option><option value="4">4 timmar</option><option value="5">5 timmar</option><option value="6">6 timmar</option><option value="7">7 timmar</option><option value="8">8 timmar</option><option value="9">9 timmar</option><option value="10">10 timmar</option><option value="11">11 timmar</option><option value="12">12 timmar</option></select>
+              <p style="margin:6px 0 0;font-size:.85rem;color:var(--muted)">2 personer, 595 kr/tim efter RUT. Osäker? Välj 3 – vi går igenom det med dig.</p></div>
             <div class="full"><label class="f" for="kvm">Boyta (m²)</label><input id="kvm" name="Boyta m²" type="number" min="1" max="2000" inputmode="numeric" required placeholder="t.ex. 65"></div>
           </div>
         </div>
@@ -966,7 +969,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     });
     Object.keys(seen).forEach(k=>lines.push(k+': '+seen[k].join(', ')));
     if(window.fxDistance) lines.push('Avstånd: ca '+window.fxDistance+' km');
-    if(window.fxPrice){ lines.push(''); lines.push('Pris från prisräknaren (efter RUT): '+window.fxPrice.total.toLocaleString('sv-SE')+' kr'); window.fxPrice.lines.forEach(l=>lines.push('  '+l.label+': '+l.amount.toLocaleString('sv-SE')+' kr')); lines.push('  Prislista: '+window.fxPrice.version); (window.fxPrice.notIncluded||[]).forEach((t,i)=>{ if(!i) lines.push('Ingår inte i priset:'); lines.push('  '+t); }); }
+    if(window.fxPrice){ lines.push(''); lines.push('Pris från prisräknaren (efter RUT): '+window.fxPrice.total.toLocaleString('sv-SE')+' kr'); window.fxPrice.lines.forEach(l=>lines.push('  '+l.label+': '+l.amount.toLocaleString('sv-SE')+' kr')); lines.push('  Prislista: '+window.fxPrice.version); if(window.fxPrice.note) lines.push(window.fxPrice.note); (window.fxPrice.notIncluded||[]).forEach((t,i)=>{ if(!i) lines.push('Ingår inte i priset:'); lines.push('  '+t); }); }
     if(window.fxVolume){ lines.push('Beräknad volym: '+String(window.fxVolume.m3).replace('.',',')+' m³ ('+window.fxVolume.items+' föremål)'); lines.push('Möbellista: '+window.fxVolume.list.join(', ')); }
     return lines.join('\n');
   }
@@ -1046,7 +1049,9 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       '<div style="opacity:.7;margin-top:6px">Inkl. moms efter RUT-avdrag (privatpersoner), om du har rätt till avdraget. '+(s==='move'?'Körsträcka under 15 km ingår.':'')+'</div>';
     const ni=notIncluded(s,inp.pkg);
     if(ni.length) $('c-det').innerHTML+='<div style="margin-top:8px"><b>Ingår inte i priset ovan:</b>'+ni.map(t=>'<div>• '+t+'</div>').join('')+'</div>';
-    window.fxPrice={total:q.totalAfterRut,lines:q.lines,version:q.version,notIncluded:ni};
+    const note=s==='hourly'?'Minst 3 timmar. Du betalar för den tid flytten faktiskt tar ('+(window.FX_PRICES.hourly[$('c-crew').value]||595)+' kr/tim efter RUT).':'';
+    if(note) $('c-det').innerHTML+='<div style="margin-top:8px"><b>'+note+'</b></div>';
+    window.fxPrice={total:q.totalAfterRut,lines:q.lines,version:q.version,notIncluded:ni,note:note||undefined};
     let tip='';
     if(s==='move'&&inp.pkg==='bas'&&inp.extraCleaning){
       try{ const q2=window.fxComputePrice(Object.assign({},inp,{pkg:'premium'}),window.FX_PRICES);
@@ -1102,7 +1107,10 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     'hourly|':'<b>Per timme:</b> 2 flyttare + bil från 595 kr/tim efter RUT, minst 3 timmar.',
     'cleaning|':'<b>Ingår:</b> flyttstäd enligt checklista, fönster och balkong – med 7 dagars städgaranti. Från 2 000 kr efter RUT.',
     'other|':'Beskriv vad du behöver i nästa steg, så återkommer vi med ett pris.'};
-  const svcInfo=()=>{const el=$('fsvc-info'); if(el) el.innerHTML=SVC_INFO[fsvc.value]||'';};
+  const svcInfo=()=>{const el=$('fsvc-info'); if(el) el.innerHTML=SVC_INFO[fsvc.value]||'';
+    const dl=fsvc.value==='move|deluxe', hw=$('f-hours-wrap'); if(hw) hw.style.display=dl?'':'none';
+    if(dl){ $('c-crew').value='2'; $('c-h').value=$('f-hours').value; }};
+  $('f-hours').addEventListener('change',()=>{ $('c-crew').value='2'; $('c-h').value=$('f-hours').value; calc(); });
   fsvc.addEventListener('change',svcInfo); svcInfo();
   fsvc.addEventListener('change',formToCalc); fkvm.addEventListener('input',formToCalc);
   $('c-book').addEventListener('click',()=>{
