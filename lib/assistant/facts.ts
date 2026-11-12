@@ -42,7 +42,7 @@ OFFERT, BOKNING OCH VILLKOR
 - Ändring och avbokning kostnadsfritt fram till 6 dagar före flyttdagen. Avbokning 5 dagar eller mindre före: 10 % av bokat pris.
 - Skador: om något skadas under flytten ersätter FX Flytt skadan. Försäkrade hos Trygg-Hansa, ersättning upp till 10 miljoner kr.
 - FX Flytt AB har trafiktillstånd från Transportstyrelsen.
-- Inga dolda eller extra avgifter: priset i bokningsbekräftelsen gäller.
+- Inga dolda eller extra avgifter: priset i bokningsbekräftelsen gäller. Undantag: om kunden lägger till en tjänst eller har betydligt mer saker än angivet, kommer vi överens om nytt pris INNAN arbetet görs – aldrig i efterhand utan kundens godkännande.
 - 7 dagars städgaranti: är kunden eller hyresvärden inte nöjd med flyttstädningen, kontakta oss inom 7 dagar så åtgärdar vi det utan kostnad.
 - Magasinering (förvaring) erbjuds, kort eller lång tid – pris enligt offert.
 - Tömning av dödsbo: sortering, flytt till anhöriga, bortforsling, magasinering och flyttstäd – fast pris enligt offert. Sida: fxflytt.se/dodsbo

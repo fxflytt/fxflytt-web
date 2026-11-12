@@ -577,6 +577,7 @@ villkor = page("villkor.html",
       <li>Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt.</li>
       <li>Övriga tillval enligt prislista eller offert.</li>
       <li><b>Inga dolda avgifter.</b> Vi går igenom alla detaljer med dig innan flytten. Det pris som står i din bokningsbekräftelse är det du betalar – inga extra avgifter tillkommer i efterhand.</li>
+      <li><b>Ändringar.</b> Priset gäller de uppgifter och tjänster som står i bokningen. Vill du lägga till en tjänst, eller har du betydligt mer saker än du angav, kommer vi överens om det nya priset innan vi gör jobbet – aldrig i efterhand utan ditt godkännande.</li>
     </ul>
 
     <h2>3. RUT-avdrag</h2>
