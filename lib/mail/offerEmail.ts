@@ -183,3 +183,37 @@ export function customerConfirmation(d: OfferData) {
     `\nFrågor? Ring 076-300 07 23 eller svara på det här mejlet.\n\nVänliga hälsningar\nFX Flytt\nFrejgatan 9B, 736 30 Kungsör`;
   return { subject, html, text };
 }
+
+// Short "call me back" request from the quick contact form.
+export type CallbackData = { name: string; phone: string; email?: string; topic?: string; when?: string; message?: string; page?: string };
+export function callbackEmail(d: CallbackData, sentAt: Date) {
+  const when = sentAt.toLocaleString("sv-SE", { timeZone: "Europe/Stockholm", dateStyle: "long", timeStyle: "short" });
+  const subject = `Ring upp: ${d.name} (${d.phone})${d.topic ? " – " + d.topic : ""}`;
+  const html = `<!DOCTYPE html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head>
+<body style="margin:0;padding:0;background:${BG};font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${BG}"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid ${LINE}">
+  <tr><td style="background:${NAVY};padding:20px 28px">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+      <td style="vertical-align:middle;white-space:nowrap"><span style="display:inline-block;background:#fff;color:${NAVY};font-weight:900;font-style:italic;font-size:18px;padding:6px 10px;border-radius:8px;border-left:4px solid ${ACCENT}">FX</span>
+        <span style="color:#fff;font-size:18px;font-weight:800;margin-left:10px;vertical-align:middle;white-space:nowrap">FX&nbsp;Flytt</span></td>
+      <td align="right" style="color:#b9c7d3;font-size:12px;vertical-align:middle;white-space:nowrap">${esc(when)}</td>
+    </tr></table></td></tr>
+  <tr><td style="padding:26px 28px 6px">
+    <div style="display:inline-block;background:#e8f5ee;color:#1d7a46;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px">RING UPP KUNDEN</div>
+    <h1 style="margin:12px 0 4px;font-size:24px;color:${INK}">${esc(d.name)}</h1>
+    ${d.topic ? `<div style="color:${MUTED};font-size:15px">${esc(d.topic)}${d.when ? " · " + esc(d.when) : ""}</div>` : ""}
+    <div style="margin:18px 0 18px">
+      <a href="${esc(telHref(d.phone))}" style="display:inline-block;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;background:${ACCENT};color:#fff;margin:0 8px 8px 0">Ring ${esc(d.phone)}</a>
+      ${d.email ? `<a href="mailto:${esc(d.email)}" style="display:inline-block;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;background:#fff;color:${NAVY};border:2px solid ${NAVY};margin:0 8px 8px 0">Svara via e-post</a>` : ""}
+    </div>
+  </td></tr>
+  ${section("Uppgifter", rows([["Namn", d.name], ["Telefon", d.phone], ["E-post", d.email], ["Gäller", d.topic], ["Bäst att ringa", d.when], ["Skickat från sidan", d.page]]))}
+  ${d.message ? section("Meddelande", `<tr><td style="background:${BG};border-radius:10px;padding:14px;font-size:14px;color:${INK};line-height:21px;white-space:pre-wrap">${esc(d.message)}</td></tr>`) : ""}
+  <tr><td style="padding:16px 28px 22px;border-top:1px solid ${LINE};color:${MUTED};font-size:12px">Snabbkontakt från fxflytt.se – kunden vill bli uppringd.</td></tr>
+</table></td></tr></table></body></html>`;
+  const t = (k: string, v?: string) => (v && v.trim() ? `${k}: ${v}\n` : "");
+  const text = `RING UPP KUNDEN – FX Flytt\n${when}\n\n` + t("Namn", d.name) + t("Telefon", d.phone) + t("E-post", d.email) +
+    t("Gäller", d.topic) + t("Bäst att ringa", d.when) + t("Sida", d.page) + (d.message ? `\nMeddelande:\n${d.message}\n` : "");
+  return { subject, html, text };
+}
