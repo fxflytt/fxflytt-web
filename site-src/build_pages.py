@@ -658,7 +658,7 @@ utland = page("utlandsflytt.html",
  "Utlandsflytt – flytt från Sverige till utlandet | FX Flytt",
  "Ska du flytta utomlands eller till Sverige? FX Flytt planerar, packar och kör din flytt med egna lastbilar. Fast pris enligt offert.",
  "Utlandsflytt", "Utlandsflytt – <span>vi tar dina saker hela vägen</span>",
- "Flyttar du från Sverige till ett annat EU-land – eller hem till Sverige? Vi kör till alla länder inom EU med egna lastbilar, planerar och packar, och ger dig ett fast pris i förväg.",
+ "Flyttar du från Sverige till ett annat land – eller hem till Sverige? Vi kör till hela EU, Norge och Storbritannien med egna lastbilar, planerar och packar, och ger dig ett fast pris i förväg.",
  """
 <section>
   <div class="wrap" style="max-width:860px">
@@ -677,7 +677,8 @@ utland = page("utlandsflytt.html",
     <h2 style="font-size:1.5rem;margin:34px 0 10px">Bra att tänka på</h2>
     <ul class="ticks" style="display:grid;gap:10px">
       <li><b>RUT-avdrag</b> gäller arbetskostnaden när flytten sker inom EU/EES eller till Schweiz. <a href="rut-avdrag.html">Läs mer om RUT</a>.</li>
-      <li><b>Vi flyttar till alla EU-länder</b> – till exempel Tyskland, Polen, Finland, Spanien eller Italien. Inom EU behövs inga tullpapper för ditt bohag.</li>
+      <li><b>Vi flyttar till alla EU-länder, Norge och Storbritannien.</b> FX Flytt AB har tillstånd för godstransporter inom EU.</li>
+      <li><b>Flyttar du till Norge eller Storbritannien</b> (utanför EU) kan tullpapper och en inventarielista behövas. Vi hjälper dig att planera – kolla också vad som gäller i landet du flyttar till.</li>
       <li><b>Folkbokföring:</b> anmäl utflyttning till Skatteverket om du ska bo utomlands i minst ett år.</li>
       <li>Ta med pass, viktiga dokument, mediciner och värdesaker själv.</li>
     </ul>
