@@ -1123,7 +1123,8 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     'other|':'Beskriv vad du behöver i nästa steg, så återkommer vi med ett pris.'};
   const svcInfo=()=>{const el=$('fsvc-info'); if(el) el.innerHTML=SVC_INFO[fsvc.value]||'';
     const dl=fsvc.value==='move|deluxe', hw=$('f-hours-wrap'); if(hw) hw.style.display=dl?'':'none';
-    if(dl){ $('c-crew').value='2'; $('c-h').value=$('f-hours').value; }};
+    if(dl){ $('c-crew').value='2'; $('c-h').value=$('f-hours').value; }
+    else if(fsvc.value==='hourly|'){ $('c-h').value='3'; }};
   $('f-hours').addEventListener('change',()=>{ $('c-crew').value='2'; $('c-h').value=$('f-hours').value; calc(); });
   fsvc.addEventListener('change',svcInfo); svcInfo();
   fsvc.addEventListener('change',formToCalc); fkvm.addEventListener('input',formToCalc);
