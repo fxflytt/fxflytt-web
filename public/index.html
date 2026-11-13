@@ -307,7 +307,7 @@ body.noscroll .mbar{display:none}
 .vol summary{cursor:pointer;padding:12px 14px;font-weight:700;color:var(--navy);display:flex;justify-content:space-between;align-items:center;list-style:none;font-size:.92rem}
 .vol summary::-webkit-details-marker{display:none}
 .vol summary::after{content:none}
-.vol summary span:first-child::before{content:"📦 "}
+.vol > summary span:first-child::before{content:"📦 "}
 .vol[open] summary{border-bottom:0}
 .vol-badge{background:var(--navy);color:#fff;border-radius:999px;padding:4px 12px;font-size:.8rem;white-space:nowrap;flex:none}
 .vol-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 14px;font-size:.9rem}
@@ -1219,7 +1219,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     window.fxDistance=road; box.classList.add('show'); window.dispatchEvent(new Event('fx-distance'));
     if(window.L&&netOK){
       mp.classList.add('show');
-      if(!map){map=L.map(mp,{zoomControl:false,attributionControl:true,scrollWheelZoom:false});
+      if(!map){map=L.map(mp,{zoomControl:false,attributionControl:true,scrollWheelZoom:false});map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);}
       if(layer)layer.remove();
       const A=[pts.from.lat,pts.from.lon],B=[pts.to.lat,pts.to.lon];
