@@ -4,8 +4,9 @@
 type Cmd = (string | number)[];
 
 function conf() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  const e = process.env;
+  const url = e.KV_REST_API_URL || e.STORAGE_REST_API_URL || e.STORAGE_KV_REST_API_URL || e.UPSTASH_REDIS_REST_URL;
+  const token = e.KV_REST_API_TOKEN || e.STORAGE_REST_API_TOKEN || e.STORAGE_KV_REST_API_TOKEN || e.UPSTASH_REDIS_REST_TOKEN;
   return url && token ? { url: url.replace(/\/$/, ""), token } : null;
 }
 
