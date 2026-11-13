@@ -74,6 +74,8 @@
   const CAP=10;
   const ST={new:'Ny',sent:'Offert skickad',signed:'Signerad',declined:'Nekad',done:'Klar',cancelled:'Avbokad'};
   const fmtDate=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}):'Inget datum';
+  const TIMES=[];for(let h=7;h<=18;h++){TIMES.push(String(h).padStart(2,'0')+':00');if(h<18)TIMES.push(String(h).padStart(2,'0')+':30');}
+  const timeOpts=(cur)=>'<option value="">Ingen tid</option>'+TIMES.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('')+(cur&&!TIMES.includes(cur)?`<option selected>${cur}</option>`:'');
   const fmtTs=(t)=>t?new Date(t).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'}):'';
   const today=()=>new Date().toLocaleDateString('sv-SE');
   const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
@@ -193,11 +195,11 @@
         <div class="btns" style="margin-top:6px"><a class="btn sec" href="${esc(tel(d.phone))}">Ring ${esc(d.phone)}</a><a class="btn sec" href="sms:${esc(String(d.phone||'').replace(/\s/g,''))}">SMS</a></div>
         ${d.email?`<div class="muted" style="margin-top:8px">E-post: <a href="mailto:${esc(d.email)}">${esc(d.email)}</a></div>`:'<div class="warn">Kunden har ingen e-post – skicka länken via SMS.</div>'}
       </div>
-      ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}"${b.signature.pnr?` · Personnr ${esc(b.signature.pnr)}`:''} ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
+      ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}"${b.signature.pnr?` · Personnr ${esc(b.signature.pnr)}`:''}${b.signature.orgnr?` · Org.nr ${esc(b.signature.orgnr)} (företag)`:''} ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
       <div class="card"><h3>Datum och pris</h3>
         ${locked?'<div class="warn">Offerten är signerad. Ändrar du pris eller datum nu gäller det inte automatiskt – prata med kunden först.</div>':''}
         <div class="row2"><div><label class="f" for="dt">Flyttdatum</label><input id="dt" type="date" value="${esc(b.date||'')}"></div>
-        <div><label class="f" for="tm">Starttid</label><input id="tm" type="time" value="${esc(b.time||'')}"></div></div>
+        <div><label class="f" for="tm">Starttid</label><select id="tm">${timeOpts(b.time)}</select></div></div>
         ${n>=CAP?`<div class="warn">Den dagen har redan ${n} bokningar (max ${CAP}).</div>`:n>=CAP-3?`<div class="warn">Den dagen har ${n} bokningar.</div>`:''}
         <label class="f" for="tot">Pris efter RUT (kr)</label><input id="tot" type="number" inputmode="numeric" value="${o?esc(o.total):''}">
         ${o&&!o.custom&&o.lines?.length?`<div class="muted" style="margin-top:6px">${o.lines.map(l=>esc(l.label)+': '+kr(l.amount)).join('<br>')}</div>`:''}
@@ -259,7 +261,7 @@
       <div class="row2"><div><label class="f">Telefon *</label><input id="n_phone" type="tel"></div><div><label class="f">E-post</label><input id="n_email" type="email"></div></div>
       <label class="f">Från</label><input id="n_from"><label class="f">Till</label><input id="n_to">
       <div class="row2"><div><label class="f">Tjänst</label><select id="n_size"><option>Flytt</option><option>Flytt + flyttstäd</option><option>Flytt + flyttstäd + packning</option><option>Flyttstäd</option><option>Flytt per timme</option><option>Kontorsflytt</option><option>Annat</option></select></div><div><label class="f">Boyta (m²)</label><input id="n_m2" type="number" inputmode="numeric"></div></div>
-      <div class="row2"><div><label class="f">Datum</label><input id="n_date" type="date"></div><div><label class="f">Starttid</label><input id="n_time" type="time"></div></div>
+      <div class="row2"><div><label class="f">Datum</label><input id="n_date" type="date"></div><div><label class="f">Starttid</label><select id="n_time">${timeOpts('')}</select></div></div>
       <label class="f">Pris efter RUT (kr)</label><input id="n_total" type="number" inputmode="numeric">
       <label class="f">Text till kunden</label><textarea id="n_cn" placeholder="T.ex. Flytt 2 rok inkl. bärhjälp, 2 flyttare"></textarea>
       <label class="f">Övrigt</label><textarea id="n_msg"></textarea>

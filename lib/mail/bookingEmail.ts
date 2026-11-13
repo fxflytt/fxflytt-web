@@ -83,7 +83,7 @@ export function companyNoticeEmail(b: Booking, kind: "signed" | "declined", admi
     `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">${esc(b.data.name)}</h1></td></tr>` +
     p(`<a href="${esc(telHref(b.data.phone))}" style="color:${NAVY};font-weight:700">${esc(b.data.phone)}</a>${b.data.email ? " · " + esc(b.data.email) : ""}`) +
     summary(b) +
-    (signed && b.signature ? p(`<span style="color:${MUTED};font-size:13px">Signerad av "${esc(b.signature.name)}"${b.signature.pnr ? ` · Personnr ${esc(b.signature.pnr)}` : ""} ${esc(new Date(b.signature.at).toLocaleString("sv-SE", { timeZone: "Europe/Stockholm" }))} · IP ${esc(b.signature.ip)}</span>`) : "") +
+    (signed && b.signature ? p(`<span style="color:${MUTED};font-size:13px">Signerad av "${esc(b.signature.name)}"${b.signature.pnr ? ` · Personnr ${esc(b.signature.pnr)}` : ""}${b.signature.orgnr ? ` · Org.nr ${esc(b.signature.orgnr)} (företag)` : ""} ${esc(new Date(b.signature.at).toLocaleString("sv-SE", { timeZone: "Europe/Stockholm" }))} · IP ${esc(b.signature.ip)}</span>`) : "") +
     button(adminUrl, "Öppna i bokningssystemet"));
   const text = `${signed ? "SIGNERAD" : "NEKAD"}: ${b.data.name} (${b.data.phone})\n${fmtDate(b.date)}\n${adminUrl}`;
   return { subject, html, text };

@@ -33,7 +33,7 @@ export type Booking = {
   sentAt?: number;
   signedAt?: number;
   declinedAt?: number;
-  signature?: { name: string; pnr?: string; ip: string; ua: string; at: number; offerHash: string; terms: string };
+  signature?: { name: string; pnr?: string; orgnr?: string; ip: string; ua: string; at: number; offerHash: string; terms: string };
   history: { at: number; what: string }[];
 };
 

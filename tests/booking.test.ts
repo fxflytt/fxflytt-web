@@ -78,3 +78,11 @@ test("personnummer validation", () => {
   assert.equal(normPnr("19811318-9876"), "");   // bad month
   assert.equal(normPnr("abc"), "");
 });
+
+import { normOrgnr } from "../lib/booking/pnr.ts";
+test("organisationsnummer validation", () => {
+  assert.equal(normOrgnr("559278-6643"), "559278-6643");
+  assert.equal(normOrgnr("5592786643"), "559278-6643");
+  assert.equal(normOrgnr("559278-6644"), "");
+  assert.equal(normOrgnr("551278-6643"), "");
+});

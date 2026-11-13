@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max).trim() : "");
-const DATE = /^\d{4}-\d{2}-\d{2}$/, TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
+const DATE = /^\d{4}-\d{2}-\d{2}$/, TIME = /^(0[7-9]|1[0-7]):(00|30)$|^18:00$/; // starttid 07:00–18:00, halvtimmar
 const noStorage = () => Response.json({ error: "Lagring saknas (Upstash Redis i Vercel)." }, { status: 503 });
 
 export async function GET(req: Request) {

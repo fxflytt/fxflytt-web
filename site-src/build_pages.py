@@ -565,7 +565,7 @@ villkor = page("villkor.html",
  """
 <section>
   <div class="wrap legal">
-    <p class="upd">Senast uppdaterad: 2026-11-11 (avbokning, skador och försäkring)</p>
+    <p class="upd">Senast uppdaterad: 2026-11-13</p>
 
     <h2>1. Offert</h2>
     <p>Offerten är gratis och inte bindande. Priserna i prislistan och prisräknaren är fasta priser som bygger på de uppgifter du lämnar, till exempel boyta och avstånd. Det pris som gäller är det som står i din bokningsbekräftelse.</p>

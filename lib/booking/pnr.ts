@@ -19,3 +19,13 @@ export function normPnr(raw: string): string {
   if (sum % 10 !== 0) return "";
   return `${full.slice(0, 8)}-${full.slice(8)}`;
 }
+
+// Swedish organisationsnummer -> "XXXXXX-XXXX", or "" if invalid (third digit >= 2, Luhn check).
+export function normOrgnr(raw: string): string {
+  let d = raw.replace(/[\s\-]/g, "");
+  if (/^16\d{10}$/.test(d)) d = d.slice(2);
+  if (!/^\d{10}$/.test(d) || Number(d[2]) < 2) return "";
+  let sum = 0;
+  for (let i = 0; i < 10; i++) { let n = Number(d[i]) * (i % 2 === 0 ? 2 : 1); if (n > 9) n -= 9; sum += n; }
+  return sum % 10 === 0 ? `${d.slice(0, 6)}-${d.slice(6)}` : "";
+}
