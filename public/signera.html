@@ -30,6 +30,7 @@
   .price .big{font-size:32px;font-weight:800;margin:2px 0 8px}
   .price .row{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#dbe4ec;padding:2px 0}
   .price .off{font-size:15px;background:#1f8a4c;color:#fff;border-radius:999px;padding:3px 9px;vertical-align:middle}
+  .ad{display:flex;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}.ad input{width:22px;height:22px;flex:0 0 auto}.ad span{flex:1}.ad b{white-space:nowrap}
   .nobox{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
   .rs{display:flex;gap:8px;align-items:center;padding:7px 0;font-size:15px}.rs input{width:20px;height:20px}
   .nobox textarea{width:100%;margin:8px 0 10px;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit}
@@ -67,12 +68,13 @@
 
   function steps(s){const i={sent:1,signed:3}[s]??1;return `<div class="steps"><span class="done">Offert skickad</span><span class="${i===1?'on':'done'}">Granska</span><span class="${i===3?'done':''}">Signera</span><span class="${i===3?'done':''}">Bokad</span></div>`;}
   function details(v){
-    const rows=[['Datum',fmtDate(v.date)+(v.time?' kl. '+v.time:'')],['Tjänst',v.size],['Från',v.from],['Till',v.to],['Avstånd',v.distanceKm?'ca '+v.distanceKm+' km':''],['Boyta',v.areaM2?v.areaM2+' m²':''],['Bostad',v.home],['Våning (från)',v.floorFrom],['Våning (till)',v.floorTo],['Tillval',(v.extras||[]).join(', ')]];
+    const rows=[['Datum',fmtDate(v.date)+(v.time?' kl. '+v.time:'')],['Tjänst',v.size],['Från',v.from],['Till',v.to],['Avstånd',v.distanceKm?'ca '+v.distanceKm+' km':''],['Boyta',v.areaM2?v.areaM2+' m²':''],['Bostad',v.home],['Våning (från)',v.floorFrom],['Våning (till)',v.floorTo],['Tillval',(v.extras||[]).join(', ')],['Valda tillval',(v.addonsChosen||[]).map(a=>a.label+' (+'+kr(a.price)+')').join(', ')]];
     return `<table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table>`;
   }
-  function price(o,disc){
+  function price(o,disc,chosen){
     if(!o) return '';
-    return `<div class="price"><div style="color:#b9c7d3;font-size:13px">Pris efter RUT, inkl. moms</div>${disc?`<div style="color:#b9c7d3;text-decoration:line-through;font-size:16px;margin-top:4px">${kr(disc.before)}</div>`:''}<div class="big">${kr(o.total)}${disc?` <span class="off">−${disc.pct} %</span>`:''}</div>
+    const add=(chosen||[]).reduce((a,x)=>a+x.price,0);
+    return `<div class="price"><div style="color:#b9c7d3;font-size:13px">Pris efter RUT, inkl. moms</div>${disc?`<div style="color:#b9c7d3;text-decoration:line-through;font-size:16px;margin-top:4px">${kr(disc.before+add)}</div>`:''}<div class="big"><span id="tot">${kr(o.total)}</span>${disc?` <span class="off">−${disc.pct} %</span>`:''}</div><div id="totadd" class="row" hidden></div>
       ${(o.lines||[]).map(l=>`<div class="row"><span>${esc(l.label)}</span><span>${kr(l.amount)}</span></div>`).join('')}
       ${o.customerNote?`<div class="row" style="color:#fff">${esc(o.customerNote)}</div>`:''}
       ${o.note?`<div class="note">${esc(o.note)}</div>`:''}
@@ -83,7 +85,7 @@
     const first=esc((v.name||'').split(' ')[0]);
     if(v.status==='signed'||v.status==='done'){
       app.innerHTML=`<div class="card ok"><h1>Din flytt är bokad ✓</h1><p>Signerad av <b>${esc(v.signedName)}</b> ${esc(new Date(v.signedAt).toLocaleString('sv-SE',{dateStyle:'long',timeStyle:'short'}))}.</p><p class="muted">Bokningsnummer ${esc(v.id)}. En bekräftelse har skickats till din e-post. Vi hör av oss innan flyttdagen.</p></div>`+
-        `<div class="card">${details(v)}</div><div class="card">${price(v.offer,v.discount)}</div>`+COMPANY;
+        `<div class="card">${details(v)}</div><div class="card">${price(v.offer,v.discount,v.addonsChosen)}</div>`+COMPANY;
       return;
     }
     if(v.status==='declined'){
@@ -94,6 +96,8 @@
       `<div class="card"><h1>Hej ${first}!</h1><p class="muted">Här är din offert från FX Flytt (${esc(v.id)}). Kontrollera uppgifterna och signera – då är flytten bokad.</p></div>`+
       `<div class="card">${details(v)}</div>`+
       `<div class="card">${price(v.offer,v.discount)}</div>`+
+      ((v.addons||[]).length&&v.offer?`<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Lägg till i din flytt</h2><p class="muted" style="margin:0 0 6px">Kryssa i det du vill ha – priset uppdateras direkt. Priserna gäller efter RUT-avdrag.</p>
+        ${v.addons.map(a=>`<label class="ad"><input type="checkbox" class="addon" value="${esc(a.id)}" data-p="${a.price}"><span>${esc(a.label)}</span><b>+${kr(a.price)}</b></label>`).join('')}</div>`:'')+
       `<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Signera och boka</h2>
         <label class="f" for="nm">Ditt för- och efternamn</label>
         <input id="nm" type="text" autocomplete="name" value="${esc(v.name||'')}">
@@ -115,6 +119,12 @@
         </div></div>`+COMPANY;
     document.querySelectorAll('input[name=kind]').forEach(r=>r.onchange=()=>{const c=kind()==='company';$('#pnrL').textContent=c?'Organisationsnummer':'Personnummer (för RUT-avdraget)';$('#pnr').placeholder=c?'XXXXXX-XXXX':'ÅÅÅÅMMDD-XXXX';$('#pnr').value='';});
     $('#sign').onclick=()=>act('sign');
+    document.querySelectorAll('.addon').forEach(c=>c.onchange=()=>{
+      const sel=[...document.querySelectorAll('.addon:checked')], add=sel.reduce((a,x)=>a+Number(x.dataset.p),0);
+      $('#tot').textContent=kr(v.offer.total+add);
+      const t=$('#totadd'); t.hidden=!add; t.innerHTML=add?`<span>varav tillval</span><span>+${kr(add)}</span>`:'';
+      $('#sign').textContent=add?'Signera och boka – '+kr(v.offer.total+add):'Signera och boka';
+    });
     $('#no').onclick=()=>{ $('#nobox').hidden=false; $('#no').hidden=true; $('#nobox').scrollIntoView({behavior:'smooth',block:'center'}); };
     $('#nocancel').onclick=()=>{ $('#nobox').hidden=true; $('#no').hidden=false; };
     $('#nosend').onclick=()=>act('decline');
@@ -124,7 +134,7 @@
     const btn=action==='decline'?$('#nosend'):$('#sign'), label=btn.textContent, err=$('#err'); err.textContent=''; btn.disabled=true; btn.textContent=action==='decline'?'Skickar…':'Signerar…';
     try{
       const why=document.querySelector('input[name=why]:checked');
-      const body={t,action,name:($('#nm')||{}).value||'',pnr:($('#pnr')||{}).value||'',kind:kind(),accept:!!($('#ok')||{}).checked,reason:why?why.value:'',reasonText:($('#whytxt')||{}).value||''};
+      const body={t,action,name:($('#nm')||{}).value||'',pnr:($('#pnr')||{}).value||'',kind:kind(),extras:[...document.querySelectorAll('.addon:checked')].map(x=>x.value),accept:!!($('#ok')||{}).checked,reason:why?why.value:'',reasonText:($('#whytxt')||{}).value||''};
       if(action==='sign'&&!body.accept){ throw new Error('Kryssa i att du godkänner offerten och villkoren.'); }
       const r=await fetch('/api/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       const j=await r.json().catch(()=>({}));

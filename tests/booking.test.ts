@@ -112,3 +112,13 @@ test("reminders: after ~1 day, then ~3 days, max two, only for sent offers with 
   assert.equal(reminderDue({ ...b, reminders: [], data: {} }, t0 + 30 * H), 0);
   assert.equal(reminderDue({ ...b, reminders: [], date: "2026-11-01" }, t0 + 30 * H), 0);
 });
+
+import { applyExtras } from "../lib/booking/store.ts";
+test("extras: only offered ids are added to the offer", () => {
+  const b: any = { offer: { total: 10000, lines: [] }, extras: [{ id: "e1", label: "Flyttstäd", price: 4500 }, { id: "e2", label: "Packning", price: 3570 }] };
+  const c = applyExtras(b, ["e2", "x9", 5]);
+  assert.equal(c.length, 1); assert.equal(b.offer.total, 13570); assert.deepEqual(b.extrasChosen, ["e2"]);
+  assert.equal(b.offer.lines[0].label, "Tillval: Packning");
+  const b2: any = { offer: { total: 5000, lines: [] }, extras: [] };
+  applyExtras(b2, "nope"); assert.equal(b2.offer.total, 5000);
+});

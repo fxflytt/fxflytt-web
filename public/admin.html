@@ -14,6 +14,12 @@
   header{background:var(--navy);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
   .logo{background:#fff;color:var(--navy);font-weight:900;font-style:italic;padding:3px 8px;border-radius:7px;border-left:4px solid var(--accent)}
   header b{flex:1;font-size:17px}
+  #bell{position:relative;font-size:16px;padding:5px 10px}
+  #bellN{position:absolute;top:-6px;right:-6px;background:#e5484d;color:#fff;border-radius:999px;font-size:11px;font-weight:800;min-width:18px;height:18px;line-height:18px;padding:0 4px}
+  #npanel{position:fixed;top:56px;right:8px;left:8px;max-width:420px;margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:9;max-height:70vh;overflow:auto}
+  #npanel .ev{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:11px 14px;font:inherit;color:var(--ink,#16202a)}
+  #npanel .ev.unread{background:#fff7ef}#npanel .ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  #toast{position:fixed;left:12px;right:12px;bottom:16px;max-width:440px;margin:0 auto;background:var(--navy);color:#fff;border-radius:14px;padding:13px 16px;z-index:10;box-shadow:0 10px 30px rgba(0,0,0,.25);font-weight:600}
   header button{background:none;border:1px solid #47637a;color:#cfe0ec;border-radius:999px;padding:6px 12px;font-size:13px}
   nav{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:52px;z-index:4}
   nav button{flex:1;border:1px solid #cfd9e2;background:#fff;border-radius:10px;padding:10px 4px;font-weight:700;font-size:13px;color:var(--navy)}
@@ -46,6 +52,7 @@
   .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:#eef2f5;color:#4a5a67}
   .tag.seen{background:#e8f1fb;color:#1d5fa8}.tag.ok{background:#e6f5ec;color:var(--green)}.tag.no{background:#fdecec;color:#b42318}
+  .xrow{display:flex;gap:6px;margin:6px 0}.xrow input:first-child{flex:1;min-width:0}.xrow input[type=number]{width:96px}.xrow button{border:1px solid var(--line);background:#fff;border-radius:10px;width:40px;color:#b42318}
   .dbox{border:1px solid var(--line,#e3e8ed);border-radius:12px;padding:12px;margin-top:8px}
   .warn{background:#fff4e5;border:1px solid #ffd6a8;color:#8a4b00;border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0}
   .okmsg{background:#e6f5ec;border:1px solid #bfe5cf;color:var(--green);border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0;font-weight:600}
@@ -77,8 +84,10 @@
 </style>
 </head>
 <body>
-<header><span class="logo">FX</span><b>Bokningar</b><button id="logout" hidden>Logga ut</button></header>
+<header><span class="logo">FX</span><b>Bokningar</b><button id="bell" hidden aria-label="Notiser">🔔<span id="bellN" hidden></span></button><button id="logout" hidden>Logga ut</button></header>
+<div id="npanel" hidden></div><div id="toast" hidden></div>
 <div id="root"></div>
+<script src="/price-calc.js"></script>
 <script>
 (function(){
   const $=(s,el=document)=>el.querySelector(s);
@@ -107,11 +116,11 @@
   // ---------- login ----------
   async function start(){
     const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
-    if(s.admin){ $('#logout').hidden=false; await load(); route(); }
+    if(s.admin){ $('#logout').hidden=false; $('#bell').hidden=false; await load(); route(); startNotices(); }
     else showLogin(s.setup);
   }
   function showLogin(setup){
-    $('#logout').hidden=true;
+    $('#logout').hidden=true; if($('#bell')) $('#bell').hidden=true;
     const miss=setup?[!setup.password&&'Lösenord (ADMIN_PASSWORD)',!setup.storage&&'Lagring (Upstash Redis)',!setup.mail&&'E-post (SMTP)'].filter(Boolean):[];
     root.innerHTML=`<div class="login"><div class="card"><h3 style="font-size:20px">Logga in</h3>
       ${miss.length?`<div class="warn">Saknas i Vercel: ${esc(miss.join(', '))}</div>`:''}
@@ -126,7 +135,53 @@
   }
   $('#logout').onclick=async()=>{ await fetch('/api/admin/login',{method:'DELETE'}); location.hash=''; showLogin(); };
 
-  async function load(){ const j=await api('/api/admin/bookings'); all=j.bookings||[]; }
+  async function load(){ const j=await api('/api/admin/bookings'); all=j.bookings||[]; updateBell(); }
+
+  // ---------- notices (only inside this page) ----------
+  // Built from the bookings themselves: the customer opened, signed or declined the offer.
+  function events(){
+    const ev=[];
+    for(const b of all){ const n=(b.data||{}).name||b.id;
+      if(b.lastViewAt) ev.push({t:b.lastViewAt,id:b.id,ic:'👁',txt:`${n} öppnade offerten`+(b.views>1?` (${b.views}:e gången)`:'')});
+      if(b.signedAt) ev.push({t:b.signedAt,id:b.id,ic:'✅',txt:`${n} signerade – flytten är bokad`});
+      if(b.declinedAt&&b.status==='declined') ev.push({t:b.declinedAt,id:b.id,ic:'❌',txt:`${n} tackade nej`+(b.decline?` – ${WHY[b.decline.reason]||''}`:'')});
+    }
+    return ev.sort((a,b)=>b.t-a.t).slice(0,40);
+  }
+  const seenKey='fx_seen_at';
+  const getSeen=()=>{ try{ return Number(localStorage.getItem(seenKey))||0; }catch(_){ return 0; } };
+  const setSeen=(t)=>{ try{ localStorage.setItem(seenKey,String(t)); }catch(_){} };
+  let newestSeenInSession=0;
+  function updateBell(){
+    const bell=$('#bell'); if(!bell) return;
+    const n=events().filter(e=>e.t>getSeen()).length, c=$('#bellN');
+    c.hidden=!n; c.textContent=n>9?'9+':String(n);
+    document.title=(n?`(${n}) `:'')+'Bokningar – FX Flytt';
+  }
+  function toast(msg,id){
+    const t=$('#toast'); t.textContent=msg; t.hidden=false; t.onclick=()=>{ t.hidden=true; if(id) location.hash=id; };
+    clearTimeout(toast.h); toast.h=setTimeout(()=>{ t.hidden=true; },8000);
+  }
+  function startNotices(){
+    if(startNotices.on) return; startNotices.on=true;
+    newestSeenInSession=Math.max(0,...events().map(e=>e.t));
+    $('#bell').onclick=()=>{
+      const p=$('#npanel'); if(!p.hidden){ p.hidden=true; return; }
+      const seen=getSeen(), ev=events();
+      p.innerHTML=ev.length?ev.map(e=>`<button class="ev${e.t>seen?' unread':''}" data-id="${esc(e.id)}">${e.ic} ${esc(e.txt)}<small>${esc(ago(e.t))}</small></button>`).join(''):'<div class="empty">Inga notiser än.</div>';
+      p.hidden=false; setSeen(Date.now()); updateBell();
+      p.querySelectorAll('.ev').forEach(x=>x.onclick=()=>{ p.hidden=true; location.hash=x.dataset.id; });
+    };
+    document.addEventListener('click',(e)=>{ const p=$('#npanel'); if(!p.hidden&&!p.contains(e.target)&&e.target.id!=='bell'&&!$('#bell').contains(e.target)) p.hidden=true; });
+    // Check for news every 30 seconds while the page is open and visible.
+    setInterval(async()=>{
+      if(document.visibilityState!=='visible') return;
+      try{ await load(); }catch(_){ return; }
+      const fresh=events().filter(e=>e.t>newestSeenInSession);
+      if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].ic} ${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,fresh[0].id);
+        if(view==='list'&&document.activeElement?.id!=='q') showList(); }
+    },30000);
+  }
   const signedOn=(d)=>all.filter(b=>(b.status==='signed'||b.status==='done')&&b.date===d);
 
   // ---------- routing ----------
@@ -312,6 +367,12 @@
         ${locked?'':`<button class="btn" id="send">${b.status==='sent'?'Skicka offerten igen':'Skicka offert via e-post'}</button><button class="btn sec" id="link">Kopiera länk (för SMS)</button>`}
         ${b.status==='sent'&&b.data?.email?'<button class="btn sec" id="remind">Skicka påminnelse nu</button>':''}
         <div id="msg2"></div></div>
+      ${!locked&&b.status!=='cancelled'?`<div class="card"><h3>Tillval i offerten</h3>
+        <div class="muted">Kunden kan kryssa i dessa på offertsidan – priset uppdateras direkt. Ange pris efter RUT.</div>
+        <div class="chips" id="xpre" style="margin-top:8px"></div>
+        <div id="xlist"></div>
+        <button class="btn sec" id="xsave">Spara tillval</button><div id="msgx"></div></div>`:''}
+      ${b.extrasChosen?.length?`<div class="card"><h3>Kunden valde tillval</h3>${(b.extras||[]).filter(e=>b.extrasChosen.includes(e.id)).map(e=>`<div style="display:flex;justify-content:space-between"><span>${esc(e.label)}</span><b>+${kr(e.price)}</b></div>`).join('')}</div>`:''}
       ${(b.status==='declined'||b.status==='sent')&&o?.total>0?`<div class="card"><h3>Ge rabatt${b.decline?.reason==='price'?' <span class="tag no" style="vertical-align:middle">Kunden tyckte priset var för högt</span>':''}</h3>
         <div class="muted">Välj rabatt – du ser det nya priset innan något skickas.</div>
         <div class="chips" id="pcts">${[5,10,15,20].map(p=>`<button class="chip" data-p="${p}">${p} %</button>`).join('')}<input id="pct" type="number" inputmode="numeric" min="1" max="50" placeholder="Egen %" style="width:110px"></div>
@@ -347,6 +408,24 @@
       try{ await api('/api/admin/send?id='+b.id,{method:'POST'}); await showDetail(b.id); msg('#msg2','Offerten är skickad ✓',true); }
       catch(e){ msg('#msg2',e.message,false); sendBtn.disabled=false; sendBtn.textContent='Skicka offert via e-post'; }
     };
+    if($('#xlist')){
+      let xs=(b.extras||[]).map(e=>({label:e.label,price:e.price}));
+      const P=window.FX_PRICES||{}, m2=Number(d.areaM2)||0, hr=(P.hourly||{})[2]||595;
+      const cl=m2&&P.cleaning?(P.cleaning.find(r=>m2<=r[0])||[])[1]:null;
+      const pre=[cl?['Flyttstäd'+(m2?' '+m2+' m²':''),cl]:['Flyttstäd',''],['Packning – 2 pers × 3 tim',2*3*hr],['Ned- och montering – 2 pers × 2 tim',2*2*hr],['Flyttkartonger, hyra ('+((P.boxes||{}).qty||50)+' st)',(P.boxes||{}).rent||750],['Flyttkartonger, köp ('+((P.boxes||{}).qty||50)+' st)',(P.boxes||{}).buy||2000],['Bortforsling',''],['Eget tillval','']];
+      const draw=()=>{
+        $('#xlist').innerHTML=xs.length?xs.map((x,i)=>`<div class="xrow"><input data-i="${i}" data-k="label" value="${esc(x.label)}" placeholder="Namn"><input data-i="${i}" data-k="price" type="number" inputmode="numeric" value="${x.price||''}" placeholder="kr"><button data-del="${i}" aria-label="Ta bort">✕</button></div>`).join(''):'<div class="muted" style="margin:6px 0">Inga tillval än – välj ovan.</div>';
+        $('#xlist').querySelectorAll('input').forEach(inp=>inp.oninput=()=>{ const x=xs[inp.dataset.i]; x[inp.dataset.k]=inp.dataset.k==='price'?Number(inp.value):inp.value; });
+        $('#xlist').querySelectorAll('[data-del]').forEach(btn=>btn.onclick=()=>{ xs.splice(Number(btn.dataset.del),1); draw(); });
+      };
+      $('#xpre').innerHTML=pre.map((p,i)=>`<button data-i="${i}">+ ${esc(p[0].split(' – ')[0].split(' (')[0])}</button>`).join('');
+      $('#xpre').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{ if(xs.length>=8) return; const p=pre[btn.dataset.i]; xs.push({label:p[0]==='Eget tillval'?'':p[0],price:p[1]||''}); draw(); const l=$('#xlist').querySelectorAll('input'); const last=l[l.length-(p[1]?2:1)]; last&&last.focus(); });
+      draw();
+      $('#xsave').onclick=async()=>{
+        try{ await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify({extras:xs.filter(x=>x.label||x.price)})}); await load(); await showDetail(b.id); msg('#msgx','Tillvalen är sparade ✓ – kunden ser dem i offerten.',true); }
+        catch(e){ msg('#msgx',e.message,false); }
+      };
+    }
     const remBtn=$('#remind');
     if(remBtn) remBtn.onclick=async()=>{
       if(!confirm('Skicka en påminnelse till '+d.email+' nu?')) return;

@@ -60,6 +60,17 @@ export async function PATCH(req: Request) {
     }
   }
   if ("customerNote" in d) { b.offer = { ...(b.offer || { total: 0, lines: [] }), customerNote: str(d.customerNote, 500) }; changes.push("text till kunden"); }
+  if ("extras" in d) {
+    if (b.signedAt) return Response.json({ error: "Tillval går inte att ändra efter signering." }, { status: 400 });
+    const list = Array.isArray(d.extras) ? d.extras.slice(0, 8) : [];
+    const ex = [];
+    for (const [i, e] of list.entries()) {
+      const label = str((e as { label?: unknown })?.label, 80), price = Math.round(Number((e as { price?: unknown })?.price));
+      if (!label || !(price > 0 && price < 1e6)) return Response.json({ error: "Varje tillval behöver namn och pris." }, { status: 400 });
+      ex.push({ id: "e" + (i + 1), label, price });
+    }
+    b.extras = ex; changes.push(ex.length ? "tillval " + ex.map((e) => `${e.label} ${e.price} kr`).join(", ") : "tillval borttagna");
+  }
   if ("status" in d) {
     const s = d.status as Status;
     if (!STATUSES.includes(s)) return Response.json({ error: "Ogiltig status." }, { status: 400 });

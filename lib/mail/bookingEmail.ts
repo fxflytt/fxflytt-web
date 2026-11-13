@@ -37,18 +37,21 @@ const p = (html: string) => `<tr><td style="padding:6px 28px;color:${INK};font-s
 const button = (href: string, label: string) =>
   `<tr><td style="padding:14px 28px 18px"><a href="${esc(href)}" style="display:inline-block;padding:15px 26px;border-radius:999px;background:${ACCENT};color:#fff;font-size:16px;font-weight:800;text-decoration:none">${esc(label)}</a></td></tr>`;
 
+const chosenExtras = (b: Booking) => (b.extras || []).filter((e) => b.extrasChosen?.includes(e.id));
+
 function summary(b: Booking) {
   const d = b.data;
   const rows: [string, string | undefined][] = [
     ["Datum", fmtDate(b.date) + (b.time ? ` kl. ${b.time}` : "")],
     ["Tjänst", d.size], ["Från", d.from], ["Till", d.to], ["Boyta", d.areaM2 ? d.areaM2 + " m²" : undefined],
+    ["Tillval", chosenExtras(b).map((e) => `${e.label} (+${kr(e.price)})`).join(", ") || undefined],
   ];
   const r = rows.filter(([, v]) => v && String(v).trim())
     .map(([k, v]) => `<tr><td style="padding:7px 0;color:${MUTED};font-size:14px;width:38%;border-bottom:1px solid ${LINE}">${esc(k)}</td><td style="padding:7px 0;color:${INK};font-size:14px;font-weight:600;border-bottom:1px solid ${LINE}">${esc(v)}</td></tr>`).join("");
   const o = b.offer;
   const price = o ? `<div style="background:${BG};border-radius:12px;padding:16px 18px;margin-top:14px">
       <div style="color:${MUTED};font-size:13px">Pris efter RUT, inkl. moms</div>
-      ${b.discount ? `<div style="color:${MUTED};font-size:15px;text-decoration:line-through">${esc(kr(b.discount.before))}</div>` : ""}
+      ${b.discount ? `<div style="color:${MUTED};font-size:15px;text-decoration:line-through">${esc(kr(b.discount.before + chosenExtras(b).reduce((a, e) => a + e.price, 0)))}</div>` : ""}
       <div style="color:${INK};font-size:28px;font-weight:800">${esc(kr(o.total))}${b.discount ? ` <span style="font-size:14px;color:${GREEN};font-weight:700">−${b.discount.pct} %</span>` : ""}</div>
       ${o.customerNote ? `<div style="color:${INK};font-size:14px;margin-top:6px">${esc(o.customerNote)}</div>` : ""}
     </div>` : "";

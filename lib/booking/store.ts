@@ -33,6 +33,8 @@ export type Booking = {
   sentAt?: number;
   signedAt?: number;
   declinedAt?: number;
+  extras?: Extra[];        // optional add-ons the customer can tick in the offer (price after RUT)
+  extrasChosen?: string[]; // ids the customer ticked when signing (already added to offer.total)
   views?: number;          // times the customer opened the offer link
   firstViewAt?: number;
   lastViewAt?: number;
@@ -43,6 +45,7 @@ export type Booking = {
   history: { at: number; what: string }[];
 };
 
+export type Extra = { id: string; label: string; price: number };
 export type DeclineReason = "price" | "other_company" | "date" | "no_move" | "other";
 export const DECLINE_REASONS: Record<DeclineReason, string> = {
   price: "Priset är för högt", other_company: "Valt en annan flyttfirma", date: "Datumet passar inte",
@@ -120,6 +123,8 @@ export function publicView(b: Booking) {
     } : null,
     signedAt: b.signedAt || null, signedName: b.signature?.name || null,
     discount: b.discount && b.offer ? { pct: b.discount.pct, before: b.discount.before } : null,
+    addons: b.status === "signed" || b.status === "done" ? [] : (b.extras || []),
+    addonsChosen: (b.extras || []).filter((e) => b.extrasChosen?.includes(e.id)),
   };
 }
 
@@ -143,4 +148,14 @@ export function reminderDue(b: Booking, now = Date.now()): 0 | 1 | 2 {
   if (n === 0 && age >= 20 * 3_600_000) return 1;
   if (n === 1 && age >= 68 * 3_600_000) return 2;
   return 0;
+}
+
+// Adds the add-ons the customer ticked to the offer (lines + total). Returns the chosen extras.
+export function applyExtras(b: Booking, ids: unknown): Extra[] {
+  const want = Array.isArray(ids) ? new Set(ids.filter((x) => typeof x === "string")) : new Set<string>();
+  const chosen = (b.extras || []).filter((e) => want.has(e.id));
+  if (!b.offer || !chosen.length) { b.extrasChosen = []; return []; }
+  b.offer = { ...b.offer, lines: [...b.offer.lines, ...chosen.map((e) => ({ label: `Tillval: ${e.label}`, amount: e.price }))], total: b.offer.total + chosen.reduce((a, e) => a + e.price, 0) };
+  b.extrasChosen = chosen.map((e) => e.id);
+  return chosen;
 }
