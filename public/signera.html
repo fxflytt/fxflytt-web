@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Din offert – FX Flytt</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{--navy:#0d2a3f;--accent:#ff7a1a;--ink:#14212b;--muted:#5b6b78;--line:#e3e8ed;--bg:#f5f7f9;--green:#1f8a4c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{background:var(--navy);padding:14px 18px;display:flex;align-items:center;gap:10px}
+  .logo{background:#fff;color:var(--navy);font-weight:900;font-style:italic;padding:4px 9px;border-radius:7px;border-left:4px solid var(--accent)}
+  header b{color:#fff;font-size:18px}
+  main{max-width:640px;margin:0 auto;padding:18px 14px 120px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+  h1{font-size:24px;margin:0 0 4px}
+  .muted{color:var(--muted);font-size:14px}
+  .steps{display:flex;gap:6px;margin:4px 0 14px}
+  .steps span{flex:1;font-size:12px;text-align:center;padding:6px 4px;border-radius:999px;background:#e9eef2;color:var(--muted);font-weight:600}
+  .steps span.on{background:var(--accent);color:#fff}
+  .steps span.done{background:#d7efe1;color:var(--green)}
+  table{width:100%;border-collapse:collapse}
+  td{padding:8px 0;border-bottom:1px solid var(--line);font-size:15px;vertical-align:top}
+  td:first-child{color:var(--muted);width:38%}
+  td:last-child{font-weight:600}
+  .price{background:var(--navy);color:#fff;border-radius:14px;padding:16px 18px}
+  .price .big{font-size:32px;font-weight:800;margin:2px 0 8px}
+  .price .row{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#dbe4ec;padding:2px 0}
+  .price .note{color:#ffb27a;font-weight:700;font-size:14px;margin-top:8px}
+  .badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .badges span{font-size:12px;background:#eef3f7;border-radius:999px;padding:5px 10px;color:var(--navy);font-weight:600}
+  label.f{display:block;font-weight:700;margin:12px 0 6px}
+  input[type=text]{width:100%;font-size:17px;padding:13px 14px;border:1.5px solid #c9d5df;border-radius:12px}
+  .chk{display:flex;gap:10px;align-items:flex-start;margin:14px 0;font-size:15px}
+  .chk input{width:22px;height:22px;margin-top:2px;flex:none}
+  .btn{display:block;width:100%;border:0;border-radius:999px;padding:16px;font-size:17px;font-weight:800;background:var(--accent);color:#fff}
+  .btn:disabled{opacity:.6}
+  .link{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:14px;margin-top:14px;padding:6px}
+  .err{color:#b42318;font-weight:600;margin-top:10px}
+  .ok{background:#e6f5ec;border-color:#bfe5cf}
+  .ok h1{color:var(--green)}
+  a{color:var(--navy)}
+</style>
+</head>
+<body>
+<header><span class="logo">FX</span><b>FX Flytt</b></header>
+<main id="app"><div class="card"><p class="muted">Hämtar din offert…</p></div></main>
+<script>
+(function(){
+  const $=(s)=>document.querySelector(s);
+  const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const kr=(n)=>Math.round(n).toLocaleString('sv-SE')+' kr';
+  const fmtDate=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}):'Enligt överenskommelse';
+  const t=new URLSearchParams(location.search).get('t')||'';
+  const app=$('#app');
+  const COMPANY=`<div class="card"><b>FX Flytt AB</b><div class="muted">Frejgatan 9B, 736 30 Kungsör · <a href="tel:+46763000723">076-300 07 23</a> · <a href="mailto:info@fxflytt.se">info@fxflytt.se</a></div>
+    <div class="badges"><span>F-skatt</span><span>Trafiktillstånd</span><span>Försäkrade hos Trygg-Hansa</span><span>7 dagars städgaranti</span></div></div>`;
+
+  function steps(s){const i={sent:1,signed:3}[s]??1;return `<div class="steps"><span class="done">Offert skickad</span><span class="${i===1?'on':'done'}">Granska</span><span class="${i===3?'done':''}">Signera</span><span class="${i===3?'done':''}">Bokad</span></div>`;}
+  function details(v){
+    const rows=[['Datum',fmtDate(v.date)+(v.time?' kl. '+v.time:'')],['Tjänst',v.size],['Från',v.from],['Till',v.to],['Avstånd',v.distanceKm?'ca '+v.distanceKm+' km':''],['Boyta',v.areaM2?v.areaM2+' m²':''],['Bostad',v.home],['Våning (från)',v.floorFrom],['Våning (till)',v.floorTo],['Tillval',(v.extras||[]).join(', ')]];
+    return `<table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table>`;
+  }
+  function price(o){
+    if(!o) return '';
+    return `<div class="price"><div style="color:#b9c7d3;font-size:13px">Pris efter RUT, inkl. moms</div><div class="big">${kr(o.total)}</div>
+      ${(o.lines||[]).map(l=>`<div class="row"><span>${esc(l.label)}</span><span>${kr(l.amount)}</span></div>`).join('')}
+      ${o.customerNote?`<div class="row" style="color:#fff">${esc(o.customerNote)}</div>`:''}
+      ${o.note?`<div class="note">${esc(o.note)}</div>`:''}
+      ${(o.notIncluded||[]).length?`<div class="note">Ingår inte i priset:</div>${o.notIncluded.map(x=>`<div class="row">• ${esc(x)}</div>`).join('')}`:''}
+      <div style="color:#b9c7d3;font-size:12px;margin-top:10px">Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året.</div></div>`;
+  }
+  function render(v){
+    const first=esc((v.name||'').split(' ')[0]);
+    if(v.status==='signed'||v.status==='done'){
+      app.innerHTML=`<div class="card ok"><h1>Din flytt är bokad ✓</h1><p>Signerad av <b>${esc(v.signedName)}</b> ${esc(new Date(v.signedAt).toLocaleString('sv-SE',{dateStyle:'long',timeStyle:'short'}))}.</p><p class="muted">Bokningsnummer ${esc(v.id)}. En bekräftelse har skickats till din e-post. Vi hör av oss innan flyttdagen.</p></div>`+
+        `<div class="card">${details(v)}</div><div class="card">${price(v.offer)}</div>`+COMPANY;
+      return;
+    }
+    if(v.status==='declined'){
+      app.innerHTML=`<div class="card"><h1>Tack för ditt svar</h1><p>Du har tackat nej till offerten. Ändrat dig eller vill du ha ett nytt förslag? Ring oss på <a href="tel:+46763000723">076-300 07 23</a>.</p></div>`+COMPANY;
+      return;
+    }
+    app.innerHTML=steps(v.status)+
+      `<div class="card"><h1>Hej ${first}!</h1><p class="muted">Här är din offert från FX Flytt (${esc(v.id)}). Kontrollera uppgifterna och signera – då är flytten bokad.</p></div>`+
+      `<div class="card">${details(v)}</div>`+
+      `<div class="card">${price(v.offer)}</div>`+
+      `<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Signera och boka</h2>
+        <label class="f" for="nm">Ditt för- och efternamn</label>
+        <input id="nm" type="text" autocomplete="name" value="${esc(v.name||'')}">
+        <label class="chk"><input id="ok" type="checkbox"><span>Jag godkänner offerten och FX Flytts <a href="/villkor" target="_blank" rel="noopener">villkor</a> (inklusive Bohag 2010).</span></label>
+        <button class="btn" id="sign">Signera och boka</button>
+        <div class="err" id="err"></div>
+        <p class="muted" style="font-size:13px;margin:12px 0 0">När du signerar sparar vi ditt namn, tidpunkt och information om din enhet som bekräftelse på avtalet.</p>
+        <button class="link" id="no">Jag vill inte ha offerten</button></div>`+COMPANY;
+    $('#sign').onclick=()=>act('sign');
+    $('#no').onclick=()=>{ if(confirm('Vill du tacka nej till offerten?')) act('decline'); };
+  }
+  async function act(action){
+    const btn=$('#sign'), err=$('#err'); err.textContent=''; btn.disabled=true; btn.textContent='Signerar…';
+    try{
+      const body={t,action,name:($('#nm')||{}).value||'',accept:!!($('#ok')||{}).checked};
+      if(action==='sign'&&!body.accept){ throw new Error('Kryssa i att du godkänner offerten och villkoren.'); }
+      const r=await fetch('/api/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const j=await r.json().catch(()=>({}));
+      if(j.view){ render(j.view); window.scrollTo(0,0); return; }
+      throw new Error(j.error||'Något gick fel. Ring oss på 076-300 07 23.');
+    }catch(e){ err.textContent=e.message; btn.disabled=false; btn.textContent='Signera och boka'; }
+  }
+  fetch('/api/booking?t='+encodeURIComponent(t)).then(r=>r.ok?r.json():Promise.reject(r.status)).then(render).catch(()=>{
+    app.innerHTML=`<div class="card"><h1>Offerten hittades inte</h1><p>Länken kan vara felaktig eller så har offerten tagits bort. Ring oss på <a href="tel:+46763000723">076-300 07 23</a> så hjälper vi dig.</p></div>`+COMPANY;
+  });
+})();
+</script>
+</body>
+</html>

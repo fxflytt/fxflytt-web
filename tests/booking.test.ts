@@ -1,0 +1,70 @@
+import { test, beforeEach } from "node:test";
+import assert from "node:assert/strict";
+
+// In-memory stand-in for the Upstash REST API (only the commands the store uses).
+const db = new Map<string, string>(); const z = new Map<string, Map<string, number>>();
+function run(c: string[]): unknown {
+  const [cmd, ...a] = c;
+  switch (cmd) {
+    case "SET": db.set(a[0], a[1]); return "OK";
+    case "GET": return db.get(a[0]) ?? null;
+    case "MGET": return a.map((k) => db.get(k) ?? null);
+    case "ZADD": { const m = z.get(a[0]) ?? new Map(); m.set(a[2], Number(a[1])); z.set(a[0], m); return 1; }
+    case "ZREVRANGE": { const m = z.get(a[0]) ?? new Map(); return [...m.entries()].sort((x, y) => y[1] - x[1]).map((e) => e[0]).slice(Number(a[1]), Number(a[2]) + 1); }
+  }
+  throw new Error("cmd " + cmd);
+}
+process.env.KV_REST_API_URL = "https://kv.test"; process.env.KV_REST_API_TOKEN = "t";
+globalThis.fetch = (async (url: string, init: RequestInit) => {
+  const body = JSON.parse(String(init.body));
+  const out = String(url).endsWith("/pipeline") ? body.map((c: string[]) => ({ result: run(c) })) : { result: run(body) };
+  return new Response(JSON.stringify(out), { status: 200 });
+}) as typeof fetch;
+
+const store = await import("../lib/booking/store.ts");
+const auth = await import("../lib/booking/auth.ts");
+beforeEach(() => { db.clear(); z.clear(); });
+
+const data = { name: "Anna Svensson", phone: "070-123 45 67", email: "anna@example.se", from: "Kungsör", to: "Örebro", date: "2026-12-05",
+  price: { total: 3950, lines: [{ label: "Flytt 60 m²", amount: 3950 }] } };
+
+test("skapar, listar och hämtar bokning", async () => {
+  const b = await store.createBooking("web", data);
+  assert.match(b.id, /^FX\d{6}-[0-9A-F]{6}$/);
+  assert.equal(b.status, "new"); assert.equal(b.offer?.total, 3950); assert.equal(b.date, "2026-12-05");
+  const list = await store.listBookings();
+  assert.equal(list.length, 1);
+  assert.equal((await store.getBooking(b.id))?.data.name, "Anna Svensson");
+  assert.equal(await store.getBooking("../hack"), null);
+});
+
+test("token-länk hittar rätt bokning och visar inget internt", async () => {
+  const b = await store.createBooking("web", data);
+  b.adminNote = "hemlig"; const t = await store.issueToken(b); await store.saveBooking(b);
+  assert.equal(t.length, 32);
+  const found = await store.bookingByToken(t);
+  assert.equal(found?.id, b.id);
+  const v = store.publicView(found!) as Record<string, unknown>;
+  assert.equal(JSON.stringify(v).includes("hemlig"), false);
+  assert.equal("signature" in v, false);
+  assert.equal(await store.bookingByToken("x".repeat(32)), null);
+});
+
+test("handpris döljer kalkylatorns rader för kunden", async () => {
+  const b = await store.createBooking("web", data);
+  b.offer = { ...b.offer!, total: 4500, custom: true, customerNote: "Inkl. montering" };
+  const v = store.publicView(b);
+  assert.deepEqual(v.offer?.lines, []); assert.equal(v.offer?.total, 4500); assert.equal(v.offer?.customerNote, "Inkl. montering");
+});
+
+test("inloggning: rätt lösenord ger giltig kaka, fel ger inte", () => {
+  process.env.ADMIN_PASSWORD = "test-lösen-123";
+  assert.equal(auth.passwordOk("fel"), false);
+  assert.equal(auth.passwordOk("test-lösen-123"), true);
+  const c = auth.sessionCookie().split(";")[0];
+  assert.equal(auth.isAdmin(new Request("https://x/", { headers: { cookie: c } })), true);
+  const forged = c.replace(/\.[^.]+$/, ".AAAA");
+  assert.equal(auth.isAdmin(new Request("https://x/", { headers: { cookie: forged } })), false);
+  process.env.ADMIN_PASSWORD = "nytt";
+  assert.equal(auth.isAdmin(new Request("https://x/", { headers: { cookie: c } })), false);
+});

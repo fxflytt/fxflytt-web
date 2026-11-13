@@ -3,6 +3,8 @@
 import { sendMail } from "@/lib/mail/smtp.ts";
 import { offerEmail, customerConfirmation, type OfferData } from "@/lib/mail/offerEmail.ts";
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
+import { kvConfigured } from "@/lib/booking/kv.ts";
+import { createBooking } from "@/lib/booking/store.ts";
 
 export const runtime = "nodejs";
 
@@ -50,7 +52,13 @@ export async function POST(req: Request) {
   };
   if (!data.name || !data.phone) return Response.json({ error: "Namn och telefon behövs." }, { status: 400 });
   if (!EMAIL_RE.test(data.email || "")) data.email = "";
-  const mail = offerEmail(data, new Date());
+  // Save it in the booking system too (if storage is set up). A failure here must not lose the e-mail.
+  let adminUrl: string | undefined;
+  if (kvConfigured()) {
+    try { const b = await createBooking("web", data); adminUrl = `${process.env.SITE_URL || "https://www.fxflytt.se"}/admin#${b.id}`; }
+    catch (e) { console.error("booking save failed", (e as Error).message); }
+  }
+  const mail = offerEmail(data, new Date(), adminUrl);
 
   try {
     await sendMail(

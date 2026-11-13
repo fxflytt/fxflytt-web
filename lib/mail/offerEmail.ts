@@ -48,7 +48,7 @@ function section(title: string, body: string) {
   </td></tr>`;
 }
 
-export function offerEmail(d: OfferData, sentAt: Date) {
+export function offerEmail(d: OfferData, sentAt: Date, adminUrl?: string) {
   const when = sentAt.toLocaleString("sv-SE", { timeZone: "Europe/Stockholm", dateStyle: "long", timeStyle: "short" });
   const route = [d.from, d.to].filter(Boolean).join(" → ");
   const subject = `Ny offertförfrågan: ${d.name}${route ? " · " + [d.from, d.to].map((a) => (a || "").split(",").pop()!.replace(/\d/g, "").trim()).join(" → ") : ""}`;
@@ -90,6 +90,7 @@ export function offerEmail(d: OfferData, sentAt: Date) {
     <div style="margin:18px 0 18px">
       ${btn(telHref(d.phone), "Ring " + d.phone, true)}
       ${d.email ? btn("mailto:" + d.email + "?subject=" + encodeURIComponent("Din offert från FX Flytt"), "Svara via e-post", false) : ""}
+      ${adminUrl ? btn(adminUrl, "Öppna i bokningssystemet", false) : ""}
     </div>
   </td></tr>
   ${priceBlock}

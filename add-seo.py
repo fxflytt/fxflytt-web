@@ -5,7 +5,8 @@ BASE = "https://www.fxflytt.se"
 def url_for(f):
     name = os.path.basename(f)[:-5]
     return BASE + "/" if name == "index" else f"{BASE}/{name}"
-pages = sorted(glob.glob("public/*.html"))
+PRIVATE = {"admin.html", "signera.html"}  # booking system: no SEO, not in sitemap
+pages = sorted(f for f in glob.glob("public/*.html") if os.path.basename(f) not in PRIVATE)
 CITIES = ["Kungsör","Örebro","Eskilstuna","Västerås","Katrineholm","Karlstad","Södertälje","Åkersberga","Norrtälje","Nyköping",
           "Norrköping","Linköping","Motala","Mjölby","Jönköping","Nässjö","Tranås","Västervik","Vimmerby","Ludvika"]
 BUSINESS = {"@context": "https://schema.org", "@type": "MovingCompany", "@id": BASE + "/#foretag", "name": "FX Flytt", "legalName": "FX Flytt AB",
@@ -44,4 +45,4 @@ for f in pages:
 today = datetime.date.today().isoformat()
 items = "".join(f"  <url><loc>{url_for(f)}</loc><lastmod>{today}</lastmod></url>\n" for f in pages)
 open("public/sitemap.xml", "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + items + "</urlset>\n")
-open("public/robots.txt", "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: {BASE}/sitemap.xml\n")
+open("public/robots.txt", "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /signera\n\nSitemap: {BASE}/sitemap.xml\n")

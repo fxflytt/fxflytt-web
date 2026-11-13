@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Bokningar – FX Flytt</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{--navy:#0d2a3f;--accent:#ff7a1a;--ink:#14212b;--muted:#5b6b78;--line:#e3e8ed;--bg:#f2f5f8;--green:#1f8a4c;--red:#b42318}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{background:var(--navy);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+  .logo{background:#fff;color:var(--navy);font-weight:900;font-style:italic;padding:3px 8px;border-radius:7px;border-left:4px solid var(--accent)}
+  header b{flex:1;font-size:17px}
+  header button{background:none;border:1px solid #47637a;color:#cfe0ec;border-radius:999px;padding:6px 12px;font-size:13px}
+  nav{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:52px;z-index:4}
+  nav button{flex:1;border:1px solid #cfd9e2;background:#fff;border-radius:10px;padding:10px 6px;font-weight:700;font-size:14px;color:var(--navy)}
+  nav button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  main{max-width:760px;margin:0 auto;padding:12px 12px 90px}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px}
+  .chips button{white-space:nowrap;border:1px solid #cfd9e2;background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--navy)}
+  .chips button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .item{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;color:inherit;font:inherit}
+  .item .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .item b{font-size:16px}
+  .muted{color:var(--muted);font-size:13px}
+  .st{font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px;white-space:nowrap;text-transform:uppercase}
+  .st.new{background:#fff1e6;color:#c2560a}.st.sent{background:#e8f0fb;color:#1f5fae}.st.signed{background:#e6f5ec;color:var(--green)}
+  .st.declined,.st.cancelled{background:#fdecec;color:var(--red)}.st.done{background:#eceff2;color:#47525c}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  .card h3{margin:0 0 8px;font-size:15px;color:var(--navy)}
+  table{width:100%;border-collapse:collapse}
+  td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+  td:first-child{color:var(--muted);width:36%}
+  label.f{display:block;font-weight:700;font-size:13px;margin:10px 0 4px}
+  input,textarea,select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1.5px solid #c9d5df;border-radius:10px;background:#fff}
+  textarea{min-height:70px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn{display:block;width:100%;border:0;border-radius:999px;padding:13px;font-size:15px;font-weight:800;background:var(--accent);color:#fff;margin-top:8px;text-align:center;text-decoration:none}
+  .btn.sec{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+  .btn.gray{background:#eceff2;color:#47525c}
+  .btn.red{background:#fff;color:var(--red);border:2px solid #f0c4c0}
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .warn{background:#fff4e5;border:1px solid #ffd6a8;color:#8a4b00;border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0}
+  .okmsg{background:#e6f5ec;border:1px solid #bfe5cf;color:var(--green);border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0;font-weight:600}
+  .err{color:var(--red);font-weight:600;font-size:14px;margin-top:8px}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal .h{font-size:11px;color:var(--muted);text-align:center;font-weight:700}
+  .cal button{aspect-ratio:1/1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:4px;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:var(--ink)}
+  .cal button.out{opacity:.35}.cal button.today{border:2px solid var(--navy)}
+  .cal button .n{font-size:13px;font-weight:700}
+  .cal button .c{font-size:11px;font-weight:800;border-radius:999px;padding:1px 6px;background:#e6f5ec;color:var(--green)}
+  .cal button .c.mid{background:#fff4e5;color:#8a4b00}.cal button .c.full{background:#fdecec;color:var(--red)}
+  .cal button .p{font-size:10px;color:#1f5fae}
+  .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .calhead button{border:1px solid #cfd9e2;background:#fff;border-radius:10px;padding:8px 14px;font-size:16px}
+  .back{background:none;border:0;color:var(--navy);font-weight:700;font-size:15px;padding:4px 0 10px}
+  .hist div{font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px}
+  .login{max-width:380px;margin:60px auto;padding:0 14px}
+  a{color:var(--navy)}
+</style>
+</head>
+<body>
+<header><span class="logo">FX</span><b>Bokningar</b><button id="logout" hidden>Logga ut</button></header>
+<div id="root"></div>
+<script>
+(function(){
+  const $=(s,el=document)=>el.querySelector(s);
+  const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const kr=(n)=>n==null?'–':Math.round(n).toLocaleString('sv-SE')+' kr';
+  const CAP=10;
+  const ST={new:'Ny',sent:'Offert skickad',signed:'Signerad',declined:'Nekad',done:'Klar',cancelled:'Avbokad'};
+  const fmtDate=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}):'Inget datum';
+  const fmtTs=(t)=>t?new Date(t).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'}):'';
+  const today=()=>new Date().toLocaleDateString('sv-SE');
+  const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
+  const root=$('#root');
+  let all=[], view='list', filter='active', calMonth=today().slice(0,7), calDay=null;
+
+  async function api(path,opt={}){
+    const r=await fetch(path,{...opt,headers:{'Content-Type':'application/json',...(opt.headers||{})}});
+    const j=await r.json().catch(()=>({}));
+    if(r.status===401){ showLogin(); throw new Error('Logga in igen'); }
+    if(!r.ok) { const e=new Error(j.error||('Fel '+r.status)); e.data=j; throw e; }
+    return j;
+  }
+
+  // ---------- login ----------
+  async function start(){
+    const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
+    if(s.admin){ $('#logout').hidden=false; await load(); route(); }
+    else showLogin(s.setup);
+  }
+  function showLogin(setup){
+    $('#logout').hidden=true;
+    const miss=setup?[!setup.password&&'Lösenord (ADMIN_PASSWORD)',!setup.storage&&'Lagring (Upstash Redis)',!setup.mail&&'E-post (SMTP)'].filter(Boolean):[];
+    root.innerHTML=`<div class="login"><div class="card"><h3 style="font-size:20px">Logga in</h3>
+      ${miss.length?`<div class="warn">Saknas i Vercel: ${esc(miss.join(', '))}</div>`:''}
+      <label class="f" for="pw">Lösenord</label><input id="pw" type="password" autocomplete="current-password">
+      <button class="btn" id="go">Logga in</button><div class="err" id="err"></div></div></div>`;
+    const go=async()=>{ $('#err').textContent='';
+      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('#pw').value})});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok){ start(); } else $('#err').textContent=j.error||'Fel';
+    };
+    $('#go').onclick=go; $('#pw').onkeydown=(e)=>{ if(e.key==='Enter') go(); };
+  }
+  $('#logout').onclick=async()=>{ await fetch('/api/admin/login',{method:'DELETE'}); location.hash=''; showLogin(); };
+
+  async function load(){ const j=await api('/api/admin/bookings'); all=j.bookings||[]; }
+  const signedOn=(d)=>all.filter(b=>(b.status==='signed'||b.status==='done')&&b.date===d);
+
+  // ---------- routing ----------
+  function route(){
+    const id=location.hash.slice(1);
+    if(/^FX\d{6}-[0-9A-F]{6}$/.test(id)) return showDetail(id);
+    if(id==='ny') return showNew();
+    if(id==='kalender') return showCal();
+    return showList();
+  }
+  window.addEventListener('hashchange',()=>route().catch?.(()=>{}));
+  function navBar(active){
+    return `<nav><button data-v="" class="${active==='list'?'on':''}">Förfrågningar</button><button data-v="kalender" class="${active==='cal'?'on':''}">Kalender</button><button data-v="ny" class="${active==='new'?'on':''}">+ Ny</button></nav>`;
+  }
+  function bindNav(){ root.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.v; }); }
+
+  // ---------- list ----------
+  const FILTERS={active:['Aktiva',b=>['new','sent','signed'].includes(b.status)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'],signed:['Bokade',b=>b.status==='signed'],done:['Klara',b=>b.status==='done'],closed:['Nekade/avbokade',b=>['declined','cancelled'].includes(b.status)],all:['Alla',()=>true]};
+  function itemHtml(b){
+    const o=b.offer, d=b.data||{};
+    const route=[d.from,d.to].filter(Boolean).map(x=>String(x).split(',')[0]).join(' → ');
+    return `<button class="item" data-id="${esc(b.id)}"><div class="top"><b>${esc(d.name)}</b><span class="st ${b.status}">${ST[b.status]}</span></div>
+      <div class="muted">${esc(fmtDate(b.date))}${b.time?' '+esc(b.time):''} · ${esc(route||d.size||'')}</div>
+      <div class="muted">${o?kr(o.total):'Inget pris'} · ${esc(b.id)} · ${b.source==='web'?'Hemsidan':'Manuell'}</div></button>`;
+  }
+  function showList(){
+    view='list';
+    const f=FILTERS[filter]||FILTERS.active;
+    let list=all.filter(f[1]);
+    if(filter==='signed') list=list.slice().sort((a,b)=>(a.date||'9').localeCompare(b.date||'9'));
+    root.innerHTML=navBar('list')+`<main><div class="chips">${Object.entries(FILTERS).map(([k,v])=>`<button data-f="${k}" class="${k===filter?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
+      ${list.length?list.map(itemHtml).join(''):'<div class="empty">Inga bokningar här ännu.</div>'}
+      <button class="btn gray" id="reload">Uppdatera</button></main>`;
+    bindNav();
+    root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ filter=b.dataset.f; showList(); });
+    root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.id; });
+    $('#reload').onclick=async()=>{ await load(); showList(); };
+  }
+
+  // ---------- calendar ----------
+  function showCal(){
+    view='cal';
+    const [y,m]=calMonth.split('-').map(Number);
+    const first=new Date(Date.UTC(y,m-1,1)), startDow=(first.getUTCDay()+6)%7;
+    const days=[]; for(let i=-startDow;i<42-startDow;i++){ const d=new Date(Date.UTC(y,m-1,1+i)); days.push(d.toISOString().slice(0,10)); }
+    const title=first.toLocaleDateString('sv-SE',{month:'long',year:'numeric',timeZone:'UTC'});
+    const t=today();
+    const cells=days.map(d=>{
+      const n=signedOn(d).length, p=all.filter(b=>b.status==='sent'&&b.date===d).length;
+      const cls=n>=CAP?'full':n>=CAP-3?'mid':'';
+      return `<button data-d="${d}" class="${d.slice(0,7)!==calMonth?'out':''} ${d===t?'today':''}"><span class="n">${Number(d.slice(8))}</span>${n?`<span class="c ${cls}">${n}</span>`:'<span></span>'}${p?`<span class="p">${p} väntar</span>`:'<span></span>'}</button>`;
+    }).join('');
+    let dayList='';
+    if(calDay){
+      const list=all.filter(b=>b.date===calDay&&!['declined','cancelled'].includes(b.status)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+      const n=signedOn(calDay).length;
+      dayList=`<div class="card"><h3>${esc(fmtDate(calDay))} – ${n} bokade av max ${CAP}</h3>${n>=CAP?'<div class="warn">Dagen är full.</div>':''}${list.length?list.map(itemHtml).join(''):'<div class="muted">Inga bokningar.</div>'}</div>`;
+    }
+    root.innerHTML=navBar('cal')+`<main><div class="calhead"><button id="prev">‹</button><b style="text-transform:capitalize">${esc(title)}</b><button id="next">›</button></div>
+      <div class="cal">${['Mån','Tis','Ons','Tor','Fre','Lör','Sön'].map(x=>`<div class="h">${x}</div>`).join('')}${cells}</div>
+      <p class="muted">Grön siffra = bokade (signerade). Orange = nästan fullt, röd = fullt (${CAP}). Blå = offerter som väntar på signatur.</p>${dayList}</main>`;
+    bindNav();
+    const shift=(k)=>{ const d=new Date(Date.UTC(y,m-1+k,1)); calMonth=d.toISOString().slice(0,7); calDay=null; showCal(); };
+    $('#prev').onclick=()=>shift(-1); $('#next').onclick=()=>shift(1);
+    root.querySelectorAll('.cal button').forEach(b=>b.onclick=()=>{ calDay=b.dataset.d; showCal(); });
+    root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.id; });
+  }
+
+  // ---------- detail ----------
+  async function showDetail(id){
+    let b=all.find(x=>x.id===id);
+    try{ b=await api('/api/admin/bookings?id='+id); const i=all.findIndex(x=>x.id===id); if(i>=0) all[i]=b; else all.unshift(b); }catch(e){ if(!b){ root.innerHTML=navBar('list')+`<main><div class="empty">Bokningen hittades inte.</div></main>`; bindNav(); return; } }
+    const d=b.data||{}, o=b.offer;
+    const rows=[['Tjänst',d.size],['Från',d.from],['Till',d.to],['Avstånd',d.distanceKm?'ca '+d.distanceKm+' km':''],['Önskat datum',d.date],['Boyta',d.areaM2?d.areaM2+' m²':''],['Bostad',d.home],['Våning (från)',d.floorFrom],['Våning (till)',d.floorTo],['Tillval',(d.extras||[]).join(', ')],['Volym',d.volume?String(d.volume.m3).replace('.',',')+' m³':''],['Meddelande',d.message]];
+    const n=b.date?signedOn(b.date).filter(x=>x.id!==b.id).length:0;
+    const locked=b.status==='signed'||b.status==='done';
+    root.innerHTML=navBar('list')+`<main><button class="back" id="back">‹ Tillbaka</button>
+      <div class="card"><div class="top" style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b style="font-size:20px">${esc(d.name)}</b><span class="st ${b.status}">${ST[b.status]}</span></div>
+        <div class="muted">${esc(b.id)} · skapad ${esc(fmtTs(b.createdAt))} · ${b.source==='web'?'från hemsidan':'manuell'}</div>
+        <div class="btns" style="margin-top:6px"><a class="btn sec" href="${esc(tel(d.phone))}">Ring ${esc(d.phone)}</a><a class="btn sec" href="sms:${esc(String(d.phone||'').replace(/\s/g,''))}">SMS</a></div>
+        ${d.email?`<div class="muted" style="margin-top:8px">E-post: <a href="mailto:${esc(d.email)}">${esc(d.email)}</a></div>`:'<div class="warn">Kunden har ingen e-post – skicka länken via SMS.</div>'}
+      </div>
+      ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}" ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
+      <div class="card"><h3>Datum och pris</h3>
+        ${locked?'<div class="warn">Offerten är signerad. Ändrar du pris eller datum nu gäller det inte automatiskt – prata med kunden först.</div>':''}
+        <div class="row2"><div><label class="f" for="dt">Flyttdatum</label><input id="dt" type="date" value="${esc(b.date||'')}"></div>
+        <div><label class="f" for="tm">Starttid</label><input id="tm" type="time" value="${esc(b.time||'')}"></div></div>
+        ${n>=CAP?`<div class="warn">Den dagen har redan ${n} bokningar (max ${CAP}).</div>`:n>=CAP-3?`<div class="warn">Den dagen har ${n} bokningar.</div>`:''}
+        <label class="f" for="tot">Pris efter RUT (kr)</label><input id="tot" type="number" inputmode="numeric" value="${o?esc(o.total):''}">
+        ${o&&!o.custom&&o.lines?.length?`<div class="muted" style="margin-top:6px">${o.lines.map(l=>esc(l.label)+': '+kr(l.amount)).join('<br>')}</div>`:''}
+        ${o?.notIncluded?.length?`<div class="warn"><b>Ingår inte i priset:</b><br>${o.notIncluded.map(esc).join('<br>')}</div>`:''}
+        <label class="f" for="cn">Text till kunden (syns i offerten)</label><textarea id="cn" placeholder="T.ex. Inkl. 4 timmar montering">${esc(o?.customerNote||'')}</textarea>
+        <label class="f" for="an">Intern anteckning (syns bara här)</label><textarea id="an">${esc(b.adminNote||'')}</textarea>
+        <button class="btn sec" id="save">Spara</button><div id="msg"></div></div>
+      <div class="card"><h3>Offert</h3>
+        ${b.status==='sent'?`<div class="muted">Skickad ${esc(fmtTs(b.sentAt))}. Väntar på kundens signatur.</div>`:''}
+        ${locked?'':`<button class="btn" id="send">${b.status==='sent'?'Skicka offerten igen':'Skicka offert via e-post'}</button><button class="btn sec" id="link">Kopiera länk (för SMS)</button>`}
+        <div id="msg2"></div></div>
+      <div class="card"><h3>Uppgifter från kunden</h3><table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table></div>
+      <div class="card"><h3>Status</h3><div class="btns">
+        ${b.status!=='done'?'<button class="btn gray" data-s="done">Markera klar</button>':''}
+        ${b.status!=='cancelled'?'<button class="btn red" data-s="cancelled">Avboka</button>':''}
+        ${['done','cancelled','declined'].includes(b.status)?`<button class="btn gray" data-s="${b.signedAt?'signed':(b.sentAt?'sent':'new')}">Återställ</button>`:''}
+      </div></div>
+      <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}</div>`).join('')}</div></main>`;
+    bindNav();
+    $('#back').onclick=()=>{ location.hash= view==='cal'?'kalender':''; };
+    const msg=(el,t,ok)=>{ $(el).innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
+    const patch=async(body,txt)=>{ try{ const nb=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; return true; }catch(e){ msg('#msg',e.message,false); return false; } };
+    $('#save').onclick=async()=>{
+      const body={date:$('#dt').value,time:$('#tm').value,customerNote:$('#cn').value,adminNote:$('#an').value};
+      if($('#tot').value) body.total=Number($('#tot').value);
+      if(await patch(body)){ showDetail(b.id); setTimeout(()=>msg('#msg','Sparat ✓',true),50); }
+    };
+    root.querySelectorAll('[data-s]').forEach(x=>x.onclick=async()=>{
+      if(x.dataset.s==='cancelled'&&!confirm('Avboka den här bokningen?')) return;
+      if(await patch({status:x.dataset.s})) showDetail(b.id);
+    });
+    const sendBtn=$('#send'), linkBtn=$('#link');
+    if(sendBtn) sendBtn.onclick=async()=>{
+      // Save first so the customer sees what is on screen.
+      const body={date:$('#dt').value,time:$('#tm').value,customerNote:$('#cn').value};
+      if($('#tot').value) body.total=Number($('#tot').value);
+      if(!(await patch(body))) return;
+      if(!confirm(`Skicka offerten (${kr(b.offer?.total)}, ${fmtDate(b.date)}) till ${d.email||'kunden'}?`)) return;
+      sendBtn.disabled=true; sendBtn.textContent='Skickar…';
+      try{ await api('/api/admin/send?id='+b.id,{method:'POST'}); await showDetail(b.id); msg('#msg2','Offerten är skickad ✓',true); }
+      catch(e){ msg('#msg2',e.message,false); sendBtn.disabled=false; sendBtn.textContent='Skicka offert via e-post'; }
+    };
+    if(linkBtn) linkBtn.onclick=async()=>{
+      const body={date:$('#dt').value,time:$('#tm').value,customerNote:$('#cn').value};
+      if($('#tot').value) body.total=Number($('#tot').value);
+      if(!(await patch(body))) return;
+      try{ const j=await api('/api/admin/send?id='+b.id+'&linkOnly=1',{method:'POST'});
+        const text=`Hej! Här är din offert från FX Flytt: ${j.url}`;
+        try{ await navigator.clipboard.writeText(j.url); }catch(_){}
+        $('#msg2').innerHTML=`<div class="okmsg">Länken är kopierad.</div><input readonly value="${esc(j.url)}"><a class="btn" href="sms:${esc(String(d.phone||'').replace(/\s/g,''))}?&body=${encodeURIComponent(text)}">Öppna SMS med länken</a>`;
+      }catch(e){ msg('#msg2',e.message,false); }
+    };
+  }
+
+  // ---------- new ----------
+  function showNew(){
+    root.innerHTML=navBar('new')+`<main><div class="card"><h3>Ny bokning (t.ex. från telefon)</h3>
+      <label class="f">Namn *</label><input id="n_name" autocomplete="off">
+      <div class="row2"><div><label class="f">Telefon *</label><input id="n_phone" type="tel"></div><div><label class="f">E-post</label><input id="n_email" type="email"></div></div>
+      <label class="f">Från</label><input id="n_from"><label class="f">Till</label><input id="n_to">
+      <div class="row2"><div><label class="f">Tjänst</label><select id="n_size"><option>Flytt</option><option>Flytt + flyttstäd</option><option>Flytt + flyttstäd + packning</option><option>Flyttstäd</option><option>Flytt per timme</option><option>Kontorsflytt</option><option>Annat</option></select></div><div><label class="f">Boyta (m²)</label><input id="n_m2" type="number" inputmode="numeric"></div></div>
+      <div class="row2"><div><label class="f">Datum</label><input id="n_date" type="date"></div><div><label class="f">Starttid</label><input id="n_time" type="time"></div></div>
+      <label class="f">Pris efter RUT (kr)</label><input id="n_total" type="number" inputmode="numeric">
+      <label class="f">Text till kunden</label><textarea id="n_cn" placeholder="T.ex. Flytt 2 rok inkl. bärhjälp, 2 flyttare"></textarea>
+      <label class="f">Övrigt</label><textarea id="n_msg"></textarea>
+      <button class="btn" id="create">Spara bokning</button><div class="err" id="err"></div></div></main>`;
+    bindNav();
+    $('#create').onclick=async()=>{
+      const v=(id)=>$('#'+id).value;
+      try{ const b=await api('/api/admin/bookings',{method:'POST',body:JSON.stringify({name:v('n_name'),phone:v('n_phone'),email:v('n_email'),from:v('n_from'),to:v('n_to'),size:v('n_size'),areaM2:v('n_m2'),date:v('n_date'),time:v('n_time'),total:v('n_total'),customerNote:v('n_cn'),message:v('n_msg')})});
+        all.unshift(b); location.hash=b.id; }
+      catch(e){ $('#err').textContent=e.message; }
+    };
+  }
+
+  start().catch(e=>{ root.innerHTML=`<main><div class="err">${esc(e.message)}</div></main>`; });
+})();
+</script>
+</body>
+</html>
