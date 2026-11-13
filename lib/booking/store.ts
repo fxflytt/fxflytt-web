@@ -33,8 +33,20 @@ export type Booking = {
   sentAt?: number;
   signedAt?: number;
   declinedAt?: number;
+  views?: number;          // times the customer opened the offer link
+  firstViewAt?: number;
+  lastViewAt?: number;
+  reminders?: number[];    // when reminders were e-mailed (reset when the offer is sent again)
+  decline?: { reason: DeclineReason; text?: string };
+  discount?: { pct: number; before: number; at: number };
   signature?: { name: string; pnr?: string; orgnr?: string; ip: string; ua: string; at: number; offerHash: string; terms: string };
   history: { at: number; what: string }[];
+};
+
+export type DeclineReason = "price" | "other_company" | "date" | "no_move" | "other";
+export const DECLINE_REASONS: Record<DeclineReason, string> = {
+  price: "Priset är för högt", other_company: "Valt en annan flyttfirma", date: "Datumet passar inte",
+  no_move: "Flyttar inte längre", other: "Annat",
 };
 
 const K = { b: (id: string) => `fx:b:${id}`, idx: "fx:idx", t: (t: string) => `fx:t:${t}` };
@@ -107,5 +119,28 @@ export function publicView(b: Booking) {
       notIncluded: b.offer.notIncluded || [], customerNote: b.offer.customerNote || "",
     } : null,
     signedAt: b.signedAt || null, signedName: b.signature?.name || null,
+    discount: b.discount && b.offer ? { pct: b.discount.pct, before: b.discount.before } : null,
   };
+}
+
+// Price discount (admin): base is the price before any earlier discount.
+export function applyDiscount(b: Booking, pct: number) {
+  if (!b.offer) throw new Error("Ingen offert");
+  const before = b.discount ? b.discount.before : b.offer.total;
+  const lines = b.offer.lines.filter((l) => !/^Rabatt /.test(l.label));
+  const off = Math.round((before * pct) / 100);
+  b.offer = { ...b.offer, lines: pct > 0 ? [...lines, { label: `Rabatt ${pct} %`, amount: -off }] : lines, total: before - off };
+  b.discount = pct > 0 ? { pct, before, at: Date.now() } : undefined;
+  return b;
+}
+
+// Which reminder (1 or 2) is due now, or 0. The check runs once a day (morning), so "one day" means
+// at least 20 h after sending and "three days" at least 68 h after.
+export function reminderDue(b: Booking, now = Date.now()): 0 | 1 | 2 {
+  if (b.status !== "sent" || !b.sentAt || !b.token || !b.data.email) return 0;
+  if (b.date && b.date < new Date(now).toISOString().slice(0, 10)) return 0;
+  const n = b.reminders?.length || 0, age = now - b.sentAt;
+  if (n === 0 && age >= 20 * 3_600_000) return 1;
+  if (n === 1 && age >= 68 * 3_600_000) return 2;
+  return 0;
 }

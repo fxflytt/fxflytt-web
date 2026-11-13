@@ -1,5 +1,6 @@
 // Customer side of the offer: view (GET ?t=) and sign or decline (POST {t, action, name, accept}).
-import { bookingByToken, publicView, saveBooking, offerHash, TERMS_VERSION } from "@/lib/booking/store.ts";
+import { bookingByToken, publicView, saveBooking, offerHash, TERMS_VERSION, DECLINE_REASONS, type DeclineReason } from "@/lib/booking/store.ts";
+import { isAdmin } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { signedCustomerEmail, companyNoticeEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
@@ -15,6 +16,13 @@ export async function GET(req: Request) {
   if (rateLimited("bview:" + clientIp(req), 60, 10 * 60_000)) return Response.json({ error: "busy" }, { status: 429 });
   const b = await bookingByToken(new URL(req.url).searchParams.get("t") || "");
   if (!b || b.status === "cancelled") return Response.json({ error: "not-found" }, { status: 404 });
+  // Count the customer's opens (not the admin's own previews).
+  if (!isAdmin(req) && (b.status === "sent" || b.status === "declined" || b.status === "new")) {
+    const now = Date.now();
+    b.views = (b.views || 0) + 1; b.lastViewAt = now;
+    if (!b.firstViewAt) b.firstViewAt = now;
+    await saveBooking(b, b.views === 1 ? "Kunden öppnade offerten" : undefined).catch(() => {});
+  }
   return Response.json(publicView(b), { headers: { "Cache-Control": "no-store" } });
 }
 
@@ -30,7 +38,10 @@ export async function POST(req: Request) {
 
   if (body.action === "decline") {
     b.status = "declined"; b.declinedAt = Date.now();
-    await saveBooking(b, "Kunden nekade offerten");
+    const reason = typeof body.reason === "string" && body.reason in DECLINE_REASONS ? (body.reason as DeclineReason) : undefined;
+    const text = typeof body.reasonText === "string" ? body.reasonText.trim().slice(0, 400) : "";
+    b.decline = reason || text ? { reason: reason || "other", ...(text ? { text } : {}) } : undefined;
+    await saveBooking(b, "Kunden nekade offerten" + (b.decline ? ` – ${DECLINE_REASONS[b.decline.reason]}${text ? ": " + text : ""}` : ""));
     if (mailConfigured()) await send(COMPANY_TO, companyNoticeEmail(b, "declined", adminUrl)).catch(() => {});
     return Response.json({ ok: true, view: publicView(b) });
   }

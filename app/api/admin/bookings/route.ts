@@ -55,6 +55,7 @@ export async function PATCH(req: Request) {
     if (!(t > 0 && t < 1e7)) return Response.json({ error: "Ogiltigt pris." }, { status: 400 });
     if (!b.offer || b.offer.total !== t) {
       b.offer = { ...(b.offer || { lines: [] }), total: t, custom: true };
+      b.discount = undefined; // a hand-set price replaces any earlier discount
       changes.push("pris " + t + " kr");
     }
   }

@@ -29,6 +29,11 @@
   .price{background:var(--navy);color:#fff;border-radius:14px;padding:16px 18px}
   .price .big{font-size:32px;font-weight:800;margin:2px 0 8px}
   .price .row{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#dbe4ec;padding:2px 0}
+  .price .off{font-size:15px;background:#1f8a4c;color:#fff;border-radius:999px;padding:3px 9px;vertical-align:middle}
+  .nobox{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .rs{display:flex;gap:8px;align-items:center;padding:7px 0;font-size:15px}.rs input{width:20px;height:20px}
+  .nobox textarea{width:100%;margin:8px 0 10px;padding:10px;border:1px solid var(--line);border-radius:10px;font:inherit}
+  .btn.gray{background:#5b6b78}
   .price .note{color:#ffb27a;font-weight:700;font-size:14px;margin-top:8px}
   .badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .badges span{font-size:12px;background:#eef3f7;border-radius:999px;padding:5px 10px;color:var(--navy);font-weight:600}
@@ -65,9 +70,9 @@
     const rows=[['Datum',fmtDate(v.date)+(v.time?' kl. '+v.time:'')],['Tjänst',v.size],['Från',v.from],['Till',v.to],['Avstånd',v.distanceKm?'ca '+v.distanceKm+' km':''],['Boyta',v.areaM2?v.areaM2+' m²':''],['Bostad',v.home],['Våning (från)',v.floorFrom],['Våning (till)',v.floorTo],['Tillval',(v.extras||[]).join(', ')]];
     return `<table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table>`;
   }
-  function price(o){
+  function price(o,disc){
     if(!o) return '';
-    return `<div class="price"><div style="color:#b9c7d3;font-size:13px">Pris efter RUT, inkl. moms</div><div class="big">${kr(o.total)}</div>
+    return `<div class="price"><div style="color:#b9c7d3;font-size:13px">Pris efter RUT, inkl. moms</div>${disc?`<div style="color:#b9c7d3;text-decoration:line-through;font-size:16px;margin-top:4px">${kr(disc.before)}</div>`:''}<div class="big">${kr(o.total)}${disc?` <span class="off">−${disc.pct} %</span>`:''}</div>
       ${(o.lines||[]).map(l=>`<div class="row"><span>${esc(l.label)}</span><span>${kr(l.amount)}</span></div>`).join('')}
       ${o.customerNote?`<div class="row" style="color:#fff">${esc(o.customerNote)}</div>`:''}
       ${o.note?`<div class="note">${esc(o.note)}</div>`:''}
@@ -78,7 +83,7 @@
     const first=esc((v.name||'').split(' ')[0]);
     if(v.status==='signed'||v.status==='done'){
       app.innerHTML=`<div class="card ok"><h1>Din flytt är bokad ✓</h1><p>Signerad av <b>${esc(v.signedName)}</b> ${esc(new Date(v.signedAt).toLocaleString('sv-SE',{dateStyle:'long',timeStyle:'short'}))}.</p><p class="muted">Bokningsnummer ${esc(v.id)}. En bekräftelse har skickats till din e-post. Vi hör av oss innan flyttdagen.</p></div>`+
-        `<div class="card">${details(v)}</div><div class="card">${price(v.offer)}</div>`+COMPANY;
+        `<div class="card">${details(v)}</div><div class="card">${price(v.offer,v.discount)}</div>`+COMPANY;
       return;
     }
     if(v.status==='declined'){
@@ -88,7 +93,7 @@
     app.innerHTML=steps(v.status)+
       `<div class="card"><h1>Hej ${first}!</h1><p class="muted">Här är din offert från FX Flytt (${esc(v.id)}). Kontrollera uppgifterna och signera – då är flytten bokad.</p></div>`+
       `<div class="card">${details(v)}</div>`+
-      `<div class="card">${price(v.offer)}</div>`+
+      `<div class="card">${price(v.offer,v.discount)}</div>`+
       `<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Signera och boka</h2>
         <label class="f" for="nm">Ditt för- och efternamn</label>
         <input id="nm" type="text" autocomplete="name" value="${esc(v.name||'')}">
@@ -99,22 +104,33 @@
         <button class="btn" id="sign">Signera och boka</button>
         <div class="err" id="err"></div>
         <p class="muted" style="font-size:13px;margin:12px 0 0">När du signerar sparar vi ditt namn, ditt person- eller organisationsnummer, tidpunkt och information om din enhet som bekräftelse på avtalet.</p>
-        <button class="link" id="no">Jag vill inte ha offerten</button></div>`+COMPANY;
+        <button class="link" id="no">Jag vill inte ha offerten</button>
+        <div id="nobox" class="nobox" hidden>
+          <h2 style="margin:0 0 4px;font-size:18px">Tacka nej till offerten</h2>
+          <p class="muted" style="margin:0 0 8px">Vill du berätta varför? Det är frivilligt men hjälper oss bli bättre.</p>
+          ${[['price','Priset är för högt'],['other_company','Jag har valt en annan flyttfirma'],['date','Datumet passar inte'],['no_move','Jag ska inte flytta längre'],['other','Annat']].map(r=>`<label class="rs"><input type="radio" name="why" value="${r[0]}"> ${r[1]}</label>`).join('')}
+          <textarea id="whytxt" rows="3" maxlength="400" placeholder="Skriv gärna mer (frivilligt)"></textarea>
+          <button class="btn gray" id="nosend">Tacka nej</button>
+          <button class="link" id="nocancel">Avbryt</button>
+        </div></div>`+COMPANY;
     document.querySelectorAll('input[name=kind]').forEach(r=>r.onchange=()=>{const c=kind()==='company';$('#pnrL').textContent=c?'Organisationsnummer':'Personnummer (för RUT-avdraget)';$('#pnr').placeholder=c?'XXXXXX-XXXX':'ÅÅÅÅMMDD-XXXX';$('#pnr').value='';});
     $('#sign').onclick=()=>act('sign');
-    $('#no').onclick=()=>{ if(confirm('Vill du tacka nej till offerten?')) act('decline'); };
+    $('#no').onclick=()=>{ $('#nobox').hidden=false; $('#no').hidden=true; $('#nobox').scrollIntoView({behavior:'smooth',block:'center'}); };
+    $('#nocancel').onclick=()=>{ $('#nobox').hidden=true; $('#no').hidden=false; };
+    $('#nosend').onclick=()=>act('decline');
   }
   function kind(){const r=document.querySelector('input[name=kind]:checked');return r?r.value:'private';}
   async function act(action){
-    const btn=$('#sign'), err=$('#err'); err.textContent=''; btn.disabled=true; btn.textContent='Signerar…';
+    const btn=action==='decline'?$('#nosend'):$('#sign'), label=btn.textContent, err=$('#err'); err.textContent=''; btn.disabled=true; btn.textContent=action==='decline'?'Skickar…':'Signerar…';
     try{
-      const body={t,action,name:($('#nm')||{}).value||'',pnr:($('#pnr')||{}).value||'',kind:kind(),accept:!!($('#ok')||{}).checked};
+      const why=document.querySelector('input[name=why]:checked');
+      const body={t,action,name:($('#nm')||{}).value||'',pnr:($('#pnr')||{}).value||'',kind:kind(),accept:!!($('#ok')||{}).checked,reason:why?why.value:'',reasonText:($('#whytxt')||{}).value||''};
       if(action==='sign'&&!body.accept){ throw new Error('Kryssa i att du godkänner offerten och villkoren.'); }
       const r=await fetch('/api/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       const j=await r.json().catch(()=>({}));
       if(j.view){ render(j.view); window.scrollTo(0,0); return; }
       throw new Error(j.error||'Något gick fel. Ring oss på 076-300 07 23.');
-    }catch(e){ err.textContent=e.message; btn.disabled=false; btn.textContent='Signera och boka'; }
+    }catch(e){ err.textContent=e.message; if(action==='decline'){ $('#nobox').insertAdjacentElement('beforeend',err); } btn.disabled=false; btn.textContent=label; }
   }
   fetch('/api/booking?t='+encodeURIComponent(t)).then(r=>r.ok?r.json():Promise.reject(r.status)).then(render).catch(()=>{
     app.innerHTML=`<div class="card"><h1>Offerten hittades inte</h1><p>Länken kan vara felaktig eller så har offerten tagits bort. Ring oss på <a href="tel:+46763000723">076-300 07 23</a> så hjälper vi dig.</p></div>`+COMPANY;

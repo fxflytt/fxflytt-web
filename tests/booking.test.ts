@@ -86,3 +86,29 @@ test("organisationsnummer validation", () => {
   assert.equal(normOrgnr("559278-6644"), "");
   assert.equal(normOrgnr("551278-6643"), "");
 });
+
+import { applyDiscount, reminderDue } from "../lib/booking/store.ts";
+test("discount: percent of the pre-discount price, replaces earlier discount", () => {
+  const b: any = { offer: { total: 10000, lines: [{ label: "Flytt", amount: 10000 }] } };
+  applyDiscount(b, 10);
+  assert.equal(b.offer.total, 9000); assert.equal(b.discount.before, 10000);
+  assert.deepEqual(b.offer.lines.at(-1), { label: "Rabatt 10 %", amount: -1000 });
+  applyDiscount(b, 20);
+  assert.equal(b.offer.total, 8000); assert.equal(b.offer.lines.length, 2);
+  applyDiscount(b, 0);
+  assert.equal(b.offer.total, 10000); assert.equal(b.discount, undefined); assert.equal(b.offer.lines.length, 1);
+});
+test("reminders: after ~1 day, then ~3 days, max two, only for sent offers with e-mail", () => {
+  const H = 3_600_000, t0 = Date.parse("2026-11-13T10:00:00Z");
+  const b: any = { status: "sent", sentAt: t0, token: "x", data: { email: "a@b.se" }, date: "2026-12-01", reminders: [] };
+  assert.equal(reminderDue(b, t0 + 10 * H), 0);
+  assert.equal(reminderDue(b, t0 + 23 * H), 1);
+  b.reminders = [t0 + 23 * H];
+  assert.equal(reminderDue(b, t0 + 47 * H), 0);
+  assert.equal(reminderDue(b, t0 + 71 * H), 2);
+  b.reminders.push(t0 + 71 * H);
+  assert.equal(reminderDue(b, t0 + 200 * H), 0);
+  assert.equal(reminderDue({ ...b, reminders: [], status: "declined" }, t0 + 30 * H), 0);
+  assert.equal(reminderDue({ ...b, reminders: [], data: {} }, t0 + 30 * H), 0);
+  assert.equal(reminderDue({ ...b, reminders: [], date: "2026-11-01" }, t0 + 30 * H), 0);
+});
