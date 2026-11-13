@@ -134,26 +134,8 @@ export function offerEmail(d: OfferData, sentAt: Date, adminUrl?: string) {
 export function customerConfirmation(d: OfferData) {
   const first = (d.name.split(/\s+/)[0] || "").slice(0, 40);
   const subject = "Tack! Vi har tagit emot din förfrågan – FX Flytt";
-  const summary = rows([
-    ["Tjänst", d.size], ["Från", d.from], ["Till", d.to],
-    ["Boyta", d.areaM2 ? d.areaM2 + " m²" : undefined], ["Önskat datum", fmtDate(d.date)],
-  ]);
-  const price = d.price ? `
-  <tr><td style="padding:0 28px 22px">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${BG};border-radius:12px;border:1px solid ${LINE}">
-      <tr><td style="padding:16px 18px">
-        <div style="color:${MUTED};font-size:13px">Ditt pris enligt prisräknaren · efter RUT, inkl. moms</div>
-        <div style="color:${NAVY};font-size:26px;font-weight:800;margin:4px 0 8px">${esc(kr(d.price.total))}</div>
-        ${d.price.lines.map((l) => `<div style="color:${INK};font-size:13px;line-height:20px">${esc(l.label)} <span style="float:right">${esc(kr(l.amount))}</span></div>`).join("")}
-        ${d.price.note ? `<div style="color:${INK};font-size:13px;font-weight:700;margin-top:10px">${esc(d.price.note)}</div>` : ""}
-        ${d.price.notIncluded?.length ? `<div style="color:${INK};font-size:13px;font-weight:700;margin-top:10px">Ingår inte i priset ovan:</div>${d.price.notIncluded.map((t) => `<div style="color:${INK};font-size:13px;line-height:20px">• ${esc(t)}</div>`).join("")}` : ""}
-        <div style="color:${MUTED};font-size:12px;margin-top:10px">Priset bygger på uppgifterna du lämnat. Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året. Det slutliga priset står i din bokningsbekräftelse.</div>
-      </td></tr>
-    </table>
-  </td></tr>` : "";
-  const step = (n: string, t: string) =>
-    `<tr><td style="padding:6px 0;vertical-align:top;width:34px"><span style="display:inline-block;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;background:${ACCENT};color:#fff;font-size:13px;font-weight:800">${n}</span></td><td style="padding:8px 0;font-size:14px;color:${INK};line-height:20px">${t}</td></tr>`;
-
+  // Short receipt: the price comes later in the offer that the customer signs.
+  const summary = rows([["Tjänst", d.size], ["Önskat datum", fmtDate(d.date)]]);
   const html = `<!DOCTYPE html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(subject)}</title></head>
 <body style="margin:0;padding:0;background:${BG};font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${BG}"><tr><td align="center" style="padding:24px 12px">
@@ -164,16 +146,14 @@ export function customerConfirmation(d: OfferData) {
   </td></tr>
   <tr><td style="padding:28px 28px 8px">
     <h1 style="margin:0 0 8px;font-size:24px;color:${INK}">Tack${first ? " " + esc(first) : ""}!</h1>
-    <p style="margin:0;color:${MUTED};font-size:15px;line-height:22px">Vi har tagit emot din förfrågan och återkommer inom 24 timmar – oftast samma dag.</p>
+    <p style="margin:0;color:${MUTED};font-size:15px;line-height:22px">Vi har tagit emot din förfrågan och återkommer inom 24 timmar med en offert som du kan läsa och signera direkt i mobilen.</p>
   </td></tr>
-  ${price}
-  ${section("Din förfrågan", summary)}
-  ${section("Så går det till", step("1", "Vi går igenom dina uppgifter och ringer eller mejlar dig.") + step("2", "Du får offerten med en länk – du läser igenom den och signerar direkt i mobilen. Då är flytten bokad.") + step("3", "Vi flyttar – och RUT-avdraget dras direkt på fakturan."))}
+  ${section("", summary)}
   <tr><td style="padding:0 28px 24px">
     <a href="tel:+46763000723" style="display:inline-block;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;background:${ACCENT};color:#fff">Ring oss: 076-300 07 23</a>
   </td></tr>
   <tr><td style="padding:16px 28px 22px;border-top:1px solid ${LINE};color:${MUTED};font-size:12px;line-height:18px">
-    Du kan ändra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen. Har du frågor? Svara bara på det här mejlet.<br>
+    Har du frågor? Svara bara på det här mejlet.<br>
     <a href="https://www.fxflytt.se/villkor" style="color:${NAVY}">Villkor</a> · <a href="https://www.fxflytt.se/integritetspolicy" style="color:${NAVY}">Integritetspolicy</a>
   </td></tr>
 </table>
@@ -181,10 +161,8 @@ export function customerConfirmation(d: OfferData) {
 </td></tr></table></body></html>`;
 
   const text =
-    `Tack${first ? " " + first : ""}!\n\nVi har tagit emot din förfrågan och återkommer inom 24 timmar – oftast samma dag.\n\n` +
-    (d.size ? `Tjänst: ${d.size}\n` : "") + (d.from ? `Från: ${d.from}\n` : "") + (d.to ? `Till: ${d.to}\n` : "") +
-    (d.areaM2 ? `Boyta: ${d.areaM2} m²\n` : "") + (d.date ? `Önskat datum: ${fmtDate(d.date)}\n` : "") +
-    (d.price ? `\nPris enligt prisräknaren (efter RUT): ${kr(d.price.total)}\n${d.price.note ? d.price.note + "\n" : ""}${d.price.notIncluded?.length ? "Ingår inte i priset ovan:\n" + d.price.notIncluded.map((t) => `  ${t}`).join("\n") + "\n" : ""}Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året.\nDet slutliga priset står i din bokningsbekräftelse.\n` : "") +
+    `Tack${first ? " " + first : ""}!\n\nVi har tagit emot din förfrågan och återkommer inom 24 timmar med en offert som du kan läsa och signera direkt i mobilen.\n\n` +
+    (d.size ? `Tjänst: ${d.size}\n` : "") + (d.date ? `Önskat datum: ${fmtDate(d.date)}\n` : "") +
     `\nFrågor? Ring 076-300 07 23 eller svara på det här mejlet.\n\nVänliga hälsningar\nFX Flytt\nFrejgatan 9B, 736 30 Kungsör`;
   return { subject, html, text };
 }
