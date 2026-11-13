@@ -193,7 +193,7 @@
         <div class="btns" style="margin-top:6px"><a class="btn sec" href="${esc(tel(d.phone))}">Ring ${esc(d.phone)}</a><a class="btn sec" href="sms:${esc(String(d.phone||'').replace(/\s/g,''))}">SMS</a></div>
         ${d.email?`<div class="muted" style="margin-top:8px">E-post: <a href="mailto:${esc(d.email)}">${esc(d.email)}</a></div>`:'<div class="warn">Kunden har ingen e-post – skicka länken via SMS.</div>'}
       </div>
-      ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}" ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
+      ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}"${b.signature.pnr?` · Personnr ${esc(b.signature.pnr)}`:''} ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
       <div class="card"><h3>Datum och pris</h3>
         ${locked?'<div class="warn">Offerten är signerad. Ändrar du pris eller datum nu gäller det inte automatiskt – prata med kunden först.</div>':''}
         <div class="row2"><div><label class="f" for="dt">Flyttdatum</label><input id="dt" type="date" value="${esc(b.date||'')}"></div>

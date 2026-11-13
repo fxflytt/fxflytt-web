@@ -168,7 +168,7 @@ export function customerConfirmation(d: OfferData) {
   </td></tr>
   ${price}
   ${section("Din förfrågan", summary)}
-  ${section("Så går det till", step("1", "Vi går igenom dina uppgifter och ringer eller mejlar dig.") + step("2", "Du får en bokningsbekräftelse med fast pris och datum.") + step("3", "Vi flyttar – och RUT-avdraget dras direkt på fakturan."))}
+  ${section("Så går det till", step("1", "Vi går igenom dina uppgifter och ringer eller mejlar dig.") + step("2", "Du får offerten med en länk – du läser igenom den och signerar direkt i mobilen. Då är flytten bokad.") + step("3", "Vi flyttar – och RUT-avdraget dras direkt på fakturan."))}
   <tr><td style="padding:0 28px 24px">
     <a href="tel:+46763000723" style="display:inline-block;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;background:${ACCENT};color:#fff">Ring oss: 076-300 07 23</a>
   </td></tr>

@@ -68,3 +68,13 @@ test("inloggning: rätt lösenord ger giltig kaka, fel ger inte", () => {
   process.env.ADMIN_PASSWORD = "nytt";
   assert.equal(auth.isAdmin(new Request("https://x/", { headers: { cookie: c } })), false);
 });
+
+import { normPnr } from "../lib/booking/pnr.ts";
+test("personnummer validation", () => {
+  assert.equal(normPnr("19811218-9876"), "19811218-9876");
+  assert.equal(normPnr("811218-9876"), "19811218-9876");
+  assert.equal(normPnr("198112189876"), "19811218-9876");
+  assert.equal(normPnr("19811218-9875"), "");   // wrong check digit
+  assert.equal(normPnr("19811318-9876"), "");   // bad month
+  assert.equal(normPnr("abc"), "");
+});

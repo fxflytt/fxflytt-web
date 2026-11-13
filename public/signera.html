@@ -91,10 +91,12 @@
       `<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Signera och boka</h2>
         <label class="f" for="nm">Ditt för- och efternamn</label>
         <input id="nm" type="text" autocomplete="name" value="${esc(v.name||'')}">
+        <label class="f" for="pnr">Personnummer (för RUT-avdraget)</label>
+        <input id="pnr" type="text" inputmode="numeric" autocomplete="off" placeholder="ÅÅÅÅMMDD-XXXX" maxlength="13">
         <label class="chk"><input id="ok" type="checkbox"><span>Jag godkänner offerten och FX Flytts <a href="/villkor" target="_blank" rel="noopener">villkor</a> (inklusive Bohag 2010).</span></label>
         <button class="btn" id="sign">Signera och boka</button>
         <div class="err" id="err"></div>
-        <p class="muted" style="font-size:13px;margin:12px 0 0">När du signerar sparar vi ditt namn, tidpunkt och information om din enhet som bekräftelse på avtalet.</p>
+        <p class="muted" style="font-size:13px;margin:12px 0 0">När du signerar sparar vi ditt namn, ditt personnummer (för RUT-ansökan hos Skatteverket), tidpunkt och information om din enhet som bekräftelse på avtalet.</p>
         <button class="link" id="no">Jag vill inte ha offerten</button></div>`+COMPANY;
     $('#sign').onclick=()=>act('sign');
     $('#no').onclick=()=>{ if(confirm('Vill du tacka nej till offerten?')) act('decline'); };
@@ -102,7 +104,7 @@
   async function act(action){
     const btn=$('#sign'), err=$('#err'); err.textContent=''; btn.disabled=true; btn.textContent='Signerar…';
     try{
-      const body={t,action,name:($('#nm')||{}).value||'',accept:!!($('#ok')||{}).checked};
+      const body={t,action,name:($('#nm')||{}).value||'',pnr:($('#pnr')||{}).value||'',accept:!!($('#ok')||{}).checked};
       if(action==='sign'&&!body.accept){ throw new Error('Kryssa i att du godkänner offerten och villkoren.'); }
       const r=await fetch('/api/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       const j=await r.json().catch(()=>({}));
