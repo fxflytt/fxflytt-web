@@ -16,7 +16,7 @@
   header b{flex:1;font-size:17px}
   header button{background:none;border:1px solid #47637a;color:#cfe0ec;border-radius:999px;padding:6px 12px;font-size:13px}
   nav{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:52px;z-index:4}
-  nav button{flex:1;border:1px solid #cfd9e2;background:#fff;border-radius:10px;padding:10px 6px;font-weight:700;font-size:14px;color:var(--navy)}
+  nav button{flex:1;border:1px solid #cfd9e2;background:#fff;border-radius:10px;padding:10px 4px;font-weight:700;font-size:13px;color:var(--navy)}
   nav button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
   main{max-width:760px;margin:0 auto;padding:12px 12px 90px}
   .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px}
@@ -62,6 +62,15 @@
   .calhead button{border:1px solid #cfd9e2;background:#fff;border-radius:10px;padding:8px 14px;font-size:16px}
   .back{background:none;border:0;color:var(--navy);font-weight:700;font-size:15px;padding:4px 0 10px}
   .hist div{font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
+  .srch{display:flex;gap:8px;margin-bottom:10px}.srch input{flex:1;min-width:0}.srch select{width:auto;flex:0 0 auto}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .kpi{border-radius:14px;padding:12px;color:#fff}.kpi small{display:block;font-size:12px;opacity:.9;font-weight:600}.kpi b{font-size:22px}
+  .bars{display:flex;align-items:flex-end;gap:6px;height:150px;border-bottom:1px solid var(--line);padding-top:6px}
+  .bars .m{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:2px;height:100%}
+  .bars .m i{display:block;width:30%;border-radius:4px 4px 0 0;min-height:1px}
+  .blab{display:flex;gap:6px}.blab span{flex:1;text-align:center;font-size:11px;color:var(--muted);padding-top:4px}
+  .leg{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+  .hbar{height:8px;border-radius:4px;background:#eef2f5;overflow:hidden;margin:4px 0 10px}.hbar i{display:block;height:100%;background:var(--accent)}
   .empty{text-align:center;color:var(--muted);padding:30px 10px}
   .login{max-width:380px;margin:60px auto;padding:0 14px}
   a{color:var(--navy)}
@@ -77,6 +86,7 @@
   const kr=(n)=>n==null?'–':Math.round(n).toLocaleString('sv-SE')+' kr';
   const CAP=10;
   const ST={new:'Ny',sent:'Offert skickad',signed:'Signerad',declined:'Nekad',done:'Klar',cancelled:'Avbokad'};
+  const ago=(t)=>{ if(!t) return ''; const m=Math.round((Date.now()-t)/6e4); if(m<2) return 'just nu'; if(m<60) return m+' min sedan'; const h=Math.round(m/60); if(h<24) return h+' tim sedan'; const d=Math.round(h/24); return d===1?'i går':d+' dagar sedan'; };
   const fmtDate=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}):'Inget datum';
   const TIMES=[];for(let h=7;h<=18;h++){TIMES.push(String(h).padStart(2,'0')+':00');if(h<18)TIMES.push(String(h).padStart(2,'0')+':30');}
   const timeOpts=(cur)=>'<option value="">Ingen tid</option>'+TIMES.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('')+(cur&&!TIMES.includes(cur)?`<option selected>${cur}</option>`:'');
@@ -84,7 +94,7 @@
   const today=()=>new Date().toLocaleDateString('sv-SE');
   const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
   const root=$('#root');
-  let all=[], view='list', filter='active', calMonth=today().slice(0,7), calDay=null;
+  let all=[], view='list', filter='active', calMonth=today().slice(0,7), calDay=null, q='', sortBy='created', statPeriod='12';
 
   async function api(path,opt={}){
     const r=await fetch(path,{...opt,headers:{'Content-Type':'application/json',...(opt.headers||{})}});
@@ -125,16 +135,20 @@
     if(/^FX\d{6}-[0-9A-F]{6}$/.test(id)) return showDetail(id);
     if(id==='ny') return showNew();
     if(id==='kalender') return showCal();
+    if(id==='statistik') return showStats();
     return showList();
   }
-  window.addEventListener('hashchange',()=>route().catch?.(()=>{}));
+  window.addEventListener('hashchange',()=>{ Promise.resolve().then(route).catch(()=>{}); });
   function navBar(active){
-    return `<nav><button data-v="" class="${active==='list'?'on':''}">Förfrågningar</button><button data-v="kalender" class="${active==='cal'?'on':''}">Kalender</button><button data-v="ny" class="${active==='new'?'on':''}">+ Ny</button></nav>`;
+    return `<nav><button data-v="" class="${active==='list'?'on':''}">Förfrågningar</button><button data-v="kalender" class="${active==='cal'?'on':''}">Kalender</button><button data-v="statistik" class="${active==='stat'?'on':''}">Statistik</button><button data-v="ny" class="${active==='new'?'on':''}">+ Ny</button></nav>`;
   }
   function bindNav(){ root.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.v; }); }
 
   // ---------- list ----------
-  const FILTERS={active:['Aktiva',b=>['new','sent','signed'].includes(b.status)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'],signed:['Bokade',b=>b.status==='signed'],done:['Klara',b=>b.status==='done'],closed:['Nekade/avbokade',b=>['declined','cancelled'].includes(b.status)],all:['Alla',()=>true]};
+  // An offer that was sent but not answered counts as expired ("förfallen") after 14 days, or when the moving day has come.
+  const EXPIRE_DAYS=14;
+  const isExpired=(b)=>b.status==='sent'&&((b.sentAt&&Date.now()-b.sentAt>EXPIRE_DAYS*864e5)||(b.date&&b.date<=today()));
+  const FILTERS={active:['Aktiva',b=>['new','sent','signed'].includes(b.status)&&!isExpired(b)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'&&!isExpired(b)],expired:['Förfallna',isExpired],signed:['Bokade',b=>b.status==='signed'],done:['Klara',b=>b.status==='done'],closed:['Nekade/avbokade',b=>['declined','cancelled'].includes(b.status)],all:['Alla',()=>true]};
   function itemHtml(b){
     const o=b.offer, d=b.data||{};
     const route=[d.from,d.to].filter(Boolean).map(x=>String(x).split(',')[0]).join(' → ');
@@ -145,8 +159,9 @@
   const WHY={price:'Priset är för högt',other_company:'Valt en annan flyttfirma',date:'Datumet passar inte',no_move:'Flyttar inte längre',other:'Annat'};
   function tags(b){
     const t=[];
-    if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 Öppnad ${b.views} ${b.views===1?'gång':'gånger'}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
+    if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 ${b.views}× · ${esc(ago(b.lastViewAt))}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
     if(b.reminders?.length) t.push(`<span class="tag">🔔 ${b.reminders.length} påminnelse${b.reminders.length>1?'r':''}</span>`);
+    if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
     if(b.discount) t.push(`<span class="tag ok">−${b.discount.pct} %</span>`);
     if(b.status==='declined'&&b.decline) t.push(`<span class="tag no">${esc(WHY[b.decline.reason]||'')}</span>`);
     const s=t.filter(Boolean).join('');
@@ -154,16 +169,83 @@
   }
   function showList(){
     view='list';
-    const f=FILTERS[filter]||FILTERS.active;
-    let list=all.filter(f[1]);
-    if(filter==='signed') list=list.slice().sort((a,b)=>(a.date||'9').localeCompare(b.date||'9'));
-    root.innerHTML=navBar('list')+`<main><div class="chips">${Object.entries(FILTERS).map(([k,v])=>`<button data-f="${k}" class="${k===filter?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
-      ${list.length?list.map(itemHtml).join(''):'<div class="empty">Inga bokningar här ännu.</div>'}
+    root.innerHTML=navBar('list')+`<main><div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortBy==='created'?' selected':''}>Senaste</option><option value="date"${sortBy==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortBy==='price'?' selected':''}>Pris</option></select></div>
+      <div class="chips">${Object.entries(FILTERS).map(([k,v])=>`<button data-f="${k}" class="${k===filter?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
+      <div id="items"></div>
       <button class="btn gray" id="reload">Uppdatera</button></main>`;
     bindNav();
-    root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ filter=b.dataset.f; showList(); });
-    root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.id; });
+    const fill=()=>{
+      const f=FILTERS[filter]||FILTERS.active;
+      const words=q.toLowerCase().split(/\s+/).filter(Boolean);
+      const hay=(b)=>{const d=b.data||{};return [d.name,d.phone,String(d.phone||'').replace(/\D/g,''),d.email,b.id,d.from,d.to,d.size,b.signature?.name].filter(Boolean).join(' ').toLowerCase();};
+      // A search looks through all bookings, whatever filter is chosen.
+      let list=words.length?all.filter(b=>{const h=hay(b);return words.every(w=>h.includes(w));}):all.filter(f[1]);
+      const by={created:(a,b)=>(b.createdAt||0)-(a.createdAt||0),date:(a,b)=>(a.date||'9999').localeCompare(b.date||'9999'),price:(a,b)=>(b.offer?.total||0)-(a.offer?.total||0)};
+      list=list.slice().sort(by[sortBy]||by.created);
+      root.querySelector('.chips').style.opacity=words.length?'.45':'';
+      $('#items').innerHTML=(words.length?`<div class="muted" style="margin:0 0 8px">${list.length} träff${list.length===1?'':'ar'} bland alla bokningar</div>`:'')+
+        (list.length?list.map(itemHtml).join(''):`<div class="empty">${words.length?'Ingen bokning matchar sökningen.':'Inga bokningar här ännu.'}</div>`);
+      root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.id; });
+    };
+    fill();
+    root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ filter=b.dataset.f; q=''; showList(); });
+    $('#q').oninput=()=>{ q=$('#q').value; fill(); };
+    $('#sort').onchange=()=>{ sortBy=$('#sort').value; fill(); };
     $('#reload').onclick=async()=>{ await load(); showList(); };
+  }
+
+  // ---------- statistics ----------
+  function showStats(){
+    view='stat';
+    const now=Date.now(), months=statPeriod==='all'?null:Number(statPeriod);
+    const from=months?new Date(new Date().getFullYear(),new Date().getMonth()-months+1,1).getTime():0;
+    const inP=all.filter(b=>(b.createdAt||0)>=from);
+    const won=inP.filter(b=>b.status==='signed'||b.status==='done');
+    const lost=inP.filter(b=>b.status==='declined'||isExpired(b));
+    const open=inP.filter(b=>b.status==='sent'&&!isExpired(b));
+    const sum=(l)=>l.reduce((a,b)=>a+(b.offer?.total||0),0);
+    const decided=won.length+lost.length;
+    const rate=decided?Math.round(won.length*100/decided):null;
+    const times=won.filter(b=>b.signedAt&&b.sentAt&&b.signedAt>=b.sentAt).map(b=>(b.signedAt-b.sentAt)/36e5).sort((a,b)=>a-b);
+    const med=times.length?times[Math.floor(times.length/2)]:null;
+    const fmtH=(h)=>h==null?'–':h<1?'< 1 h':h<48?Math.round(h)+' h':Math.round(h/24)+' dagar';
+    // monthly bars (by request date)
+    const nM=months||Math.max(1,Math.min(24,(()=>{const f=all.reduce((a,b)=>Math.min(a,b.createdAt||now),now);const d=new Date(f),n=new Date();return (n.getFullYear()-d.getFullYear())*12+n.getMonth()-d.getMonth()+1;})()));
+    const ms=[...Array(Math.min(nM,12))].map((_,i)=>{const d=new Date(new Date().getFullYear(),new Date().getMonth()-Math.min(nM,12)+1+i,1);return {k:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),l:d.toLocaleDateString('sv-SE',{month:'short'})};});
+    const mk=(b)=>{const d=new Date(b.createdAt||0);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');};
+    const per=ms.map(m=>{const l=all.filter(b=>mk(b)===m.k);return {l:m.l,w:sum(l.filter(b=>b.status==='signed'||b.status==='done')),x:sum(l.filter(b=>b.status==='declined'||isExpired(b))),o:sum(l.filter(b=>b.status==='sent'&&!isExpired(b)))};});
+    const max=Math.max(1,...per.map(p=>Math.max(p.w,p.x,p.o)));
+    const h=(v)=>Math.round(v*100/max)+'%';
+    // reasons + sources
+    const dec=inP.filter(b=>b.status==='declined');
+    const rc={}; dec.forEach(b=>{const r=b.decline?.reason||'none'; rc[r]=(rc[r]||0)+1;});
+    const rl=Object.entries(rc).sort((a,b)=>b[1]-a[1]);
+    const src=(s)=>{const l=inP.filter(b=>(b.source==='web'?'web':'manual')===s);const w=l.filter(b=>b.status==='signed'||b.status==='done').length;return {n:l.length,w};};
+    const web=src('web'), man=src('manual');
+    const disc=inP.filter(b=>b.discount), discWon=disc.filter(b=>b.status==='signed'||b.status==='done');
+    root.innerHTML=navBar('stat')+`<main>
+      <div class="chips">${[['1','Denna månad'],['3','3 mån'],['12','12 mån'],['all','Allt']].map(([k,l])=>`<button data-p="${k}" class="${k===statPeriod?'on':''}">${l}</button>`).join('')}</div>
+      <div class="kpis">
+        <div class="kpi" style="background:#1f8a4c"><small>Vunnet (signerat)</small><b>${kr(sum(won))}</b><small>${won.length} bokning${won.length===1?'':'ar'}</small></div>
+        <div class="kpi" style="background:#2f6fb2"><small>Vinstandel</small><b>${rate==null?'–':rate+' %'}</b><small>${won.length} av ${decided} avgjorda</small></div>
+        <div class="kpi" style="background:#a2479b"><small>Tid till signering</small><b>${fmtH(med)}</b><small>median från skickad offert</small></div>
+        <div class="kpi" style="background:#c2560a"><small>Väntar på svar</small><b>${kr(sum(open))}</b><small>${open.length} offert${open.length===1?'':'er'}</small></div>
+      </div>
+      <div class="card"><h3>Affärsvärde per månad</h3>
+        <div class="bars">${per.map(p=>`<div class="m"><i style="height:${h(p.w)};background:#1f8a4c" title="Vunnet ${kr(p.w)}"></i><i style="height:${h(p.x)};background:#f08a24" title="Förlorat ${kr(p.x)}"></i><i style="height:${h(p.o)};background:#c5d0da" title="Väntar ${kr(p.o)}"></i></div>`).join('')}</div>
+        <div class="blab">${per.map(p=>`<span>${esc(p.l)}</span>`).join('')}</div>
+        <div class="leg"><span><i style="background:#1f8a4c"></i>Vunnet</span><span><i style="background:#f08a24"></i>Nekat/förfallet</span><span><i style="background:#c5d0da"></i>Väntar</span></div>
+        <div class="muted" style="margin-top:8px">Snittaffär (vunnen): <b>${won.length?kr(sum(won)/won.length):'–'}</b> · Förfrågningar: <b>${inP.length}</b></div></div>
+      <div class="card"><h3>Varför kunder tackar nej</h3>
+        ${rl.length?rl.map(([r,n])=>`<div style="display:flex;justify-content:space-between"><span>${esc(r==='none'?'Ingen anledning angiven':WHY[r]||r)}</span><b>${n}</b></div><div class="hbar"><i style="width:${Math.round(n*100/dec.length)}%"></i></div>`).join(''):'<div class="muted">Inga nekade offerter under perioden.</div>'}
+        ${disc.length?`<div class="muted">Rabatt gavs på ${disc.length} offert${disc.length===1?'':'er'} – ${discWon.length} blev bokade efteråt.</div>`:''}</div>
+      <div class="card"><h3>Var förfrågningarna kommer ifrån</h3>
+        <div style="display:flex;justify-content:space-between"><span>Hemsidan</span><b>${web.n} st · ${web.w} bokade</b></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px"><span>Manuellt inlagda</span><b>${man.n} st · ${man.w} bokade</b></div></div>
+      <div class="muted" style="margin:4px 2px 20px">Perioden räknas från datumet förfrågan kom in. En offert räknas som förfallen efter ${EXPIRE_DAYS} dagar utan svar eller när flyttdagen har passerat.</div>
+    </main>`;
+    bindNav();
+    root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ statPeriod=b.dataset.p; showStats(); });
   }
 
   // ---------- calendar ----------
