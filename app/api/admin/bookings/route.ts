@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { listBookings, getBooking, saveBooking, createBooking, STATUSES, type Status } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
+import { listPhotos } from "@/lib/booking/work.ts";
 import { schedule } from "@/lib/booking/schedule.ts";
 
 export const runtime = "nodejs";
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
   const id = new URL(req.url).searchParams.get("id");
   if (id) {
     const b = await getBooking(id);
-    return b ? Response.json(b) : Response.json({ error: "not-found" }, { status: 404 });
+    return b ? Response.json({ ...b, photos: await listPhotos(b.id) }) : Response.json({ error: "not-found" }, { status: 404 });
   }
   return Response.json({ bookings: await listBookings() });
 }

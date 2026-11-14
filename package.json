@@ -9,13 +9,14 @@
     "test": "node --test tests/*.test.ts"
   },
   "dependencies": {
+    "@vercel/blob": "^0.27.3",
     "next": "16.4.6",
     "react": "latest",
     "react-dom": "latest"
   },
   "devDependencies": {
-    "typescript": "latest",
     "@types/node": "latest",
-    "@types/react": "latest"
+    "@types/react": "latest",
+    "typescript": "latest"
   }
 }

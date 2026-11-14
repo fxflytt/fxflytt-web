@@ -150,6 +150,12 @@
   .crewday b{display:block;font-size:14px}.crewday small{color:var(--green);font-weight:700;font-size:12.5px}
   .crewday a{display:block;font-size:12.5px;color:var(--ink);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.crewday a:hover{text-decoration:underline}
 
+  .phgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin-top:10px}
+  .phgrid>div{position:relative;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#eef2f5}
+  .phgrid img{width:100%;height:100%;object-fit:cover;display:block}
+  .phgrid span{position:absolute;left:4px;bottom:4px;background:rgba(13,42,63,.8);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px}
+  .phgrid span.damage{background:var(--red)}
+  .phgrid button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:var(--red);font-weight:800;cursor:pointer}
   /* ---------- planning (booking detail) ---------- */
   .pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
   .pk{display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line2);background:#fff;border-radius:12px;padding:9px 11px;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
@@ -803,6 +809,14 @@
         <div class="chips" id="pcts">${[5,10,15,20].map(p=>`<button class="chip" data-p="${p}">${p} %</button>`).join('')}<input id="pct" type="number" inputmode="numeric" min="1" max="50" placeholder="Egen %" style="width:110px"></div>
         <div id="dprev"></div><div id="msg3"></div></div>`:''}
     </div><div>
+      ${(()=>{ const w=b.work||{}, ph=b.photos||[]; if(!w.startedAt&&!ph.length&&!w.sign) return '';
+        const K={before:'Före',after:'Efter',damage:'Skada'}, hm=(t)=>new Date(t).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
+        const real=w.startedAt&&w.finishedAt?(w.finishedAt-w.startedAt)/36e5:null;
+        return `<div class="card" id="done"><h3>Utfört arbete</h3>
+          <div>${w.startedAt?`Start <b>${hm(w.startedAt)}</b>`:''}${w.finishedAt?` · Klart <b>${hm(w.finishedAt)}</b>`:w.startedAt?' · <span class="tag wn">pågår</span>':''}${real!=null?` · <b>${fmtH(Math.round(real*10)/10)}</b> <span class="muted">(planerat ${fmtH(S.hoursOf(b))})</span>`:''}</div>
+          ${ph.some(p=>p.kind==='damage')?'<div class="warn">Personalen har fotograferat en skada.</div>':''}
+          ${ph.length?`<div class="phgrid">${ph.map(p=>`<div><a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="" loading="lazy"></a><span class="${p.kind}">${K[p.kind]}</span><button data-delph="${esc(p.url)}" aria-label="Ta bort">✕</button></div>`).join('')}</div>`:''}
+          ${w.sign?`<div class="okmsg" style="margin-top:12px">Kunden kvitterade: ${esc(w.sign.name)} · ${esc(fmtTs(w.sign.at))}</div><img src="${esc(w.sign.img)}" alt="Signatur" style="max-width:100%;height:90px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#fff">${w.sign.note?`<div class="warn"><b>Kundens anmärkning:</b> ${esc(w.sign.note)}</div>`:''}`:''}</div>`; })()}
       <div class="card"><h3>Uppgifter från kunden</h3><table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table></div>
       <div class="card"><h3>Status</h3><div class="btns">
         ${b.status!=='done'?'<button class="btn gray" data-s="done">Markera klar</button>':''}
@@ -818,6 +832,10 @@
     const msg=(el,t,ok)=>{ $(el).innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
     let lastConflicts=[];
     const patch=async(body)=>{ try{ const {conflicts,...nb}=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); lastConflicts=conflicts||[]; Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; updateCounts(); return true; }catch(e){ msg(body&&'crew' in body?'#msgp':'#msg',e.message,false); return false; } };
+    root.querySelectorAll('[data-delph]').forEach(x=>x.onclick=async()=>{
+      if(!confirm('Ta bort fotot?')) return;
+      try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
+    });
     // ---- job sheet for the crew ----
     if($('#wo')){
       const saveNote=async()=>{ if($('#cw').value===(b.crewNote||'')) return true; return patch({crewNote:$('#cw').value}); };

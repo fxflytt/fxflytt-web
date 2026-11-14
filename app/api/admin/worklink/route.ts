@@ -1,10 +1,12 @@
 // Admin: job sheets for the crew.
 //   POST ?id=…[&renew=1]  → { url } link a worker can open without logging in (renew = the old link stops working)
 //   GET  ?date=YYYY-MM-DD → { jobs } every booked job that day, for printing the whole day
+//   DELETE ?id=…&url=…    → removes a photo the crew uploaded by mistake
 import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { getBooking, saveBooking, listBookings, issueWorkToken, workView } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
+import { removePhoto } from "@/lib/booking/work.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,4 +34,14 @@ export async function GET(req: Request) {
   const jobs = all.filter((b) => b.date === date && (b.status === "signed" || b.status === "done"))
     .sort((a, b) => (a.time || "99").localeCompare(b.time || "99")).map((b) => workView(b, res));
   return Response.json({ jobs });
+}
+
+export async function DELETE(req: Request) {
+  const u = await requireUser(req); if (u instanceof Response) return u;
+  if (!kvConfigured()) return noStorage();
+  const q = new URL(req.url).searchParams, b = await getBooking(q.get("id") || "");
+  if (!b) return Response.json({ error: "not-found" }, { status: 404 });
+  if (!(await removePhoto(b.id, q.get("url") || ""))) return Response.json({ error: "Bilden finns inte." }, { status: 404 });
+  await saveBooking(b, "Ett foto togs bort", u.name);
+  return Response.json({ ok: true });
 }

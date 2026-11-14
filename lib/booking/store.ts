@@ -6,6 +6,7 @@ import { randomBytes, createHash } from "node:crypto";
 import { kv, kvPipe } from "./kv.ts";
 import type { OfferData } from "../mail/offerEmail.ts";
 import { schedule } from "./schedule.ts";
+import type { Work, Photo } from "./work.ts";
 
 export type Status = "new" | "sent" | "signed" | "declined" | "done" | "cancelled";
 export const STATUSES: Status[] = ["new", "sent", "signed", "declined", "done", "cancelled"];
@@ -35,6 +36,7 @@ export type Booking = {
   crewNote?: string;       // shown to the crew on the job sheet
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
+  work?: Work;             // start/finish and the customer's sign-off, recorded on the job sheet
   sentAt?: number;
   signedAt?: number;
   declinedAt?: number;
@@ -131,7 +133,7 @@ export async function bookingByWorkToken(t: string): Promise<Booking | null> {
 }
 
 // What the crew may see: where, when, who, what to carry. Never price, e-mail, signature or internal notes.
-export function workView(b: Booking, resources: { id: string; kind: string; name: string; role?: string; phone?: string }[]) {
+export function workView(b: Booking, resources: { id: string; kind: string; name: string; role?: string; phone?: string }[], photos: Photo[] = []) {
   const d = b.data, byId = new Map(resources.map((r) => [r.id, r]));
   const span = schedule.span(b);
   return {
@@ -142,6 +144,8 @@ export function workView(b: Booking, resources: { id: string; kind: string; name
     services: [...(d.extras || []), ...(b.extras || []).filter((e) => b.extrasChosen?.includes(e.id)).map((e) => e.label)],
     volume: d.volume ? { m3: d.volume.m3, list: d.volume.list.slice(0, 80) } : null,
     message: d.message || "", crewNote: b.crewNote || "",
+    work: { startedAt: b.work?.startedAt || null, finishedAt: b.work?.finishedAt || null, photos,
+      sign: b.work?.sign ? { name: b.work.sign.name, at: b.work.sign.at, img: b.work.sign.img, note: b.work.sign.note } : null },
     crew: (b.crew || []).map((id) => byId.get(id)).filter(Boolean).map((r) => ({ name: r!.name, kind: r!.kind, role: r!.role || "", phone: r!.kind === "person" ? r!.phone || "" : "" })),
   };
 }
