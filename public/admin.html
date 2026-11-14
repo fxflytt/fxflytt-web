@@ -170,6 +170,9 @@
   .chg input,.chg{background:#fff8d6}.chg input{border-color:#e8c547}
   .pdiff{max-height:220px;overflow:auto;margin-bottom:4px}.pdiff>div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}.pdiff s{color:var(--muted)}
   .appst{margin-top:6px;font-size:12.5px}
+  .sel2{display:flex;gap:16px;flex-wrap:wrap}.sel2 label{display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer}.sel2 input{width:18px;height:18px}
+  .msgrow{padding:10px 0;border-bottom:1px solid var(--line)}.msgrow .mt{white-space:pre-wrap;margin-top:4px}
+  .pk.abs{border-style:dashed;background:#fafbfc}.pk.abs small{color:var(--red);font-weight:700}
   .sub-h{font-weight:800;font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:8px 0 4px}
   .shrow>span:last-child{display:flex;gap:6px;flex:0 0 auto}
   .shrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
@@ -319,6 +322,7 @@
     document.body.classList.toggle('office',!!me&&me.role!=='owner');
     $('#whoami').innerHTML=me?`<b style="color:#fff">${esc(me.name)}</b> · ${me.role==='owner'?'Ägare':'Kontor'}`:'';
   }
+  let absAll=[];
   let res=[], teamKind='person', teamEdit=null, showArch=false, openRes=null;
   let all=[], view='today', filter='active', calMonth=today().slice(0,7), calDay=null, q='', sortBy='created', statPeriod='12';
 
@@ -357,7 +361,8 @@
   // First time: every booking. After that (every 30 s): only bookings changed since the last time.
   let syncedAt=0;
   async function load(){
-    const [j,t]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res}))]);
+    const [j,t,ab]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res})),api('/api/admin/absence').catch(()=>({absences:absAll}))]);
+    absAll=ab.absences||[];
     if(j.partial){ for(const b of j.bookings||[]){ const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=b; else all.unshift(b); } }
     else all=j.bookings||[];
     syncedAt=j.now||Date.now(); res=t.resources||[]; updateBell(); updateCounts();
@@ -367,7 +372,7 @@
   function updateCounts(){
     const set=(id,n)=>{ const e=$(id); e.hidden=!n; e.textContent=n>99?'99+':String(n); };
     set('#ctNew',all.filter(b=>b.status==='new').length);
-    set('#ctCrew',all.filter(needsCrew).length);
+    set('#ctCrew',all.filter(needsCrew).length+absAll.filter(a=>a.status==='pending').length);
   }
 
   // ---------- notices (only inside this page) ----------
@@ -425,6 +430,7 @@
     if(id==='kalender') return showCal();
     if(id==='statistik'&&isOwner()) return showStats();
     if(id==='personal') return showTeam();
+    if(id==='franvaro'){ teamKind='abs'; return showTeam(); }
     if(id==='installningar') return showSettings();
     if(id==='statistik'&&!isOwner()) return showToday();
     if(id==='bokningar') return showList();
@@ -731,7 +737,7 @@
       body=rows.length?`<div class="card" style="padding:0;overflow:hidden"><div class="xs"><div class="tl" style="--w:${HOURS*PXH}px;--pxh:${PXH}px">
           <div class="tl-row tl-head"><div class="tl-name"></div><div class="tl-track">${ticks}</div></div>
           ${un.length?row('','','Ej tilldelade',un.length+' jobb utan personal','#9aa8b4',un,' un'):''}
-          ${rows.map(r=>{ const l=jobs.filter(b=>(b.crew||[]).includes(r.id)); return row(r.id,r.kind,r.name+(r.active?'':' (arkiverad)'),sub(l),r.color,l); }).join('')}
+          ${rows.map(r=>{ const l=jobs.filter(b=>(b.crew||[]).includes(r.id)); const ab=r.kind==='person'?absOn(r.id,d)[0]:null; return row(r.id,r.kind,r.name+(r.active?'':' (arkiverad)'),ab?'⛔ '+absTxt(ab):sub(l),r.color,l); }).join('')}
         </div></div></div>
         <p class="muted" style="margin:12px 2px 0">Dra längs raden för att ändra tid, till en annan rad för att byta vem som gör jobbet, högerkanten för att ändra längden.${fine?'':' Håll kvar fingret på ett jobb för att dra det.'} Röd ram = samma person/fordon på två jobb samtidigt.</p>`
         :`<div class="card empty">Lägg till personal och fordon först – <a href="#personal">Personal och fordon</a>.</div>`;
@@ -806,7 +812,13 @@
         ${res.length?`<label class="f">Personal</label><div class="pick" id="pickP"></div><label class="f">Fordon</label><div class="pick" id="pickV"></div>`
           :`<div class="dbox" style="margin-top:12px"><b>Ingen personal inlagd än.</b><div class="muted">Lägg till personal och fordon så kan du välja dem här och se krockar direkt.</div><a class="btn sec sm" style="margin-top:10px;display:inline-flex" href="#personal">Lägg till personal</a></div>`}
         <div id="clash"></div>
-        <button class="btn" id="psave">Spara planering</button><div id="msgp"></div></div>
+        <div id="absw"></div>
+        <button class="btn" id="psave">Spara planering</button><div id="msgp"></div>
+        ${b.status==='signed'&&b.date&&b.date>=today()?`<div class="dbox" id="oc" style="margin-top:14px">${(()=>{ const oc=b.openCall;
+          if(oc&&!oc.closedAt) return `<b>🙋 Frågat personalen</b> <span class="muted">· ${esc(fmtTs(oc.at))}</span><div class="muted" style="margin-top:4px">${oc.yes.length} av ${oc.need} tillsatta${oc.yes.length?': '+esc(oc.yes.map(id=>resById(id)?.name||'').join(', ')):''} · skickat till ${oc.asked.length}${oc.no.length?` · ${oc.no.length} kan inte`:''}</div><button class="btn gray sm" id="oc_stop" style="margin-top:8px">Stäng frågan</button>`;
+          return `${oc?`<div class="muted" style="margin-bottom:6px">Senaste frågan: ${oc.yes.length?'tillsatt av '+esc(oc.yes.map(id=>resById(id)?.name||'').join(', ')):'stängd'}.</div>`:''}<b>Behöver du fler?</b><div class="muted">Fråga alla som är lediga och har appen – de första som svarar ja hamnar på jobbet.</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap"><select id="oc_n" style="width:auto">${[1,2,3,4].map(n=>`<option value="${n}">${n} person${n>1?'er':''}</option>`).join('')}</select><input id="oc_note" placeholder="Meddelande (frivilligt)" style="flex:1;min-width:160px"><button class="btn sm" id="oc_go">🙋 Fråga personalen</button></div><div id="oc_msg"></div>`; })()}</div>`:''}
+        </div>
       <div class="card" id="wo"><h3>Arbetsorder för personalen</h3>
         <div class="muted">En sida med adresser, tid, kundens telefon, våning och hiss – utan pris. Skriv ut den eller skicka länken till personalen.</div>
         <label class="f" for="cw">Att tänka på (syns för personalen)</label><textarea id="cw" style="min-height:64px" placeholder="T.ex. portkod 1234, pianot står i källaren, ring kunden 30 min innan">${esc(b.crewNote||'')}</textarea>
@@ -929,17 +941,28 @@
         const n=c.date?signedOn(c.date).filter(x=>x.id!==b.id).length:0;
         $('#daywarn').innerHTML=n>=CAP?`<div class="warn">Den dagen har redan ${n} bokningar (max ${CAP}).</div>`:n>=CAP-3?`<div class="warn">Den dagen har ${n} bokningar.</div>`:'';
         const pk=(r)=>{
-          const jobs=(busy.get(r.id)||[]), cl=clashes.filter(x=>x.resourceId===r.id);
+          const jobs=(busy.get(r.id)||[]), cl=clashes.filter(x=>x.resourceId===r.id), ab=c.date&&r.kind==='person'?absOn(r.id,c.date)[0]:null;
+          if(ab) return `<button type="button" class="pk abs${sel.has(r.id)?' on clash':''}" data-r="${esc(r.id)}" style="--c:${esc(r.color)}"><i></i><span>${esc(r.name)}<small>${esc(absTxt(ab))}${ab.from!==ab.to?' t.o.m. '+esc(fmtDate(ab.to)):''}</small></span></button>`;
           const info=cl.length?`Krockar: ${cl[0].from}${cl[0].to?'–'+cl[0].to:''} ${cl[0].customer}`:jobs.length?`Upptagen: ${jobs.map(j=>whenTxt(j)+' '+((j.data||{}).name||'')).join(', ')}`:(c.date?'Ledig':(r.role||(r.kind==='vehicle'?'Fordon':'Personal')));
           return `<button type="button" class="pk${sel.has(r.id)?' on':''}${cl.length&&sel.has(r.id)?' clash':jobs.length?' busy':''}${r.active?'':' arch'}" data-r="${esc(r.id)}" style="--c:${esc(r.color)}"><i></i><span>${esc(r.name)}${r.active?'':' (arkiverad)'}<small>${esc(info)}</small></span></button>`;
         };
         const show=(kind)=>res.filter(r=>r.kind===kind&&(r.active||sel.has(r.id))).map(pk).join('')||`<div class="muted">Inga ${kind==='person'?'personer':'fordon'} – <a href="#personal">lägg till</a>.</div>`;
         if($('#pickP')){ $('#pickP').innerHTML=show('person'); $('#pickV').innerHTML=show('vehicle');
           root.querySelectorAll('.pk').forEach(x=>x.onclick=()=>{ const id=x.dataset.r; sel.has(id)?sel.delete(id):sel.add(id); draw(); }); }
+        const absSel=c.date?[...sel].map(id=>({r:resById(id),a:absOn(id,c.date)[0]})).filter(x=>x.r&&x.a):[];
+        $('#absw').innerHTML=absSel.length?`<div class="warn"><b>Frånvaro:</b> ${absSel.map(x=>esc(x.r.name)+' – '+esc(absTxt(x.a))).join(', ')}</div>`:'';
         $('#clash').innerHTML=clashes.length?`<div class="warn"><b>Dubbelbokning:</b><br>${clashes.map(x=>`${esc(x.name)} är redan på <a href="#${esc(x.bookingId)}">${esc(x.customer)}</a> ${esc(x.from)}${x.to?'–'+esc(x.to):''}`).join('<br>')}<br><span class="muted">Du kan spara ändå.</span></div>`:'';
       };
       ['dt','tm','du'].forEach(id=>$('#'+id).addEventListener('change',draw));
       draw();
+      if($('#oc_go')) $('#oc_go').onclick=async()=>{
+        try{ const pe=(await api('/api/admin/opencall?id='+b.id)).people;
+          if(!pe.length) return msg('#oc_msg','Ingen med personalappen är ledig den dagen.',false);
+          if(!confirm(`Fråga ${pe.length} personer (${pe.map(x=>x.name).join(', ')}) om de kan ta jobbet?`)) return;
+          const r=await api('/api/admin/opencall?id='+b.id,{method:'POST',body:JSON.stringify({need:Number($('#oc_n').value),note:$('#oc_note').value})});
+          const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=r.booking; await showDetail(b.id); notify('Frågan är skickad till '+r.asked.length+' personer ✓'); }
+        catch(e){ msg('#oc_msg',e.message,false); } };
+      if($('#oc_stop')) $('#oc_stop').onclick=async()=>{ try{ const nb=await api('/api/admin/opencall?id='+b.id,{method:'DELETE'}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; showDetail(b.id); }catch(e){ notify(e.message); } };
       $('#psave').onclick=async()=>{
         const c=cur(); const ok=await patch({date:c.date,time:c.time,durationH:c.durationH??null,crew:c.crew});
         if(!ok) return; const cf=lastConflicts; await showDetail(b.id);
@@ -1180,6 +1203,8 @@
     // --- to-do list: everything that needs a decision or a call ---
     const soon=(b)=>booked(b)&&b.status==='signed'&&b.date>=t&&b.date<=in14;
     const groups=[
+      ['Frånvarande på jobb','no',all.filter(b=>soon(b)).flatMap(b=>(b.crew||[]).map(id=>({b,r:resById(id),a:absOn(id,b.date).find(a=>a.status==='approved')})).filter(x=>x.r&&x.a)).map(x=>({b:x.b,sub:`${when(x.b)} · <b>${esc(x.r.name)}</b> ${esc(ABSK[x.a.kind].toLowerCase())}`}))],
+      ['Ledighet att besluta','wn',pendingAbs().sort((x,y)=>x.from.localeCompare(y.from)).map(a=>({b:{id:'franvaro',data:{name:a.name}},sub:`${esc(ABSK[a.kind])} · ${esc(spanTxt(a))}`,act:`<a class="btn sec sm" href="#franvaro">Svara</a>`}))],
       ['Dubbelbokningar','no',all.filter(b=>soon(b)&&S.conflicts(b,all,res).length).sort(byTime).map(b=>{ const c=S.conflicts(b,all,res); return {b,sub:`${when(b)} · ${esc([...new Set(c.map(x=>x.name))].join(', '))} på två jobb samtidigt`}; })],
       ['Saknar personal','wn',miss.map(b=>({b,sub:when(b)}))],
       ['Saknar starttid','wn',all.filter(b=>soon(b)&&!b.time).sort(byTime).map(b=>({b,sub:esc(fmtDate(b.date))}))],
@@ -1193,7 +1218,8 @@
     // --- who is where today ---
     const staff=res.filter(r=>r.active&&r.kind==='person');
     const staffHtml=staff.length?`<div class="card"><h3>Personal i dag <span class="sub" id="inNow"></span></h3><div class="crewday">${staff.map(r=>{ const l=jt.filter(b=>(b.crew||[]).includes(r.id));
-      return `<div style="--c:${esc(r.color)}" data-person="${esc(r.id)}"><b>${esc(r.name)}<span class="instamp"></span></b>${l.length?l.map(b=>`<a href="#${esc(b.id)}">${esc(whenTxt(b))} · ${nm(b)}</a>`).join(''):'<small>Ledig</small>'}</div>`; }).join('')}</div></div>`:'';
+      const ab=absOn(r.id,t)[0];
+      return `<div style="--c:${esc(r.color)}" data-person="${esc(r.id)}"><b>${esc(r.name)}<span class="instamp"></span>${ab?` <span class="tag ${ab.kind==='sick'?'no':'wn'}">${esc(absTxt(ab))}</span>`:''}</b>${l.length?l.map(b=>`<a href="#${esc(b.id)}">${esc(whenTxt(b))} · ${nm(b)}</a>`).join(''):'<small>Ledig</small>'}</div>`; }).join('')}</div></div>`:'';
     root.innerHTML=navBar('today')+`<main>
       <div class="kpis">
         <a class="kpi" href="#kalender" style="background:var(--navy)"><small>Jobb i dag</small><b>${jt.length}</b><small>${people(jt)} i personalen ute</small></a>
@@ -1524,6 +1550,76 @@
     draw();
   };
 
+  // ---------- absence and messages (tabs on the Personal page) ----------
+  const ABSK={sick:'Sjuk',vacation:'Semester / ledigt',off:'Kan inte jobba'}, ABSS={pending:['Väntar','wn'],approved:['Godkänd','ok'],rejected:['Nej','no']};
+  const absOn=(rid,date)=>absAll.filter(a=>a.rid===rid&&a.status!=='rejected'&&a.from<=date&&a.to>=date);
+  const absTxt=(a)=>(a.status==='pending'?'Söker ledigt':ABSK[a.kind]);
+  const pendingAbs=()=>absAll.filter(a=>a.status==='pending');
+  const teamSeg=()=>`<div class="seg">${[['person',`Personal (${res.filter(r=>r.kind==='person'&&r.active).length})`],['vehicle',`Fordon (${res.filter(r=>r.kind==='vehicle'&&r.active).length})`],['abs',`Frånvaro${pendingAbs().length?` <span class="tag no">${pendingAbs().length}</span>`:''}`],['msg','Meddelanden']].map(([k,l])=>`<button data-k="${k}" class="${teamKind===k?'on':''}">${l}</button>`).join('')}</div>`;
+  const bindTeamSeg=()=>root.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{ teamKind=x.dataset.k; teamEdit=null; openRes=null; showTeam(); });
+  const spanTxt=(a)=>a.from===a.to?fmtDate(a.from):fmtDate(a.from)+' – '+fmtDate(a.to);
+
+  function showAbsAdmin(){
+    view='team';
+    const t=today(), people=res.filter(r=>r.kind==='person'&&r.active);
+    const pend=pendingAbs().sort((a,b)=>a.from.localeCompare(b.from));
+    const cur=absAll.filter(a=>a.status==='approved'&&a.to>=t).sort((a,b)=>a.from.localeCompare(b.from));
+    const jobsIn=(a)=>all.filter(b=>b.status==='signed'&&b.date>=a.from&&b.date<=a.to&&(b.crew||[]).includes(a.rid));
+    const row=(a,acts)=>{ const j=jobsIn(a);
+      return `<div class="todo"><a><b>${esc(a.name)} · ${esc(ABSK[a.kind])} <span class="tag ${ABSS[a.status][1]}">${ABSS[a.status][0]}</span></b>
+        <small>${esc(spanTxt(a))}${a.note?' · '+esc(a.note):''}${a.createdBy!==a.name?' · inlagd av '+esc(a.createdBy):''}</small>
+        ${j.length?`<small style="color:var(--red);font-weight:700">Står på ${j.length} jobb: ${j.map(b=>esc(fmtDate(b.date)+' '+((b.data||{}).name||''))).join(', ')}</small>`:''}</a>${acts}</div>`; };
+    root.innerHTML=navBar('team')+`<main>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px">${teamSeg()}</div>
+      <div class="cols"><div>
+        <div class="card"><h3>Väntar på beslut <span class="sub">${pend.length}</span></h3>${pend.length?pend.map(a=>row(a,`<button class="btn gray sm" data-dec="${a.id}" data-ok="0">Nej</button><button class="btn sm" data-dec="${a.id}" data-ok="1">Godkänn</button>`)).join(''):'<div class="muted">Inga ansökningar just nu.</div>'}</div>
+        <div class="card"><h3>Ledig, sjuk och kan inte <span class="sub">i dag och framåt</span></h3>${cur.length?cur.map(a=>row(a,`<button class="btn gray sm" data-rm="${a.id}" aria-label="Ta bort">✕</button>`)).join(''):'<div class="muted">Ingen frånvaro inlagd.</div>'}</div>
+      </div><div>
+        <div class="card"><h3>Lägg in frånvaro</h3><div class="muted">T.ex. när någon ringer och sjukanmäler sig. Läggs in som godkänd.</div>
+          <label class="f">Person</label><select id="ab_p">${people.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('')}</select>
+          <label class="f">Typ</label><select id="ab_k">${Object.entries(ABSK).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select>
+          <div class="row2"><div><label class="f">Från</label><input id="ab_f" type="date" value="${t}"></div><div><label class="f">Till och med</label><input id="ab_t" type="date" value="${t}"></div></div>
+          <label class="f">Anteckning</label><input id="ab_n">
+          <button class="btn" id="ab_add">Lägg in</button><div id="ab_msg"></div></div>
+      </div></div></main>`;
+    bindTeamSeg();
+    const reload=async()=>{ absAll=(await api('/api/admin/absence')).absences; updateCounts(); showAbsAdmin(); };
+    root.querySelectorAll('[data-dec]').forEach(x=>x.onclick=async()=>{ try{ await api('/api/admin/absence?do='+(x.dataset.ok==='1'?'approve':'reject')+'&id='+x.dataset.dec,{method:'POST'}); await reload(); notify('Svaret är skickat till personen ✓'); }catch(e){ notify(e.message); } });
+    root.querySelectorAll('[data-rm]').forEach(x=>x.onclick=async()=>{ if(!confirm('Ta bort frånvaron?')) return; try{ await api('/api/admin/absence?id='+x.dataset.rm,{method:'DELETE'}); await reload(); }catch(e){ notify(e.message); } });
+    $('#ab_f').onchange=()=>{ if($('#ab_t').value<$('#ab_f').value) $('#ab_t').value=$('#ab_f').value; };
+    $('#ab_add').onclick=async()=>{ try{ await api('/api/admin/absence',{method:'POST',body:JSON.stringify({rid:$('#ab_p').value,kind:$('#ab_k').value,from:$('#ab_f').value,to:$('#ab_t').value,note:$('#ab_n').value})}); await reload(); notify('Frånvaron är inlagd ✓'); }
+      catch(e){ $('#ab_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+  }
+
+  async function showMsgAdmin(){
+    view='team';
+    const people=res.filter(r=>r.kind==='person'&&r.active);
+    root.innerHTML=navBar('team')+`<main><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px">${teamSeg()}</div><div id="mpane"><div class="empty">Laddar…</div></div></main>`;
+    bindTeamSeg();
+    let msgs=[]; try{ msgs=(await api('/api/admin/messages')).messages; }catch(e){ $('#mpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    if(view!=='team'||teamKind!=='msg') return;
+    const rcpt=(m)=>m.to==='all'?people:people.filter(r=>m.to.includes(r.id));
+    $('#mpane').innerHTML=`<div class="cols"><div>
+        <div class="card"><h3>Nytt meddelande till personalen</h3>
+          <textarea id="m_t" style="min-height:110px" placeholder="T.ex. Personalmöte fredag kl. 16 på kontoret."></textarea>
+          <label class="f">Till</label><div class="sel2"><label><input type="radio" name="m_to" value="all" checked> Alla (${people.length})</label><label><input type="radio" name="m_to" value="some"> Välj personer</label></div>
+          <div id="m_pick" hidden class="pick" style="margin-top:8px">${people.map(r=>`<label class="pk" style="--c:${esc(r.color)}"><input type="checkbox" value="${r.id}" style="width:18px;height:18px"><span>${esc(r.name)}${r.app?'':'<small>har inte appen</small>'}</span></label>`).join('')}</div>
+          <div class="muted" style="margin-top:8px">Visas i personalappen och skickas som notis till dem som har slagit på notiser.</div>
+          <button class="btn" id="m_send">Skicka</button><div id="m_msg"></div></div>
+      </div><div>
+        <div class="card"><h3>Skickade</h3>${msgs.length?msgs.map(m=>{ const rs=rcpt(m), read=rs.filter(r=>m.read[r.id]);
+          return `<div class="msgrow"><div class="muted">${esc(fmtTs(m.at))} · ${esc(m.from)} · till ${m.to==='all'?'alla':esc(rs.map(r=>r.name).join(', '))}</div><div class="mt">${esc(m.text)}</div>
+            <div class="muted" style="margin-top:4px"><span class="tag${read.length===rs.length&&rs.length?' ok':''}">Läst av ${read.length} av ${rs.length}</span> ${read.length?esc(read.map(r=>r.name).join(', ')):''}
+            <button class="back" data-mdel="${m.id}" style="padding:0;margin-left:8px;font-size:12.5px;color:var(--muted)">Ta bort</button></div></div>`; }).join(''):'<div class="muted">Inga meddelanden än.</div>'}</div>
+      </div></div>`;
+    root.querySelectorAll('[name=m_to]').forEach(x=>x.onchange=()=>{ $('#m_pick').hidden=root.querySelector('[name=m_to]:checked').value==='all'; });
+    $('#m_send').onclick=async()=>{ const all1=root.querySelector('[name=m_to]:checked').value==='all';
+      const to=all1?'all':[...root.querySelectorAll('#m_pick input:checked')].map(x=>x.value);
+      try{ await api('/api/admin/messages',{method:'POST',body:JSON.stringify({text:$('#m_t').value,to})}); notify('Meddelandet är skickat ✓'); showMsgAdmin(); }
+      catch(e){ $('#m_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    root.querySelectorAll('[data-mdel]').forEach(x=>x.onclick=async()=>{ if(!confirm('Ta bort meddelandet? Det försvinner också i appen.')) return; await api('/api/admin/messages?id='+x.dataset.mdel,{method:'DELETE'}); showMsgAdmin(); });
+  }
+
   // ---------- staff and vehicles ----------
   const ROLES={person:['Flyttledare','Flyttare','Städare','Chaufför','Montör'],vehicle:['Lastbil','Skåpbil','Släp']};
   const COLORS=['#2f6fb2','#1f8a4c','#c2560a','#a2479b','#0f8a8a','#b42318','#5a52c7','#8a6d1f','#3d5a6c','#d6457a'];
@@ -1533,6 +1629,8 @@
     updateCounts(); return r;
   }
   function showTeam(){
+    if(teamKind==='abs') return showAbsAdmin();
+    if(teamKind==='msg') return showMsgAdmin();
     view='team';
     const t=today(), horizon=addDays(t,30);
     const upcoming=(r)=>all.filter(b=>!S.INACTIVE.includes(b.status)&&b.date&&b.date>=t&&(b.crew||[]).includes(r.id)).sort(byTime);
@@ -1562,13 +1660,13 @@
         <div class="btns"><button class="btn gray" id="t_cancel">Avbryt</button><button class="btn" id="t_save">Spara</button></div><div class="err" id="t_err"></div></div>`:'';
     root.innerHTML=navBar('team')+`<main>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
-        <div class="seg"><button data-k="person" class="${teamKind==='person'?'on':''}">Personal (${res.filter(r=>r.kind==='person'&&r.active).length})</button><button data-k="vehicle" class="${teamKind==='vehicle'?'on':''}">Fordon (${res.filter(r=>r.kind==='vehicle'&&r.active).length})</button></div>
+        ${teamSeg()}
         <button class="btn sm" id="t_add" style="margin-left:auto">+ ${teamKind==='person'?'Ny person':'Nytt fordon'}</button></div>
       ${form}
       ${act.length?`<div class="tgrid">${act.map(card).join('')}</div>`:`<div class="card empty">${teamKind==='person'?'Ingen personal inlagd än. Lägg till dina flyttare – sedan väljer du vem som gör vilket jobb inne i bokningen.':'Inga fordon inlagda än.'}</div>`}
       ${arch.length?`<button class="btn gray sm" id="t_arch">${showArch?'Dölj':'Visa'} arkiverade (${arch.length})</button>${showArch?`<div class="tgrid" style="margin-top:12px">${arch.map(card).join('')}</div>`:''}`:''}
     </main>`;
-    root.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{ teamKind=x.dataset.k; teamEdit=null; openRes=null; showTeam(); });
+    bindTeamSeg();
     $('#t_add').onclick=()=>{ teamEdit={}; showTeam(); $('#t_name').focus(); };
     if($('#t_arch')) $('#t_arch').onclick=()=>{ showArch=!showArch; showTeam(); };
     root.querySelectorAll('[data-open]').forEach(x=>x.onclick=()=>{ openRes=openRes===x.dataset.open?null:x.dataset.open; showTeam(); });
