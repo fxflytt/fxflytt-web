@@ -83,3 +83,19 @@ test("timrapport: uppmätt tid före planerad, bara bokade jobb i månaden", () 
   assert.deepEqual(m.months.map((x) => x.month), ["2026-10", "2026-11", "2026-12"]);
   assert.equal(m.thisMonth.done, 5000); assert.equal(m.thisMonth.booked, 8000); assert.equal(m.upcoming.total, 3000);
 });
+
+const settings = await import("../lib/booking/settings.ts");
+test("omdöme: en gång, bara klara jobb med e-post, rätt dag, inte gamla jobb", async () => {
+  await assert.rejects(settings.updateSettings({ reviewOn: true }), /länken/);
+  await assert.rejects(settings.updateSettings({ reviewUrl: "https://evil.example/x" }), /Google/);
+  const s = await settings.updateSettings({ reviewUrl: "https://g.page/r/abc/review", reviewOn: true, reviewDelayDays: 1 });
+  assert.equal((await settings.getSettings()).reviewOn, true);
+  const b = { status: "done", date: "2026-12-05", data: { email: "a@b.se" } } as any;
+  assert.equal(settings.reviewDue(b, s, "2026-12-05"), false);       // same day, delay 1
+  assert.equal(settings.reviewDue(b, s, "2026-12-06"), true);
+  assert.equal(settings.reviewDue(b, s, "2026-12-25"), false);       // older than 14 days
+  assert.equal(settings.reviewDue({ ...b, reviewSentAt: 1 }, s, "2026-12-06"), false);
+  assert.equal(settings.reviewDue({ ...b, status: "signed" }, s, "2026-12-06"), false);
+  assert.equal(settings.reviewDue({ ...b, data: {} }, s, "2026-12-06"), false);
+  assert.equal(settings.reviewDue(b, { ...s, reviewOn: false }, "2026-12-06"), false);
+});

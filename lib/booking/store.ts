@@ -36,6 +36,7 @@ export type Booking = {
   crewNote?: string;       // shown to the crew on the job sheet
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
+  reviewSentAt?: number;   // when the Google review request was e-mailed
   work?: Work;             // start/finish and the customer's sign-off, recorded on the job sheet
   sentAt?: number;
   signedAt?: number;
