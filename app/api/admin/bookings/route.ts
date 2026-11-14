@@ -2,6 +2,8 @@
 import { isAdmin, unauthorized } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { listBookings, getBooking, saveBooking, createBooking, STATUSES, type Status } from "@/lib/booking/store.ts";
+import { listResources } from "@/lib/booking/team.ts";
+import { schedule } from "@/lib/booking/schedule.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -61,6 +63,25 @@ export async function PATCH(req: Request) {
 
   if ("date" in d) { const v = str(d.date, 10); b.date = DATE.test(v) ? v : undefined; changes.push("datum"); }
   if ("time" in d) { const v = str(d.time, 5); b.time = TIME.test(v) ? v : undefined; changes.push("tid"); }
+  if ("durationH" in d) {
+    const h = Number(d.durationH), was = b.durationH;
+    if (d.durationH === null || d.durationH === "") b.durationH = undefined;
+    else if (h >= 0.5 && h <= 14 && Math.round(h * 2) === h * 2) b.durationH = h;
+    else return Response.json({ error: "Tid ska vara 0,5–14 timmar (halvtimmar)." }, { status: 400 });
+    if (b.durationH !== was) changes.push("beräknad tid " + (b.durationH ? String(b.durationH).replace(".", ",") + " tim" : "auto"));
+  }
+  let resources: Awaited<ReturnType<typeof listResources>> | null = null;
+  if ("crew" in d) {
+    resources = await listResources();
+    const ids = Array.isArray(d.crew) ? [...new Set(d.crew.filter((x): x is string => typeof x === "string"))].slice(0, 12) : [];
+    const before = new Set(b.crew || []);
+    const byId = new Map(resources.map((r) => [r.id, r]));
+    // New picks must be active; someone already on the job stays even if archived since.
+    const bad = ids.find((id) => !byId.get(id) || (!byId.get(id)!.active && !before.has(id)));
+    if (bad) return Response.json({ error: "Okänd eller arkiverad person/fordon." }, { status: 400 });
+    const same = ids.length === before.size && ids.every((id) => before.has(id));
+    if (!same) { b.crew = ids; changes.push(ids.length ? "personal " + ids.map((id) => byId.get(id)!.name).join(", ") : "personal borttagen"); }
+  }
   if ("adminNote" in d) { b.adminNote = str(d.adminNote, 2000); changes.push("intern anteckning"); }
   if ("total" in d) {
     const t = Math.round(Number(d.total));
@@ -91,5 +112,8 @@ export async function PATCH(req: Request) {
   // A signed offer is a contract – changing price or date afterwards must be visible.
   if (b.signedAt && changes.some((c) => c.startsWith("pris") || c === "datum")) changes.push("(efter signering)");
   await saveBooking(b, changes.length ? "Ändrat: " + changes.join(", ") : undefined);
-  return Response.json(b);
+  // Warn (never block) when someone on this job is already on another job at the same time.
+  const planChanged = ["date", "time", "durationH", "crew", "status"].some((k) => k in d);
+  const conflicts = planChanged && b.crew?.length ? schedule.conflicts(b, await listBookings(), resources || await listResources()) : [];
+  return Response.json({ ...b, conflicts });
 }

@@ -28,6 +28,8 @@ export type Booking = {
   offer?: Offer;
   date?: string;           // agreed moving date YYYY-MM-DD
   time?: string;           // start time HH:MM
+  durationH?: number;      // planned job length in hours (unset = estimated, see public/fx-schedule.js)
+  crew?: string[];         // ids of the staff and vehicles on the job (lib/booking/team.ts) – internal only
   adminNote?: string;
   token?: string;
   sentAt?: number;
