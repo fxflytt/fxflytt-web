@@ -2,97 +2,266 @@
 <html lang="sv">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
-<title>Bokningar – FX Flytt</title>
+<meta name="theme-color" content="#0d2a3f">
+<title>Admin – FX Flytt</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
-  :root{--navy:#0d2a3f;--accent:#ff7a1a;--ink:#14212b;--muted:#5b6b78;--line:#e3e8ed;--bg:#f2f5f8;--green:#1f8a4c;--red:#b42318}
+  :root{--navy:#0d2a3f;--navy2:#16384f;--accent:#ff7a1a;--accent2:#e8650a;--ink:#14212b;--muted:#5d6d7a;--line:#e2e8ee;--line2:#cfd9e2;--bg:#f3f6f9;--card:#fff;--green:#1f8a4c;--red:#b42318;--blue:#1f5fae;--side:236px;
+    --sh:0 1px 2px rgba(13,42,63,.06),0 2px 8px rgba(13,42,63,.04);--sh2:0 12px 32px rgba(13,42,63,.16)}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  header{background:var(--navy);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
-  .logo{background:#fff;color:var(--navy);font-weight:900;font-style:italic;padding:3px 8px;border-radius:7px;border-left:4px solid var(--accent)}
-  header b{flex:1;font-size:17px}
-  #bell{position:relative;font-size:16px;padding:5px 10px}
-  #bellN{position:absolute;top:-6px;right:-6px;background:#e5484d;color:#fff;border-radius:999px;font-size:11px;font-weight:800;min-width:18px;height:18px;line-height:18px;padding:0 4px}
-  #npanel{position:fixed;top:56px;right:8px;left:8px;max-width:420px;margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:9;max-height:70vh;overflow:auto}
-  #npanel .ev{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:11px 14px;font:inherit;color:var(--ink,#16202a)}
-  #npanel .ev.unread{background:#fff7ef}#npanel .ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-  #toast{position:fixed;left:12px;right:12px;bottom:16px;max-width:440px;margin:0 auto;background:var(--navy);color:#fff;border-radius:14px;padding:13px 16px;z-index:10;box-shadow:0 10px 30px rgba(0,0,0,.25);font-weight:600}
-  header button{background:none;border:1px solid #47637a;color:#cfe0ec;border-radius:999px;padding:6px 12px;font-size:13px}
-  nav{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:52px;z-index:4}
-  nav button{flex:1;border:1px solid #cfd9e2;background:#fff;border-radius:10px;padding:10px 4px;font-weight:700;font-size:13px;color:var(--navy)}
-  nav button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-  main{max-width:760px;margin:0 auto;padding:12px 12px 90px}
-  .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px}
-  .chips button{white-space:nowrap;border:1px solid #cfd9e2;background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--navy)}
-  .chips button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .item{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;color:inherit;font:inherit}
-  .item .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
-  .item b{font-size:16px}
-  .muted{color:var(--muted);font-size:13px}
-  .st{font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px;white-space:nowrap;text-transform:uppercase}
-  .st.new{background:#fff1e6;color:#c2560a}.st.sent{background:#e8f0fb;color:#1f5fae}.st.signed{background:#e6f5ec;color:var(--green)}
-  .st.declined,.st.cancelled{background:#fdecec;color:var(--red)}.st.done{background:#eceff2;color:#47525c}
-  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-  .card h3{margin:0 0 8px;font-size:15px;color:var(--navy)}
-  table{width:100%;border-collapse:collapse}
-  td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
-  td:first-child{color:var(--muted);width:36%}
-  label.f{display:block;font-weight:700;font-size:13px;margin:10px 0 4px}
-  input,textarea,select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1.5px solid #c9d5df;border-radius:10px;background:#fff}
-  textarea{min-height:70px}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .btn{display:block;width:100%;border:0;border-radius:999px;padding:13px;font-size:15px;font-weight:800;background:var(--accent);color:#fff;margin-top:8px;text-align:center;text-decoration:none}
-  .btn.sec{background:#fff;color:var(--navy);border:2px solid var(--navy)}
-  .btn.gray{background:#eceff2;color:#47525c}
-  .btn.red{background:#fff;color:var(--red);border:2px solid #f0c4c0}
-  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:#eef2f5;color:#4a5a67}
-  .tag.seen{background:#e8f1fb;color:#1d5fa8}.tag.ok{background:#e6f5ec;color:var(--green)}.tag.no{background:#fdecec;color:#b42318}
-  .xrow{display:flex;gap:6px;margin:6px 0}.xrow input:first-child{flex:1;min-width:0}.xrow input[type=number]{width:96px}.xrow button{border:1px solid var(--line);background:#fff;border-radius:10px;width:40px;color:#b42318}
-  .sugg{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:6px}.sugg button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:9px 12px;font:inherit}.sugg small{display:block;color:var(--muted);font-size:12px}
-  a.hist{display:block;padding:7px 0;border-bottom:1px solid var(--line);color:var(--navy);text-decoration:none}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--navy)}
   [hidden]{display:none!important}
-  .acw{position:relative}.acl{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.12);z-index:6;overflow:hidden}
-  .acl button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:9px 12px;font:inherit}.acl small{display:block;color:var(--muted);font-size:12px}
-  .dbox{border:1px solid var(--line,#e3e8ed);border-radius:12px;padding:12px;margin-top:8px}
-  .warn{background:#fff4e5;border:1px solid #ffd6a8;color:#8a4b00;border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0}
-  .okmsg{background:#e6f5ec;border:1px solid #bfe5cf;color:var(--green);border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0;font-weight:600}
+  svg.i{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ---------- shell: sidebar (desktop) / bottom bar (mobile) ---------- */
+  #side{position:fixed;top:0;bottom:0;left:0;width:var(--side);background:var(--navy);color:#c4d5e2;display:flex;flex-direction:column;padding:20px 12px 16px;z-index:20}
+  .brand{display:block;padding:2px 10px 22px}.brand img{height:34px;display:block}
+  #side a.nav{position:relative;display:flex;align-items:center;gap:12px;padding:10px 12px;margin:1px 0;border-radius:10px;color:#c4d5e2;text-decoration:none;font-weight:600;font-size:14.5px}
+  #side a.nav:hover{background:rgba(255,255,255,.06);color:#fff}
+  #side a.nav.on{background:rgba(255,255,255,.13);color:#fff}
+  #side a.nav.on::before{content:"";position:absolute;left:-12px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+  #side .ct{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;font-weight:800;border-radius:999px;min-width:20px;height:20px;line-height:20px;text-align:center;padding:0 6px}
+  #side a.newbtn{display:flex;align-items:center;justify-content:center;gap:8px;margin:18px 4px 0;background:var(--accent);color:#fff;text-decoration:none;font-weight:800;border-radius:12px;padding:11px;font-size:14.5px}
+  #side a.newbtn:hover{background:var(--accent2)}
+  .side-foot{margin-top:auto;padding:12px 10px 0;border-top:1px solid rgba(255,255,255,.1);font-size:12px;color:#8fa6b8}
+  .side-foot button{background:none;border:0;color:#c4d5e2;font:inherit;font-weight:600;padding:6px 0;cursor:pointer;display:flex;align-items:center;gap:8px}
+  #wrap{margin-left:var(--side);min-height:100vh}
+  #top{position:sticky;top:0;z-index:10;background:rgba(243,246,249,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;align-items:center;gap:10px;padding:14px 32px;border-bottom:1px solid var(--line)}
+  #top h1{flex:1;margin:0;font-size:21px;letter-spacing:-.01em;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #top .ib{position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;border:1px solid var(--line2);background:#fff;color:var(--navy);cursor:pointer}
+  #bellN{position:absolute;top:-6px;right:-6px;background:#e5484d;color:#fff;border-radius:999px;font-size:11px;font-weight:800;min-width:18px;height:18px;line-height:18px;padding:0 4px;text-align:center}
+  #mlogout{display:none}
+  main{max-width:1200px;margin:0 auto;padding:24px 32px 60px}
+  body.out #side,body.out #top{display:none}
+  body.out #wrap{margin-left:0}
+  @media (max-width:899px){
+    #side{top:auto;right:0;width:auto;height:calc(62px + env(safe-area-inset-bottom));flex-direction:row;padding:0 2px env(safe-area-inset-bottom);border-top:1px solid #0a2232;box-shadow:0 -4px 16px rgba(13,42,63,.12)}
+    .brand,.side-foot,#side .lbl-long{display:none}
+    #side a.nav{flex:1;flex-direction:column;justify-content:center;gap:3px;padding:6px 2px;margin:0;font-size:10.5px;border-radius:0}
+    #side a.nav.on{background:none;color:#fff}#side a.nav.on::before{left:30%;right:30%;top:0;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
+    #side .ct{position:absolute;top:4px;left:calc(50% + 6px);margin:0;min-width:17px;height:17px;line-height:17px;font-size:10px;padding:0 4px}
+    #side a.newbtn{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));margin:0;width:56px;height:56px;border-radius:18px;padding:0;box-shadow:0 8px 22px rgba(232,101,10,.45)}
+    #side a.newbtn span{display:none}#side a.newbtn svg{width:26px;height:26px}
+    body.v-new #side a.newbtn,body.v-detail #side a.newbtn{display:none}
+    #wrap{margin-left:0;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+    #top{padding:10px 16px}#top h1{font-size:18px}
+    #mlogout{display:inline-flex}
+    main{padding:14px 14px 40px}
+  }
+
+  /* ---------- notices ---------- */
+  #npanel{position:fixed;top:64px;right:16px;left:16px;max-width:420px;margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh2);z-index:30;max-height:70vh;overflow:auto}
+  #npanel .ev{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:12px 16px;font:inherit;color:var(--ink);cursor:pointer}
+  #npanel .ev.unread{background:#fff7ef}#npanel .ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  #toast{display:flex;align-items:center;gap:12px;position:fixed;left:16px;right:16px;bottom:24px;max-width:440px;margin:0 auto;background:var(--navy);color:#fff;border-radius:14px;padding:13px 16px;z-index:40;box-shadow:var(--sh2);font-weight:600;cursor:pointer}
+  @media (max-width:899px){#toast{bottom:calc(84px + env(safe-area-inset-bottom))}}
+
+  /* ---------- building blocks ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:var(--sh)}
+  .card h3{margin:0 0 12px;font-size:15px;color:var(--navy);display:flex;align-items:center;gap:8px}
+  .card h3 .sub{margin-left:auto;font-size:13px;font-weight:600;color:var(--muted)}
+  .sec-h{display:flex;align-items:baseline;gap:10px;margin:6px 2px 10px}.sec-h h2{margin:0;font-size:16px;color:var(--navy)}.sec-h .muted{margin-left:auto}
+  .cols{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+  @media (max-width:1099px){.cols{grid-template-columns:minmax(0,1fr)}}
+  .muted{color:var(--muted);font-size:13px}
+  .st{font-size:11px;font-weight:800;border-radius:999px;padding:4px 10px;white-space:nowrap;text-transform:uppercase;letter-spacing:.02em;justify-self:end}
+  .st.new{background:#fff1e6;color:#c2560a}.st.sent{background:#e8f0fb;color:var(--blue)}.st.signed{background:#e6f5ec;color:var(--green)}
+  .st.declined,.st.cancelled{background:#fdecec;color:var(--red)}.st.done{background:#eceff2;color:#47525c}
+  table{width:100%;border-collapse:collapse}
+  td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+  tr:last-child td{border-bottom:0}
+  td:first-child{color:var(--muted);width:38%;padding-right:10px}
+  label.f{display:block;font-weight:700;font-size:13px;margin:12px 0 5px;color:#33434f}
+  input,textarea,select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1.5px solid var(--line2);border-radius:10px;background:#fff;color:var(--ink)}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(13,42,63,.1)}
+  textarea{min-height:76px;resize:vertical}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px}
+  @media (max-width:520px){.row3{grid-template-columns:1fr 1fr}.row3>:first-child{grid-column:1/-1}}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;padding:12px 16px;font:inherit;font-size:15px;font-weight:800;background:var(--accent);color:#fff;margin-top:10px;text-align:center;text-decoration:none;cursor:pointer}
+  .btn:hover{background:var(--accent2)}.btn:disabled{opacity:.6;cursor:default}
+  .btn.sec{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}.btn.sec:hover{background:#f2f6f9}
+  .btn.gray{background:#eceff2;color:#47525c}.btn.gray:hover{background:#e2e7eb}
+  .btn.red{background:#fff;color:var(--red);border:1.5px solid #f0c4c0}.btn.red:hover{background:#fff6f5}
+  .btn.sm{width:auto;padding:8px 14px;font-size:13.5px;margin:0;border-radius:10px}
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+  .chips button{white-space:nowrap;border:1px solid var(--line2);background:#fff;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer}
+  .chips button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:#eef2f5;color:#4a5a67}
+  .tag.seen{background:#e8f1fb;color:#1d5fa8}.tag.ok{background:#e6f5ec;color:var(--green)}.tag.no{background:#fdecec;color:var(--red)}.tag.wn{background:#fff4e5;color:#8a4b00}
+  .who{white-space:nowrap;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:2px 9px 2px 7px;border-radius:999px;background:color-mix(in srgb,var(--c) 12%,#fff);color:color-mix(in srgb,var(--c) 80%,#000)}
+  .who::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+  .who.v{border-radius:6px}.who.v::before{border-radius:2px}
+  .warn{background:#fff4e5;border:1px solid #ffd6a8;color:#8a4b00;border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
+  .okmsg{background:#e6f5ec;border:1px solid #bfe5cf;color:var(--green);border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0;font-weight:600}
   .err{color:var(--red);font-weight:600;font-size:14px;margin-top:8px}
-  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-  .cal .h{font-size:11px;color:var(--muted);text-align:center;font-weight:700}
-  .cal button{aspect-ratio:1/1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:4px;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:var(--ink)}
-  .cal button.out{opacity:.35}.cal button.today{border:2px solid var(--navy)}
-  .cal button .n{font-size:13px;font-weight:700}
-  .cal button .c{font-size:11px;font-weight:800;border-radius:999px;padding:1px 6px;background:#e6f5ec;color:var(--green)}
-  .cal button .c.mid{background:#fff4e5;color:#8a4b00}.cal button .c.full{background:#fdecec;color:var(--red)}
-  .cal button .p{font-size:10px;color:#1f5fae}
-  .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .calhead button{border:1px solid #cfd9e2;background:#fff;border-radius:10px;padding:8px 14px;font-size:16px}
-  .back{background:none;border:0;color:var(--navy);font-weight:700;font-size:15px;padding:4px 0 10px}
-  .hist div{font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
-  .srch{display:flex;gap:8px;margin-bottom:10px}.srch input{flex:1;min-width:0}.srch select{width:auto;flex:0 0 auto}
-  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-  .kpi{border-radius:14px;padding:12px;color:#fff}.kpi small{display:block;font-size:12px;opacity:.9;font-weight:600}.kpi b{font-size:22px}
-  .bars{display:flex;align-items:flex-end;gap:6px;height:150px;border-bottom:1px solid var(--line);padding-top:6px}
+  .empty{text-align:center;color:var(--muted);padding:34px 10px}
+  .back{display:inline-flex;align-items:center;gap:4px;background:none;border:0;color:var(--navy);font:inherit;font-weight:700;font-size:14px;padding:0 0 12px;cursor:pointer}
+  .dbox{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;background:#fafcfd}
+  .xrow{display:flex;gap:6px;margin:6px 0}.xrow input:first-child{flex:1;min-width:0}.xrow input[type=number]{width:100px}.xrow button{border:1px solid var(--line);background:#fff;border-radius:10px;width:42px;color:var(--red);cursor:pointer}
+  .sugg{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:6px}.sugg button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:9px 12px;font:inherit;cursor:pointer}.sugg small{display:block;color:var(--muted);font-size:12px}
+  a.hist{display:block;padding:8px 0;border-bottom:1px solid var(--line);color:var(--navy);text-decoration:none}
+  .acw{position:relative}.acl{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh2);z-index:6;overflow:hidden}
+  .acl button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:9px 12px;font:inherit;cursor:pointer}.acl small{display:block;color:var(--muted);font-size:12px}
+  .hist div{font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .srch{display:flex;gap:8px;margin-bottom:12px}.srch input{flex:1;min-width:0}.srch select{width:auto;flex:0 0 auto}
+  .login{max-width:400px;margin:0 auto;padding:12vh 16px 40px}
+  .login .logo{display:flex;justify-content:center;margin-bottom:22px}.login .logo img{height:44px}
+
+  /* ---------- booking rows ---------- */
+  .item{display:grid;grid-template-columns:minmax(0,1fr) 170px 110px 128px;gap:14px;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 16px;margin-bottom:8px;color:inherit;font:inherit;cursor:pointer;box-shadow:var(--sh);transition:border-color .12s,box-shadow .12s}
+  .item:hover{border-color:#b9c8d4;box-shadow:0 4px 14px rgba(13,42,63,.08)}
+  .item b{font-size:15.5px}
+  .item .when{font-size:13.5px;font-weight:600;color:#33434f}.item .when small{display:block;font-weight:500;color:var(--muted);font-size:12.5px}
+  .item .price{font-weight:800;text-align:right;white-space:nowrap}
+  .item .crew{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  /* rows switch to a compact layout whenever their column is narrow (half-width columns, phones) */
+  .cols>div,#items{container-type:inline-size;min-width:0}
+  @container (max-width:720px){
+    .item{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:12px 14px}
+    .item .when{grid-row:2;grid-column:1/-1}.item .when small{display:inline;margin-left:6px}
+    .item .price{grid-row:3;grid-column:1;text-align:left;font-weight:700;font-size:14px}
+    .item .st{grid-row:1;grid-column:2}
+  }
+
+  /* ---------- today ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+  @media (max-width:899px){.kpis{grid-template-columns:1fr 1fr;gap:8px}}
+  .kpi{border-radius:16px;padding:14px 16px;color:#fff;text-decoration:none;display:block}.kpi small{display:block;font-size:12.5px;opacity:.92;font-weight:600}.kpi b{font-size:26px;line-height:1.25}
+  .kpi.lt{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:var(--sh)}.kpi.lt small{color:var(--muted);opacity:1}
+  .kpi.alert{border-color:#ffd6a8;background:#fff8f0}.kpi.alert b{color:#c2560a}
+
+  /* ---------- today: to-do and staff ---------- */
+  .todo-g{margin-bottom:12px}.todo-g:last-child{margin-bottom:0}
+  .todo-h{font-weight:800;font-size:13.5px;color:#33434f;margin:2px 0 4px;display:flex;align-items:center;gap:8px}
+  .todo{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+  .todo a{flex:1;min-width:0;text-decoration:none;color:var(--ink)}.todo a b{display:block;font-size:14.5px}.todo a small{display:block;color:var(--muted);font-size:12.5px}
+  .crewday{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+  .crewday>div{border:1px solid var(--line);border-left:4px solid var(--c);border-radius:10px;padding:8px 10px}
+  .crewday b{display:block;font-size:14px}.crewday small{color:var(--green);font-weight:700;font-size:12.5px}
+  .crewday a{display:block;font-size:12.5px;color:var(--ink);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.crewday a:hover{text-decoration:underline}
+
+  /* ---------- planning (booking detail) ---------- */
+  .pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+  .pk{display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line2);background:#fff;border-radius:12px;padding:9px 11px;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
+  .pk i{flex:0 0 auto;width:20px;height:20px;border-radius:6px;border:2px solid var(--line2);display:flex;align-items:center;justify-content:center}
+  .pk span{min-width:0;font-weight:700;font-size:14px;line-height:1.25}.pk small{display:block;font-weight:500;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pk.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 8%,#fff)}
+  .pk.on i{background:var(--c);border-color:var(--c)}.pk.on i::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+  .pk.busy small{color:#a35300}.pk.clash{border-color:var(--red);background:#fff6f5}.pk.clash small{color:var(--red);font-weight:700}
+  .pk.arch{opacity:.7}
+
+  /* ---------- staff ---------- */
+  .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:22px}
+  .tcard{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 16px 14px 20px;box-shadow:var(--sh);overflow:hidden}
+  .tcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+  .tcard .nm{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px}
+  .tcard .nm .tag{margin-left:auto}
+  .tcard .meta{color:var(--muted);font-size:13px;margin-top:2px}
+  .tcard .next{margin-top:10px;font-size:13px;padding-top:10px;border-top:1px solid var(--line)}
+  .tcard .acts{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+  .tcard.off{opacity:.65}
+  .sw{display:flex;gap:8px;flex-wrap:wrap}.sw button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line2);background:var(--c);cursor:pointer}.sw button.on{box-shadow:0 0 0 2.5px var(--navy)}
+  .seg{display:inline-flex;background:#e8edf2;border-radius:12px;padding:3px;gap:2px}.seg button{border:0;background:none;padding:8px 14px;border-radius:9px;font:inherit;font-weight:700;font-size:14px;color:#47525c;cursor:pointer}.seg button.on{background:#fff;color:var(--navy);box-shadow:var(--sh)}
+  .jl{margin-top:10px}.jl a{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px dashed var(--line);font-size:13px;text-decoration:none;color:var(--ink)}
+
+  /* ---------- calendar ---------- */
+  .calbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .cnav{display:inline-flex;gap:4px}.cnav button{border:1px solid var(--line2);background:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;color:var(--navy);cursor:pointer;min-width:40px}
+  .ctitle{font-size:17px;color:var(--navy)}.ctitle::first-letter{text-transform:uppercase}
+  .tg{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}.tg input{width:18px;height:18px;margin:0;accent-color:var(--navy)}
+  @media (max-width:899px){.ctitle{order:5;width:100%}.tg{margin-left:0}}
+  .xs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  /* month */
+  .mon{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+  .mon .h{font-size:12px;color:var(--muted);text-align:center;font-weight:700}
+  .day{min-height:108px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0}
+  .day:hover{border-color:#b9c8d4}.day.out{opacity:.45}.day.sel{border:2px solid var(--navy)}.day.hot{background:#fff4e9;border:2px dashed var(--accent)}
+  .day .dh{display:flex;justify-content:space-between;align-items:center;gap:2px}
+  .day .n{font-size:13px;font-weight:700}.day.today .n{background:var(--navy);color:#fff;border-radius:999px;padding:0 7px}
+  .day .c{font-size:11px;font-weight:800;border-radius:999px;padding:1px 7px;background:#e6f5ec;color:var(--green)}
+  .day .c.mid{background:#fff4e5;color:#8a4b00}.day .c.full{background:#fdecec;color:var(--red)}
+  .mev{font-size:11.5px;font-weight:600;padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--c) 14%,#fff);border-left:3px solid var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+  .mev.pre{background:#fff;border:1px dashed var(--c);border-left:3px solid var(--c)}
+  .mev.lift{opacity:.3}
+  .more{font-size:11px;color:var(--muted);font-weight:600;padding-left:2px}
+  @media (max-width:599px){.mon{gap:3px}.day{min-height:54px;padding:4px 2px;align-items:center}.mev,.more{display:none}.day .dh{flex-direction:column}}
+  /* week */
+  .wk{min-width:700px}
+  .wk-row{display:grid;grid-template-columns:44px repeat(7,minmax(0,1fr))}
+  .wk-h{text-align:center;padding:2px 0 8px;color:var(--muted);font-size:12px;font-weight:600}.wk-h b{display:block;font-size:19px;color:var(--ink);width:34px;height:34px;line-height:34px;margin:1px auto 0;border-radius:999px}
+  .wk-h.today b{color:#fff;background:var(--navy)}.wk-n{display:block;font-size:11px;color:var(--green);font-weight:700}
+  .wk-g{font-size:11px;color:var(--muted);text-align:right;padding-right:6px;line-height:1.1}
+  .wk-ad{border-left:1px solid var(--line);border-top:1px solid var(--line);border-bottom:2px solid var(--line);min-height:38px;padding:3px;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .wk-ad.hot{background:#fff4e9}
+  .wk-times div{position:relative;top:-7px}.wk-times div:first-child{top:0}
+  .wk-col{position:relative;border-left:1px solid var(--line);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px var(--px));min-width:0}
+  .wk-col.today{background-color:#f7fafd}
+  @media (pointer:fine){.wk-col{cursor:cell}}
+  .ev{position:absolute;border-radius:8px;padding:3px 7px;background:color-mix(in srgb,var(--c) 15%,#fff);border-left:4px solid var(--c);color:var(--ink);font-size:12px;line-height:1.25;overflow:hidden;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 1px 2px rgba(13,42,63,.12);z-index:2}
+  .ev:hover{z-index:3;box-shadow:0 3px 10px rgba(13,42,63,.18)}
+  .ev b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ev small{display:block;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ev .ec{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}.ev .ec .who{font-size:10.5px;padding:1px 6px}
+  .ev.pre{background:#fff;border:1.5px dashed var(--c);border-left:4px solid var(--c)}
+  .ev.clash{box-shadow:0 0 0 2px var(--red)}
+  .ev.ad{position:relative;padding:3px 6px}
+  .ev.allday{background-image:repeating-linear-gradient(135deg,transparent 0 6px,rgba(13,42,63,.06) 6px 12px)}
+  .ev.lift{opacity:.3}
+  .ev .rz{position:absolute;left:0;right:0;bottom:0;height:9px;cursor:ns-resize}
+  .ev.tl .rz{left:auto;top:0;width:10px;height:auto;cursor:ew-resize}
+  .ev.ad .rz,.ev.allday .rz{display:none}
+  .drop{position:absolute;left:2px;right:2px;border:2px dashed var(--accent);background:rgba(255,122,26,.13);border-radius:8px;pointer-events:none;z-index:5}
+  .drop span{position:absolute;top:2px;left:4px;font-size:11px;font-weight:800;color:#a34500;background:#fff;border-radius:4px;padding:0 4px;white-space:nowrap}
+  .now{position:absolute;left:0;right:0;height:2px;background:#e5484d;z-index:4;pointer-events:none}.now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:#e5484d}
+  .mghost{position:fixed;z-index:50;pointer-events:none;box-shadow:var(--sh2);transform:rotate(-2deg);opacity:.95}
+  /* staff timeline */
+  .tl{width:max-content;min-width:100%}
+  .tl-row{display:grid;grid-template-columns:160px var(--w);border-bottom:1px solid var(--line)}
+  .tl-name{position:sticky;left:0;z-index:6;background:#fff;padding:9px 10px 9px 12px;border-right:1px solid var(--line);box-shadow:inset 4px 0 0 var(--c,transparent);min-width:0}
+  .tl-name b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tl-name small{color:var(--muted);font-size:11.5px;white-space:nowrap}
+  .tl-track{position:relative;background-image:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px var(--pxh));min-height:50px}
+  .tl-head .tl-track{height:28px;min-height:0;background:none}.tl-head span{position:absolute;top:6px;font-size:11px;color:var(--muted);transform:translateX(-50%)}.tl-head span:first-child{transform:none;padding-left:3px}
+  .tl-row.un .tl-name{background:#fafbfc}.tl-row.un{background:#fafbfc}
+  .ev.tl{padding:3px 8px}
+  @media (max-width:899px){.tl-row{grid-template-columns:108px var(--w)}.tl-name{padding:8px 6px 8px 10px}}
+  #toast button{margin-left:auto;flex:0 0 auto;background:none;border:1px solid #47637a;color:#ffb27a;border-radius:999px;padding:5px 12px;font:inherit;font-weight:800;cursor:pointer}
+  /* ---------- statistics ---------- */
+  .bars{display:flex;align-items:flex-end;gap:6px;height:160px;border-bottom:1px solid var(--line);padding-top:6px}
   .bars .m{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:2px;height:100%}
   .bars .m i{display:block;width:30%;border-radius:4px 4px 0 0;min-height:1px}
   .blab{display:flex;gap:6px}.blab span{flex:1;text-align:center;font-size:11px;color:var(--muted);padding-top:4px}
   .leg{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
   .hbar{height:8px;border-radius:4px;background:#eef2f5;overflow:hidden;margin:4px 0 10px}.hbar i{display:block;height:100%;background:var(--accent)}
-  .empty{text-align:center;color:var(--muted);padding:30px 10px}
-  .login{max-width:380px;margin:60px auto;padding:0 14px}
-  a{color:var(--navy)}
 </style>
 </head>
-<body>
-<header><span class="logo">FX</span><b>Bokningar</b><button id="bell" hidden aria-label="Notiser">🔔<span id="bellN" hidden></span></button><button id="logout" hidden>Logga ut</button></header>
+<body class="out">
+<nav id="side" aria-label="Meny">
+  <a class="brand" href="#"><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"></a>
+  <a class="nav" href="#" data-v="today"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Idag</a>
+  <a class="nav" href="#bokningar" data-v="list"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Bokningar<span class="ct" id="ctNew" hidden></span></a>
+  <a class="nav" href="#kalender" data-v="cal"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalender</a>
+  <a class="nav" href="#personal" data-v="team"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.9.8 3.1 2.5 3.5 5.2"/></svg><span>Personal<span class="lbl-long"> och fordon</span></span><span class="ct" id="ctCrew" hidden></span></a>
+  <a class="nav" href="#statistik" data-v="stat"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistik</a>
+  <a class="newbtn" href="#ny"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Ny bokning</span></a>
+  <div class="side-foot"><button id="logout"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Logga ut</button></div>
+</nav>
+<div id="wrap">
+  <header id="top"><h1 id="title">Idag</h1>
+    <button class="ib" id="bell" aria-label="Notiser"><svg class="i" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span id="bellN" hidden></span></button>
+    <button class="ib" id="mlogout" aria-label="Logga ut"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg></button>
+  </header>
+  <div id="root"></div>
+</div>
 <div id="npanel" hidden></div><div id="toast" hidden></div>
-<div id="root"></div>
 <script src="/price-calc.js"></script>
+<script src="/fx-schedule.js"></script>
 <script>
 (function(){
   const $=(s,el=document)=>el.querySelector(s);
@@ -106,9 +275,18 @@
   const timeOpts=(cur)=>'<option value="">Ingen tid</option>'+TIMES.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('')+(cur&&!TIMES.includes(cur)?`<option selected>${cur}</option>`:'');
   const fmtTs=(t)=>t?new Date(t).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'}):'';
   const today=()=>new Date().toLocaleDateString('sv-SE');
+  const addDays=(d,n)=>{ const x=new Date(d+'T12:00:00Z'); x.setUTCDate(x.getUTCDate()+n); return x.toISOString().slice(0,10); };
+  const resById=(id)=>res.find(r=>r.id===id);
+  const whoChip=(r)=>`<span class="who${r.kind==='vehicle'?' v':''}" style="--c:${esc(r.color)}">${esc(r.name)}</span>`;
+  const crewChips=(b)=>(b.crew||[]).map(resById).filter(Boolean).sort((x,y)=>x.kind.localeCompare(y.kind)).map(whoChip).join('');
+  const whenTxt=(b)=>{ const s=S.span(b); return !s?'':s.allDay?'Ingen starttid':S.fmtMin(s.start)+'–'+S.fmtMin(s.end); };
+  const fmtH=(h)=>String(h).replace('.',',')+' tim';
   const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
   const root=$('#root');
-  let all=[], view='list', filter='active', calMonth=today().slice(0,7), calDay=null, q='', sortBy='created', statPeriod='12';
+  const S=window.FXSchedule;
+  let newPrefill=null, lastNav='';
+  let res=[], teamKind='person', teamEdit=null, showArch=false, openRes=null;
+  let all=[], view='today', filter='active', calMonth=today().slice(0,7), calDay=null, q='', sortBy='created', statPeriod='12';
 
   async function api(path,opt={}){
     const r=await fetch(path,{...opt,headers:{'Content-Type':'application/json',...(opt.headers||{})}});
@@ -121,13 +299,13 @@
   // ---------- login ----------
   async function start(){
     const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
-    if(s.admin){ $('#logout').hidden=false; $('#bell').hidden=false; await load(); route(); startNotices(); }
+    if(s.admin){ document.body.classList.remove('out'); await load(); route(); startNotices(); }
     else showLogin(s.setup);
   }
   function showLogin(setup){
-    $('#logout').hidden=true; if($('#bell')) $('#bell').hidden=true;
+    document.body.classList.add('out'); view='login';
     const miss=setup?[!setup.password&&'Lösenord (ADMIN_PASSWORD)',!setup.storage&&'Lagring (Upstash Redis)',!setup.mail&&'E-post (SMTP)'].filter(Boolean):[];
-    root.innerHTML=`<div class="login"><div class="card"><h3 style="font-size:20px">Logga in</h3>
+    root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><div class="card"><h3 style="font-size:20px">Logga in i admin</h3>
       ${miss.length?`<div class="warn">Saknas i Vercel: ${esc(miss.join(', '))}</div>`:''}
       <label class="f" for="pw">Lösenord</label><input id="pw" type="password" autocomplete="current-password">
       <button class="btn" id="go">Logga in</button><div class="err" id="err"></div></div></div>`;
@@ -138,9 +316,20 @@
     };
     $('#go').onclick=go; $('#pw').onkeydown=(e)=>{ if(e.key==='Enter') go(); };
   }
-  $('#logout').onclick=async()=>{ await fetch('/api/admin/login',{method:'DELETE'}); location.hash=''; showLogin(); };
+  const logout=async()=>{ await fetch('/api/admin/login',{method:'DELETE'}); location.hash=''; showLogin(); };
+  $('#logout').onclick=logout; $('#mlogout').onclick=()=>{ if(confirm('Logga ut?')) logout(); };
 
-  async function load(){ const j=await api('/api/admin/bookings'); all=j.bookings||[]; updateBell(); }
+  async function load(){
+    const [j,t]=await Promise.all([api('/api/admin/bookings'),api('/api/admin/team').catch(()=>({resources:res}))]);
+    all=j.bookings||[]; res=t.resources||[]; updateBell(); updateCounts();
+  }
+  // Sidebar badges: new requests, and booked jobs in the next 14 days that have nobody assigned.
+  const needsCrew=(b)=>b.status==='signed'&&b.date&&b.date>=today()&&b.date<=addDays(today(),14)&&!(b.crew||[]).length;
+  function updateCounts(){
+    const set=(id,n)=>{ const e=$(id); e.hidden=!n; e.textContent=n>99?'99+':String(n); };
+    set('#ctNew',all.filter(b=>b.status==='new').length);
+    set('#ctCrew',all.filter(needsCrew).length);
+  }
 
   // ---------- notices (only inside this page) ----------
   // Built from the bookings themselves: the customer opened, signed or declined the offer.
@@ -161,7 +350,7 @@
     const bell=$('#bell'); if(!bell) return;
     const n=events().filter(e=>e.t>getSeen()).length, c=$('#bellN');
     c.hidden=!n; c.textContent=n>9?'9+':String(n);
-    document.title=(n?`(${n}) `:'')+'Bokningar – FX Flytt';
+    document.title=(n?`(${n}) `:'')+'Admin – FX Flytt';
   }
   function toast(msg,id){
     const t=$('#toast'); t.textContent=msg; t.hidden=false; t.onclick=()=>{ t.hidden=true; if(id) location.hash=id; };
@@ -184,7 +373,7 @@
       try{ await load(); }catch(_){ return; }
       const fresh=events().filter(e=>e.t>newestSeenInSession);
       if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].ic} ${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,fresh[0].id);
-        if(view==='list'&&document.activeElement?.id!=='q') showList(); }
+        if(view==='list'&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); else if(view==='cal'&&!dragging) showCal(); }
     },30000);
   }
   const signedOn=(d)=>all.filter(b=>(b.status==='signed'||b.status==='done')&&b.date===d);
@@ -196,13 +385,21 @@
     if(id==='ny') return showNew();
     if(id==='kalender') return showCal();
     if(id==='statistik') return showStats();
-    return showList();
+    if(id==='personal') return showTeam();
+    if(id==='bokningar') return showList();
+    return showToday();
   }
   window.addEventListener('hashchange',()=>{ Promise.resolve().then(route).catch(()=>{}); });
-  function navBar(active){
-    return `<nav><button data-v="" class="${active==='list'?'on':''}">Förfrågningar</button><button data-v="kalender" class="${active==='cal'?'on':''}">Kalender</button><button data-v="statistik" class="${active==='stat'?'on':''}">Statistik</button><button data-v="ny" class="${active==='new'?'on':''}">+ Ny</button></nav>`;
+  // Marks the menu item and sets the page title. Returns '' so the views can keep `navBar(x)+…`.
+  const TITLES={today:'Idag',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny bokning'};
+  function navBar(active,title){
+    document.querySelectorAll('#side a.nav').forEach(a=>a.classList.toggle('on',a.dataset.v===active));
+    $('#title').textContent=title||TITLES[active]||'';
+    document.body.className=title?'v-detail':'v-'+active;
+    const key=active+'|'+(title||''); if(key!==lastNav){ window.scrollTo(0,0); lastNav=key; }
+    return '';
   }
-  function bindNav(){ root.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.v; }); }
+  function bindNav(){}
 
   // ---------- list ----------
   // An offer that was sent but not answered counts as expired ("förfallen") after 14 days, or when the moving day has come.
@@ -212,9 +409,11 @@
   function itemHtml(b){
     const o=b.offer, d=b.data||{};
     const route=[d.from,d.to].filter(Boolean).map(x=>String(x).split(',')[0]).join(' → ');
-    return `<button class="item" data-id="${esc(b.id)}"><div class="top"><b>${esc(d.name)}</b><span class="st ${b.status}">${ST[b.status]}</span></div>
-      <div class="muted">${esc(fmtDate(b.date))}${b.time?' '+esc(b.time):''} · ${esc(route||d.size||'')}</div>
-      <div class="muted">${o?kr(o.total):'Inget pris'} · ${esc(b.id)} · ${b.source==='web'?'Hemsidan':'Manuell'}</div>${tags(b)}</button>`;
+    const crew=crewChips(b), w=whenTxt(b);
+    const t=tags(b)+(needsCrew(b)?'<div class="tags"><span class="tag wn">Saknar personal</span></div>':'');
+    return `<button class="item" data-id="${esc(b.id)}"><div><b>${esc(d.name)}</b><div class="muted">${esc(route||d.size||'')} · ${esc(b.id)}${b.source==='web'?'':' · manuell'}</div>${crew?`<div class="crew">${crew}</div>`:''}${t}</div>
+      <div class="when">${esc(fmtDate(b.date))}${b.date?`<small>${esc(w)}</small>`:''}</div>
+      <div class="price">${o?kr(o.total):'<span class="muted">Inget pris</span>'}</div><span class="st ${b.status}">${ST[b.status]}</span></button>`;
   }
   const WHY={price:'Priset är för högt',other_company:'Valt en annan flyttfirma',date:'Datumet passar inte',no_move:'Flyttar inte längre',other:'Annat'};
   function tags(b){
@@ -232,7 +431,7 @@
     root.innerHTML=navBar('list')+`<main><div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortBy==='created'?' selected':''}>Senaste</option><option value="date"${sortBy==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortBy==='price'?' selected':''}>Pris</option></select></div>
       <div class="chips">${Object.entries(FILTERS).map(([k,v])=>`<button data-f="${k}" class="${k===filter?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
       <div id="items"></div>
-      <button class="btn gray" id="reload">Uppdatera</button></main>`;
+      <button class="btn gray sm" id="reload" style="margin-top:6px">Uppdatera</button></main>`;
     bindNav();
     const fill=()=>{
       const f=FILTERS[filter]||FILTERS.active;
@@ -309,32 +508,228 @@
   }
 
   // ---------- calendar ----------
+  // Three views on the same jobs:
+  //   Månad    – overview, drag a job to another day
+  //   Vecka    – hours, drag to move (day + time), drag the bottom edge to change the length
+  //   Personal – one day, one row per person/vehicle; drag along the row to change the time,
+  //              to another row to swap who does the job, the right edge to change the length
+  // Dragging works with the mouse and, on phones, by holding a job for a moment first.
+  const lsGet=(k,d)=>{ try{ return localStorage.getItem(k)??d; }catch(_){ return d; } };
+  const lsSet=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(_){} };
+  let calView=lsGet('fx_calview','week'), calDate=today(), showPre=lsGet('fx_calpre','1')==='1', dragging=false, justDragged=false, lastCalView='';
+  const OPEN=S.OPEN, CLOSE=S.CLOSE, HOURS=(CLOSE-OPEN)/60;
+  const snap=(m)=>Math.round(m/30)*30;
+  const clampStart=(m)=>Math.min(18*60,Math.max(OPEN,m));          // the server accepts 07:00–18:00
+  const onCal=(b)=>b.date&&!S.INACTIVE.includes(b.status)&&(booked(b)||showPre);
+  const colorOf=(b)=>{ const p=(b.crew||[]).map(resById).find(r=>r&&r.kind==='person'); return p?p.color:'#7a8b99'; };
+  const byIdB=(id)=>all.find(x=>x.id===id);
+  const weekStart=(d)=>addDays(d,-((new Date(d+'T12:00:00Z').getUTCDay()+6)%7));
+  const isoWeek=(d)=>{ const x=new Date(d+'T12:00:00Z'), w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w+3); const f=new Date(Date.UTC(x.getUTCFullYear(),0,4)); return 1+Math.round(((x-f)/864e5-3+((f.getUTCDay()+6)%7))/7); };
+  const dfmt=(d,o)=>new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{timeZone:'UTC',...o});
+  const town=(a)=>String(a||'').split(',').pop().replace(/\d/g,'').trim();
+  const evInner=(b,s)=>`<b>${s&&!s.allDay?S.fmtMin(s.start)+' ':''}${esc((b.data||{}).name||b.id)}</b><small>${esc([b.data?.from,b.data?.to].filter(Boolean).map(town).join(' → '))}</small>`;
+  // Side-by-side columns for overlapping jobs: sets .lane and .n (lanes in its overlap group).
+  function lanes(items){
+    const out=[]; let group=[], end=-1;
+    const flush=()=>{ const cols=[]; for(const it of group){ let i=cols.findIndex(e=>e<=it.s.start); if(i<0){ i=cols.length; cols.push(0); } cols[i]=it.s.end; it.lane=i; } group.forEach(it=>it.n=cols.length); out.push(...group); group=[]; };
+    for(const it of items.sort((x,y)=>x.s.start-y.s.start||y.s.end-x.s.end)){ if(group.length&&it.s.start>=end) flush(); group.push(it); end=Math.max(end,it.s.end); }
+    if(group.length) flush(); return out;
+  }
+
+  function notify(msg,undo){
+    const t=$('#toast'); t.innerHTML=`<span>${esc(msg)}</span>${undo?'<button type="button" id="undo">Ångra</button>':''}`; t.hidden=false; t.onclick=()=>{ t.hidden=true; };
+    if(undo) $('#undo').onclick=(e)=>{ e.stopPropagation(); t.hidden=true; undo(); };
+    clearTimeout(toast.h); toast.h=setTimeout(()=>{ t.hidden=true; },8000);
+  }
+
+  // Saves a drag. Shows the result at once, rolls back on error, offers "Ångra".
+  async function moveJob(b,changes,what,noAsk){
+    const cur=(k)=>k==='crew'?(b.crew||[]):k==='durationH'?(b.durationH??null):(b[k]||'');
+    const ch={}; for(const k in changes) if(JSON.stringify(changes[k])!==JSON.stringify(cur(k))) ch[k]=changes[k];
+    if(!Object.keys(ch).length){ showCal(); return; }
+    if(!noAsk&&b.status==='signed'&&('date' in ch||'time' in ch)&&!confirm(`${(b.data||{}).name} har redan signerat offerten (${fmtDate(b.date)}${b.time?' '+b.time:''}).\n\nFlytta ändå? Prata med kunden.`)){ showCal(); return; }
+    const before={}; for(const k in ch) before[k]=cur(k);
+    const i=all.findIndex(x=>x.id===b.id), old=all[i], opt={...b};
+    for(const k in ch) opt[k]=k==='time'?(ch.time||undefined):k==='durationH'?(ch.durationH??undefined):ch[k];
+    all[i]=opt; showCal();
+    try{
+      const {conflicts,...nb}=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(ch)});
+      const j=all.findIndex(x=>x.id===b.id); if(j>=0) all[j]=nb; updateCounts(); if(view==='cal'&&!dragging) showCal();
+      const who=[...new Set((conflicts||[]).map(c=>c.name))];
+      notify(who.length?`${what} – men ${who.join(', ')} är dubbelbokad`:`${what} ✓`,()=>moveJob(nb,before,'Ångrat',true));
+    }catch(e){ const j=all.findIndex(x=>x.id===b.id); if(j>=0) all[j]=old; if(view==='cal') showCal(); notify(e.message); }
+  }
+
+  // Pointer-based drag: mouse starts after a few pixels, touch after holding ~0.3 s (so the page still scrolls).
+  document.addEventListener('touchmove',(e)=>{ if(dragging) e.preventDefault(); },{passive:false});
+  function enableDrag(scope,h){
+    scope.querySelectorAll('[data-drag]').forEach(el=>{
+      el.addEventListener('contextmenu',(e)=>e.preventDefault());
+      el.addEventListener('pointerdown',(e)=>{
+        if(e.button>0) return;
+        const touch=e.pointerType!=='mouse', sx=e.clientX, sy=e.clientY, rz=!!e.target.closest('[data-rz]');
+        let ctx=null, timer=null, lx=sx, ly=sy;
+        if(!touch) e.preventDefault();
+        const off=()=>{ clearTimeout(timer); document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); document.removeEventListener('pointercancel',cancel); };
+        const begin=()=>{ ctx=h.start(el,{x:sx,y:sy,resize:rz}); if(!ctx) return off(); dragging=true; el.classList.add('lift'); if(touch&&navigator.vibrate) navigator.vibrate(12); h.move(ctx,lx,ly); };
+        const mv=(ev)=>{ lx=ev.clientX; ly=ev.clientY;
+          if(!ctx){ const d=Math.hypot(lx-sx,ly-sy); if(touch){ if(d>8) off(); } else if(d>4) begin(); return; }
+          ev.preventDefault(); edgeScroll(lx,ly); h.move(ctx,lx,ly); };
+        const up=()=>{ off(); if(!ctx) return; dragging=false; justDragged=true; setTimeout(()=>{ justDragged=false; },250); h.drop(ctx); };
+        const cancel=()=>{ off(); if(!ctx) return; dragging=false; h.cancel(ctx); };
+        if(touch) timer=setTimeout(begin,300);
+        document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up); document.addEventListener('pointercancel',cancel);
+      });
+    });
+  }
+  function edgeScroll(x,y){
+    const xs=root.querySelector('.xs');
+    if(xs){ const r=xs.getBoundingClientRect(); if(x<r.left+40) xs.scrollLeft-=14; else if(x>r.right-40) xs.scrollLeft+=14; }
+    if(y<90) window.scrollBy(0,-14); else if(y>innerHeight-90) window.scrollBy(0,14);
+  }
+  const clearDrop=()=>{ root.querySelectorAll('.drop').forEach(x=>x.remove()); root.querySelectorAll('.hot').forEach(x=>x.classList.remove('hot')); };
+  const dropBox=(parent,style,label)=>{ const d=document.createElement('div'); d.className='drop'; d.style.cssText=style; d.innerHTML=`<span>${esc(label)}</span>`; parent.appendChild(d); };
+  const hit=(sel,x,y,useX=true)=>[...root.querySelectorAll(sel)].find(c=>{ const r=c.getBoundingClientRect(); return (!useX||(x>=r.left&&x<r.right))&&y>=r.top&&y<r.bottom; });
+  const rangeTxt=(s,dur)=>S.fmtMin(s)+'–'+S.fmtMin(s+dur);
+
   function showCal(){
     view='cal';
-    const [y,m]=calMonth.split('-').map(Number);
-    const first=new Date(Date.UTC(y,m-1,1)), startDow=(first.getUTCDay()+6)%7;
-    const days=[]; for(let i=-startDow;i<42-startDow;i++){ const d=new Date(Date.UTC(y,m-1,1+i)); days.push(d.toISOString().slice(0,10)); }
-    const title=first.toLocaleDateString('sv-SE',{month:'long',year:'numeric',timeZone:'UTC'});
-    const t=today();
-    const cells=days.map(d=>{
-      const n=signedOn(d).length, p=all.filter(b=>b.status==='sent'&&b.date===d).length;
-      const cls=n>=CAP?'full':n>=CAP-3?'mid':'';
-      return `<button data-d="${d}" class="${d.slice(0,7)!==calMonth?'out':''} ${d===t?'today':''}"><span class="n">${Number(d.slice(8))}</span>${n?`<span class="c ${cls}">${n}</span>`:'<span></span>'}${p?`<span class="p">${p} väntar</span>`:'<span></span>'}</button>`;
-    }).join('');
-    let dayList='';
-    if(calDay){
-      const list=all.filter(b=>b.date===calDay&&!['declined','cancelled'].includes(b.status)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-      const n=signedOn(calDay).length;
-      dayList=`<div class="card"><h3>${esc(fmtDate(calDay))} – ${n} bokade av max ${CAP}</h3>${n>=CAP?'<div class="warn">Dagen är full.</div>':''}${list.length?list.map(itemHtml).join(''):'<div class="muted">Inga bokningar.</div>'}</div>`;
+    const t=today(), keepX=lastCalView===calView?(root.querySelector('.xs')?.scrollLeft||0):null;
+    let title='', body='', handlers=null;
+    const fine=matchMedia('(pointer:fine)').matches, small=matchMedia('(max-width:899px)').matches;
+
+    if(calView==='month'){
+      const [y,m]=calDate.slice(0,7).split('-').map(Number);
+      const first=new Date(Date.UTC(y,m-1,1)), startDow=(first.getUTCDay()+6)%7, mk=calDate.slice(0,7);
+      const days=[]; for(let i=-startDow;i<42-startDow;i++) days.push(new Date(Date.UTC(y,m-1,1+i)).toISOString().slice(0,10));
+      title=first.toLocaleDateString('sv-SE',{month:'long',year:'numeric',timeZone:'UTC'});
+      const cells=days.map(d=>{
+        const list=all.filter(b=>onCal(b)&&b.date===d).sort(byTime), n=signedOn(d).length, cls=n>=CAP?'full':n>=CAP-3?'mid':'';
+        return `<div class="day${d.slice(0,7)!==mk?' out':''}${d===t?' today':''}${d===calDay?' sel':''}" data-d="${d}"><div class="dh"><span class="n">${Number(d.slice(8))}</span>${n?`<span class="c ${cls}">${n}</span>`:''}</div>
+          ${list.slice(0,3).map(b=>`<div class="mev${booked(b)?'':' pre'}" data-drag data-id="${esc(b.id)}" style="--c:${esc(colorOf(b))}">${b.time?esc(b.time)+' ':''}${esc((b.data||{}).name||'')}</div>`).join('')}${list.length>3?`<div class="more">+${list.length-3} till</div>`:''}</div>`;
+      }).join('');
+      let dayList='';
+      if(calDay){
+        const list=all.filter(b=>b.date===calDay&&!S.INACTIVE.includes(b.status)).sort(byTime), n=signedOn(calDay).length;
+        dayList=`<div class="card" style="margin-top:16px"><h3>${esc(fmtDate(calDay))} <span class="sub">${n} bokade av max ${CAP}</span></h3>${n>=CAP?'<div class="warn">Dagen är full.</div>':''}<div id="items">${list.length?list.map(itemHtml).join(''):'<div class="muted">Inga bokningar.</div>'}</div></div>`;
+      }
+      body=`<div class="card" style="padding:12px"><div class="mon">${['Mån','Tis','Ons','Tor','Fre','Lör','Sön'].map(x=>`<div class="h">${x}</div>`).join('')}${cells}</div>
+        <p class="muted" style="margin:10px 2px 0">Siffran = bokade jobb (orange nästan fullt, röd fullt ${CAP}). Streckade = offert ej signerad. Dra ett jobb till en annan dag för att flytta det.</p></div>${dayList}`;
+      handlers={
+        start(el,p){ const b=byIdB(el.dataset.id); if(!b) return null; const r=el.getBoundingClientRect(); const g=el.cloneNode(true); g.classList.add('mghost'); g.style.width=r.width+'px'; document.body.appendChild(g); return {b,g,ox:p.x-r.left,oy:p.y-r.top}; },
+        move(c,x,y){ c.g.style.left=(x-c.ox)+'px'; c.g.style.top=(y-c.oy)+'px'; clearDrop(); const cell=hit('.day',x,y); if(cell) cell.classList.add('hot'); c.to=cell?cell.dataset.d:null; },
+        drop(c){ c.g.remove(); clearDrop(); if(!c.to) return showCal(); moveJob(c.b,{date:c.to},'Flyttad till '+dfmt(c.to,{weekday:'short',day:'numeric',month:'short'})); },
+        cancel(c){ c.g.remove(); clearDrop(); showCal(); },
+      };
     }
-    root.innerHTML=navBar('cal')+`<main><div class="calhead"><button id="prev">‹</button><b style="text-transform:capitalize">${esc(title)}</b><button id="next">›</button></div>
-      <div class="cal">${['Mån','Tis','Ons','Tor','Fre','Lör','Sön'].map(x=>`<div class="h">${x}</div>`).join('')}${cells}</div>
-      <p class="muted">Grön siffra = bokade (signerade). Orange = nästan fullt, röd = fullt (${CAP}). Blå = offerter som väntar på signatur.</p>${dayList}</main>`;
-    bindNav();
-    const shift=(k)=>{ const d=new Date(Date.UTC(y,m-1+k,1)); calMonth=d.toISOString().slice(0,7); calDay=null; showCal(); };
-    $('#prev').onclick=()=>shift(-1); $('#next').onclick=()=>shift(1);
-    root.querySelectorAll('.cal button').forEach(b=>b.onclick=()=>{ calDay=b.dataset.d; showCal(); });
-    root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.id; });
+
+    if(calView==='week'){
+      const ws=weekStart(calDate), days=[...Array(7)].map((_,i)=>addDays(ws,i)), PX=46;
+      title=`v. ${isoWeek(ws)} · ${dfmt(ws,{day:'numeric',month:'short'})} – ${dfmt(days[6],{day:'numeric',month:'short',year:'numeric'})}`;
+      const nowMin=new Date().getHours()*60+new Date().getMinutes();
+      const head=days.map(d=>{ const n=signedOn(d).length; return `<div class="wk-h${d===t?' today':''}"><small>${esc(dfmt(d,{weekday:'short'}))}</small><b>${Number(d.slice(8))}</b>${n?`<small class="wk-n">${n} jobb</small>`:''}</div>`; }).join('');
+      const ad=days.map(d=>`<div class="wk-ad" data-d="${d}">${all.filter(b=>onCal(b)&&b.date===d&&!b.time).map(b=>`<div class="ev ad${booked(b)?'':' pre'}" data-drag data-id="${esc(b.id)}" style="--c:${esc(colorOf(b))}">${evInner(b,null)}</div>`).join('')}</div>`).join('');
+      const cols=days.map(d=>{
+        const items=lanes(all.filter(b=>onCal(b)&&b.date===d&&b.time).map(b=>({b,s:S.span(b)})));
+        return `<div class="wk-col${d===t?' today':''}" data-d="${d}" style="height:${HOURS*PX}px">${d===t&&nowMin>OPEN&&nowMin<CLOSE?`<div class="now" style="top:${(nowMin-OPEN)/60*PX}px"></div>`:''}${items.map(({b,s,lane,n})=>{
+          const top=(s.start-OPEN)/60*PX, h=Math.max(24,(Math.min(s.end,CLOSE)-s.start)/60*PX), clash=S.conflicts(b,all,res).length;
+          return `<div class="ev${booked(b)?'':' pre'}${clash?' clash':''}" data-drag data-id="${esc(b.id)}" title="${clash?'Dubbelbokad personal/fordon':''}" style="top:${top}px;height:${h}px;left:calc(${lane*100/n}% + 2px);width:calc(${100/n}% - 4px);--c:${esc(colorOf(b))}">${evInner(b,s)}${h>58?`<div class="ec">${crewChips(b)}</div>`:''}<i class="rz" data-rz></i></div>`;
+        }).join('')}</div>`;
+      }).join('');
+      const gut=[...Array(HOURS)].map((_,i)=>`<div style="height:${PX}px">${String(OPEN/60+i).padStart(2,'0')}</div>`).join('');
+      body=`<div class="card" style="padding:12px 12px 16px"><div class="xs"><div class="wk" style="--px:${PX}px">
+        <div class="wk-row"><div></div>${head}</div>
+        <div class="wk-row"><div class="wk-g" style="padding-top:8px">Ingen tid</div>${ad}</div>
+        <div class="wk-row"><div class="wk-g wk-times">${gut}</div>${cols}</div></div></div>
+        <p class="muted" style="margin:12px 2px 0">Dra ett jobb för att flytta det, dra nederkanten för att ändra längden.${fine?' Klicka på en tom tid för att skapa en ny bokning.':' Håll kvar fingret på ett jobb för att dra det.'} Röd ram = någon är dubbelbokad.</p></div>`;
+      handlers={
+        start(el,p){ const b=byIdB(el.dataset.id); if(!b) return null; const s=S.span(b), r=el.getBoundingClientRect(); return {b,s,resize:p.resize&&!!b.time,offY:b.time?p.y-r.top:12,dur:Math.round(S.hoursOf(b)*60)}; },
+        move(c,x,y){
+          clearDrop();
+          if(c.resize){ const col=root.querySelector(`.wk-col[data-d="${c.b.date}"]`), r=col.getBoundingClientRect(); const dur=Math.max(60,Math.min(14*60,snap(OPEN+(y-r.top)/PX*60)-c.s.start)); c.res={dur}; dropBox(col,`top:${(c.s.start-OPEN)/60*PX}px;height:${dur/60*PX}px`,rangeTxt(c.s.start,dur)+' · '+fmtH(dur/60)); return; }
+          const tg=hit('.wk-col,.wk-ad',x,y); if(!tg){ c.res=null; return; }
+          if(tg.classList.contains('wk-ad')){ tg.classList.add('hot'); c.res={date:tg.dataset.d}; return; }
+          const r=tg.getBoundingClientRect(), start=clampStart(snap(OPEN+(y-c.offY-r.top)/PX*60));
+          c.res={date:tg.dataset.d,start}; dropBox(tg,`top:${(start-OPEN)/60*PX}px;height:${Math.max(24,c.dur/60*PX)}px`,rangeTxt(start,c.dur));
+        },
+        drop(c){ clearDrop(); const r=c.res; if(!r) return showCal();
+          if(c.resize) return moveJob(c.b,{durationH:r.dur/60},'Längd '+fmtH(r.dur/60));
+          const ch={date:r.date}; if(r.start!=null) ch.time=S.fmtMin(r.start);
+          moveJob(c.b,ch,'Flyttad till '+dfmt(r.date,{weekday:'short',day:'numeric',month:'short'})+((ch.time||c.b.time)?' '+(ch.time||c.b.time):''));
+        },
+        cancel(){ clearDrop(); showCal(); },
+      };
+      if(fine) setTimeout(()=>root.querySelectorAll('.wk-col').forEach(col=>col.addEventListener('click',(e)=>{
+        if(e.target!==col||justDragged) return; const r=col.getBoundingClientRect();
+        newPrefill={date:col.dataset.d,time:S.fmtMin(clampStart(Math.floor((OPEN+(e.clientY-r.top)/PX*60)/30)*30))}; location.hash='ny';
+      })),0);
+    }
+
+    if(calView==='team'){
+      const d=calDate, PXH=small?60:Math.max(64,Math.floor((Math.min(1200,innerWidth-236)-64-164)/HOURS)), jobs=all.filter(b=>onCal(b)&&b.date===d);
+      title=dfmt(d,{weekday:'long',day:'numeric',month:'long'});
+      const used=new Set(jobs.flatMap(b=>b.crew||[]));
+      const rows=[...res.filter(r=>r.kind==='person'&&(r.active||used.has(r.id))),...res.filter(r=>r.kind==='vehicle'&&(r.active||used.has(r.id)))];
+      const row=(rid,kind,name,sub,color,list,cls)=>{
+        const items=lanes(list.map(b=>({b,s:S.span(b)}))), L=Math.max(1,...items.map(i=>i.n));
+        return `<div class="tl-row${cls||''}" data-r="${esc(rid)}" data-k="${kind}"><div class="tl-name" style="--c:${esc(color)}"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
+          <div class="tl-track" style="height:${L*42+8}px">${items.map(({b,s,lane,n})=>{
+            const left=(s.start-OPEN)/60*PXH, w=Math.max(44,(Math.min(s.end,CLOSE)-s.start)/60*PXH);
+            return `<div class="ev tl${booked(b)?'':' pre'}${n>1&&rid?' clash':''}${s.allDay?' allday':''}" data-drag data-id="${esc(b.id)}" style="left:${left}px;width:${w}px;top:${4+lane*42}px;height:38px;--c:${esc(rid?color:colorOf(b))}">${evInner(b,s)}<i class="rz" data-rz></i></div>`;
+          }).join('')}</div></div>`;
+      };
+      const sub=(list)=>list.length?`${list.length} jobb · ${fmtH(list.reduce((a,b)=>a+S.hoursOf(b),0))}`:'Ledig';
+      const un=jobs.filter(b=>!(b.crew||[]).some(id=>resById(id)?.kind==='person'));
+      const ticks=[...Array(HOURS+1)].map((_,i)=>`<span style="left:${i*PXH}px">${String(OPEN/60+i).padStart(2,'0')}</span>`).join('');
+      body=rows.length?`<div class="card" style="padding:0;overflow:hidden"><div class="xs"><div class="tl" style="--w:${HOURS*PXH}px;--pxh:${PXH}px">
+          <div class="tl-row tl-head"><div class="tl-name"></div><div class="tl-track">${ticks}</div></div>
+          ${un.length?row('','','Ej tilldelade',un.length+' jobb utan personal','#9aa8b4',un,' un'):''}
+          ${rows.map(r=>{ const l=jobs.filter(b=>(b.crew||[]).includes(r.id)); return row(r.id,r.kind,r.name+(r.active?'':' (arkiverad)'),sub(l),r.color,l); }).join('')}
+        </div></div></div>
+        <p class="muted" style="margin:12px 2px 0">Dra längs raden för att ändra tid, till en annan rad för att byta vem som gör jobbet, högerkanten för att ändra längden.${fine?'':' Håll kvar fingret på ett jobb för att dra det.'} Röd ram = samma person/fordon på två jobb samtidigt.</p>`
+        :`<div class="card empty">Lägg till personal och fordon först – <a href="#personal">Personal och fordon</a>.</div>`;
+      handlers={
+        start(el,p){ const b=byIdB(el.dataset.id); if(!b) return null; const row=el.closest('.tl-row'), s=S.span(b), r=el.getBoundingClientRect();
+          return {b,s,row,from:row.dataset.r,kind:row.dataset.k,resize:p.resize&&!s.allDay,offX:s.allDay?10:p.x-r.left,dur:Math.round(S.hoursOf(b)*60)}; },
+        move(c,x,y){
+          clearDrop();
+          let row=hit('.tl-row[data-r]',x,y,false)||c.row;
+          const track=()=>row.querySelector('.tl-track');
+          if(c.resize){ row=c.row; const r=track().getBoundingClientRect(); const dur=Math.max(60,Math.min(14*60,snap(OPEN+(x-r.left)/PXH*60)-c.s.start)); c.res={dur}; dropBox(track(),`left:${(c.s.start-OPEN)/60*PXH}px;width:${dur/60*PXH}px;top:4px;height:38px`,fmtH(dur/60)); return; }
+          if(row.dataset.r&&c.kind&&row.dataset.k!==c.kind) row=c.row;       // a person can't become a vehicle
+          const r=track().getBoundingClientRect(), start=clampStart(snap(OPEN+(x-c.offX-r.left)/PXH*60));
+          const to=row.dataset.r, nm=to?resById(to)?.name:'Ej tilldelad';
+          c.res={to,start}; dropBox(track(),`left:${(start-OPEN)/60*PXH}px;width:${Math.max(44,c.dur/60*PXH)}px;top:4px;height:38px`,rangeTxt(start,c.dur)+(to!==c.from?' → '+nm:''));
+        },
+        drop(c){ clearDrop(); const r=c.res; if(!r) return showCal();
+          if(c.resize) return moveJob(c.b,{durationH:r.dur/60},'Längd '+fmtH(r.dur/60));
+          const ch={}, parts=[];
+          if(r.start!==c.s.start||c.s.allDay){ ch.time=S.fmtMin(r.start); parts.push('kl. '+ch.time); }
+          if(r.to!==c.from){ const crew=(c.b.crew||[]).filter(id=>id!==c.from); if(r.to&&!crew.includes(r.to)) crew.push(r.to); ch.crew=crew;
+            parts.unshift((c.from?resById(c.from)?.name:'Ej tilldelad')+' → '+(r.to?resById(r.to)?.name:'ingen')); }
+          moveJob(c.b,ch,((c.b.data||{}).name||'')+': '+parts.join(', '));
+        },
+        cancel(){ clearDrop(); showCal(); },
+      };
+    }
+
+    root.innerHTML=navBar('cal')+`<main><div class="calbar">
+        <div class="seg" id="cv">${[['month','Månad'],['week','Vecka'],['team','Personal']].map(([k,l])=>`<button data-k="${k}" class="${calView===k?'on':''}">${l}</button>`).join('')}</div>
+        <div class="cnav"><button id="prev" aria-label="Föregående">‹</button><button id="tdy">Idag</button><button id="next" aria-label="Nästa">›</button></div>
+        <b class="ctitle">${esc(title)}</b>
+        <label class="tg"><input type="checkbox" id="pre"${showPre?' checked':''}> Visa ej signerade offerter</label></div>
+      ${body}</main>`;
+    lastCalView=calView;
+    const xs=root.querySelector('.xs');
+    if(xs&&keepX!=null) xs.scrollLeft=keepX;
+    else if(xs&&calView==='team'){ const first=Math.min(...[...root.querySelectorAll('.tl-track .ev')].map(e=>e.offsetLeft)); if(isFinite(first)) xs.scrollLeft=Math.max(0,first-40); }
+    root.querySelectorAll('#cv button').forEach(x=>x.onclick=()=>{ calView=x.dataset.k; lsSet('fx_calview',calView); showCal(); });
+    const step=(k)=>{ if(calView==='month'){ const [y,m]=calDate.split('-').map(Number); calDate=new Date(Date.UTC(y,m-1+k,1)).toISOString().slice(0,10); calDay=null; } else calDate=addDays(calDate,calView==='week'?7*k:k); showCal(); };
+    $('#prev').onclick=()=>step(-1); $('#next').onclick=()=>step(1); $('#tdy').onclick=()=>{ calDate=today(); calDay=null; showCal(); };
+    $('#pre').onchange=()=>{ showPre=$('#pre').checked; lsSet('fx_calpre',showPre?'1':'0'); showCal(); };
+    root.querySelectorAll('.day').forEach(c=>c.onclick=()=>{ if(justDragged) return; calDay=c.dataset.d; showCal(); });
+    root.querySelectorAll('[data-id]').forEach(e=>e.addEventListener('click',(ev)=>{ ev.stopPropagation(); if(justDragged) return; location.hash=e.dataset.id; }));
+    if(handlers) enableDrag(root.querySelector('main'),handlers);
   }
 
   // ---------- detail ----------
@@ -343,20 +738,36 @@
     try{ b=await api('/api/admin/bookings?id='+id); const i=all.findIndex(x=>x.id===id); if(i>=0) all[i]=b; else all.unshift(b); }catch(e){ if(!b){ root.innerHTML=navBar('list')+`<main><div class="empty">Bokningen hittades inte.</div></main>`; bindNav(); return; } }
     const d=b.data||{}, o=b.offer;
     const rows=[['Tjänst',d.size],['Från',d.from],['Till',d.to],['Avstånd',d.distanceKm?'ca '+d.distanceKm+' km':''],['Önskat datum',d.date],['Boyta',d.areaM2?d.areaM2+' m²':''],['Bostad',d.home],['Våning (från)',d.floorFrom],['Våning (till)',d.floorTo],['Tillval',(d.extras||[]).join(', ')],['Volym',d.volume?String(d.volume.m3).replace('.',',')+' m³':''],['Meddelande',d.message]];
-    const n=b.date?signedOn(b.date).filter(x=>x.id!==b.id).length:0;
     const locked=b.status==='signed'||b.status==='done';
-    root.innerHTML=navBar('list')+`<main><button class="back" id="back">‹ Tillbaka</button>
+    const DURS=[];for(let h=1;h<=14;h+=.5)DURS.push(h);
+    const est=S.estimateHours(b);
+    root.innerHTML=navBar('list',d.name||b.id)+`<main><button class="back" id="back">‹ Tillbaka</button>
+    <div class="cols"><div>
       <div class="card"><div class="top" style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b style="font-size:20px">${esc(d.name)}</b><span class="st ${b.status}">${ST[b.status]}</span></div>
         <div class="muted">${esc(b.id)} · skapad ${esc(fmtTs(b.createdAt))} · ${b.source==='web'?'från hemsidan':'manuell'}</div>
         <div class="btns" style="margin-top:6px"><a class="btn sec" href="${esc(tel(d.phone))}">Ring ${esc(d.phone)}</a><a class="btn sec" href="sms:${esc(String(d.phone||'').replace(/\s/g,''))}">SMS</a></div>
         ${d.email?`<div class="muted" style="margin-top:8px">E-post: <a href="mailto:${esc(d.email)}">${esc(d.email)}</a></div>`:'<div class="warn">Kunden har ingen e-post – skicka länken via SMS.</div>'}
       </div>
       ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}"${b.signature.pnr?` · Personnr ${esc(b.signature.pnr)}`:''}${b.signature.orgnr?` · Org.nr ${esc(b.signature.orgnr)} (företag)`:''} ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
-      <div class="card"><h3>Datum och pris</h3>
-        ${locked?'<div class="warn">Offerten är signerad. Ändrar du pris eller datum nu gäller det inte automatiskt – prata med kunden först.</div>':''}
-        <div class="row2"><div><label class="f" for="dt">Flyttdatum</label><input id="dt" type="date" value="${esc(b.date||'')}"></div>
-        <div><label class="f" for="tm">Starttid</label><select id="tm">${timeOpts(b.time)}</select></div></div>
-        ${n>=CAP?`<div class="warn">Den dagen har redan ${n} bokningar (max ${CAP}).</div>`:n>=CAP-3?`<div class="warn">Den dagen har ${n} bokningar.</div>`:''}
+      <div class="card" id="plan"><h3>Planering</h3>
+        ${locked?'<div class="warn">Offerten är signerad. Flyttar du datum eller tid – prata med kunden först.</div>':''}
+        <div class="row3"><div><label class="f" for="dt">Flyttdatum</label><input id="dt" type="date" value="${esc(b.date||'')}"></div>
+        <div><label class="f" for="tm">Starttid</label><select id="tm">${timeOpts(b.time)}</select></div>
+        <div><label class="f" for="du">Längd</label><select id="du"><option value="">Auto (${esc(fmtH(est))})</option>${DURS.map(h=>`<option value="${h}"${b.durationH===h?' selected':''}>${esc(fmtH(h))}</option>`).join('')}</select></div></div>
+        <div class="muted" id="planinfo" style="margin-top:8px"></div>
+        <div id="daywarn"></div>
+        ${res.length?`<label class="f">Personal</label><div class="pick" id="pickP"></div><label class="f">Fordon</label><div class="pick" id="pickV"></div>`
+          :`<div class="dbox" style="margin-top:12px"><b>Ingen personal inlagd än.</b><div class="muted">Lägg till personal och fordon så kan du välja dem här och se krockar direkt.</div><a class="btn sec sm" style="margin-top:10px;display:inline-flex" href="#personal">Lägg till personal</a></div>`}
+        <div id="clash"></div>
+        <button class="btn" id="psave">Spara planering</button><div id="msgp"></div></div>
+      <div class="card" id="wo"><h3>Arbetsorder för personalen</h3>
+        <div class="muted">En sida med adresser, tid, kundens telefon, våning och hiss – utan pris. Skriv ut den eller skicka länken till personalen.</div>
+        <label class="f" for="cw">Att tänka på (syns för personalen)</label><textarea id="cw" style="min-height:64px" placeholder="T.ex. portkod 1234, pianot står i källaren, ring kunden 30 min innan">${esc(b.crewNote||'')}</textarea>
+        <div class="btns"><button class="btn" id="woopen">🖨 Öppna / skriv ut</button><button class="btn sec" id="wolink">Kopiera länk</button></div>
+        <div id="wosms" class="tags" style="margin-top:10px"></div><div id="msgw"></div>
+        <button class="back" id="worenew"${b.workToken?'':' hidden'} style="padding:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)">Gör en ny länk (den gamla slutar fungera)</button></div>
+      <div class="card"><h3>Pris</h3>
+        ${locked?'<div class="warn">Offerten är signerad. Ändrar du priset nu gäller det inte automatiskt – prata med kunden först.</div>':''}
         <label class="f" for="tot">Pris efter RUT (kr)</label><input id="tot" type="number" inputmode="numeric" value="${o?esc(o.total):''}">
         ${o&&!o.custom&&o.lines?.length?`<div class="muted" style="margin-top:6px">${o.lines.map(l=>esc(l.label)+': '+kr(l.amount)).join('<br>')}</div>`:''}
         ${o?.notIncluded?.length?`<div class="warn"><b>Ingår inte i priset:</b><br>${o.notIncluded.map(esc).join('<br>')}</div>`:''}
@@ -377,23 +788,80 @@
         <div class="chips" id="xpre" style="margin-top:8px"></div>
         <div id="xlist"></div>
         <button class="btn sec" id="xsave">Spara tillval</button><div id="msgx"></div></div>`:''}
-      ${(()=>{ const k=digits(d.phone); const other=k?all.filter(x=>x.id!==b.id&&digits((x.data||{}).phone)===k):[]; return other.length?`<div class="card"><h3>Kundens andra bokningar (${other.length})</h3>${other.map(x=>`<a class="hist" href="#${esc(x.id)}">${esc(fmtDate(x.date))} · ${x.offer?kr(x.offer.total):'Inget pris'} · ${esc(ST[x.status])}</a>`).join('')}</div>`:''; })()}
-      ${b.extrasChosen?.length?`<div class="card"><h3>Kunden valde tillval</h3>${(b.extras||[]).filter(e=>b.extrasChosen.includes(e.id)).map(e=>`<div style="display:flex;justify-content:space-between"><span>${esc(e.label)}</span><b>+${kr(e.price)}</b></div>`).join('')}</div>`:''}
       ${(b.status==='declined'||b.status==='sent')&&o?.total>0?`<div class="card"><h3>Ge rabatt${b.decline?.reason==='price'?' <span class="tag no" style="vertical-align:middle">Kunden tyckte priset var för högt</span>':''}</h3>
         <div class="muted">Välj rabatt – du ser det nya priset innan något skickas.</div>
         <div class="chips" id="pcts">${[5,10,15,20].map(p=>`<button class="chip" data-p="${p}">${p} %</button>`).join('')}<input id="pct" type="number" inputmode="numeric" min="1" max="50" placeholder="Egen %" style="width:110px"></div>
         <div id="dprev"></div><div id="msg3"></div></div>`:''}
+    </div><div>
       <div class="card"><h3>Uppgifter från kunden</h3><table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table></div>
       <div class="card"><h3>Status</h3><div class="btns">
         ${b.status!=='done'?'<button class="btn gray" data-s="done">Markera klar</button>':''}
         ${b.status!=='cancelled'?'<button class="btn red" data-s="cancelled">Avboka</button>':''}
         ${['done','cancelled','declined'].includes(b.status)?`<button class="btn gray" data-s="${b.signedAt?'signed':(b.sentAt?'sent':'new')}">Återställ</button>`:''}
       </div></div>
-      <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}</div>`).join('')}</div></main>`;
+      ${b.extrasChosen?.length?`<div class="card"><h3>Kunden valde tillval</h3>${(b.extras||[]).filter(e=>b.extrasChosen.includes(e.id)).map(e=>`<div style="display:flex;justify-content:space-between"><span>${esc(e.label)}</span><b>+${kr(e.price)}</b></div>`).join('')}</div>`:''}
+      ${(()=>{ const k=digits(d.phone); const other=k?all.filter(x=>x.id!==b.id&&digits((x.data||{}).phone)===k):[]; return other.length?`<div class="card"><h3>Kundens andra bokningar (${other.length})</h3>${other.map(x=>`<a class="hist" href="#${esc(x.id)}">${esc(fmtDate(x.date))} · ${x.offer?kr(x.offer.total):'Inget pris'} · ${esc(ST[x.status])}</a>`).join('')}</div>`:''; })()}
+      <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}</div>`).join('')}</div>
+    </div></div></main>`;
     bindNav();
-    $('#back').onclick=()=>{ location.hash= view==='cal'?'kalender':''; };
+    $('#back').onclick=()=>{ location.hash={cal:'kalender',today:'',team:'personal',stat:'statistik'}[view]??'bokningar'; };
     const msg=(el,t,ok)=>{ $(el).innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
-    const patch=async(body,txt)=>{ try{ const nb=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; return true; }catch(e){ msg('#msg',e.message,false); return false; } };
+    let lastConflicts=[];
+    const patch=async(body)=>{ try{ const {conflicts,...nb}=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); lastConflicts=conflicts||[]; Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; updateCounts(); return true; }catch(e){ msg(body&&'crew' in body?'#msgp':'#msg',e.message,false); return false; } };
+    // ---- job sheet for the crew ----
+    if($('#wo')){
+      const saveNote=async()=>{ if($('#cw').value===(b.crewNote||'')) return true; return patch({crewNote:$('#cw').value}); };
+      const link=async(renew)=>{ const j=await api('/api/admin/worklink?id='+b.id+(renew?'&renew=1':''),{method:'POST'}); b.workToken=new URL(j.url).searchParams.get('t'); $('#worenew').hidden=false; return j.url; };
+      const sms=(r,url)=>{ const d=b.data||{}; return `Hej ${r.name}! Jobb ${fmtDate(b.date)}${b.time?' kl. '+b.time:''}: ${town(d.from)||d.from||''} → ${town(d.to)||d.to||''}. Arbetsorder: ${url}`; };
+      const people=(b.crew||[]).map(resById).filter(r=>r&&r.kind==='person'&&r.phone);
+      $('#wosms').innerHTML=people.map(r=>`<button class="btn sec sm" data-sms="${esc(r.id)}">SMS till ${esc(r.name)}</button>`).join('');
+      $('#cw').addEventListener('blur',async()=>{ if(await saveNote()) msg('#msgw','Anteckningen är sparad ✓',true); });
+      $('#woopen').onclick=async()=>{
+        const w=window.open('about:blank','_blank');            // open now so the browser doesn't block it
+        try{ await saveNote(); const url=await link(); if(w) w.location=url; else location.href=url; }
+        catch(e){ if(w) w.close(); msg('#msgw',e.message,false); }
+      };
+      $('#wolink').onclick=async()=>{
+        try{ await saveNote(); const url=await link(); try{ await navigator.clipboard.writeText(url); }catch(_){}
+          $('#msgw').innerHTML=`<div class="okmsg">Länken är kopierad. Den fungerar till 7 dagar efter flyttdagen.</div><input readonly value="${esc(url)}">`; }
+        catch(e){ msg('#msgw',e.message,false); }
+      };
+      root.querySelectorAll('[data-sms]').forEach(x=>x.onclick=async()=>{
+        try{ await saveNote(); const r=resById(x.dataset.sms), url=await link(); location.href=`sms:${String(r.phone).replace(/[^\d+]/g,'')}?&body=${encodeURIComponent(sms(r,url))}`; }
+        catch(e){ msg('#msgw',e.message,false); }
+      });
+      $('#worenew').onclick=async()=>{ if(!confirm('Göra en ny länk? Den gamla länken slutar fungera.')) return;
+        try{ const url=await link(true); try{ await navigator.clipboard.writeText(url); }catch(_){} msg('#msgw','Ny länk skapad och kopierad.',true); }catch(e){ msg('#msgw',e.message,false); } };
+    }
+
+    // ---- planning: date, time, length, who and which vehicle ----
+    if($('#plan')){
+      const sel=new Set(b.crew||[]);
+      const cur=()=>({...b,date:$('#dt').value,time:$('#tm').value,durationH:$('#du').value?Number($('#du').value):undefined,crew:[...sel]});
+      const draw=()=>{
+        const c=cur(), sp=S.span(c), clashes=S.conflicts(c,all,res), busy=c.date?S.jobsOn(c.date,all,b.id):new Map();
+        $('#planinfo').textContent=!c.date?'Välj datum för att se vem som är ledig.':sp.allDay?`Ingen starttid – jobbet räknas som hela dagen (${fmtH(S.hoursOf(c))}).`:`${S.fmtMin(sp.start)}–${S.fmtMin(sp.end)} · ${fmtH(S.hoursOf(c))}${c.durationH?'':' (uppskattat från '+(b.offer?.lines?.some(l=>/tim\b/.test(l.label))?'prisraderna':'boyta och avstånd')+')'}`;
+        const n=c.date?signedOn(c.date).filter(x=>x.id!==b.id).length:0;
+        $('#daywarn').innerHTML=n>=CAP?`<div class="warn">Den dagen har redan ${n} bokningar (max ${CAP}).</div>`:n>=CAP-3?`<div class="warn">Den dagen har ${n} bokningar.</div>`:'';
+        const pk=(r)=>{
+          const jobs=(busy.get(r.id)||[]), cl=clashes.filter(x=>x.resourceId===r.id);
+          const info=cl.length?`Krockar: ${cl[0].from}${cl[0].to?'–'+cl[0].to:''} ${cl[0].customer}`:jobs.length?`Upptagen: ${jobs.map(j=>whenTxt(j)+' '+((j.data||{}).name||'')).join(', ')}`:(c.date?'Ledig':(r.role||(r.kind==='vehicle'?'Fordon':'Personal')));
+          return `<button type="button" class="pk${sel.has(r.id)?' on':''}${cl.length&&sel.has(r.id)?' clash':jobs.length?' busy':''}${r.active?'':' arch'}" data-r="${esc(r.id)}" style="--c:${esc(r.color)}"><i></i><span>${esc(r.name)}${r.active?'':' (arkiverad)'}<small>${esc(info)}</small></span></button>`;
+        };
+        const show=(kind)=>res.filter(r=>r.kind===kind&&(r.active||sel.has(r.id))).map(pk).join('')||`<div class="muted">Inga ${kind==='person'?'personer':'fordon'} – <a href="#personal">lägg till</a>.</div>`;
+        if($('#pickP')){ $('#pickP').innerHTML=show('person'); $('#pickV').innerHTML=show('vehicle');
+          root.querySelectorAll('.pk').forEach(x=>x.onclick=()=>{ const id=x.dataset.r; sel.has(id)?sel.delete(id):sel.add(id); draw(); }); }
+        $('#clash').innerHTML=clashes.length?`<div class="warn"><b>Dubbelbokning:</b><br>${clashes.map(x=>`${esc(x.name)} är redan på <a href="#${esc(x.bookingId)}">${esc(x.customer)}</a> ${esc(x.from)}${x.to?'–'+esc(x.to):''}`).join('<br>')}<br><span class="muted">Du kan spara ändå.</span></div>`:'';
+      };
+      ['dt','tm','du'].forEach(id=>$('#'+id).addEventListener('change',draw));
+      draw();
+      $('#psave').onclick=async()=>{
+        const c=cur(); const ok=await patch({date:c.date,time:c.time,durationH:c.durationH??null,crew:c.crew});
+        if(!ok) return; const cf=lastConflicts; await showDetail(b.id);
+        $('#msgp').innerHTML=cf.length?`<div class="warn">Sparat – men ${esc([...new Set(cf.map(x=>x.name))].join(', '))} är dubbelbokad${cf.length>1?'e':''}.</div>`:'<div class="okmsg">Planeringen är sparad ✓</div>';
+      };
+    }
+
     $('#save').onclick=async()=>{
       const body={date:$('#dt').value,time:$('#tm').value,customerNote:$('#cn').value,adminNote:$('#an').value};
       if($('#tot').value) body.total=Number($('#tot').value);
@@ -505,7 +973,7 @@
   const airKm=(a,b)=>{ const R=6371,r=Math.PI/180,dLa=(b.lat-a.lat)*r,dLo=(b.lon-a.lon)*r; const h=Math.sin(dLa/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
   function showNew(){
     const opt=(l,sel)=>l.map(x=>`<option${x===sel?' selected':''}>${esc(x)}</option>`).join('');
-    root.innerHTML=navBar('new')+`<main><div class="card"><h3>Ny bokning (t.ex. från telefon)</h3>
+    root.innerHTML=navBar('new')+`<main style="max-width:820px"><div class="card"><h3>Kund och adresser <span class="sub">t.ex. från telefon</span></h3>
       <label class="f">Namn *</label><input id="n_name" autocomplete="off" placeholder="Skriv namn eller telefon – tidigare kunder visas">
       <div id="sugg"></div>
       <div class="row2"><div><label class="f">Telefon *</label><input id="n_phone" type="tel" autocomplete="off"></div><div><label class="f">E-post</label><input id="n_email" type="email"></div></div>
@@ -530,6 +998,7 @@
       <button class="btn" id="create">Spara bokning</button><div class="err" id="err"></div></div></main>`;
     bindNav();
     const v=(id)=>$('#'+id).value;
+    if(newPrefill){ $('#n_date').value=newPrefill.date; $('#n_time').value=newPrefill.time; newPrefill=null; }
     // --- existing customers ---
     const pickCust=(c)=>{ $('#n_name').value=c.name||''; $('#n_phone').value=c.phone||''; if(c.email) $('#n_email').value=c.email; $('#sugg').innerHTML=''; showKnown(); };
     const suggest=(q)=>{
@@ -608,6 +1077,129 @@
         all.unshift(b); location.hash=b.id; }
       catch(e){ $('#err').textContent=e.message; }
     };
+  }
+
+  // ---------- today ----------
+  // Start page: today's and tomorrow's jobs, booked jobs nobody is assigned to, new requests.
+  const booked=(b)=>b.status==='signed'||b.status==='done';
+  const byTime=(x,y)=>(x.date||'').localeCompare(y.date||'')||(x.time||'99').localeCompare(y.time||'99');
+  function showToday(){
+    view='today';
+    const t=today(), tm=addDays(t,1), in14=addDays(t,14);
+    const on=(d)=>all.filter(b=>booked(b)&&b.date===d).sort(byTime);
+    const jt=on(t), jm=on(tm), miss=all.filter(needsCrew).sort(byTime), fresh=all.filter(b=>b.status==='new').sort((x,y)=>(y.createdAt||0)-(x.createdAt||0));
+    const waiting=all.filter(b=>b.status==='sent'&&!isExpired(b));
+    const people=(l)=>new Set(l.flatMap(b=>(b.crew||[]).filter(id=>resById(id)?.kind==='person'))).size;
+    const block=(title,list,empty,more)=>`<div class="sec-h"><h2>${title}</h2><span class="muted">${more||''}</span></div>${list.length?list.map(itemHtml).join(''):`<div class="card empty" style="padding:22px">${empty}</div>`}`;
+    const nm=(b)=>esc((b.data||{}).name||b.id), when=(b)=>esc(fmtDate(b.date))+(b.time?' '+esc(b.time):'');
+    // --- to-do list: everything that needs a decision or a call ---
+    const soon=(b)=>booked(b)&&b.status==='signed'&&b.date>=t&&b.date<=in14;
+    const groups=[
+      ['Dubbelbokningar','no',all.filter(b=>soon(b)&&S.conflicts(b,all,res).length).sort(byTime).map(b=>{ const c=S.conflicts(b,all,res); return {b,sub:`${when(b)} · ${esc([...new Set(c.map(x=>x.name))].join(', '))} på två jobb samtidigt`}; })],
+      ['Saknar personal','wn',miss.map(b=>({b,sub:when(b)}))],
+      ['Saknar starttid','wn',all.filter(b=>soon(b)&&!b.time).sort(byTime).map(b=>({b,sub:esc(fmtDate(b.date))}))],
+      ['Genomförda – markera klara','',all.filter(b=>b.status==='signed'&&b.date&&b.date<t).sort(byTime).map(b=>({b,sub:when(b),act:`<button class="btn gray sm" data-done="${esc(b.id)}">Klar</button>`}))],
+      ['Heta offerter – ring kunden','ok',all.filter(b=>b.status==='sent'&&!isExpired(b)&&(b.views||0)>=2).sort((x,y)=>(y.lastViewAt||0)-(x.lastViewAt||0)).map(b=>({b,sub:`Öppnad ${b.views} gånger, senast ${esc(ago(b.lastViewAt))} · ${b.offer?kr(b.offer.total):''}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
+      ['Förfallna offerter','',all.filter(isExpired).sort((x,y)=>(y.sentAt||0)-(x.sentAt||0)).map(b=>({b,sub:`Skickad ${esc(ago(b.sentAt))} · ${esc(fmtDate(b.date))}`}))],
+    ].filter(g=>g[2].length);
+    const todoHtml=groups.length?groups.map(([h,cls,list])=>`<div class="todo-g"><div class="todo-h"><span class="tag ${cls}">${list.length}</span> ${h}</div>${list.slice(0,6).map(x=>`<div class="todo"><a href="#${esc(x.b.id)}"><b>${nm(x.b)}</b><small>${x.sub}</small></a>${x.act||''}</div>`).join('')}${list.length>6?`<div class="muted" style="padding:6px 2px">+${list.length-6} till</div>`:''}</div>`).join('')
+      :'<div class="empty" style="padding:18px">Inget att göra just nu 👍</div>';
+    // --- who is where today ---
+    const staff=res.filter(r=>r.active&&r.kind==='person');
+    const staffHtml=staff.length?`<div class="card"><h3>Personal i dag</h3><div class="crewday">${staff.map(r=>{ const l=jt.filter(b=>(b.crew||[]).includes(r.id));
+      return `<div style="--c:${esc(r.color)}"><b>${esc(r.name)}</b>${l.length?l.map(b=>`<a href="#${esc(b.id)}">${esc(whenTxt(b))} · ${nm(b)}</a>`).join(''):'<small>Ledig</small>'}</div>`; }).join('')}</div></div>`:'';
+    root.innerHTML=navBar('today')+`<main>
+      <div class="kpis">
+        <a class="kpi" href="#kalender" style="background:var(--navy)"><small>Jobb i dag</small><b>${jt.length}</b><small>${people(jt)} i personalen ute</small></a>
+        <a class="kpi" href="#kalender" style="background:#2f6fb2"><small>Jobb i morgon</small><b>${jm.length}</b><small>${people(jm)} i personalen</small></a>
+        <a class="kpi lt${miss.length?' alert':''}" href="#bokningar"><small>Saknar personal (14 dagar)</small><b>${miss.length}</b><small>bokade jobb utan någon tilldelad</small></a>
+        <a class="kpi lt" href="#bokningar"><small>Nya förfrågningar</small><b>${fresh.length}</b><small>${waiting.length} offert${waiting.length===1?'':'er'} väntar på svar</small></a>
+      </div>
+      <div class="cols"><div>
+        <div class="sec-h"><h2>I dag · ${esc(fmtDate(t))}</h2>${jt.length?`<a class="btn sec sm" style="margin-left:auto" href="/arbetsorder?d=${t}&print=1" target="_blank">🖨 Arbetsordrar</a>`:''}</div>
+        ${jt.length?jt.map(itemHtml).join(''):'<div class="card empty" style="padding:22px">Inga bokade jobb i dag.</div>'}
+        <div style="height:10px"></div>
+        <div class="sec-h"><h2>I morgon · ${esc(fmtDate(tm))}</h2>${jm.length?`<a class="btn sec sm" style="margin-left:auto" href="/arbetsorder?d=${tm}&print=1" target="_blank">🖨 Arbetsordrar</a>`:''}</div>
+        ${jm.length?jm.map(itemHtml).join(''):'<div class="card empty" style="padding:22px">Inga bokade jobb i morgon.</div>'}
+        <div style="height:10px"></div>
+        ${staffHtml}
+      </div><div>
+        <div class="card"><h3>Att göra</h3>${todoHtml}</div>
+        ${block('Nya förfrågningar',fresh.slice(0,6),'Inga nya förfrågningar.',fresh.length>6?`<a href="#bokningar">Visa alla ${fresh.length}</a>`:'')}
+      </div></div></main>`;
+    root.querySelectorAll('.item').forEach(x=>x.onclick=()=>{ location.hash=x.dataset.id; });
+    root.querySelectorAll('[data-done]').forEach(x=>x.onclick=async()=>{
+      x.disabled=true;
+      try{ const {conflicts,...nb}=await api('/api/admin/bookings?id='+x.dataset.done,{method:'PATCH',body:JSON.stringify({status:'done'})}); const i=all.findIndex(y=>y.id===nb.id); if(i>=0) all[i]=nb; updateCounts(); showToday(); notify('Markerad som klar ✓'); }
+      catch(e){ x.disabled=false; notify(e.message); }
+    });
+  }
+
+  // ---------- staff and vehicles ----------
+  const ROLES={person:['Flyttledare','Flyttare','Städare','Chaufför','Montör'],vehicle:['Lastbil','Skåpbil','Släp']};
+  const COLORS=['#2f6fb2','#1f8a4c','#c2560a','#a2479b','#0f8a8a','#b42318','#5a52c7','#8a6d1f','#3d5a6c','#d6457a'];
+  async function teamSave(id,body){
+    const r=await api('/api/admin/team'+(id?'?id='+encodeURIComponent(id):''),{method:id?'PATCH':'POST',body:JSON.stringify(body)});
+    const i=res.findIndex(x=>x.id===r.id); if(i>=0) res[i]=r; else res.push(r);
+    updateCounts(); return r;
+  }
+  function showTeam(){
+    view='team';
+    const t=today(), horizon=addDays(t,30);
+    const upcoming=(r)=>all.filter(b=>!S.INACTIVE.includes(b.status)&&b.date&&b.date>=t&&(b.crew||[]).includes(r.id)).sort(byTime);
+    const list=res.filter(r=>r.kind===teamKind), act=list.filter(r=>r.active), arch=list.filter(r=>!r.active);
+    const card=(r)=>{
+      const up=upcoming(r), soon=up.filter(b=>b.date<=horizon), nx=up[0];
+      return `<div class="tcard${r.active?'':' off'}" style="--c:${esc(r.color)}">
+        <div class="nm">${esc(r.name)}${r.active?'':'<span class="tag">Arkiverad</span>'}</div>
+        <div class="meta">${esc(r.role||(r.kind==='vehicle'?'Fordon':'Personal'))}${r.phone?` · <a href="${esc(tel(r.phone))}">${esc(r.phone)}</a>`:''}</div>
+        ${r.note?`<div class="meta" style="margin-top:4px">${esc(r.note)}</div>`:''}
+        <div class="next">${nx?`Nästa: <b>${esc(fmtDate(nx.date))}</b> ${esc(whenTxt(nx))} · ${esc((nx.data||{}).name||'')}<div class="muted">${soon.length} jobb kommande 30 dagar</div>`:'<span class="muted">Inga kommande jobb</span>'}</div>
+        ${openRes===r.id&&up.length?`<div class="jl">${up.slice(0,12).map(b=>`<a href="#${esc(b.id)}"><span>${esc(fmtDate(b.date))} · ${esc(whenTxt(b))}</span><b>${esc((b.data||{}).name||b.id)}</b></a>`).join('')}</div>`:''}
+        <div class="acts">${up.length?`<button class="btn gray sm" data-open="${esc(r.id)}">${openRes===r.id?'Dölj jobb':'Visa jobb'}</button>`:''}
+          <button class="btn sec sm" data-edit="${esc(r.id)}">Ändra</button>
+          ${r.active?`<button class="btn red sm" data-arch="${esc(r.id)}">Arkivera</button>`:`<button class="btn sec sm" data-restore="${esc(r.id)}">Återställ</button>`}</div></div>`;
+    };
+    const e=teamEdit, editing=e&&(e.id?res.find(x=>x.id===e.id):null);
+    const f=editing||{kind:teamKind,name:'',phone:'',role:'',note:'',color:COLORS.find(c=>!res.some(r=>r.active&&r.color===c))||COLORS[0]};
+    const form=e?`<div class="card" id="tform"><h3>${editing?'Ändra '+esc(editing.name):teamKind==='person'?'Ny person':'Nytt fordon'}</h3>
+        <div class="row2"><div><label class="f" for="t_name">${teamKind==='person'?'Namn':'Namn / reg.nr'} *</label><input id="t_name" value="${esc(f.name)}" placeholder="${teamKind==='person'?'T.ex. Ahmad':'T.ex. Lastbil 1 – ABC 123'}" autocomplete="off"></div>
+        <div><label class="f" for="t_role">${teamKind==='person'?'Roll':'Typ'}</label><input id="t_role" value="${esc(f.role||'')}" list="t_roles" placeholder="${ROLES[teamKind][0]}"><datalist id="t_roles">${ROLES[teamKind].map(x=>`<option value="${x}">`).join('')}</datalist></div></div>
+        ${teamKind==='person'?`<label class="f" for="t_phone">Telefon</label><input id="t_phone" type="tel" value="${esc(f.phone||'')}">`:''}
+        <label class="f">Färg i kalendern</label><div class="sw" id="t_sw">${COLORS.map(c=>`<button type="button" data-c="${c}" class="${c===f.color?'on':''}" style="--c:${c}" aria-label="Färg ${c}"></button>`).join('')}</div>
+        <label class="f" for="t_note">Anteckning</label><textarea id="t_note" style="min-height:56px" placeholder="${teamKind==='person'?'T.ex. har B-körkort, jobbar inte söndagar':'T.ex. 20 m³, bakgavellyft'}">${esc(f.note||'')}</textarea>
+        <div class="btns"><button class="btn gray" id="t_cancel">Avbryt</button><button class="btn" id="t_save">Spara</button></div><div class="err" id="t_err"></div></div>`:'';
+    root.innerHTML=navBar('team')+`<main>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+        <div class="seg"><button data-k="person" class="${teamKind==='person'?'on':''}">Personal (${res.filter(r=>r.kind==='person'&&r.active).length})</button><button data-k="vehicle" class="${teamKind==='vehicle'?'on':''}">Fordon (${res.filter(r=>r.kind==='vehicle'&&r.active).length})</button></div>
+        <button class="btn sm" id="t_add" style="margin-left:auto">+ ${teamKind==='person'?'Ny person':'Nytt fordon'}</button></div>
+      ${form}
+      ${act.length?`<div class="tgrid">${act.map(card).join('')}</div>`:`<div class="card empty">${teamKind==='person'?'Ingen personal inlagd än. Lägg till dina flyttare – sedan väljer du vem som gör vilket jobb inne i bokningen.':'Inga fordon inlagda än.'}</div>`}
+      ${arch.length?`<button class="btn gray sm" id="t_arch">${showArch?'Dölj':'Visa'} arkiverade (${arch.length})</button>${showArch?`<div class="tgrid" style="margin-top:12px">${arch.map(card).join('')}</div>`:''}`:''}
+    </main>`;
+    root.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{ teamKind=x.dataset.k; teamEdit=null; openRes=null; showTeam(); });
+    $('#t_add').onclick=()=>{ teamEdit={}; showTeam(); $('#t_name').focus(); };
+    if($('#t_arch')) $('#t_arch').onclick=()=>{ showArch=!showArch; showTeam(); };
+    root.querySelectorAll('[data-open]').forEach(x=>x.onclick=()=>{ openRes=openRes===x.dataset.open?null:x.dataset.open; showTeam(); });
+    root.querySelectorAll('[data-edit]').forEach(x=>x.onclick=()=>{ teamEdit={id:x.dataset.edit}; showTeam(); $('#tform').scrollIntoView({block:'start',behavior:'smooth'}); });
+    root.querySelectorAll('[data-arch]').forEach(x=>x.onclick=async()=>{
+      const r=resById(x.dataset.arch), n=upcoming(r).length;
+      if(!confirm(`Arkivera ${r.name}?`+(n?`\n\n${r.kind==='vehicle'?'Fordonet':'Personen'} står kvar på ${n} kommande jobb – byt ut ${r.kind==='vehicle'?'det':'personen'} där.`:''))) return;
+      try{ await teamSave(r.id,{active:false}); showTeam(); }catch(err){ alert(err.message); }
+    });
+    root.querySelectorAll('[data-restore]').forEach(x=>x.onclick=async()=>{ try{ await teamSave(x.dataset.restore,{active:true}); showTeam(); }catch(err){ alert(err.message); } });
+    if(e){
+      let color=f.color;
+      root.querySelectorAll('#t_sw button').forEach(x=>x.onclick=()=>{ color=x.dataset.c; root.querySelectorAll('#t_sw button').forEach(y=>y.classList.toggle('on',y===x)); });
+      $('#t_cancel').onclick=()=>{ teamEdit=null; showTeam(); };
+      $('#t_save').onclick=async()=>{
+        const body={kind:teamKind,name:$('#t_name').value,role:$('#t_role').value,note:$('#t_note').value,color};
+        if($('#t_phone')) body.phone=$('#t_phone').value;
+        const btn=$('#t_save'); btn.disabled=true;
+        try{ await teamSave(editing?editing.id:null,body); teamEdit=null; showTeam(); }
+        catch(err){ $('#t_err').textContent=err.message; btn.disabled=false; }
+      };
+    }
   }
 
   start().catch(e=>{ root.innerHTML=`<main><div class="err">${esc(e.message)}</div></main>`; });

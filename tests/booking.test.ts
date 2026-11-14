@@ -8,6 +8,7 @@ function run(c: string[]): unknown {
   switch (cmd) {
     case "SET": db.set(a[0], a[1]); return "OK";
     case "GET": return db.get(a[0]) ?? null;
+    case "DEL": db.delete(a[0]); return 1;
     case "MGET": return a.map((k) => db.get(k) ?? null);
     case "ZADD": { const m = z.get(a[0]) ?? new Map(); m.set(a[2], Number(a[1])); z.set(a[0], m); return 1; }
     case "ZREVRANGE": { const m = z.get(a[0]) ?? new Map(); return [...m.entries()].sort((x, y) => y[1] - x[1]).map((e) => e[0]).slice(Number(a[1]), Number(a[2]) + 1); }
@@ -121,4 +122,23 @@ test("extras: only offered ids are added to the offer", () => {
   assert.equal(b.offer.lines[0].label, "Tillval: Packning");
   const b2: any = { offer: { total: 5000, lines: [] }, extras: [] };
   applyExtras(b2, "nope"); assert.equal(b2.offer.total, 5000);
+});
+
+test("arbetsorder: egen länk, inget pris/e-post/intern anteckning, ny länk stänger den gamla", async () => {
+  const b = await store.createBooking("web", { ...data, message: "Piano i källaren", floorFrom: "3 tr · ingen hiss" });
+  b.adminNote = "kunden prutar"; b.crewNote = "Portkod 1234"; b.date = "2026-12-05"; b.time = "08:00"; b.durationH = 5; b.crew = ["RA", "RT"];
+  const res = [{ id: "RA", kind: "person", name: "Ahmad", role: "Flyttledare", phone: "070-1" }, { id: "RT", kind: "vehicle", name: "Lastbil 1", phone: "x" }];
+  const t1 = await store.issueWorkToken(b); await store.saveBooking(b);
+  const ct = await store.issueToken(b);
+  assert.notEqual(t1, ct);
+  assert.equal((await store.bookingByToken(t1)), null);           // crew link never opens the customer's offer
+  const v = store.workView((await store.bookingByWorkToken(t1))!, res);
+  const s = JSON.stringify(v);
+  for (const secret of ["3950", "anna@example.se", "kunden prutar", ct]) assert.equal(s.includes(secret), false, secret);
+  assert.equal(v.end, "13:00"); assert.equal(v.crewNote, "Portkod 1234"); assert.equal(v.floorFrom, "3 tr · ingen hiss");
+  assert.deepEqual(v.crew.map((c) => [c.name, c.phone]), [["Ahmad", "070-1"], ["Lastbil 1", ""]]);
+  const t2 = await store.issueWorkToken(b, true);
+  assert.notEqual(t1, t2);
+  assert.equal(await store.bookingByWorkToken(t1), null);
+  assert.equal((await store.bookingByWorkToken(t2))?.id, b.id);
 });

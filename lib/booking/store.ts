@@ -5,6 +5,7 @@
 import { randomBytes, createHash } from "node:crypto";
 import { kv, kvPipe } from "./kv.ts";
 import type { OfferData } from "../mail/offerEmail.ts";
+import { schedule } from "./schedule.ts";
 
 export type Status = "new" | "sent" | "signed" | "declined" | "done" | "cancelled";
 export const STATUSES: Status[] = ["new", "sent", "signed", "declined", "done", "cancelled"];
@@ -28,8 +29,12 @@ export type Booking = {
   offer?: Offer;
   date?: string;           // agreed moving date YYYY-MM-DD
   time?: string;           // start time HH:MM
+  durationH?: number;      // planned job length in hours (unset = estimated, see public/fx-schedule.js)
+  crew?: string[];         // ids of the staff and vehicles on the job (lib/booking/team.ts) – internal only
   adminNote?: string;
+  crewNote?: string;       // shown to the crew on the job sheet
   token?: string;
+  workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
   sentAt?: number;
   signedAt?: number;
   declinedAt?: number;
@@ -52,7 +57,7 @@ export const DECLINE_REASONS: Record<DeclineReason, string> = {
   no_move: "Flyttar inte längre", other: "Annat",
 };
 
-const K = { b: (id: string) => `fx:b:${id}`, idx: "fx:idx", t: (t: string) => `fx:t:${t}` };
+const K = { b: (id: string) => `fx:b:${id}`, idx: "fx:idx", t: (t: string) => `fx:t:${t}`, w: (t: string) => `fx:w:${t}` };
 export const TERMS_VERSION = "villkor-2026-11-12";
 
 function newId(now: number) {
@@ -108,6 +113,37 @@ export async function bookingByToken(t: string): Promise<Booking | null> {
   if (!/^[A-Za-z0-9_-]{32}$/.test(t)) return null;
   const id = await kv<string | null>(["GET", K.t(t)]);
   return id ? getBooking(id) : null;
+}
+
+// Job sheet link for the crew. Its own token, so a worker's link never opens the customer's offer.
+export async function issueWorkToken(b: Booking, renew = false): Promise<string> {
+  if (b.workToken && !renew) return b.workToken;
+  const old = b.workToken;
+  b.workToken = randomBytes(24).toString("base64url");
+  await kvPipe([["SET", K.w(b.workToken), b.id], ...(old ? [["DEL", K.w(old)]] : [])]);
+  return b.workToken;
+}
+
+export async function bookingByWorkToken(t: string): Promise<Booking | null> {
+  if (!/^[A-Za-z0-9_-]{32}$/.test(t)) return null;
+  const id = await kv<string | null>(["GET", K.w(t)]);
+  return id ? getBooking(id) : null;
+}
+
+// What the crew may see: where, when, who, what to carry. Never price, e-mail, signature or internal notes.
+export function workView(b: Booking, resources: { id: string; kind: string; name: string; role?: string; phone?: string }[]) {
+  const d = b.data, byId = new Map(resources.map((r) => [r.id, r]));
+  const span = schedule.span(b);
+  return {
+    id: b.id, status: b.status, date: b.date || "", time: b.time || "", end: span && !span.allDay ? schedule.fmtMin(span.end) : "",
+    hours: schedule.hoursOf(b),
+    name: d.name, phone: d.phone, from: d.from || "", to: d.to || "", distanceKm: d.distanceKm ?? null,
+    size: d.size || "", areaM2: d.areaM2 || "", home: d.home || "", floorFrom: d.floorFrom || "", floorTo: d.floorTo || "",
+    services: [...(d.extras || []), ...(b.extras || []).filter((e) => b.extrasChosen?.includes(e.id)).map((e) => e.label)],
+    volume: d.volume ? { m3: d.volume.m3, list: d.volume.list.slice(0, 80) } : null,
+    message: d.message || "", crewNote: b.crewNote || "",
+    crew: (b.crew || []).map((id) => byId.get(id)).filter(Boolean).map((r) => ({ name: r!.name, kind: r!.kind, role: r!.role || "", phone: r!.kind === "person" ? r!.phone || "" : "" })),
+  };
 }
 
 // What the customer may see – never notes, IPs or history.

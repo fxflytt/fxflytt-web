@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0d2a3f">
+<title>Arbetsorder – FX Flytt</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!-- Job sheet for the crew.
+     /arbetsorder?t=…          one job, opened from the link a worker gets (no login)
+     /arbetsorder?d=YYYY-MM-DD all booked jobs that day, for printing (admin login needed) -->
+<style>
+  :root{--navy:#0d2a3f;--accent:#ff7a1a;--ink:#14212b;--muted:#5d6d7a;--line:#e2e8ee;--bg:#f3f6f9;--red:#b42318;--green:#1f8a4c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--navy)}
+  .bar{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:2}
+  .bar img{height:28px}.bar b{flex:1;font-size:16px}
+  .bar button{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:8px 14px;font:inherit;font-weight:800;cursor:pointer}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 14px 40px}
+  .job{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(13,42,63,.06)}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;border-bottom:2px solid var(--navy);padding-bottom:12px;margin-bottom:14px}
+  .top .lbl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .when{font-size:22px;font-weight:800;color:var(--navy);line-height:1.2}.when::first-letter{text-transform:uppercase}
+  .tm{font-size:17px;font-weight:700;margin-top:2px}
+  .id{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+  .cancel{background:#fdecec;border:2px solid var(--red);color:var(--red);border-radius:12px;padding:12px 14px;font-weight:800;font-size:17px;margin-bottom:14px;text-align:center}
+  .done{background:#e6f5ec;border:1px solid #bfe5cf;color:var(--green);border-radius:12px;padding:10px 14px;font-weight:700;margin-bottom:14px}
+  h3{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
+  .cust{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .cust b{font-size:19px}
+  .call{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:#fff;text-decoration:none;font-weight:800;border-radius:12px;padding:10px 16px}
+  .addr{display:grid;grid-template-columns:28px 1fr;gap:4px 10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+  .addr:last-of-type{border-bottom:0}
+  .pin{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+  .pin.to{background:var(--accent)}
+  .addr b{font-size:16px;display:block}.addr small{display:block;color:var(--muted);font-size:13.5px}
+  .addr a.map{font-size:13px;font-weight:700}
+  .route{display:inline-block;margin-top:8px;font-weight:800;font-size:14px}
+  .facts{display:flex;flex-wrap:wrap;gap:6px}
+  .facts span{background:#eef2f5;border-radius:999px;padding:4px 11px;font-size:13.5px;font-weight:600}
+  .note{background:#fff7ea;border:1.5px solid #ffd39a;border-radius:12px;padding:12px 14px;white-space:pre-wrap;font-size:15px}
+  .msg{background:#f5f8fa;border-radius:12px;padding:12px 14px;white-space:pre-wrap;font-size:14.5px}
+  .crew{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+  .crew div{border:1px solid var(--line);border-radius:10px;padding:8px 11px}.crew small{display:block;color:var(--muted);font-size:12.5px}
+  .vol{columns:2;column-gap:20px;font-size:13.5px;margin:0;padding-left:18px}
+  .paper{display:none}
+  .empty{text-align:center;color:var(--muted);padding:60px 16px;font-size:16px}
+  @media print{
+    @page{size:A4;margin:12mm}
+    body{background:#fff;font-size:12.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .bar,a.map,.route{display:none!important}
+    .call{background:none;color:#000;padding:0;font-size:15px}
+    .wrap{max-width:none;padding:0}
+    .job{border:0;box-shadow:none;padding:0;margin:0;page-break-after:always;break-after:page}
+    .job:last-child{page-break-after:auto;break-after:auto}
+    .paper{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
+    .paper div{border-top:1.5px solid #000;padding-top:4px;font-size:11px;color:#333;height:44px}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="bar"><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"><b id="ttl">Arbetsorder</b><button id="pr" hidden>Skriv ut</button></div>
+<div class="wrap" id="root"><div class="empty">Laddar…</div></div>
+<script>
+(function(){
+  const $=(s)=>document.querySelector(s);
+  const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
+  const fmtDate=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'}):'Datum ej bestämt';
+  const hrs=(h)=>String(h).replace('.',',')+' tim';
+  const map=(a)=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(a+', Sverige');
+  const q=new URLSearchParams(location.search), root=$('#root');
+
+  function job(j){
+    const addr=(n,cls,a,floor)=>a?`<div class="addr"><span class="pin ${cls}">${n}</span><div><b>${esc(a)}</b>${floor?`<small>${esc(floor)}</small>`:''}<a class="map" href="${esc(map(a))}" target="_blank" rel="noopener">Öppna i kartan ›</a></div></div>`:'';
+    const facts=[j.size,j.areaM2?j.areaM2+' m²':'',j.home,j.distanceKm?'ca '+j.distanceKm+' km':''].filter(Boolean);
+    const people=j.crew.filter(c=>c.kind==='person'), cars=j.crew.filter(c=>c.kind==='vehicle');
+    return `<section class="job">
+      ${j.status==='cancelled'?'<div class="cancel">AVBOKAD – jobbet blir inte av</div>':''}
+      ${j.status==='done'?'<div class="done">Jobbet är markerat som klart.</div>':''}
+      <div class="top"><div><div class="lbl">Arbetsorder</div><div class="when">${esc(fmtDate(j.date))}</div>
+        <div class="tm">${j.time?`Start ${esc(j.time)}${j.end?' – ca '+esc(j.end):''}`:'Starttid ej bestämd'} · ${esc(hrs(j.hours))}</div></div>
+        <div class="id">${esc(j.id)}</div></div>
+      <h3>Kund</h3>
+      <div class="cust"><b>${esc(j.name)}</b>${j.phone?`<a class="call" href="${esc(tel(j.phone))}">📞 ${esc(j.phone)}</a>`:''}</div>
+      <h3>Adresser</h3>
+      ${addr('A','',j.from,j.floorFrom)}${addr('B','to',j.to,j.floorTo)}
+      ${j.from&&j.to?`<a class="route" href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(j.from+', Sverige')}&destination=${encodeURIComponent(j.to+', Sverige')}" target="_blank" rel="noopener">Vägbeskrivning A → B ›</a>`:''}
+      ${facts.length?`<h3>Uppdrag</h3><div class="facts">${facts.map(f=>`<span>${esc(f)}</span>`).join('')}</div>`:''}
+      ${j.services.length?`<h3>Ingår</h3><div class="facts">${j.services.map(f=>`<span>${esc(f)}</span>`).join('')}</div>`:''}
+      ${j.crewNote?`<h3>Att tänka på</h3><div class="note">${esc(j.crewNote)}</div>`:''}
+      ${j.message?`<h3>Kundens meddelande</h3><div class="msg">${esc(j.message)}</div>`:''}
+      ${j.volume?`<h3>Volym ca ${esc(String(j.volume.m3).replace('.',','))} m³</h3>${j.volume.list.length?`<ul class="vol">${j.volume.list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}`:''}
+      ${j.crew.length?`<h3>Personal och fordon</h3><div class="crew">${[...people,...cars].map(c=>`<div><b>${esc(c.name)}</b><small>${esc(c.role||(c.kind==='vehicle'?'Fordon':''))}${c.phone?` · <a href="${esc(tel(c.phone))}">${esc(c.phone)}</a>`:''}</small></div>`).join('')}</div>`:''}
+      <div class="paper"><div>Start kl.</div><div>Klart kl.</div><div>Signatur arbetsledare</div></div>
+    </section>`;
+  }
+
+  async function load(){
+    const t=q.get('t'), d=q.get('d');
+    const url=t?'/api/arbetsorder?t='+encodeURIComponent(t):d?'/api/admin/worklink?date='+encodeURIComponent(d):null;
+    if(!url){ root.innerHTML='<div class="empty">Länken saknas.</div>'; return; }
+    const r=await fetch(url,{cache:'no-store'}); const j=await r.json().catch(()=>({}));
+    if(r.status===401){ root.innerHTML='<div class="empty">Logga in i <a href="/admin">admin</a> först.</div>'; return; }
+    if(!r.ok){ root.innerHTML=`<div class="empty">${esc(j.error||'Något gick fel.')}</div>`; return; }
+    const jobs=t?[j]:j.jobs;
+    $('#ttl').textContent=d?'Arbetsordrar · '+fmtDate(d):'Arbetsorder';
+    document.title=(d?'Arbetsordrar '+d:'Arbetsorder '+(j.date||''))+' – FX Flytt';
+    root.innerHTML=jobs.length?jobs.map(job).join(''):'<div class="empty">Inga bokade jobb den dagen.</div>';
+    $('#pr').hidden=!jobs.length; $('#pr').onclick=()=>print();
+    if(q.get('print')==='1'&&jobs.length) setTimeout(()=>print(),300);
+  }
+  load().catch(()=>{ root.innerHTML='<div class="empty">Kunde inte ladda. Kontrollera nätet och försök igen.</div>'; });
+})();
+</script>
+</body>
+</html>
