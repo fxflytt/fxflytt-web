@@ -177,6 +177,7 @@
   .bcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:6px;cursor:grab;user-select:none;-webkit-user-select:none;box-shadow:var(--sh)}
   .bcard b{display:block;font-size:14px}.bcard .bmeta{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-top:4px}.bcard .tags{margin-top:4px}.bcard.lift{opacity:.3}
   .gbar{position:relative;height:12px;border-radius:6px;background:#eef2f5;margin:10px 0 8px;overflow:visible}.gbar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--green))}.gbar s{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--navy)}
+  .pkgsw{display:flex;gap:10px;align-items:flex-start;background:#fff8f2;border:1px solid #ffd6a8;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-weight:700;font-size:14px;cursor:pointer}.pkgsw input{width:18px;height:18px;margin-top:2px}.pkgsw small{display:block;font-weight:500;color:var(--muted)}
   .callbtns{display:flex;gap:6px;flex-wrap:wrap}
   .calls{margin-top:10px;border-top:1px solid var(--line)}.calls>div{font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)}
   .sel2{display:flex;gap:16px;flex-wrap:wrap}.sel2 label{display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer}.sel2 input{width:18px;height:18px}
@@ -897,6 +898,8 @@
         <label class="f" for="an">Intern anteckning (syns bara här)</label><textarea id="an">${esc(b.adminNote||'')}</textarea>
         <button class="btn sec" id="save">Spara</button><div id="msg"></div></div>
       <div class="card"><h3>Offert</h3>
+        ${!locked&&o&&!o.custom&&!b.discount&&/\b(Bas|Premium|Deluxe)\b/.test(d.size||'')&&Number(d.areaM2)>0?`<label class="pkgsw"><input type="checkbox" id="pkgch"${b.pkgChoiceOff?'':' checked'}> Låt kunden välja paket (Bas / Premium / Deluxe) i offerten<small>Priserna räknas när du skickar. Premium och Deluxe säljer ofta mer.</small></label>`:''}
+        ${b.packages&&b.status==='sent'?`<div class="muted" style="margin-bottom:6px">Kunden ser: ${b.packages.map(p=>esc(p.name)+' '+kr(p.total)).join(' · ')}</div>`:''}
         ${b.status==='sent'?`<div class="muted">Skickad ${esc(fmtTs(b.sentAt))}. Väntar på kundens signatur.</div>`:''}
         ${b.sentAt?`<div class="muted" style="margin-top:6px">${b.views?`👁 Kunden har öppnat offerten <b>${b.views} ${b.views===1?'gång':'gånger'}</b> – senast ${esc(fmtTs(b.lastViewAt))}`:'👁 Kunden har inte öppnat offerten än.'}</div>`:''}
         ${b.status==='sent'?`<div class="muted" style="margin-top:4px">🔔 ${b.reminders?.length?`Påminnelser: ${b.reminders.map(x=>esc(fmtTs(x))).join(', ')}`:'Ingen påminnelse än'}${b.data?.email?(b.reminders?.length>=2?' · inga fler skickas automatiskt':' · skickas automatiskt efter 1 och 3 dagar'):' · kunden har ingen e-post, påminn via SMS'}</div>`:''}
@@ -942,6 +945,7 @@
       if(!confirm('Ta bort fotot?')) return;
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
     });
+    if($('#pkgch')) $('#pkgch').onchange=async()=>{ if(await patch({pkgChoiceOff:!$('#pkgch').checked})) notify($('#pkgch').checked?'Kunden får välja paket när du skickar ✓':'Paketval av'); };
     // ---- sales follow-up ----
     if($('#sales')){
       root.querySelectorAll('[data-call]').forEach(x=>x.onclick=()=>salesAct(b,{call:{outcome:x.dataset.call,note:$('#cnote').value}},'Samtalet är loggat ✓'));

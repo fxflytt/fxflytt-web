@@ -97,6 +97,7 @@ export async function PATCH(req: Request) {
     changes.push(!b.boxes ? "hyrkartonger borttagna" : !was ? `${b.boxes.qty} hyrkartonger utlämnade, tillbaka senast ${b.boxes.dueDate}`
       : b.boxes.returned !== was.returned ? `${b.boxes.returned} av ${b.boxes.qty} kartonger tillbaka` : "hyrkartonger ändrade");
   }
+  if ("pkgChoiceOff" in d) { b.pkgChoiceOff = d.pkgChoiceOff === true; if (b.pkgChoiceOff) b.packages = undefined; changes.push(b.pkgChoiceOff ? "paketval av" : "paketval på"); }
   if ("crewNote" in d) { const v = str(d.crewNote, 1000); if (v !== (b.crewNote || "")) { b.crewNote = v; changes.push("anteckning till personalen"); } }
   if ("total" in d) {
     const t = Math.round(Number(d.total));
@@ -104,6 +105,7 @@ export async function PATCH(req: Request) {
     if (!b.offer || b.offer.total !== t) {
       b.offer = { ...(b.offer || { lines: [] }), total: t, custom: true };
       b.discount = undefined; // a hand-set price replaces any earlier discount
+      b.packages = undefined; // and any package choice
       changes.push("pris " + t + " kr");
     }
   }

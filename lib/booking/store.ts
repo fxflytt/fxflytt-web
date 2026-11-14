@@ -38,6 +38,8 @@ export type Booking = {
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
   // Sales follow-up
+  packages?: import("./packages.ts").Pkg[];   // Bas/Premium/Deluxe the customer can choose between in the offer
+  pkgChoiceOff?: boolean;  // the office turned the package choice off for this offer
   lead?: "calc";             // came from "Få priset på mejl" in the website calculator (no request sent yet)
   firstResponseAt?: number;   // first time someone in the office acted on a web request (speed to lead)
   contactedAt?: number;       // the customer has been reached (call answered, or moved to "Kontaktad")
@@ -208,6 +210,8 @@ export function publicView(b: Booking) {
     signedAt: b.signedAt || null, signedName: b.signature?.name || null,
     discount: b.discount && b.offer ? { pct: b.discount.pct, before: b.discount.before } : null,
     addons: b.status === "signed" || b.status === "done" ? [] : (b.extras || []),
+    packages: b.status === "sent" && b.packages ? b.packages.map((p) => ({ id: p.id, name: p.name, desc: p.desc, total: p.total, lines: p.lines })) : null,
+    pkg: b.packages ? (b.packages.find((p) => p.total === b.offer?.total && JSON.stringify(p.lines) === JSON.stringify(b.offer?.lines))?.id || null) : null,
     addonsChosen: (b.extras || []).filter((e) => b.extrasChosen?.includes(e.id)),
   };
 }

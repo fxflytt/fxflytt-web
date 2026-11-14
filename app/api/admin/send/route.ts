@@ -1,6 +1,8 @@
 // Admin: e-mail the offer link to the customer (POST ?id=). Returns the link as well.
 import { requireUser } from "@/lib/booking/auth.ts";
 import { getBooking, saveBooking, issueToken } from "@/lib/booking/store.ts";
+import { packagesFor } from "@/lib/booking/packages.ts";
+import { getPrices } from "@/lib/pricing/current.ts";
 import { offerLinkEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
 
@@ -14,6 +16,8 @@ export async function POST(req: Request) {
   if (!b.offer || !(b.offer.total > 0)) return Response.json({ error: "Sätt ett pris först." }, { status: 400 });
   if (!b.date) return Response.json({ error: "Sätt ett datum först." }, { status: 400 });
   if (b.status === "signed" || b.status === "done") return Response.json({ error: "Offerten är redan signerad." }, { status: 400 });
+  // Let the customer choose Bas / Premium / Deluxe (fixed-price moves made with the price list).
+  b.packages = b.pkgChoiceOff ? undefined : (packagesFor(b, await getPrices()) || undefined);
   const token = await issueToken(b);
   const url = `${SITE}/signera?t=${token}`;
   const only = new URL(req.url).searchParams.get("linkOnly") === "1";
