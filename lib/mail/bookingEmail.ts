@@ -134,3 +134,15 @@ export function reviewEmail(b: Booking, reviewUrl: string) {
   const text = `Tack ${first}!\n\nVi hoppas att flytten gick bra. Har du en minut över? Skriv gärna ett omdöme på Google:\n${reviewUrl}\n\nVar något inte bra? Svara på mejlet eller ring 076-300 07 23.\nFX Flytt AB`;
   return { subject, html, text };
 }
+
+export function boxesReminderEmail(b: Booking) {
+  const first = b.data.name.split(" ")[0], bx = b.boxes!, left = bx.qty - bx.returned;
+  const subject = `Dags att lämna tillbaka flyttkartongerna – ${b.id}`;
+  const html = shell(subject, { text: "KARTONGER", bg: "#fff1e6", fg: "#c2560a" },
+    `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Hej ${esc(first)}!</h1></td></tr>` +
+    p(`Vi hoppas att du har kommit i ordning i ditt nya hem. Du hyr <b>${left} flyttkartonger</b> av oss som ska vara tillbaka senast <b>${esc(fmtDate(bx.dueDate))}</b>.`) +
+    p("Svara på det här mejlet eller ring oss så bestämmer vi en tid när vi hämtar dem – eller om du hellre vill köpa dem.") +
+    p(`<span style="color:${MUTED};font-size:13px">Ring oss på 076-300 07 23. Bokning ${esc(b.id)}.</span>`));
+  const text = `Hej ${first}!\n\nDu hyr ${left} flyttkartonger av FX Flytt som ska vara tillbaka senast ${fmtDate(bx.dueDate)}.\nSvara på mejlet eller ring 076-300 07 23 så bestämmer vi en tid när vi hämtar dem.\n\nFX Flytt AB (${b.id})`;
+  return { subject, html, text };
+}

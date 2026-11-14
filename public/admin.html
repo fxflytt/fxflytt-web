@@ -425,7 +425,9 @@
   // An offer that was sent but not answered counts as expired ("förfallen") after 14 days, or when the moving day has come.
   const EXPIRE_DAYS=14;
   const isExpired=(b)=>b.status==='sent'&&((b.sentAt&&Date.now()-b.sentAt>EXPIRE_DAYS*864e5)||(b.date&&b.date<=today()));
-  const FILTERS={active:['Aktiva',b=>['new','sent','signed'].includes(b.status)&&!isExpired(b)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'&&!isExpired(b)],expired:['Förfallna',isExpired],signed:['Bokade',b=>b.status==='signed'],done:['Klara',b=>b.status==='done'],closed:['Nekade/avbokade',b=>['declined','cancelled'].includes(b.status)],all:['Alla',()=>true]};
+  const boxesLeft=(b)=>b.boxes?b.boxes.qty-b.boxes.returned:0;
+  const rentsBoxes=(b)=>(b.offer?.lines||[]).some(l=>/kartong.*hyr/i.test(l.label))||(b.extras||[]).some(e=>b.extrasChosen?.includes(e.id)&&/kartong.*hyr/i.test(e.label))||(b.data?.extras||[]).some(x=>/kartong/i.test(x));
+  const FILTERS={active:['Aktiva',b=>['new','sent','signed'].includes(b.status)&&!isExpired(b)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'&&!isExpired(b)],expired:['Förfallna',isExpired],signed:['Bokade',b=>b.status==='signed'],done:['Klara',b=>b.status==='done'],closed:['Nekade/avbokade',b=>['declined','cancelled'].includes(b.status)],boxes:['Kartonger ute',b=>boxesLeft(b)>0],all:['Alla',()=>true]};
   function itemHtml(b){
     const o=b.offer, d=b.data||{};
     const route=[d.from,d.to].filter(Boolean).map(x=>String(x).split(',')[0]).join(' → ');
@@ -441,6 +443,7 @@
     if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 ${b.views}× · ${esc(ago(b.lastViewAt))}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
     if(b.reminders?.length) t.push(`<span class="tag">🔔 ${b.reminders.length} påminnelse${b.reminders.length>1?'r':''}</span>`);
     if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
+    if(boxesLeft(b)) t.push(`<span class="tag${b.boxes.dueDate<today()?' no':''}">📦 ${boxesLeft(b)} kartonger ute${b.boxes.dueDate<today()?' – försenade':''}</span>`);
     if(b.discount) t.push(`<span class="tag ok">−${b.discount.pct} %</span>`);
     if(b.status==='declined'&&b.decline) t.push(`<span class="tag no">${esc(WHY[b.decline.reason]||'')}</span>`);
     const s=t.filter(Boolean).join('');
@@ -789,6 +792,21 @@
         <div class="btns"><button class="btn" id="woopen">🖨 Öppna / skriv ut</button><button class="btn sec" id="wolink">Kopiera länk</button></div>
         <div id="wosms" class="tags" style="margin-top:10px"></div><div id="msgw"></div>
         <button class="back" id="worenew"${b.workToken?'':' hidden'} style="padding:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)">Gör en ny länk (den gamla slutar fungera)</button></div>
+      ${['declined','cancelled'].includes(b.status)&&!b.boxes?'':`<div class="card" id="bx"><h3>Hyrkartonger ${boxesLeft(b)?`<span class="sub">${boxesLeft(b)} ute</span>`:''}</h3>
+        ${!b.boxes?`${rentsBoxes(b)?'<div class="warn" style="margin-top:0">Kunden har valt flyttkartonger – registrera dem när de lämnas ut.</div>':'<div class="muted">Inga hyrkartonger.</div>'}<button class="btn sec" id="bx_new">+ Lämna ut kartonger</button>`
+        :`${boxesLeft(b)===0?`<div class="okmsg" style="margin-top:0">Alla ${b.boxes.qty} kartonger är tillbaka${b.boxes.returnedDate?' ('+esc(fmtDate(b.boxes.returnedDate))+')':''}.</div>`
+          :b.boxes.dueDate<today()?`<div class="warn" style="margin-top:0"><b>Försenade:</b> ${boxesLeft(b)} kartonger skulle varit tillbaka ${esc(fmtDate(b.boxes.dueDate))}</div>`
+          :`<div class="muted">${boxesLeft(b)} av ${b.boxes.qty} ute · tillbaka senast <b>${esc(fmtDate(b.boxes.dueDate))}</b></div>`}`}
+        <div id="bx_form"${b.boxes?'':' hidden'}>
+          <div class="row2"><div><label class="f" for="bx_qty">Antal utlämnade</label><input id="bx_qty" type="number" inputmode="numeric" min="1" value="${b.boxes?b.boxes.qty:((window.FX_PRICES||{}).boxes||{}).qty||50}"></div>
+            <div><label class="f" for="bx_ret">Tillbaka hittills</label><input id="bx_ret" type="number" inputmode="numeric" min="0" value="${b.boxes?b.boxes.returned:0}"></div></div>
+          <div class="row2"><div><label class="f" for="bx_out">Utlämnade</label><input id="bx_out" type="date" value="${esc(b.boxes?.outDate||today())}"></div>
+            <div><label class="f" for="bx_due">Tillbaka senast</label><input id="bx_due" type="date" value="${esc(b.boxes?.dueDate||addDays(b.date&&b.date>today()?b.date:today(),30))}"></div></div>
+          <label class="f" for="bx_note">Anteckning</label><input id="bx_note" value="${esc(b.boxes?.note||'')}" placeholder="T.ex. hämtas vid trapphuset">
+          <div class="btns"><button class="btn sec" id="bx_save">Spara</button>${b.boxes&&boxesLeft(b)?'<button class="btn gray" id="bx_all">Alla tillbaka</button>':''}</div>
+          ${b.boxes&&boxesLeft(b)&&d.email?`<button class="btn sec" id="bx_mail">Mejla påminnelse till kunden</button>${b.boxes.remindedAt?`<div class="muted" style="margin-top:6px">Påminnelse skickad ${esc(fmtTs(b.boxes.remindedAt))}</div>`:''}`:''}
+          ${b.boxes?'<button class="back" id="bx_del" style="padding:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)">Ta bort registreringen</button>':''}
+        </div><div id="bx_msg"></div></div>`}
       <div class="card"><h3>Pris</h3>
         ${locked?'<div class="warn">Offerten är signerad. Ändrar du priset nu gäller det inte automatiskt – prata med kunden först.</div>':''}
         <label class="f" for="tot">Pris efter RUT (kr)</label><input id="tot" type="number" inputmode="numeric" value="${o?esc(o.total):''}">
@@ -843,6 +861,17 @@
       if(!confirm('Ta bort fotot?')) return;
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
     });
+    // ---- rented boxes ----
+    if($('#bx')){
+      const bxBody=(extra)=>({boxes:{qty:Number($('#bx_qty').value),returned:Number($('#bx_ret').value),outDate:$('#bx_out').value,dueDate:$('#bx_due').value,note:$('#bx_note').value,...extra}});
+      const bxSave=async(body,txt)=>{ if(await patch(body)){ await showDetail(b.id); notify(txt); } else msg('#bx_msg',$('#msg').textContent,false); };
+      if($('#bx_new')) $('#bx_new').onclick=()=>{ $('#bx_form').hidden=false; $('#bx_new').hidden=true; $('#bx_qty').focus(); };
+      $('#bx_save').onclick=()=>bxSave(bxBody(),'Kartongerna är sparade ✓');
+      if($('#bx_all')) $('#bx_all').onclick=()=>bxSave(bxBody({returned:Number($('#bx_qty').value)}),'Alla kartonger tillbaka ✓');
+      if($('#bx_del')) $('#bx_del').onclick=()=>{ if(confirm('Ta bort registreringen av hyrkartonger?')) bxSave({boxes:null},'Borttaget'); };
+      if($('#bx_mail')) $('#bx_mail').onclick=async()=>{ if(!confirm('Mejla en påminnelse om kartongerna till '+d.email+'?')) return;
+        try{ await api('/api/admin/remind?id='+b.id+'&kind=boxes',{method:'POST'}); await showDetail(b.id); notify('Påminnelsen är skickad ✓'); }catch(e){ msg('#bx_msg',e.message,false); } };
+    }
     // ---- job sheet for the crew ----
     if($('#wo')){
       const saveNote=async()=>{ if($('#cw').value===(b.crewNote||'')) return true; return patch({crewNote:$('#cw').value}); };
@@ -1134,6 +1163,7 @@
       ['Saknar personal','wn',miss.map(b=>({b,sub:when(b)}))],
       ['Saknar starttid','wn',all.filter(b=>soon(b)&&!b.time).sort(byTime).map(b=>({b,sub:esc(fmtDate(b.date))}))],
       ['Genomförda – markera klara','',all.filter(b=>b.status==='signed'&&b.date&&b.date<t).sort(byTime).map(b=>({b,sub:when(b),act:`<button class="btn gray sm" data-done="${esc(b.id)}">Klar</button>`}))],
+      ['Hyrkartonger att hämta','wn',all.filter(b=>boxesLeft(b)>0&&b.boxes.dueDate<=addDays(t,3)).sort((x,y)=>x.boxes.dueDate.localeCompare(y.boxes.dueDate)).map(b=>({b,sub:`${boxesLeft(b)} kartonger · ${b.boxes.dueDate<t?'<b style="color:var(--red)">försenade sedan '+esc(fmtDate(b.boxes.dueDate))+'</b>':'senast '+esc(fmtDate(b.boxes.dueDate))}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['Heta offerter – ring kunden','ok',all.filter(b=>b.status==='sent'&&!isExpired(b)&&(b.views||0)>=2).sort((x,y)=>(y.lastViewAt||0)-(x.lastViewAt||0)).map(b=>({b,sub:`Öppnad ${b.views} gånger, senast ${esc(ago(b.lastViewAt))} · ${b.offer?kr(b.offer.total):''}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['Förfallna offerter','',all.filter(isExpired).sort((x,y)=>(y.sentAt||0)-(x.sentAt||0)).map(b=>({b,sub:`Skickad ${esc(ago(b.sentAt))} · ${esc(fmtDate(b.date))}`}))],
     ].filter(g=>g[2].length);

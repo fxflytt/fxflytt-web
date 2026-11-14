@@ -170,3 +170,17 @@ test("användare: skapa, logga in, roll, avstängd/nytt lösenord loggar ut", as
   const forged = c2.replace(/U[0-9A-F]{8}/, "owner");
   assert.equal(await auth.currentUser(new Request("https://x/", { headers: { cookie: forged } })), null);
 });
+
+import { cleanBoxes, boxesOut } from "../lib/booking/store.ts";
+test("hyrkartonger: kontroll av antal och datum, delvis återlämnade", () => {
+  assert.ok("error" in cleanBoxes({ qty: 0, dueDate: "2026-12-30" }, "2026-12-01"));
+  assert.ok("error" in cleanBoxes({ qty: 50 }, "2026-12-01"));
+  assert.ok("error" in cleanBoxes({ qty: 50, outDate: "2026-12-05", dueDate: "2026-12-01" }, "2026-12-01"));
+  assert.ok("error" in cleanBoxes({ qty: 50, dueDate: "2026-12-30", returned: 51 }, "2026-12-01"));
+  const a = cleanBoxes({ qty: 50, dueDate: "2026-12-30", returned: 20 }, "2026-12-01") as any;
+  assert.deepEqual([a.ok.outDate, a.ok.returnedDate], ["2026-12-01", undefined]);
+  assert.equal(boxesOut({ boxes: a.ok }), 30);
+  const b = cleanBoxes({ qty: 50, dueDate: "2026-12-30", returned: 50 }, "2026-12-10") as any;
+  assert.equal(b.ok.returnedDate, "2026-12-10"); assert.equal(boxesOut({ boxes: b.ok }), 0);
+  assert.deepEqual(cleanBoxes(null, "2026-12-01"), { ok: undefined });
+});

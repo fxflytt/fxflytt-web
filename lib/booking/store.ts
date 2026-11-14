@@ -36,6 +36,7 @@ export type Booking = {
   crewNote?: string;       // shown to the crew on the job sheet
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
+  boxes?: Boxes;           // rented moving boxes out with the customer
   reviewSentAt?: number;   // when the Google review request was e-mailed
   work?: Work;             // start/finish and the customer's sign-off, recorded on the job sheet
   sentAt?: number;
@@ -54,6 +55,22 @@ export type Booking = {
 };
 
 export type Extra = { id: string; label: string; price: number };
+export type Boxes = { qty: number; outDate: string; dueDate: string; returned: number; returnedDate?: string; note?: string; remindedAt?: number };
+
+// Rented boxes: validates admin input. Returns the new state, or an error.
+export function cleanBoxes(d: unknown, today: string): { ok: Boxes | undefined } | { error: string } {
+  if (d === null) return { ok: undefined };
+  const x = (d || {}) as Record<string, unknown>, DATE = /^\d{4}-\d{2}-\d{2}$/;
+  const qty = Math.round(Number(x.qty)), returned = Math.round(Number(x.returned ?? 0));
+  if (!(qty >= 1 && qty <= 500)) return { error: "Antal kartonger: 1–500." };
+  if (!(returned >= 0 && returned <= qty)) return { error: "Återlämnade kan inte vara fler än utlämnade." };
+  const outDate = typeof x.outDate === "string" && DATE.test(x.outDate) ? x.outDate : today;
+  const dueDate = typeof x.dueDate === "string" && DATE.test(x.dueDate) ? x.dueDate : "";
+  if (!dueDate || dueDate < outDate) return { error: "Välj ett datum då kartongerna ska vara tillbaka." };
+  const note = typeof x.note === "string" ? x.note.trim().slice(0, 300) : "";
+  return { ok: { qty, outDate, dueDate, returned, returnedDate: returned === qty ? (typeof x.returnedDate === "string" && DATE.test(x.returnedDate) ? x.returnedDate : today) : undefined, note } };
+}
+export const boxesOut = (b: { boxes?: Boxes }) => (b.boxes ? b.boxes.qty - b.boxes.returned : 0);
 export type DeclineReason = "price" | "other_company" | "date" | "no_move" | "other";
 export const DECLINE_REASONS: Record<DeclineReason, string> = {
   price: "Priset är för högt", other_company: "Valt en annan flyttfirma", date: "Datumet passar inte",

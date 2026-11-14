@@ -1,7 +1,7 @@
 // Admin: list (GET), one booking (GET ?id=), create (POST), update (PATCH ?id=).
 import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
-import { listBookings, getBooking, saveBooking, createBooking, STATUSES, type Status } from "@/lib/booking/store.ts";
+import { listBookings, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
 import { listPhotos } from "@/lib/booking/work.ts";
 import { schedule } from "@/lib/booking/schedule.ts";
@@ -85,6 +85,15 @@ export async function PATCH(req: Request) {
     if (!same) { b.crew = ids; changes.push(ids.length ? "personal " + ids.map((id) => byId.get(id)!.name).join(", ") : "personal borttagen"); }
   }
   if ("adminNote" in d) { b.adminNote = str(d.adminNote, 2000); changes.push("intern anteckning"); }
+  if ("boxes" in d) {
+    const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" });
+    const c = cleanBoxes(d.boxes, today);
+    if ("error" in c) return Response.json({ error: c.error }, { status: 400 });
+    const was = b.boxes;
+    b.boxes = c.ok ? { ...c.ok, remindedAt: was?.remindedAt } : undefined;
+    changes.push(!b.boxes ? "hyrkartonger borttagna" : !was ? `${b.boxes.qty} hyrkartonger utlämnade, tillbaka senast ${b.boxes.dueDate}`
+      : b.boxes.returned !== was.returned ? `${b.boxes.returned} av ${b.boxes.qty} kartonger tillbaka` : "hyrkartonger ändrade");
+  }
   if ("crewNote" in d) { const v = str(d.crewNote, 1000); if (v !== (b.crewNote || "")) { b.crewNote = v; changes.push("anteckning till personalen"); } }
   if ("total" in d) {
     const t = Math.round(Number(d.total));
