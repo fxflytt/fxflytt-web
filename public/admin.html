@@ -56,6 +56,8 @@
   .sugg{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:6px}.sugg button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:9px 12px;font:inherit}.sugg small{display:block;color:var(--muted);font-size:12px}
   a.hist{display:block;padding:7px 0;border-bottom:1px solid var(--line);color:var(--navy);text-decoration:none}
   [hidden]{display:none!important}
+  .acw{position:relative}.acl{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.12);z-index:6;overflow:hidden}
+  .acl button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:9px 12px;font:inherit}.acl small{display:block;color:var(--muted);font-size:12px}
   .dbox{border:1px solid var(--line,#e3e8ed);border-radius:12px;padding:12px;margin-top:8px}
   .warn{background:#fff4e5;border:1px solid #ffd6a8;color:#8a4b00;border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0}
   .okmsg{background:#e6f5ec;border:1px solid #bfe5cf;color:var(--green);border-radius:10px;padding:10px 12px;font-size:14px;margin:8px 0;font-weight:600}
@@ -485,6 +487,22 @@
   const SVC=[['move|bas','Bara flytt – Bas'],['move|premium','Flytt + flyttstäd – Premium, 10 % rabatt'],['move|deluxe','Flytt + flyttstäd + packning – Deluxe, 20 % rabatt'],['hourly|','Flytt per timme'],['cleaning|','Bara flyttstäd'],['other|','Kontorsflytt, piano eller annat']];
   const FLOORS=['Bottenplan','1 tr','2 tr','3 tr','4 tr','5 tr','6 tr','7 tr','8 tr','9 tr','10 tr eller högre'];
   const LIFT=['Ingen hiss','Liten hiss','Stor hiss'];
+  // Address suggestions: built-in towns (always work) + Photon/OpenStreetMap street addresses.
+  const TOWNS=[["Kungsör","Västmanlands län",59.422,16.097],["Arboga","Västmanlands län",59.394,15.839],["Köping","Västmanlands län",59.514,15.993],["Västerås","Västmanlands län",59.611,16.545],["Hallstahammar","Västmanlands län",59.614,16.229],["Kolbäck","Västmanlands län",59.566,16.240],["Surahammar","Västmanlands län",59.709,16.221],["Sala","Västmanlands län",59.920,16.606],["Fagersta","Västmanlands län",60.003,15.793],["Norberg","Västmanlands län",60.065,15.926],["Eskilstuna","Södermanlands län",59.371,16.510],["Torshälla","Södermanlands län",59.416,16.474],["Katrineholm","Södermanlands län",58.996,16.207],["Flen","Södermanlands län",59.058,16.588],["Malmköping","Södermanlands län",59.133,16.733],["Vingåker","Södermanlands län",59.044,15.873],["Strängnäs","Södermanlands län",59.377,17.031],["Mariefred","Södermanlands län",59.259,17.225],["Nyköping","Södermanlands län",58.753,17.008],["Oxelösund","Södermanlands län",58.669,17.101],["Gnesta","Södermanlands län",59.049,17.312],["Trosa","Södermanlands län",58.896,17.550],["Örebro","Örebro län",59.275,15.213],["Kumla","Örebro län",59.128,15.143],["Hallsberg","Örebro län",59.066,15.110],["Lindesberg","Örebro län",59.594,15.227],["Nora","Örebro län",59.519,15.039],["Karlskoga","Örebro län",59.327,14.524],["Degerfors","Örebro län",59.238,14.431],["Laxå","Örebro län",58.986,14.618],["Askersund","Örebro län",58.880,14.904],["Enköping","Uppsala län",59.636,17.078],["Uppsala","Uppsala län",59.858,17.639],["Stockholm","Stockholms län",59.329,18.069],["Södertälje","Stockholms län",59.196,17.626],["Norrköping","Östergötlands län",58.588,16.192],["Linköping","Östergötlands län",58.411,15.622],["Finspång","Östergötlands län",58.706,15.770],["Motala","Östergötlands län",58.537,15.036],["Mjölby","Östergötlands län",58.325,15.125],["Karlstad","Värmlands län",59.402,13.511],["Kristinehamn","Värmlands län",59.310,14.108],["Avesta","Dalarnas län",60.145,16.168],["Falun","Dalarnas län",60.607,15.636],["Borlänge","Dalarnas län",60.485,15.437],["Ludvika","Dalarnas län",60.149,15.187],["Gävle","Gävleborgs län",60.675,17.141],["Skövde","Västra Götalands län",58.391,13.845],["Göteborg","Västra Götalands län",57.709,11.975],["Jönköping","Jönköpings län",57.783,14.161],["Malmö","Skåne län",55.605,13.003],["Sundsvall","Västernorrlands län",62.391,17.307],["Umeå","Västerbottens län",63.826,20.263]];
+  const normT=(t)=>t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const townMatches=(q)=>{ const n=normT(q); return TOWNS.filter(t=>normT(t[0]).startsWith(n)).concat(TOWNS.filter(t=>!normT(t[0]).startsWith(n)&&normT(t[0]).includes(n))).slice(0,6).map(t=>({main:t[0],sub:t[1]+', Sverige',value:t[0],lat:t[2],lon:t[3]})); };
+  async function photon(q){
+    const r=await fetch('https://photon.komoot.io/api/?limit=7&lang=default&bbox=10.5,55.0,24.3,69.1&lat=59.42&lon=16.1&q='+encodeURIComponent(q)); if(!r.ok) throw 0;
+    const j=await r.json(), seen=new Set();
+    return j.features.filter(f=>f.properties.countrycode==='SE').map(f=>{ const p=f.properties;
+      const qn=(q.match(/\b(\d+\s?[a-zA-Z]?)\b/)||[])[1];
+      const street=p.street?(p.street+(p.housenumber?' '+p.housenumber:'')):(p.type==='street'&&p.name?p.name+(qn?' '+qn.toUpperCase().replace(' ',''):''):(p.name||''));
+      const city=p.city||p.town||p.village||p.locality||p.district||'';
+      const value=[street,[p.postcode,city].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+      return {main:street||city||p.name,sub:[p.postcode,street?city:'',p.county].filter(Boolean).join(', ')||'Sverige',value:value||street||city,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]};
+    }).filter(m=>{ if(seen.has(m.value)) return false; seen.add(m.value); return true; }).slice(0,6);
+  }
+  const airKm=(a,b)=>{ const R=6371,r=Math.PI/180,dLa=(b.lat-a.lat)*r,dLo=(b.lon-a.lon)*r; const h=Math.sin(dLa/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
   function showNew(){
     const opt=(l,sel)=>l.map(x=>`<option${x===sel?' selected':''}>${esc(x)}</option>`).join('');
     root.innerHTML=navBar('new')+`<main><div class="card"><h3>Ny bokning (t.ex. från telefon)</h3>
@@ -492,7 +510,9 @@
       <div id="sugg"></div>
       <div class="row2"><div><label class="f">Telefon *</label><input id="n_phone" type="tel" autocomplete="off"></div><div><label class="f">E-post</label><input id="n_email" type="email"></div></div>
       <div id="known"></div>
-      <label class="f">Från</label><input id="n_from"><label class="f">Till</label><input id="n_to">
+      <label class="f">Från</label><div class="acw"><input id="n_from" autocomplete="off" placeholder="Gata och ort"><div class="acl" id="ac_from" hidden></div></div>
+      <label class="f">Till</label><div class="acw"><input id="n_to" autocomplete="off" placeholder="Gata och ort"><div class="acl" id="ac_to" hidden></div></div>
+      <div class="muted" id="routeinfo"></div>
       <div class="row2"><div><label class="f">Våning (från)</label><select id="n_ff">${opt(FLOORS)}</select></div><div><label class="f">Hiss (från)</label><select id="n_hf">${opt(LIFT)}</select></div></div>
       <div class="row2"><div><label class="f">Våning (till)</label><select id="n_ft">${opt(FLOORS)}</select></div><div><label class="f">Hiss (till)</label><select id="n_ht">${opt(LIFT)}</select></div></div>
       <div class="row2"><div><label class="f">Datum</label><input id="n_date" type="date"></div><div><label class="f">Starttid</label><select id="n_time">${timeOpts('')}</select></div></div>
@@ -525,6 +545,28 @@
     };
     $('#n_name').oninput=()=>suggest(v('n_name'));
     $('#n_phone').oninput=()=>{ suggest(v('n_phone')); showKnown(); };
+    // --- addresses + distance: same method as the website form (straight line × 1.25) ---
+    const pts={from:null,to:null};
+    const setupAc=(key)=>{
+      const inp=$('#n_'+key), box=$('#ac_'+key); let items=[], timer=null, req=0;
+      const draw=()=>{ box.innerHTML=items.length?items.map((m,i)=>`<button type="button" data-i="${i}"><b>${esc(m.main)}</b><small>${esc(m.sub)}</small></button>`).join(''):''; box.hidden=!items.length;
+        box.querySelectorAll('button').forEach(b=>b.onmousedown=(e)=>{ e.preventDefault(); const m=items[b.dataset.i]; inp.value=m.value; pts[key]={lat:m.lat,lon:m.lon}; items=[]; draw(); route(true); }); };
+      inp.addEventListener('input',()=>{
+        pts[key]=null; route(false); const q=inp.value.trim(); clearTimeout(timer);
+        if(q.length<2){ items=[]; draw(); return; }
+        items=townMatches(q); draw(); const id=++req;
+        timer=setTimeout(async()=>{ try{ const r=await photon(q); if(id===req&&r.length){ items=r; draw(); } }catch(_){} },250);
+      });
+      inp.addEventListener('blur',()=>setTimeout(()=>{ items=[]; draw(); },150));
+    };
+    const route=(fill)=>{
+      if(!(pts.from&&pts.to)){ $('#routeinfo').textContent=''; return; }
+      const road=Math.max(1,Math.round(airKm(pts.from,pts.to)*1.25));
+      const min=Math.round(road<20?road*1.6+5:road*0.85+10);
+      $('#routeinfo').textContent='Avstånd ca '+road+' km · körtid ca '+(min<60?min+' min':Math.floor(min/60)+' tim '+(min%60?min%60+' min':''))+' (samma beräkning som på hemsidan)';
+      if(fill){ $('#n_km').value=road; run(); }
+    };
+    setupAc('from'); setupAc('to');
     // --- price ---
     let calc=null, manual=false;
     const run=()=>{
