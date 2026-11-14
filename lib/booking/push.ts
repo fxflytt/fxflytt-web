@@ -60,3 +60,7 @@ export async function notifyAll(n: Note, only?: (s: Sub) => boolean): Promise<nu
     return ok;
   } catch { return 0; }
 }
+
+// Notification to some crew members' phones (crew app), by person id.
+export const notifyCrew = (ids: string[], n: Note) =>
+  ids.length ? notifyAll(n, (s) => ids.some((id) => s.userId === "crew:" + id)) : Promise.resolve(0);

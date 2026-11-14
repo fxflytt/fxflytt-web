@@ -37,6 +37,7 @@ export type Booking = {
   crewNote?: string;       // shown to the crew on the job sheet
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
+  openCall?: OpenCall;     // "Vem kan jobba?" – sent to the crew app, first come first served
   boxes?: Boxes;           // rented moving boxes out with the customer
   reviewSentAt?: number;   // when the Google review request was e-mailed
   work?: Work;             // start/finish and the customer's sign-off, recorded on the job sheet
@@ -56,6 +57,7 @@ export type Booking = {
 };
 
 export type Extra = { id: string; label: string; price: number };
+export type OpenCall = { need: number; note: string; at: number; by: string; asked: string[]; yes: string[]; no: string[]; closedAt?: number };
 export type Boxes = { qty: number; outDate: string; dueDate: string; returned: number; returnedDate?: string; note?: string; remindedAt?: number };
 
 // Rented boxes: validates admin input. Returns the new state, or an error.

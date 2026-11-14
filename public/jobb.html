@@ -69,6 +69,28 @@
   .clock .btn{margin-top:12px}.clock .btn.out{background:var(--navy)}
   .clock .cerr{color:var(--red);font-weight:700;font-size:14px;margin-top:10px}
   .clock .priv{color:var(--muted);font-size:12px;margin-top:8px;text-align:center}
+  .bnav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:1px solid var(--line);display:flex;padding:4px 4px calc(4px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(13,42,63,.06)}
+  .bnav a{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;color:#7a8b99;text-decoration:none;font-size:11.5px;font-weight:700}
+  .bnav a.on{color:var(--navy)}.bnav a.on svg{color:var(--accent2)}
+  .bnav .bd{position:absolute;top:2px;left:calc(50% + 6px);background:#e5484d;color:#fff;border-radius:999px;font-size:10.5px;font-weight:800;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 5px}
+  body.in main{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+  .offer{background:#fff;border:1.5px solid #ffd6a8;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--sh)}
+  .offer .when{font-weight:800;font-size:16px;color:var(--navy)}.offer .when::first-letter{text-transform:uppercase}
+  .offer .r{font-size:15px;margin-top:2px}.offer .n{background:#fff7ea;border-radius:10px;padding:8px 10px;margin-top:8px;font-size:14px}
+  .offer .b2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .btn.ghost{background:#eef2f5;color:#47525c}
+  .sel{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .sel button{border:1.5px solid var(--line2);background:#fff;border-radius:12px;padding:12px 4px;font:inherit;font-weight:800;font-size:14px;color:var(--navy);cursor:pointer}
+  .sel button.on{border-color:var(--accent);background:#fff4ea}
+  .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  .row2 input{min-width:0;max-width:100%;font-size:16px;padding:12px 10px}
+  textarea{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--line2);border-radius:12px;min-height:70px}
+  .abs{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+  .abs b{display:block}.abs small{color:var(--muted)}
+  .msg{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--sh)}
+  .msg.new{border-color:var(--accent);box-shadow:0 0 0 2px #ff7a1a22}
+  .msg .h{display:flex;justify-content:space-between;color:var(--muted);font-size:12.5px;margin-bottom:6px}.msg .t{white-space:pre-wrap;font-size:15.5px}
+  .sec-t{font-size:20px;color:var(--navy);margin:4px 2px 12px}
   .upd{text-align:center;color:var(--muted);font-size:12.5px;margin-top:18px}
 </style>
 </head>
@@ -78,6 +100,7 @@
   <button class="ib" id="out" aria-label="Logga ut"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg></button>
 </div>
 <div id="root"></div>
+<nav class="bnav" id="bnav" hidden></nav>
 <script>
 (function(){
   const $=(s)=>document.querySelector(s), root=$('#root');
@@ -86,6 +109,8 @@
   const dayName=(d)=>new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'});
   const hrs=(h)=>String(h).replace('.',',')+' tim';
   let data=null, tab='next', timer=null;
+  const sec=()=>({lediga:'lediga',ledighet:'ledighet',meddelanden:'meddelanden'})[location.hash.slice(1)]||'jobb';
+  window.addEventListener('hashchange',()=>{ if(data) showJobs(); });
 
   async function start(){
     const s=await fetch('/api/crew/login',{cache:'no-store'}).then(r=>r.json()).catch(()=>({}));
@@ -93,7 +118,7 @@
   }
 
   function showLogin(msg){
-    $('#top').hidden=true; clearInterval(timer);
+    $('#top').hidden=true; $('#bnav').hidden=true; document.body.classList.remove('in'); clearInterval(timer);
     root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><h1>Personalappen</h1>
       <form class="card" id="f"><label for="ph">Mobilnummer</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="070-123 45 67">
       <label for="pin">Kod (6 siffror)</label><input id="pin" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*">
@@ -127,7 +152,11 @@
 
   async function showJobs(){
     try{ const d=await load(); if(!d) return; data=d; }catch(e){ if(!data){ root.innerHTML=`<main><div class="empty">${esc(e.message)}</div></main>`; return; } }
-    $('#top').hidden=false;
+    $('#top').hidden=false; document.body.classList.add('in'); drawNav();
+    clearInterval(timer); timer=setInterval(()=>{ if(document.visibilityState==='visible'&&sec()!=='ledighet') showJobs(); },60000);
+    if(sec()==='lediga') return showOffers();
+    if(sec()==='ledighet') return showAbsence();
+    if(sec()==='meddelanden') return showMessages();
     const t=data.today, tm=addDays(t,1);
     const list=data.jobs.filter(j=>tab==='next'?j.date>=t:j.date<t);
     if(tab==='past') list.reverse();
@@ -144,7 +173,68 @@
       <div class="upd">Uppdaterad ${new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})}</div></main>`;
     root.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; showJobs(); });
     pushBanner(); drawClock();
-    clearInterval(timer); timer=setInterval(()=>{ if(document.visibilityState==='visible') showJobs(); },60000);
+  }
+
+  // ---- bottom bar ----
+  const IC={jobb:'<path d="M4 7h16v12H4z"/><path d="M9 7V5h6v2"/>',lediga:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="4"/>',ledighet:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',meddelanden:'<path d="M4 5h16v11H8l-4 4z"/>'};
+  function drawNav(){
+    const n=$('#bnav'); n.hidden=false; const s=sec();
+    const item=(k,l,badge)=>`<a href="#${k==='jobb'?'':k}" class="${s===k?'on':''}"><svg class="i" viewBox="0 0 24 24">${IC[k]}</svg>${l}${badge?`<span class="bd">${badge}</span>`:''}</a>`;
+    n.innerHTML=item('jobb','Mina jobb')+item('lediga','Lediga jobb',(data.offers||[]).length)+item('ledighet','Ledighet')+item('meddelanden','Meddelanden',data.unread);
+  }
+
+  // ---- "Vem kan jobba?" ----
+  function showOffers(){
+    const t=data.today, o=data.offers||[];
+    root.innerHTML=`<main><h2 class="sec-t">Lediga jobb</h2>
+      ${o.length?o.map(j=>`<div class="offer"><div class="when">${esc(j.date===t?'I dag':dayName(j.date))}${j.time?' · '+esc(j.time)+(j.end?'–'+esc(j.end):''):''}</div>
+        <div class="r">${esc([j.from,j.to].filter(Boolean).join(' → ')||j.size)}${j.areaM2?` · ${esc(j.areaM2)} m²`:''}</div>
+        <div class="muted" style="color:var(--muted);font-size:13px;margin-top:2px">ca ${esc(hrs(j.hours))} · ${j.left} plats${j.left>1?'er':''} kvar</div>
+        ${j.note?`<div class="n">${esc(j.note)}</div>`:''}
+        <div class="b2"><button class="btn ghost" data-no="${esc(j.id)}">Kan inte</button><button class="btn" data-yes="${esc(j.id)}">Jag tar det</button></div></div>`).join('')
+        :'<div class="empty">Inga lediga jobb just nu.<br>Du får en notis när kontoret behöver någon.</div>'}</main>`;
+    const answer=async(id,yes)=>{ const r=await fetch('/api/crew/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,answer:yes?'yes':'no'})});
+      const j=await r.json().catch(()=>({})); if(!r.ok) alert(j.error||'Något gick fel.'); else if(yes) alert('Jobbet är ditt! Det finns nu under Mina jobb.'); showJobs(); };
+    root.querySelectorAll('[data-yes]').forEach(b=>b.onclick=()=>{ b.disabled=true; answer(b.dataset.yes,true); });
+    root.querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>{ b.disabled=true; answer(b.dataset.no,false); });
+  }
+
+  // ---- absence: sick, vacation, can't work ----
+  const KIND={sick:'Sjuk',vacation:'Semester / ledigt',off:'Kan inte jobba'}, STAT={pending:['Väntar på svar','run'],approved:['Godkänd','ok'],rejected:['Inte godkänd','no']};
+  async function showAbsence(){
+    const j=await fetch('/api/crew/absence',{cache:'no-store'}).then(r=>r.json()).catch(()=>({absences:[]}));
+    let kind='sick'; const t=data.today;
+    const span=(a)=>a.from===a.to?dayName(a.from):dayName(a.from)+' – '+dayName(a.to);
+    root.innerHTML=`<main><h2 class="sec-t">Ledighet och frånvaro</h2>
+      <div class="card"><label style="margin-top:0">Vad gäller det?</label>
+        <div class="sel">${Object.entries(KIND).map(([k,l])=>`<button type="button" data-k="${k}" class="${k===kind?'on':''}">${l}</button>`).join('')}</div>
+        <div class="row2"><div><label for="af">Från</label><input id="af" type="date" value="${t}"></div><div><label for="at">Till och med</label><input id="at" type="date" value="${t}"></div></div>
+        <label for="an">Meddelande (frivilligt)</label><textarea id="an" placeholder="T.ex. tandläkare på förmiddagen"></textarea>
+        <div class="muted" id="ahelp" style="color:var(--muted);font-size:13px;margin-top:8px"></div>
+        <button class="btn" id="asend" style="margin-top:12px">Skicka</button><div class="err" id="aerr"></div></div>
+      <h3 style="margin:20px 2px 8px;color:var(--navy);font-size:15px">Dina anmälningar</h3>
+      ${j.absences.length?j.absences.map(a=>`<div class="abs"><div><b>${esc(KIND[a.kind])}</b><small>${esc(span(a))}${a.note?' · '+esc(a.note):''}</small></div>
+        <div style="text-align:right"><span class="tag ${STAT[a.status][1]}">${STAT[a.status][0]}</span>${a.status!=='approved'||a.kind!=='vacation'||a.from>t?`<div><button class="btn sm ghost" data-del="${esc(a.id)}" style="margin-top:6px">Ta bort</button></div>`:''}</div></div>`).join('')
+        :'<div class="empty" style="padding:24px">Inga anmälningar.</div>'}</main>`;
+    const help=()=>{ $('#ahelp').textContent=kind==='sick'?'Kontoret får en notis direkt.':kind==='vacation'?'Kontoret godkänner eller säger nej – du får en notis.':'Kontoret ser att du inte kan jobba de dagarna när de planerar.'; };
+    root.querySelectorAll('.sel button').forEach(b=>b.onclick=()=>{ kind=b.dataset.k; root.querySelectorAll('.sel button').forEach(x=>x.classList.toggle('on',x===b)); help(); }); help();
+    $('#af').onchange=()=>{ if($('#at').value<$('#af').value) $('#at').value=$('#af').value; };
+    $('#asend').onclick=async()=>{ const b=$('#asend'); b.disabled=true; $('#aerr').textContent='';
+      const r=await fetch('/api/crew/absence',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,from:$('#af').value,to:$('#at').value,note:$('#an').value})});
+      const x=await r.json().catch(()=>({})); if(!r.ok){ b.disabled=false; $('#aerr').textContent=x.error||'Något gick fel.'; return; }
+      if(x.jobs) alert(`Skickat. Du står på ${x.jobs} jobb de dagarna – kontoret ser det.`); showAbsence(); };
+    root.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{ if(!confirm('Ta bort anmälan?')) return;
+      const r=await fetch('/api/crew/absence?id='+b.dataset.del,{method:'DELETE'}); const x=await r.json().catch(()=>({})); if(!r.ok) alert(x.error||'Något gick fel.'); showAbsence(); });
+  }
+
+  // ---- messages from the office ----
+  async function showMessages(){
+    const j=await fetch('/api/crew/messages',{cache:'no-store'}).then(r=>r.json()).catch(()=>({messages:[]}));
+    const ts=(t)=>new Date(t).toLocaleString('sv-SE',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Stockholm'});
+    root.innerHTML=`<main><h2 class="sec-t">Meddelanden</h2>${j.messages.length?j.messages.map(m=>`<div class="msg${m.read?'':' new'}"><div class="h"><b>${esc(m.from)}</b><span>${esc(ts(m.at))}</span></div><div class="t">${esc(m.text)}</div></div>`).join('')
+      :'<div class="empty">Inga meddelanden.</div>'}</main>`;
+    const unread=j.messages.filter(m=>!m.read).map(m=>m.id);
+    if(unread.length){ await fetch('/api/crew/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:unread})}).catch(()=>{}); data.unread=0; drawNav(); }
   }
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&data&&!$('#top').hidden) showJobs(); });
 
