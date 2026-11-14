@@ -575,7 +575,7 @@ body.noscroll .mbar{display:none}
     <p>Om du redan har använt ditt utrymme för året, eller om Skatteverket av någon annan anledning nekar avdraget helt eller delvis, betalar du mellanskillnaden. Du kan se hur mycket du har kvar genom att logga in på Skatteverkets e-tjänst.</p>
 
     <h2 style="font-size:1.5rem;margin:34px 0 10px">Våra priser är redan efter RUT</h2>
-    <p>Alla priser på fxflytt.se visas inklusive moms och efter RUT-avdrag. Exempel: flytt av en bostad på 60 m² kostar 3 950 kr efter avdrag.</p>
+    <p>Alla priser på fxflytt.se visas inklusive moms och efter RUT-avdrag. Exempel: flytt av en bostad på 60 m² kostar <span data-fxp="mv:60">3 950</span> kr efter avdrag.</p>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
       <a href="index.html#prisraknare" class="btn btn-accent">Räkna ut ditt pris →</a>
       <a href="index.html#offert" class="btn btn-ghost">Begär offert</a>
@@ -625,6 +625,7 @@ b.addEventListener('click',()=>set(!d.classList.contains('open')));
 d.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>set(false)));
 window.addEventListener('resize',()=>{if(innerWidth>900)set(false);});})();
 </script>
+<script src="/fx-prices.js" defer></script>
 <script src="/chat-widget.js" defer></script>
 </body>
 </html>

@@ -1030,6 +1030,8 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       el.style.display=on?'':'none';
     });
   }
+  // New prices from admin (fx-prices.js): count again with them.
+  window.addEventListener('fx:prices',()=>{ try{ calc(); }catch(_){} });
   function calc(){
     vis();
     if(!window.fxComputePrice) return;

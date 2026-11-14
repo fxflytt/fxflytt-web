@@ -165,6 +165,10 @@
   .htab td{width:auto;padding:10px 8px 10px 0;vertical-align:middle;color:var(--ink)}.htab td:first-child{width:auto}
   .htab a.hist{font-size:13.5px}
   @media (max-width:600px){.htab .hm{display:none}}
+  .ptab{width:100%}.ptab th{text-align:left;font-size:12px;color:var(--muted);padding:4px 6px 4px 0}.ptab td{padding:3px 6px 3px 0;border:0;width:auto}
+  .ptab input{padding:7px 9px;font-size:15px}.ptab td:last-child{width:44px}
+  .chg input,.chg{background:#fff8d6}.chg input{border-color:#e8c547}
+  .pdiff{max-height:220px;overflow:auto;margin-bottom:4px}.pdiff>div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}.pdiff s{color:var(--muted)}
   /* ---------- planning (booking detail) ---------- */
   .pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
   .pk{display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line2);background:#fff;border-radius:12px;padding:9px 11px;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
@@ -280,6 +284,7 @@
 <div id="npanel" hidden></div><div id="toast" hidden></div>
 <script src="/price-calc.js"></script>
 <script src="/fx-schedule.js"></script>
+<script src="/fx-prices.js" defer></script>
 <script>
 (function(){
   const $=(s,el=document)=>el.querySelector(s);
@@ -1342,6 +1347,68 @@
       if($('#p_test')) $('#p_test').onclick=async()=>{ try{ await api('/api/admin/push?test=1',{method:'POST'}); m('Testnotisen är skickad – den ska dyka upp om några sekunder.',true); }catch(e){ m(e.message,false); } };
       if($('#p_off')) $('#p_off').onclick=async()=>{ try{ await api('/api/admin/push?endpoint='+encodeURIComponent(cur.endpoint),{method:'DELETE'}); await cur.unsubscribe().catch(()=>{}); SETTINGS.push(el); }catch(e){ m(e.message,false); } };
       el.querySelectorAll('[data-rm]').forEach(x=>x.onclick=async()=>{ await api('/api/admin/push?endpoint='+encodeURIComponent(x.dataset.rm),{method:'DELETE'}); if(cur&&cur.endpoint===x.dataset.rm) await cur.unsubscribe().catch(()=>{}); SETTINGS.push(el); });
+    };
+    draw();
+  };
+
+  // ---- price list (owner) ----
+  SET_TABS.push(['prices','Priser',true]);
+  SETTINGS.prices=async(el)=>{
+    let data; try{ data=await api('/api/admin/prices'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const clone=(p)=>JSON.parse(JSON.stringify({moveFixed:p.moveFixed,cleaning:p.cleaning,hourly:p.hourly,km:p.km,boxes:p.boxes}));
+    let cur=data.current, f=clone(cur);
+    const n=(v)=>Number(v);
+    // what changed compared with the prices in use: [label, old, new]
+    const diff=()=>{
+      const d=[], c=clone(cur), add=(l,a,b)=>{ if(a!==b) d.push([l,a,b]); };
+      [['2','2 personer, kr/tim'],['3','3 personer, kr/tim'],['4','4 personer, kr/tim'],['minHours','Minsta antal timmar']].forEach(([k,l])=>add(l,c.hourly[k],f.hourly[k]));
+      add('Kr per km',c.km.pricePerKm,f.km.pricePerKm); add('Gratis under km',c.km.freeBelowKm,f.km.freeBelowKm);
+      add('Kartonger, antal',c.boxes.qty,f.boxes.qty); add('Kartonger, köp',c.boxes.buy,f.boxes.buy); add('Kartonger, hyra',c.boxes.rent,f.boxes.rent);
+      const tbl=(name,a,b,cars)=>{ const len=Math.max(a.length,b.length);
+        for(let i=0;i<len;i++){ const x=a[i], y=b[i];
+          if(!x) d.push([`${name}: ny rad upp till ${y[0]} m²`,'–',`${kr(y[1])}${cars?' · '+y[2]+' bil':''}`]);
+          else if(!y) d.push([`${name}: rad upp till ${x[0]} m² borttagen`,kr(x[1]),'–']);
+          else if(x.join()!==y.join()) d.push([`${name}: upp till ${y[0]} m²`,`${x[0]!==y[0]?x[0]+' m² · ':''}${kr(x[1])}${cars&&x[2]!==y[2]?' · '+x[2]+' bil':''}`,`${kr(y[1])}${cars&&x[2]!==y[2]?' · '+y[2]+' bil':''}`]); } };
+      tbl('Flytt',c.moveFixed,f.moveFixed,true); tbl('Flyttstäd',c.cleaning,f.cleaning,false);
+      return d;
+    };
+    const inp=(path,val,w)=>`<input class="pin" data-p="${path}" type="number" inputmode="numeric" value="${esc(val)}" style="${w?'width:'+w:''}">`;
+    const ch=(a,b)=>a!==b?' chg':'';
+    const tblHtml=(key,rows,cars)=>{ const c=cur[key];
+      return `<table class="ptab"><thead><tr><th>Upp till m²</th>${cars?'<th>Bilar</th>':''}<th>Pris (kr)</th><th></th></tr></thead><tbody>${rows.map((r,i)=>`<tr>
+        <td class="${ch(c[i]?.[0],r[0])}">${inp(key+'.'+i+'.0',r[0])}</td>${cars?`<td class="${ch(c[i]?.[2],r[2])}">${inp(key+'.'+i+'.2',r[2])}</td>`:''}<td class="${ch(c[i]?.[1],r[1])}">${inp(key+'.'+i+'.1',r[1])}</td>
+        <td><button class="btn gray sm" data-del="${key}.${i}" aria-label="Ta bort rad">✕</button></td></tr>`).join('')}</tbody></table>
+        <button class="btn sec sm" data-addrow="${key}" style="margin-top:8px">+ Rad</button>`; };
+    const draw=()=>{
+      const d=diff(), c=cur, fld=(label,path,val,old)=>`<div><label class="f">${label}</label><div class="${ch(old,val)}" style="border-radius:10px">${inp(path,val)}</div></div>`;
+      el.innerHTML=`<div class="card"><h3>Prislista <span class="sub">${c.changedAt?'ändrad '+esc(fmtTs(c.changedAt))+(c.changedBy?' av '+esc(c.changedBy):''):'standardpriserna'}</span></h3>
+          <div class="muted">Alla priser inkl. moms <b>efter RUT-avdrag</b>. Nya priser gäller direkt i prisräknaren på hemsidan, på alla sidor med priser, i chatten och i nya offerter. <b>Skickade och signerade offerter behåller sitt pris.</b> Paketrabatterna (Premium −${c.packages.premium.discountPct} %, Deluxe −${c.packages.deluxe.discountPct} %) ändras inte här.</div></div>
+        <div class="cols"><div>
+          <div class="card"><h3>Flytt per timme</h3><div class="row2">${fld('2 personer + bil','hourly.2',f.hourly['2'],c.hourly['2'])}${fld('3 personer + bil','hourly.3',f.hourly['3'],c.hourly['3'])}</div>
+            <div class="row2">${fld('4 personer + 2 bilar','hourly.4',f.hourly['4'],c.hourly['4'])}${fld('Minst antal timmar','hourly.minHours',f.hourly.minHours,c.hourly.minHours)}</div></div>
+          <div class="card"><h3>Körsträcka (fast pris)</h3><div class="row2">${fld('Kr per km','km.pricePerKm',f.km.pricePerKm,c.km.pricePerKm)}${fld('Gratis under (km)','km.freeBelowKm',f.km.freeBelowKm,c.km.freeBelowKm)}</div></div>
+          <div class="card"><h3>Flyttkartonger</h3><div class="row3">${fld('Antal','boxes.qty',f.boxes.qty,c.boxes.qty)}${fld('Köpa (kr)','boxes.buy',f.boxes.buy,c.boxes.buy)}${fld('Hyra (kr)','boxes.rent',f.boxes.rent,c.boxes.rent)}</div></div>
+          <div class="card"><h3>Flyttstäd – fast pris efter boyta</h3>${tblHtml('cleaning',f.cleaning,false)}</div>
+        </div><div>
+          <div class="card"><h3>Flytt – fast pris efter boyta</h3><div class="muted" style="margin-bottom:6px">Boytan avrundas uppåt till närmaste rad. Över sista raden: offert.</div>${tblHtml('moveFixed',f.moveFixed,true)}</div>
+        </div></div>
+        <div class="card" id="pchg" style="position:sticky;bottom:${matchMedia('(max-width:899px)').matches?'76':'12'}px;z-index:5;box-shadow:var(--sh2)">
+          ${d.length?`<h3>${d.length} ändring${d.length>1?'ar':''} – inte sparade än</h3><div class="pdiff">${d.slice(0,12).map(x=>`<div><span>${esc(x[0])}</span><span><s>${esc(typeof x[1]==='number'?String(x[1]):x[1])}</s> → <b>${esc(typeof x[2]==='number'?String(x[2]):x[2])}</b></span></div>`).join('')}${d.length>12?`<div class="muted">+${d.length-12} till</div>`:''}</div>
+            <div class="btns"><button class="btn gray" id="p_reset">Ångra ändringarna</button><button class="btn" id="p_save">Spara nya priser</button></div>`
+          :'<div class="muted">Inga ändringar. Ändra ett pris ovan – ändrade fält blir gula.</div>'}<div id="p_msg"></div></div>
+        <div class="card"><h3>Tidigare prislistor</h3>${data.log.length?data.log.map((p,i)=>`<div class="todo"><a><b>${p.changedAt?esc(fmtTs(p.changedAt)):'Standardpriserna'}${p.changedBy?' · '+esc(p.changedBy):''}</b><small>2 pers ${p.hourly['2']} kr/tim · ${p.km.pricePerKm} kr/km · flytt från ${kr(p.moveFixed[0][1])} · städ från ${kr(p.cleaning[0][1])}</small></a><button class="btn sec sm" data-load="${i}">Ladda in</button></div>`).join(''):'<div class="muted">Inga tidigare ändringar.</div>'}
+          <button class="btn sec sm" id="p_default" style="margin-top:10px">Ladda in standardpriserna</button></div>`;
+      el.querySelectorAll('.pin').forEach(x=>x.onchange=()=>{ const p=x.dataset.p.split('.'); let o=f; while(p.length>1) o=o[p.shift()]; o[p[0]]=n(x.value); draw(); });
+      el.querySelectorAll('[data-del]').forEach(x=>x.onclick=()=>{ const [k,i]=x.dataset.del.split('.'); if(f[k].length<=1) return; f[k].splice(Number(i),1); draw(); });
+      el.querySelectorAll('[data-addrow]').forEach(x=>x.onclick=()=>{ const k=x.dataset.addrow, last=f[k][f[k].length-1]; f[k].push(k==='moveFixed'?[last[0]+20,last[1]+1000,last[2]]:[last[0]+20,last[1]+500]); draw(); });
+      el.querySelectorAll('[data-load]').forEach(x=>x.onclick=()=>{ f=clone(data.log[Number(x.dataset.load)]); draw(); $('#pchg').scrollIntoView({block:'end',behavior:'smooth'}); });
+      $('#p_default').onclick=()=>{ f=clone(data.default); draw(); };
+      if($('#p_reset')) $('#p_reset').onclick=()=>{ f=clone(cur); draw(); };
+      if($('#p_save')) $('#p_save').onclick=async()=>{
+        if(!confirm(`Spara ${d.length} prisändring${d.length>1?'ar':''}? De gäller direkt på hemsidan och i nya offerter.`)) return;
+        try{ cur=await api('/api/admin/prices',{method:'PUT',body:JSON.stringify(f)}); data=await api('/api/admin/prices'); cur=data.current; f=clone(cur); window.FX_PRICES={...window.FX_PRICES,...cur}; draw(); notify('Nya priser sparade ✓ – hemsidan visar dem inom en minut'); }
+        catch(e){ $('#p_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; }
+      };
     };
     draw();
   };

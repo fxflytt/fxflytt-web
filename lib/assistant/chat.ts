@@ -1,6 +1,7 @@
 // Calls Claude for the website assistant. Used by /api/chat. The API key is read from the
 // server environment (ANTHROPIC_API_KEY) and never reaches the browser.
 import { SYSTEM_PROMPT } from "./facts.ts";
+// The route passes a system prompt built from the price list in use (systemPrompt(prices)).
 
 export const MODEL = "claude-haiku-5-5";
 export const MAX_TURNS = 12;
@@ -32,7 +33,7 @@ export function redact(text: string): string {
     .replace(/\b(?:\d[ -]?){13,19}\b/g, "[borttaget nummer]");
 }
 
-export async function askClaude(messages: ChatMessage[], apiKey: string, fetchImpl: typeof fetch = fetch): Promise<string> {
+export async function askClaude(messages: ChatMessage[], apiKey: string, fetchImpl: typeof fetch = fetch, system: string = SYSTEM_PROMPT): Promise<string> {
   const res = await fetchImpl("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -44,7 +45,7 @@ export async function askClaude(messages: ChatMessage[], apiKey: string, fetchIm
       model: MODEL,
       max_tokens: 1500,
       // The fixed instructions are cached between requests, which makes each chat cheaper.
-      system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
       messages: messages.map((m) => ({ role: m.role, content: redact(m.content) })),
     }),
     signal: AbortSignal.timeout(25_000),

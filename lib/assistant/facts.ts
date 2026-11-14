@@ -2,7 +2,34 @@
 // When a fact changes (prices, opening hours, policies), change it here AND on the website.
 // Items marked are shown on the website but have not yet been confirmed by the owner.
 
-export const COMPANY_FACTS = `
+import type { Prices as PriceList } from "../pricing/current.ts";
+import DEFAULT_JSON from "../pricing/prices.json" with { type: "json" };
+const DEFAULT_PRICES = DEFAULT_JSON as PriceList;
+
+// The price lines are written from the price list in use, so the assistant always quotes today's prices.
+const n = (x: number) => Math.round(x).toLocaleString("sv-SE").replace(/\s/g, " ");
+export function priceFacts(P: PriceList) {
+  const mv = P.moveFixed, cl = P.cleaning, km = P.km, h = P.hourly, bx = P.boxes;
+  const at = (rows: number[][], m2: number) => (rows.find((r) => m2 <= r[0]) || [])[1];
+  const lastMv = mv[mv.length - 1][0], lastCl = cl[cl.length - 1][0];
+  const ex = mv[0][1] + 600 * km.pricePerKm;
+  const pr = P.packages.premium.discountPct, m60 = at(mv, 60), c60 = at(cl, 60), k66 = 66 * km.pricePerKm;
+  const cars = [2, 3, 4].map((c) => [c, (mv.find((r) => r[2] === c) || [])[1]]).filter((x) => x[1]);
+  return {
+    move: `- Flytt, fast pris efter boyta (avrundas uppåt): ${mv.map((r, i) => (i === 0 ? `upp till ${r[0]} m² ${n(r[1])} kr` : r[0] - mv[i - 1][0] > 10 ? `${mv[i - 1][0] + 1}–${r[0]} m² ${n(r[1])}` : `${r[0]} m² ${n(r[1])}`)).join(", ")}. Över ${lastMv} m²: offert. Våning och hiss påverkar inte priset.`,
+    km: `- Körsträcka (endast fast pris): räknas EN VÄG, vägavstånd mellan gamla och nya adressen (inte från vårt kontor, inte tur och retur). Under ${km.freeBelowKm} km = 0 kr; ${km.freeBelowKm} km eller mer = ${n(km.pricePerKm)} kr per km för hela sträckan. Exempel: ${mv[0][0]} m² Kungsör–Malmö 600 km = ${n(mv[0][1])} + ${n(600 * km.pricePerKm)} = ${n(ex)} kr.`,
+    hourly: `- Flytt per timme: 2 personer + 1 bil ${n(h["2"])} kr/tim, 3 personer + 1 bil ${n(h["3"])} kr/tim, 4 personer + 2 bilar ${n(h["4"])} kr/tim. Minst ${h.minHours} timmar, påbörjad timme räknas som hel. Ingen kilometerkostnad.`,
+    packing: `- Packning och uppackning per timme: samma priser (${n(h["2"])}/${n(h["3"])}/${n(h["4"])} kr/tim), material ingår.`,
+    cleaning: `- Flyttstäd, fast pris efter boyta: ${cl.map((r, i) => (i === 0 ? `upp till ${r[0]} m² ${n(r[1])} kr` : `${cl[i - 1][0] + 1}–${r[0]} ${n(r[1])}`)).join(", ")}. Fönster och balkong ingår. Över ${lastCl} m²: offert.`,
+    boxes: `- Flyttkartonger ${bx.qty} st: köpa ${n(bx.buy)} kr, hyra ${n(bx.rent)} kr, leverans ingår.`,
+    premium: `- Premium: flytt + flyttstäd, ${pr} % rabatt på flytt + städ + körsträcka (inte kartonger/packningstimmar).` + (m60 && c60 ? ` Exempel 60 m², 66 km: (${n(m60)} + ${n(c60)} + ${n(k66)}) × ${String(1 - pr / 100).replace(".", ",")} = ${n((m60 + c60 + k66) * (1 - pr / 100))} kr.` : ""),
+    volume: `- Volym: en flyttbil rymmer ${P.truckM3} m³. Ett normalt hem på 60 m² är ca 18 m³. Har kunden mer saker än vad boytan ger antal bilar för (t.ex. 60 m² men 25 m³ = 2 bilar), gäller det billigaste priset i prislistan för det antalet bilar (${cars.map(([c, p]) => `${c} bilar = ${n(p as number)} kr`).join(", ")}). Mer än 80 m³ = offert. Kubikräknare: fxflytt.se/kubikraknare.`,
+  };
+}
+
+export function companyFacts(P: PriceList = DEFAULT_PRICES): string {
+  const f = priceFacts(P);
+  return `
 FÖRETAG
 - Varumärke: FX Flytt (juridiskt namn FX Flytt AB). Säg "FX Flytt" till kunden. Flyttfirma med bas i Kungsör.
 - Adress: Frejgatan 9B, 736 30 Kungsör.
@@ -18,19 +45,19 @@ TJÄNSTER
   piano och tunga lyft, flyttstäd, bortforsling, flyttkartonger.
 
 PRISER – alla priser inkl. moms och EFTER RUT-avdrag (privatpersoner). Hela prislistan finns på fxflytt.se/paket och i prisräknaren på startsidan.
-- Flytt, fast pris efter boyta (avrundas uppåt): upp till 30 m² 2 800 kr, 40 m² 3 000, 50 m² 3 550, 60 m² 3 950, 70 m² 4 700, 80 m² 5 000, 90 m² 5 625, 100 m² 6 250, 110 m² 6 875, 120 m² 7 500, 130 m² 8 250, 140 m² 8 750, 150 m² 9 375, 160 m² 10 000, 170 m² 10 500, 180 m² 11 000, 190 m² 11 700, 200 m² 12 200, 201–220 m² 13 100, 221–240 m² 14 700. Över 240 m²: offert. Våning och hiss påverkar inte priset.
-- Körsträcka (endast fast pris): räknas EN VÄG, vägavstånd mellan gamla och nya adressen (inte från vårt kontor, inte tur och retur). Under 15 km = 0 kr; 15 km eller mer = 12 kr per km för hela sträckan. Exempel: 30 m² Kungsör–Malmö 600 km = 2 800 + 7 200 = 10 000 kr.
-- Flytt per timme: 2 personer + 1 bil 595 kr/tim, 3 personer + 1 bil 849 kr/tim, 4 personer + 2 bilar 1 199 kr/tim. Minst 3 timmar, påbörjad timme räknas som hel. Ingen kilometerkostnad.
-- Packning och uppackning per timme: samma priser (595/849/1 199 kr/tim), material ingår.
+${f.move}
+${f.km}
+${f.hourly}
+${f.packing}
 - Tidsåtgång: en 2:a tar oftast 4–5 timmar med två flyttare (beror på mängd, våning och avstånd).
 - Kontorsflytt: även kvällar och helger enligt överenskommelse.
-- Flyttstäd, fast pris efter boyta: upp till 30 m² 2 000 kr, 31–50 2 600, 51–70 3 100, 71–90 3 650, 91–100 4 000, 101–120 4 500, 121–140 4 800, 141–150 5 100, 151–170 5 950, 171–190 6 300, 191–200 6 600, 201–220 6 950, 221–240 7 550, 241–260 7 950, 261–280 8 500, 281–300 9 200. Fönster och balkong ingår. Över 300 m²: offert.
-- Flyttkartonger 50 st: köpa 2 000 kr, hyra 750 kr, leverans ingår.
+${f.cleaning}
+${f.boxes}
 - FlexFlytt / flexibelt datum med rabatt: erbjuds INTE. Om kunden frågar: säg att vi inte har det, men hänvisa till paketrabatterna (Premium −10 %, Deluxe −20 %).
 
 PAKET
 - Bas: flytt till fast pris (lastbil med förare, bärhjälp, lastning/lossning, möbelskydd, personlig kontaktperson).
-- Premium: flytt + flyttstäd, 10 % rabatt på flytt + städ + körsträcka (inte kartonger/packningstimmar). Exempel 60 m², 66 km: (3 950 + 3 100 + 792) × 0,9 = 7 058 kr.
+${f.premium}
 - Deluxe: flytt + flyttstäd, 20 % rabatt på flytt + städ + körsträcka, plus packning/ned- och montering per timme (minst 3 timmar, kunden väljer antal personer; timmarna har ingen rabatt).
 
 RUT-AVDRAG
@@ -52,13 +79,14 @@ OFFERT, BOKNING OCH VILLKOR
 - Tömning av dödsbo: sortering, flytt till anhöriga, bortforsling, magasinering och flyttstäd – fast pris enligt offert. Sida: fxflytt.se/dodsbo
 - Utlandsflytt: flytt till/från alla EU-länder samt Norge och Storbritannien, med egna lastbilar. FX Flytt AB har tillstånd för transporter inom EU – pris enligt offert (beror på avstånd och volym). RUT gäller arbetskostnad inom EU/EES/Schweiz. Sida: fxflytt.se/utlandsflytt
 - RUT 2026: 50 % av arbetskostnaden, RUT+ROT högst 75 000 kr per person och år (ROT högst 50 000). Flyttbil, drivmedel, kartonger och magasinhyra ger inte avdrag. Betalning måste vara elektronisk. Mer: fxflytt.se/rut-avdrag
-- Volym: en flyttbil rymmer 20 m³. Ett normalt hem på 60 m² är ca 18 m³. Har kunden mer saker än vad boytan ger antal bilar för (t.ex. 60 m² men 25 m³ = 2 bilar), gäller det billigaste priset i prislistan för det antalet bilar (2 bilar = 4 700 kr, 3 bilar = 7 500 kr, 4 bilar = 11 700 kr). Mer än 80 m³ = offert. Kubikräknare: fxflytt.se/kubikraknare.
+${f.volume}
 - Kunden ska lämna korrekta uppgifter om våning, hiss, bärsträcka och mängd bohag. Värdesaker transporterar kunden själv.
 - Skador ska anmälas så snart som möjligt, helst samma dag och med bilder.
 - Dricks är inte ett krav i Sverige.
 `;
-
-export const SYSTEM_PROMPT = `Du är FX Flytts kundassistent på webbplatsen fxflytt.se.
+}
+export function systemPrompt(P: PriceList = DEFAULT_PRICES): string {
+  return `Du är FX Flytts kundassistent på webbplatsen fxflytt.se.
 
 REGLER
 1. Svara ENDAST utifrån FAKTA nedan. Hitta aldrig på priser, tider, löften, rabatter eller tjänster.
@@ -74,4 +102,7 @@ REGLER
 11. Skriv vanlig text utan markdown: inga ** eller #. Använd enkla rader med "•" för listor.
 
 FAKTA
-${COMPANY_FACTS}`;
+${companyFacts(P)}`;
+}
+export const COMPANY_FACTS = companyFacts();
+export const SYSTEM_PROMPT = systemPrompt();

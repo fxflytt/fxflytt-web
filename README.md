@@ -20,4 +20,8 @@ Utan nyckeln fungerar sidan ändå: chattbubblan svarar då med inbyggda svar.
 Ta bort raden `python3 add-chat.py` i `build-site.sh` och kör om bygget – eller sätt `ENABLED = false` i `public/chat-widget.js`.
 
 ## Ändra priser
-Priserna finns i `lib/pricing/config.current.ts`, på sidorna (`site-src/`) och i `lib/assistant/facts.ts`. Ändra alla tre tills adminpanelen är byggd.
+Ägaren ändrar priserna i admin → Inställningar → Priser. De nya priserna sparas i Upstash och används direkt av
+prisräknaren, `/api/price`, chatten (`lib/assistant/facts.ts` skriver prisraderna från prislistan) och nya offerter.
+Sidorna byggs med priserna i `lib/pricing/prices.json`; `add-price-marks.py` märker varje pris och `public/fx-prices.js`
+byter till prislistan som gäller när sidan öppnas. Titlar, metabeskrivningar och strukturerad data (det Google läser)
+behåller priserna från senaste bygget – uppdatera `prices.json` och kör `./build-site.sh` när priserna har ändrats för gott.
