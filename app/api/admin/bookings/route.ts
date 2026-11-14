@@ -83,6 +83,7 @@ export async function PATCH(req: Request) {
     if (!same) { b.crew = ids; changes.push(ids.length ? "personal " + ids.map((id) => byId.get(id)!.name).join(", ") : "personal borttagen"); }
   }
   if ("adminNote" in d) { b.adminNote = str(d.adminNote, 2000); changes.push("intern anteckning"); }
+  if ("crewNote" in d) { const v = str(d.crewNote, 1000); if (v !== (b.crewNote || "")) { b.crewNote = v; changes.push("anteckning till personalen"); } }
   if ("total" in d) {
     const t = Math.round(Number(d.total));
     if (!(t > 0 && t < 1e7)) return Response.json({ error: "Ogiltigt pris." }, { status: 400 });

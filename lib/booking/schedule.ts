@@ -7,6 +7,7 @@ export type Conflict = { resourceId: string; name: string; kind: Resource["kind"
 type Span = { date: string; start: number; end: number; allDay: boolean };
 type Sched = {
   OPEN: number; CLOSE: number;
+  fmtMin(m: number): string;
   estimateHours(b: Partial<Booking>): number;
   hoursOf(b: Partial<Booking>): number;
   span(b: Partial<Booking>): Span | null;
