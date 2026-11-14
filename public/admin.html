@@ -1417,6 +1417,38 @@
     draw();
   };
 
+  // ---- backups (owner) ----
+  SET_TABS.push(['backup','Säkerhetskopior',true]);
+  SETTINGS.backup=async(el)=>{
+    let info; try{ info=await api('/api/admin/backup'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const size=(n)=>n>1e6?(n/1e6).toFixed(1).replace('.',',')+' MB':Math.max(1,Math.round(n/1e3))+' kB';
+    const restore=async(url,body,label)=>{
+      if(!confirm(`Lägga tillbaka det som saknas från ${label}?\n\nInget som finns nu skrivs över.`)) return;
+      try{ const r=await api(url,{method:'POST',body,headers:body?{'Content-Type':'application/octet-stream'}:{}});
+        $('#b_msg').innerHTML=r.keys?`<div class="okmsg">Klart: ${r.bookings} bokningar och ${r.keys} poster lades tillbaka.</div>`:'<div class="okmsg">Inget saknades – allt i kopian finns redan.</div>';
+        syncedAt=0; await load(); }
+      catch(e){ $('#b_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; }
+    };
+    el.innerHTML=`<div class="card"><h3>Automatiska kopior varje dag</h3>
+        ${info.blob?`<div class="muted">Varje morgon sparas en krypterad kopia av allt i bokningssystemet (bokningar, personal, användare, inställningar, priser). De 30 senaste behålls. Fotona ligger redan i Vercel Blob.</div>
+          ${info.backups.length?info.backups.map(b=>`<div class="todo"><a><b>${esc(new Date(b.uploadedAt).toLocaleString('sv-SE',{dateStyle:'medium',timeStyle:'short'}))}</b><small>${esc(size(b.size))}</small></a>
+            <a class="btn sec sm" style="flex:0 0 auto" href="/api/admin/backup?file=${encodeURIComponent(b.pathname)}">Ladda ner</a><button class="btn gray sm" data-rs="${esc(b.pathname)}">Återställ saknade</button></div>`).join(''):'<div class="warn">Ingen kopia än – den första görs i morgon bitti, eller tryck nedan.</div>'}
+          <button class="btn sec" id="b_run">Gör en kopia nu</button>`
+        :`<div class="warn"><b>Vercel Blob är inte kopplat.</b> Då kan kopiorna inte sparas automatiskt. Gör så här: Vercel → projektet → <b>Storage</b> → <b>Create</b> → <b>Blob</b> → koppla till projektet (samma som för personalens foton). Sedan görs en kopia varje morgon.</div>`}</div>
+      <div class="card"><h3>Ladda ner</h3>
+        <div class="muted">Spara gärna en kopia på datorn ibland. <b>Filen innehåller kunduppgifter</b> – förvara den säkert.</div>
+        <div class="btns"><a class="btn sec" href="/api/admin/backup?file=now">⬇ Full kopia (.json.gz)</a><a class="btn sec" href="/api/admin/backup?file=excel">⬇ Alla bokningar i Excel</a></div></div>
+      <div class="card"><h3>Återställ från en fil</h3>
+        <div class="muted">Välj en kopia du har laddat ner. <b>Bara det som saknas läggs tillbaka</b> (t.ex. bokningar som försvunnit) – inget som finns nu ändras eller skrivs över.</div>
+        <input type="file" id="b_file" accept=".gz,.json,.fxb,application/gzip,application/json" style="margin-top:10px">
+        <button class="btn sec" id="b_up">Återställ saknade från filen</button></div>
+      <div id="b_msg"></div>`;
+    if($('#b_run')) $('#b_run').onclick=async()=>{ const x=$('#b_run'); x.disabled=true; x.textContent='Sparar…';
+      try{ await api('/api/admin/backup?do=run',{method:'POST'}); notify('Kopian är sparad ✓'); SETTINGS.backup(el); }catch(e){ x.disabled=false; x.textContent='Gör en kopia nu'; $('#b_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    el.querySelectorAll('[data-rs]').forEach(x=>x.onclick=()=>restore('/api/admin/backup?do=restore&from='+encodeURIComponent(x.dataset.rs),null,'kopian'));
+    $('#b_up').onclick=async()=>{ const f=$('#b_file').files[0]; if(!f) return $('#b_msg').innerHTML='<div class="err">Välj en fil först.</div>'; restore('/api/admin/backup?do=restore',await f.arrayBuffer(),f.name); };
+  };
+
   // ---------- staff and vehicles ----------
   const ROLES={person:['Flyttledare','Flyttare','Städare','Chaufför','Montör'],vehicle:['Lastbil','Skåpbil','Släp']};
   const COLORS=['#2f6fb2','#1f8a4c','#c2560a','#a2479b','#0f8a8a','#b42318','#5a52c7','#8a6d1f','#3d5a6c','#d6457a'];
