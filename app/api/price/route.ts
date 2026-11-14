@@ -1,7 +1,7 @@
 // POST /api/price – the price from FX Flytt AB's price list (v2), computed on the server.
 // The booking step must always use this server result; any price sent by the browser is ignored.
 import { computePrice, PriceError } from "@/lib/pricing/pricelist.js";
-import P from "@/lib/pricing/prices.json";
+import { getPrices } from "@/lib/pricing/current.ts";
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 
 export const runtime = "nodejs";
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   if (!body || typeof body !== "object" || Array.isArray(body)) return Response.json({ error: "Ogiltig förfrågan" }, { status: 400 });
   const input = Object.fromEntries(Object.entries(body).filter(([k]) => ALLOWED.has(k)));
   try {
-    return Response.json({ price: computePrice(input as never, P) });
+    return Response.json({ price: computePrice(input as never, await getPrices()) });
   } catch (e) {
     if (e instanceof PriceError) return Response.json({ error: e.message, field: e.field }, { status: 400 });
     console.error("price failed", e);
@@ -22,6 +22,8 @@ export async function POST(req: Request) {
   }
 }
 
+// The current price list – the website pages and calculators load it so they always show today's prices.
 export async function GET() {
-  return Response.json(P);
+  const { changedBy, ...p } = await getPrices();
+  return Response.json(p, { headers: { "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=600" } });
 }

@@ -1,5 +1,5 @@
 // Admin: staff and vehicles. List (GET), add (POST), change or archive (PATCH ?id=).
-import { isAdmin, unauthorized } from "@/lib/booking/auth.ts";
+import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { listResources, addResource, updateResource, cleanResource } from "@/lib/booking/team.ts";
 
@@ -9,13 +9,13 @@ export const dynamic = "force-dynamic";
 const noStorage = () => Response.json({ error: "Lagring saknas (Upstash Redis i Vercel)." }, { status: 503 });
 
 export async function GET(req: Request) {
-  if (!isAdmin(req)) return unauthorized();
+  const u = await requireUser(req); if (u instanceof Response) return u;
   if (!kvConfigured()) return noStorage();
   return Response.json({ resources: await listResources() });
 }
 
 export async function POST(req: Request) {
-  if (!isAdmin(req)) return unauthorized();
+  const u = await requireUser(req); if (u instanceof Response) return u;
   if (!kvConfigured()) return noStorage();
   const c = cleanResource((await req.json().catch(() => ({}))) as Record<string, unknown>);
   if ("error" in c) return Response.json({ error: c.error }, { status: 400 });
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  if (!isAdmin(req)) return unauthorized();
+  const u = await requireUser(req); if (u instanceof Response) return u;
   if (!kvConfigured()) return noStorage();
   const c = cleanResource((await req.json().catch(() => ({}))) as Record<string, unknown>, true);
   if ("error" in c) return Response.json({ error: c.error }, { status: 400 });

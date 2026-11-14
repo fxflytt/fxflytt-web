@@ -48,6 +48,27 @@
   .vol{columns:2;column-gap:20px;font-size:13.5px;margin:0;padding-left:18px}
   .paper{display:none}
   .empty{text-align:center;color:var(--muted);padding:60px 16px;font-size:16px}
+  .worksec h2{margin:0 0 4px;font-size:18px;color:var(--navy)}
+  .bigbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;border-radius:14px;padding:16px;font:inherit;font-size:18px;font-weight:800;color:#fff;background:var(--green);cursor:pointer;margin-top:10px}
+  .bigbtn.stop{background:var(--navy)}.bigbtn:disabled{opacity:.6}
+  .state{display:flex;align-items:center;gap:10px;background:#f5f8fa;border-radius:12px;padding:12px 14px;margin-top:10px;font-weight:700}
+  .state.ok{background:#e6f5ec;color:var(--green)}
+  .phbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+  .phbtns button{border:1.5px solid #cfd9e2;background:#fff;border-radius:12px;padding:12px 6px;font:inherit;font-weight:800;color:var(--navy);cursor:pointer}
+  .phgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin-top:10px}
+  .phgrid a{position:relative;display:block;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#eef2f5}
+  .phgrid img{width:100%;height:100%;object-fit:cover;display:block}
+  .phgrid span{position:absolute;left:4px;bottom:4px;background:rgba(13,42,63,.8);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px}
+  .phgrid span.damage{background:var(--red)}
+  .pad{width:100%;height:190px;border:2px dashed #cfd9e2;border-radius:12px;background:#fff;touch-action:none;display:block}
+  .worksec label{display:block;font-weight:700;font-size:13.5px;margin:12px 0 5px}
+  .worksec input,.worksec textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1.5px solid #cfd9e2;border-radius:10px}
+  .worksec textarea{min-height:64px}
+  .padrow{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:13px;color:var(--muted)}
+  .padrow button{background:none;border:0;color:var(--navy);font:inherit;font-weight:700;cursor:pointer}
+  .signed img{max-width:100%;height:120px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  .werr{color:var(--red);font-weight:700;margin-top:8px}
+  @media print{.worksec{display:none!important}}
   @media print{
     @page{size:A4;margin:12mm}
     body{background:#fff;font-size:12.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -95,9 +116,79 @@
       ${j.crewNote?`<h3>Att tänka på</h3><div class="note">${esc(j.crewNote)}</div>`:''}
       ${j.message?`<h3>Kundens meddelande</h3><div class="msg">${esc(j.message)}</div>`:''}
       ${j.volume?`<h3>Volym ca ${esc(String(j.volume.m3).replace('.',','))} m³</h3>${j.volume.list.length?`<ul class="vol">${j.volume.list.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}`:''}
-      ${j.crew.length?`<h3>Personal och fordon</h3><div class="crew">${[...people,...cars].map(c=>`<div><b>${esc(c.name)}</b><small>${esc(c.role||(c.kind==='vehicle'?'Fordon':''))}${c.phone?` · <a href="${esc(tel(c.phone))}">${esc(c.phone)}</a>`:''}</small></div>`).join('')}</div>`:''}
+      ${j.crew.length?`<h3>Personal och fordon</h3><div class="crew">${[...people,...cars].map(c=>`<div><b>${esc(c.name)}</b><small>${[esc(c.role||(c.kind==='vehicle'?'Fordon':'')),c.phone?`<a href="${esc(tel(c.phone))}">${esc(c.phone)}</a>`:''].filter(Boolean).join(' · ')}</small></div>`).join('')}</div>`:''}
       <div class="paper"><div>Start kl.</div><div>Klart kl.</div><div>Signatur arbetsledare</div></div>
     </section>`;
+  }
+
+  // ---- during the job (only on the crew's link, not on printed day sheets) ----
+  const hm=(t)=>new Date(t).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
+  const dur=(ms)=>{ const m=Math.round(ms/6e4); return Math.floor(m/60)+' tim '+(m%60)+' min'; };
+  const KIND={before:'Före',after:'Efter',damage:'Skada'};
+  function workHtml(j){
+    const w=j.work||{}, ph=w.photos||[], off=j.status==='cancelled';
+    if(off) return '';
+    const state=!w.startedAt?`<button class="bigbtn" data-do="start">▶ Starta jobbet</button>`
+      :!w.finishedAt?`<div class="state">⏱ Startade kl. ${hm(w.startedAt)}</div><button class="bigbtn stop" data-do="finish">■ Jobbet är klart</button>`
+      :`<div class="state ok">✓ Klart ${hm(w.startedAt)}–${hm(w.finishedAt)} · ${dur(w.finishedAt-w.startedAt)}</div>`;
+    const sign=w.sign?`<div class="signed"><div class="state ok">✓ Kvitterat av ${esc(w.sign.name)} kl. ${hm(w.sign.at)}</div><img src="${esc(w.sign.img)}" alt="Kundens signatur">${w.sign.note?`<div class="msg" style="margin-top:8px">Anmärkning: ${esc(w.sign.note)}</div>`:''}</div>`
+      :w.startedAt?`<p class="muted" style="margin:4px 0 0;color:var(--muted)">När jobbet är klart: låt kunden kontrollera och signera här.</p>
+        <label for="s_name">Kundens namn</label><input id="s_name" value="${esc(j.name)}" autocomplete="off">
+        <label for="s_note">Anmärkningar (t.ex. skador, saker som saknas) – frivilligt</label><textarea id="s_note"></textarea>
+        <label>Signatur</label><canvas class="pad" id="pad"></canvas>
+        <div class="padrow"><span>Jag bekräftar att flytten är utförd.</span><button id="padclr" type="button">Rensa</button></div>
+        <button class="bigbtn" id="s_ok">✓ Kunden godkänner</button>`:'<p style="color:var(--muted);margin:4px 0 0">Starta jobbet först.</p>';
+    return `<section class="job worksec">
+      <h2>Under jobbet</h2>${state}
+      <h3>Foton ${ph.length?'('+ph.length+')':''}</h3>
+      <div class="phbtns"><button data-ph="before">📷 Före</button><button data-ph="after">📷 Efter</button><button data-ph="damage">⚠️ Skada</button></div>
+      <input type="file" id="phin" accept="image/*" multiple hidden>
+      <div id="phmsg"></div>
+      ${ph.length?`<div class="phgrid">${ph.map(p=>`<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="" loading="lazy"><span class="${p.kind}">${KIND[p.kind]}</span></a>`).join('')}</div>`:''}
+      <h3>Kundens kvittens</h3>${sign}<div class="werr" id="werr"></div></section>`;
+  }
+  // Shrinks a photo before upload (max 1400 px, JPEG) – faster on mobile data, smaller to store.
+  async function shrink(file){
+    const img=await createImageBitmap(file).catch(()=>null);
+    if(!img) return file;
+    const k=Math.min(1,1400/Math.max(img.width,img.height)), c=document.createElement('canvas');
+    c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(b=>r(b||file),'image/jpeg',.78));
+  }
+  function bindWork(j){
+    const t=q.get('t'), post=async(qs,body,type)=>{
+      const r=await fetch('/api/arbetsorder?t='+encodeURIComponent(t)+'&'+qs,{method:'POST',body,headers:type?{'Content-Type':type}:{}});
+      const x=await r.json().catch(()=>({})); if(!r.ok) throw new Error(x.error||'Något gick fel.'); return x; };
+    const redraw=(nj)=>{ root.innerHTML=job(nj)+workHtml(nj); bindWork(nj); };
+    const fail=(e)=>{ const el=$('#werr'); if(el) el.textContent=e.message; };
+    root.querySelectorAll('[data-do]').forEach(b=>b.onclick=async()=>{
+      if(b.dataset.do==='finish'&&!confirm('Är jobbet klart?')) return;
+      b.disabled=true; try{ redraw(await post('do='+b.dataset.do)); }catch(e){ b.disabled=false; fail(e); } });
+    let kind='before';
+    root.querySelectorAll('[data-ph]').forEach(b=>b.onclick=()=>{ kind=b.dataset.ph; $('#phin').click(); });
+    $('#phin').onchange=async(e)=>{
+      const files=[...e.target.files]; let last=null, n=0;
+      for(const f of files){ n++; $('#phmsg').innerHTML=`<div class="state">⬆ Laddar upp ${n} av ${files.length}…</div>`;
+        try{ last=await post('do=photo&kind='+kind,await shrink(f),'image/jpeg'); }catch(err){ $('#phmsg').innerHTML=''; fail(err); break; } }
+      if(last) redraw(last);
+    };
+    const pad=$('#pad');
+    if(pad){
+      const dpr=window.devicePixelRatio||1, r=pad.getBoundingClientRect(), ctx=pad.getContext('2d'); let drawn=0, down=false;
+      pad.width=r.width*dpr; pad.height=r.height*dpr; ctx.scale(dpr,dpr); ctx.lineWidth=2.4; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#0d2a3f';
+      const clear=()=>{ ctx.fillStyle='#fff'; ctx.fillRect(0,0,r.width,r.height); drawn=0; }; clear();
+      const pos=(e)=>{ const b=pad.getBoundingClientRect(); return [e.clientX-b.left,e.clientY-b.top]; };
+      pad.onpointerdown=(e)=>{ down=true; pad.setPointerCapture(e.pointerId); ctx.beginPath(); ctx.moveTo(...pos(e)); };
+      pad.onpointermove=(e)=>{ if(!down) return; ctx.lineTo(...pos(e)); ctx.stroke(); drawn++; };
+      pad.onpointerup=pad.onpointercancel=()=>{ down=false; };
+      $('#padclr').onclick=clear;
+      $('#s_ok').onclick=async()=>{
+        if(drawn<8) return fail(new Error('Kunden behöver skriva sin signatur.'));
+        const b=$('#s_ok'); b.disabled=true;
+        try{ redraw(await post('do=sign',JSON.stringify({name:$('#s_name').value,note:$('#s_note').value,png:pad.toDataURL('image/png')}),'application/json')); }
+        catch(e){ b.disabled=false; fail(e); }
+      };
+    }
   }
 
   async function load(){
@@ -111,6 +202,7 @@
     $('#ttl').textContent=d?'Arbetsordrar · '+fmtDate(d):'Arbetsorder';
     document.title=(d?'Arbetsordrar '+d:'Arbetsorder '+(j.date||''))+' – FX Flytt';
     root.innerHTML=jobs.length?jobs.map(job).join(''):'<div class="empty">Inga bokade jobb den dagen.</div>';
+    if(t&&jobs.length){ root.innerHTML+=workHtml(j); bindWork(j); }
     $('#pr').hidden=!jobs.length; $('#pr').onclick=()=>print();
     if(q.get('print')==='1'&&jobs.length) setTimeout(()=>print(),300);
   }

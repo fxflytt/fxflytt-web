@@ -1,5 +1,5 @@
 // Admin: e-mail the offer link to the customer (POST ?id=). Returns the link as well.
-import { isAdmin, unauthorized } from "@/lib/booking/auth.ts";
+import { requireUser } from "@/lib/booking/auth.ts";
 import { getBooking, saveBooking, issueToken } from "@/lib/booking/store.ts";
 import { offerLinkEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 const SITE = process.env.SITE_URL || "https://www.fxflytt.se";
 
 export async function POST(req: Request) {
-  if (!isAdmin(req)) return unauthorized();
+  const u = await requireUser(req); if (u instanceof Response) return u;
   const b = await getBooking(new URL(req.url).searchParams.get("id") || "");
   if (!b) return Response.json({ error: "not-found" }, { status: 404 });
   if (!b.offer || !(b.offer.total > 0)) return Response.json({ error: "Sätt ett pris först." }, { status: 400 });
@@ -25,6 +25,6 @@ export async function POST(req: Request) {
   }
   if (b.status === "new" || b.status === "declined") b.status = "sent";
   b.sentAt = Date.now(); b.reminders = [];
-  await saveBooking(b, only ? "Länk skapad (skickas manuellt)" : "Offert skickad till " + b.data.email);
+  await saveBooking(b, only ? "Länk skapad (skickas manuellt)" : "Offert skickad till " + b.data.email, u.name);
   return Response.json({ ok: true, url, booking: b });
 }

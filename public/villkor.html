@@ -550,8 +550,8 @@ body.noscroll .mbar{display:none}
     <h2>2. Priser</h2>
     <ul>
       <li>Alla priser anges i svenska kronor inklusive moms.</li>
-      <li>Fast pris gäller för den boyta kunden uppger. Vid timpris debiteras minst 3 timmar, och påbörjad timme räknas som hel.</li>
-      <li>Körsträcka räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km debiteras ingen körsträcka. Vid 15 km eller mer debiteras 12 kr/km för hela sträckan, till exempel 66 km × 12 kr = 792 kr.</li>
+      <li>Fast pris gäller för den boyta kunden uppger. Vid timpris debiteras minst <span data-fxp="minh">3</span> timmar, och påbörjad timme räknas som hel.</li>
+      <li>Körsträcka räknas en väg, mellan gamla och nya adressen (vägavstånd). Under <span data-fxp="kmfree">15</span> km debiteras ingen körsträcka. Vid <span data-fxp="kmfree">15</span> km eller mer debiteras <span data-fxp="km">12</span> kr/km för hela sträckan, till exempel 66 km × <span data-fxp="km">12</span> kr = <span data-fxp="km66">792</span> kr.</li>
       <li>Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt.</li>
       <li>Övriga tillval enligt prislista eller offert.</li>
       <li><b>Inga dolda avgifter.</b> Vi går igenom alla detaljer med dig innan flytten. Det pris som står i din bokningsbekräftelse är det du betalar – inga extra avgifter tillkommer i efterhand.</li>
@@ -635,6 +635,7 @@ b.addEventListener('click',()=>set(!d.classList.contains('open')));
 d.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>set(false)));
 window.addEventListener('resize',()=>{if(innerWidth>900)set(false);});})();
 </script>
+<script src="/fx-prices.js" defer></script>
 <script src="/chat-widget.js" defer></script>
 </body>
 </html>

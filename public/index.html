@@ -504,7 +504,7 @@ body.noscroll .mbar{display:none}
               <p id="fsvc-info" aria-live="polite" style="margin:8px 0 0;padding:10px 12px;border-radius:10px;background:#f1f6fb;font-size:.88rem;line-height:1.45;color:#1d3247"></p></div>
             <div class="full" id="f-hours-wrap" style="display:none"><label class="f" for="f-hours">Hur många timmar packning och montering?</label>
               <select id="f-hours" name="Packningstimmar"><option value="3">3 timmar</option><option value="4">4 timmar</option><option value="5">5 timmar</option><option value="6">6 timmar</option><option value="7">7 timmar</option><option value="8">8 timmar</option><option value="9">9 timmar</option><option value="10">10 timmar</option><option value="11">11 timmar</option><option value="12">12 timmar</option></select>
-              <p style="margin:6px 0 0;font-size:.85rem;color:var(--muted)">2 personer, 595 kr/tim efter RUT. Osäker? Välj 3 – vi går igenom det med dig.</p></div>
+              <p style="margin:6px 0 0;font-size:.85rem;color:var(--muted)">2 personer, <span data-fxp="h2">595</span> kr/tim efter RUT. Osäker? Välj 3 – vi går igenom det med dig.</p></div>
             <div class="full"><label class="f" for="kvm">Boyta (m²)</label><input id="kvm" name="Boyta m²" type="number" min="1" max="2000" inputmode="numeric" required placeholder="t.ex. 65"></div>
           </div>
         </div>
@@ -542,7 +542,7 @@ body.noscroll .mbar{display:none}
                 <label class="chk"><input type="checkbox" name="Tillval" value="Bortforsling">Bortforsling</label>
               </div>
               <div id="f-box-wrap" style="display:none;margin-top:8px"><label class="f" for="f-box">Flyttkartonger (50 st, leverans ingår)</label>
-                <select id="f-box"><option value="buy">Köpa – 2 000 kr</option><option value="rent">Hyra – 750 kr</option></select></div>
+                <select id="f-box"><option value="buy" data-fxt="Köpa – {boxbuy} kr">Köpa – 2 000 kr</option><option value="rent" data-fxt="Hyra – {boxrent} kr">Hyra – 750 kr</option></select></div>
               <div id="f-extras-note" aria-live="polite" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#f1f6fb;font-size:.88rem;line-height:1.45;color:#1d3247"></div>
             </div>
             <div class="full">
@@ -635,7 +635,7 @@ body.noscroll .mbar{display:none}
           <li><svg><use href="#i-check"/></svg>Personlig kontaktperson</li>
         </ul>
         <p class="pk-add" style="font-size:.85rem;color:var(--muted);margin:0 0 10px">Endast flytt. Vill du ha flyttstäd, välj Premium. Packning ingår i Deluxe.</p>
-        <p class="pk-price">Från <b>2 800 kr</b> efter RUT</p>
+        <p class="pk-price">Från <b><span data-fxp="move0">2 800</span> kr</b> efter RUT</p>
         <a href="#prisraknare" class="btn btn-ghost" data-pkg="bas">Räkna pris</a>
       </div>
       <div class="pk hot">
@@ -655,7 +655,7 @@ body.noscroll .mbar{display:none}
         <h3>Deluxe</h3><p class="for">Flytt + flyttstäd + packning & montering</p>
         <ul>
           <li><svg><use href="#i-check"/></svg>Allt i Premium</li>
-          <li><svg><use href="#i-check"/></svg>Packning, ned- och montering – du väljer antal timmar (minst 3)</li>
+          <li><svg><use href="#i-check"/></svg>Packning, ned- och montering – du väljer antal timmar (minst <span data-fxp="minh">3</span>)</li>
           <li><svg><use href="#i-check"/></svg>20 % rabatt på flytt, flyttstäd och körsträcka</li>
         </ul>
         <p class="pk-price">Flytt + städ med <b>−20 %</b> + packningstimmar</p>
@@ -666,9 +666,9 @@ body.noscroll .mbar{display:none}
       <h3 class="cmp-h">Jämför paketen</h3>
       <div class="cmp-scroll"><table class="cmp">
         <thead><tr><th></th><th>Bas</th><th class="hot">Premium</th><th>Deluxe</th></tr></thead>
-        <tbody><tr><th scope="row">Lastbil, förare och bärhjälp</th><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr><tr><th scope="row">Lastning, lossning och möbelskydd</th><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr><tr><th scope="row">Personlig kontaktperson</th><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr><tr><th scope="row">Flyttstäd – fönster och balkong ingår</th><td class="n">–</td><td class="y">✓</td><td class="y">✓</td></tr><tr><th scope="row">Packning, ned- och montering</th><td class="n">–</td><td class="n">–</td><td class="y">✓ <small>du väljer timmar, minst 3</small></td></tr><tr><th scope="row">Rabatt på flytt, städ och körsträcka</th><td class="n">–</td><td><b>−10 %</b></td><td><b>−20 %</b></td></tr><tr><th scope="row">Körsträcka 15 km eller mer</th><td>12 kr/km</td><td>12 kr/km −10 %</td><td>12 kr/km −20 %</td></tr><tr><th scope="row"><b>Exempel: 60 m², under 15 km</b></th><td><b>3 950 kr</b></td><td><b>6 345 kr</b></td><td><b>7 425 kr</b> <small>inkl. 3 tim packning, 2 pers</small></td></tr></tbody>
+        <tbody><tr><th scope="row">Lastbil, förare och bärhjälp</th><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr><tr><th scope="row">Lastning, lossning och möbelskydd</th><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr><tr><th scope="row">Personlig kontaktperson</th><td class="y">✓</td><td class="y">✓</td><td class="y">✓</td></tr><tr><th scope="row">Flyttstäd – fönster och balkong ingår</th><td class="n">–</td><td class="y">✓</td><td class="y">✓</td></tr><tr><th scope="row">Packning, ned- och montering</th><td class="n">–</td><td class="n">–</td><td class="y">✓ <small>du väljer timmar, minst 3</small></td></tr><tr><th scope="row">Rabatt på flytt, städ och körsträcka</th><td class="n">–</td><td><b>−10 %</b></td><td><b>−20 %</b></td></tr><tr><th scope="row">Körsträcka <span data-fxp="kmfree">15</span> km eller mer</th><td><span data-fxp="km">12</span> kr/km</td><td><span data-fxp="km">12</span> kr/km −10 %</td><td><span data-fxp="km">12</span> kr/km −20 %</td></tr><tr><th scope="row"><b>Exempel: 60 m², under <span data-fxp="kmfree">15</span> km</b></th><td><b><span data-fxp="mv:60">3 950</span> kr</b></td><td><b><span data-fxp="pr:60">6 345</span> kr</b></td><td><b><span data-fxp="dx3:60">7 425</span> kr</b> <small>inkl. 3 tim packning, 2 pers</small></td></tr></tbody>
       </table></div>
-      <p class="cmp-note">Alla priser inkl. moms efter RUT-avdrag. Våning och hiss påverkar inte priset. Packning debiteras per påbörjad timme (2 pers 595 kr/tim, 3 pers 849 kr/tim, 4 pers 1 199 kr/tim) och har ingen paketrabatt. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km: 0 kr. 15 km eller mer: 12 kr/km för hela sträckan – till exempel 66 km × 12 kr = 792 kr. Exempel 60 m², 66 km med Premium: (3 950 + 3 100 + 792 kr) − 10 % = 7 058 kr. <a href="paket.html#prislista">Se hela prislistan</a></p>
+      <p class="cmp-note">Alla priser inkl. moms efter RUT-avdrag. Våning och hiss påverkar inte priset. Packning debiteras per påbörjad timme (2 pers <span data-fxp="h2">595</span> kr/tim, 3 pers <span data-fxp="h3">849</span> kr/tim, 4 pers <span data-fxp="h4">1 199</span> kr/tim) och har ingen paketrabatt. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under <span data-fxp="kmfree">15</span> km: 0 kr. <span data-fxp="kmfree">15</span> km eller mer: <span data-fxp="km">12</span> kr/km för hela sträckan – till exempel 66 km × <span data-fxp="km">12</span> kr = <span data-fxp="km66">792</span> kr. Exempel 60 m², 66 km med Premium: (<span data-fxp="mv:60">3 950</span> + <span data-fxp="cl:60">3 100</span> + <span data-fxp="km66">792</span> kr) − 10 % = <span data-fxp="pk66:60">7 058</span> kr. <a href="paket.html#prislista">Se hela prislistan</a></p>
     </div>
     </div>
   </div>
@@ -683,21 +683,21 @@ body.noscroll .mbar{display:none}
     <div class="price-grid" style="text-align:left">
       <div class="price">
         <h3>Flytt – fast pris</h3><p class="small">Pris efter boyta</p>
-        <div class="amount"><small>från</small> 2 800 <small>kr</small></div>
+        <div class="amount"><small>från</small> <span data-fxp="move0">2 800</span> <small>kr</small></div>
         <p class="before">Upp till 30 m² · 1 flyttbil</p>
       </div>
       <div class="price" style="border-color:var(--accent)">
         <h3>Flytt per timme</h3><p class="small">2 flyttare + bil</p>
-        <div class="amount">595 <small>kr/tim</small></div>
-        <p class="before">3 flyttare 849 kr/tim · 4 flyttare + 2 bilar 1 199 kr/tim</p>
+        <div class="amount"><span data-fxp="h2">595</span> <small>kr/tim</small></div>
+        <p class="before">3 flyttare <span data-fxp="h3">849</span> kr/tim · 4 flyttare + 2 bilar <span data-fxp="h4">1 199</span> kr/tim</p>
       </div>
       <div class="price">
         <h3>Flyttstäd</h3><p class="small">Fönster och balkong ingår</p>
-        <div class="amount"><small>från</small> 2 000 <small>kr</small></div>
+        <div class="amount"><small>från</small> <span data-fxp="clean0">2 000</span> <small>kr</small></div>
         <p class="before">Upp till 30 m² · fast pris efter boyta</p>
       </div>
     </div>
-    <p class="note">Alla priser inkl. moms efter RUT-avdrag. Fast pris: Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km: 0 kr. 15 km eller mer: 12 kr/km för hela sträckan – till exempel 66 km × 12 kr = 792 kr. Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt. Per timme: minst 3 timmar, påbörjad timme räknas som hel. <a href="paket.html#prislista" style="color:#ffb37a">Se hela prislistan</a></p>
+    <p class="note">Alla priser inkl. moms efter RUT-avdrag. Fast pris: Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under <span data-fxp="kmfree">15</span> km: 0 kr. <span data-fxp="kmfree">15</span> km eller mer: <span data-fxp="km">12</span> kr/km för hela sträckan – till exempel 66 km × <span data-fxp="km">12</span> kr = <span data-fxp="km66">792</span> kr. Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt. Per timme: minst <span data-fxp="minh">3</span> timmar, påbörjad timme räknas som hel. <a href="paket.html#prislista" style="color:#ffb37a">Se hela prislistan</a></p>
   </div>
 </section>
 
@@ -726,10 +726,10 @@ body.noscroll .mbar{display:none}
             <option value="deluxe">Deluxe – flytt + flyttstäd + packning/montering (−20 %)</option>
           </select></div>
         <div class="c-hourly c-deluxe"><label class="f" for="c-crew">Antal personer</label>
-          <select id="c-crew"><option value="2">2 personer – 595 kr/tim</option><option value="3">3 personer – 849 kr/tim</option><option value="4">4 personer – 1 199 kr/tim</option></select></div>
-        <div class="c-hourly c-deluxe"><label class="f" for="c-h">Antal timmar (minst 3)</label><input id="c-h" type="number" value="3" min="3" max="48" inputmode="numeric"></div>
+          <select id="c-crew"><option value="2" data-fxt="2 personer – {h2} kr/tim">2 personer – 595 kr/tim</option><option value="3" data-fxt="3 personer – {h3} kr/tim">3 personer – 849 kr/tim</option><option value="4" data-fxt="4 personer – {h4} kr/tim">4 personer – 1 199 kr/tim</option></select></div>
+        <div class="c-hourly c-deluxe"><label class="f" for="c-h">Antal timmar (minst <span data-fxp="minh">3</span>)</label><input id="c-h" type="number" value="3" min="3" max="48" inputmode="numeric"></div>
         <div class="full"><label class="f" for="c-box">Flyttkartonger (50 st, leverans ingår)</label>
-          <select id="c-box"><option value="none">Nej tack</option><option value="buy">Köpa – 2 000 kr</option><option value="rent">Hyra – 750 kr</option></select></div>
+          <select id="c-box"><option value="none">Nej tack</option><option value="buy" data-fxt="Köpa – {boxbuy} kr">Köpa – 2 000 kr</option><option value="rent" data-fxt="Hyra – {boxrent} kr">Hyra – 750 kr</option></select></div>
       </div>
       <div class="calc-out">
         <div class="lbl">Ditt pris efter RUT-avdrag</div>
@@ -869,8 +869,8 @@ body.noscroll .mbar{display:none}
       <details><summary>Har ni städgaranti?</summary><p>Ja, 7 dagars städgaranti. Är du eller hyresvärden inte nöjd med flyttstädningen, hör av dig inom 7 dagar så kommer vi tillbaka och åtgärdar det utan kostnad.</p></details>
       <details><summary>Tillkommer det några extra avgifter?</summary><p>Nej, inga dolda avgifter. Vi går igenom alla detaljer innan flytten, och priset i din bokningsbekräftelse är det du betalar. Våning och hiss påverkar inte priset. Priset gäller de uppgifter och tjänster som står i bokningen. Vill du lägga till en tjänst, eller har du betydligt mer saker än du angav, kommer vi överens om det nya priset innan vi gör jobbet – aldrig i efterhand utan ditt godkännande.</p></details>
       <details><summary>Hur lång tid tar en flytt?</summary><p>En 2:a tar oftast 4–5 timmar med två flyttare, beroende på mängd, våningsplan och avstånd. I offerten får du en tydlig uppskattning.</p></details>
-      <details><summary>Ingår flyttkartonger?</summary><p>Du kan köpa 50 flyttkartonger för 2 000 kr eller hyra 50 st för 750 kr. Leverans ingår. Välj det i prisräknaren.</p></details>
-      <details><summary>Flyttar ni även långa sträckor?</summary><p>Ja. Vi utgår från Kungsör men flyttar i hela Sverige. Priset är det fasta priset för din boyta plus körsträckan. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km: 0 kr. 15 km eller mer: 12 kr/km för hela sträckan – till exempel 66 km × 12 kr = 792 kr. Räkna ut det direkt i prisräknaren.</p></details>
+      <details><summary>Ingår flyttkartonger?</summary><p>Du kan köpa 50 flyttkartonger för <span data-fxp="boxbuy">2 000</span> kr eller hyra 50 st för <span data-fxp="boxrent">750</span> kr. Leverans ingår. Välj det i prisräknaren.</p></details>
+      <details><summary>Flyttar ni även långa sträckor?</summary><p>Ja. Vi utgår från Kungsör men flyttar i hela Sverige. Priset är det fasta priset för din boyta plus körsträckan. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under <span data-fxp="kmfree">15</span> km: 0 kr. <span data-fxp="kmfree">15</span> km eller mer: <span data-fxp="km">12</span> kr/km för hela sträckan – till exempel 66 km × <span data-fxp="km">12</span> kr = <span data-fxp="km66">792</span> kr. Räkna ut det direkt i prisräknaren.</p></details>
     </div>
   </div>
 </section>
@@ -1044,6 +1044,8 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       el.style.display=on?'':'none';
     });
   }
+  // New prices from admin (fx-prices.js): count again with them.
+  window.addEventListener('fx:prices',()=>{ try{ calc(); }catch(_){} });
   function calc(){
     vis();
     if(!window.fxComputePrice) return;
@@ -1255,6 +1257,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   FXKubik.onChange(t=>{document.getElementById('vol-badge').textContent=String(t.m3).replace('.',',')+' m³';});
 })();
 </script>
+<script src="/fx-prices.js" defer></script>
 <script src="/chat-widget.js" defer></script>
 </body>
 </html>

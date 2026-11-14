@@ -6,6 +6,7 @@ import { randomBytes, createHash } from "node:crypto";
 import { kv, kvPipe } from "./kv.ts";
 import type { OfferData } from "../mail/offerEmail.ts";
 import { schedule } from "./schedule.ts";
+import type { Work, Photo } from "./work.ts";
 
 export type Status = "new" | "sent" | "signed" | "declined" | "done" | "cancelled";
 export const STATUSES: Status[] = ["new", "sent", "signed", "declined", "done", "cancelled"];
@@ -35,6 +36,9 @@ export type Booking = {
   crewNote?: string;       // shown to the crew on the job sheet
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
+  boxes?: Boxes;           // rented moving boxes out with the customer
+  reviewSentAt?: number;   // when the Google review request was e-mailed
+  work?: Work;             // start/finish and the customer's sign-off, recorded on the job sheet
   sentAt?: number;
   signedAt?: number;
   declinedAt?: number;
@@ -47,10 +51,26 @@ export type Booking = {
   decline?: { reason: DeclineReason; text?: string };
   discount?: { pct: number; before: number; at: number };
   signature?: { name: string; pnr?: string; orgnr?: string; ip: string; ua: string; at: number; offerHash: string; terms: string };
-  history: { at: number; what: string }[];
+  history: { at: number; what: string; by?: string }[];   // by = admin user who made the change
 };
 
 export type Extra = { id: string; label: string; price: number };
+export type Boxes = { qty: number; outDate: string; dueDate: string; returned: number; returnedDate?: string; note?: string; remindedAt?: number };
+
+// Rented boxes: validates admin input. Returns the new state, or an error.
+export function cleanBoxes(d: unknown, today: string): { ok: Boxes | undefined } | { error: string } {
+  if (d === null) return { ok: undefined };
+  const x = (d || {}) as Record<string, unknown>, DATE = /^\d{4}-\d{2}-\d{2}$/;
+  const qty = Math.round(Number(x.qty)), returned = Math.round(Number(x.returned ?? 0));
+  if (!(qty >= 1 && qty <= 500)) return { error: "Antal kartonger: 1–500." };
+  if (!(returned >= 0 && returned <= qty)) return { error: "Återlämnade kan inte vara fler än utlämnade." };
+  const outDate = typeof x.outDate === "string" && DATE.test(x.outDate) ? x.outDate : today;
+  const dueDate = typeof x.dueDate === "string" && DATE.test(x.dueDate) ? x.dueDate : "";
+  if (!dueDate || dueDate < outDate) return { error: "Välj ett datum då kartongerna ska vara tillbaka." };
+  const note = typeof x.note === "string" ? x.note.trim().slice(0, 300) : "";
+  return { ok: { qty, outDate, dueDate, returned, returnedDate: returned === qty ? (typeof x.returnedDate === "string" && DATE.test(x.returnedDate) ? x.returnedDate : today) : undefined, note } };
+}
+export const boxesOut = (b: { boxes?: Boxes }) => (b.boxes ? b.boxes.qty - b.boxes.returned : 0);
 export type DeclineReason = "price" | "other_company" | "date" | "no_move" | "other";
 export const DECLINE_REASONS: Record<DeclineReason, string> = {
   price: "Priset är för högt", other_company: "Valt en annan flyttfirma", date: "Datumet passar inte",
@@ -88,9 +108,9 @@ export async function getBooking(id: string): Promise<Booking | null> {
   return s ? (JSON.parse(s) as Booking) : null;
 }
 
-export async function saveBooking(b: Booking, what?: string) {
+export async function saveBooking(b: Booking, what?: string, by?: string) {
   b.updatedAt = Date.now();
-  if (what) b.history.push({ at: b.updatedAt, what });
+  if (what) b.history.push(by ? { at: b.updatedAt, what, by } : { at: b.updatedAt, what });
   if (b.history.length > 60) b.history = b.history.slice(-60);
   await kv(["SET", K.b(b.id), JSON.stringify(b)]);
 }
@@ -131,7 +151,7 @@ export async function bookingByWorkToken(t: string): Promise<Booking | null> {
 }
 
 // What the crew may see: where, when, who, what to carry. Never price, e-mail, signature or internal notes.
-export function workView(b: Booking, resources: { id: string; kind: string; name: string; role?: string; phone?: string }[]) {
+export function workView(b: Booking, resources: { id: string; kind: string; name: string; role?: string; phone?: string }[], photos: Photo[] = []) {
   const d = b.data, byId = new Map(resources.map((r) => [r.id, r]));
   const span = schedule.span(b);
   return {
@@ -142,6 +162,8 @@ export function workView(b: Booking, resources: { id: string; kind: string; name
     services: [...(d.extras || []), ...(b.extras || []).filter((e) => b.extrasChosen?.includes(e.id)).map((e) => e.label)],
     volume: d.volume ? { m3: d.volume.m3, list: d.volume.list.slice(0, 80) } : null,
     message: d.message || "", crewNote: b.crewNote || "",
+    work: { startedAt: b.work?.startedAt || null, finishedAt: b.work?.finishedAt || null, photos,
+      sign: b.work?.sign ? { name: b.work.sign.name, at: b.work.sign.at, img: b.work.sign.img, note: b.work.sign.note } : null },
     crew: (b.crew || []).map((id) => byId.get(id)).filter(Boolean).map((r) => ({ name: r!.name, kind: r!.kind, role: r!.role || "", phone: r!.kind === "person" ? r!.phone || "" : "" })),
   };
 }

@@ -62,3 +62,62 @@ test("personal och fordon: lägg till, ändra, arkivera; färger delas ut", asyn
   assert.equal(list.length, 2); assert.equal(list[0].id, a.id); assert.equal(list[0].active, false);
   assert.equal(await team.updateResource("nope", { name: "x" }), null);
 });
+
+const report = await import("../lib/booking/report.ts");
+test("timrapport: uppmätt tid före planerad, bara bokade jobb i månaden", () => {
+  const H = 36e5, t0 = Date.parse("2026-12-05T08:00:00Z");
+  const all: any[] = [
+    job("A", { date: "2026-12-05", time: "08:00", durationH: 4, crew: ["RA", "RB", "RT"], status: "done", work: { startedAt: t0, finishedAt: t0 + 5.5 * H }, offer: { total: 5000, lines: [] } }),
+    job("B", { date: "2026-12-07", time: "09:00", durationH: 3, crew: ["RA"], offer: { total: 3000, lines: [] } }),
+    job("C", { date: "2026-12-08", time: "09:00", durationH: 3, crew: ["RA"], status: "cancelled" }),
+    job("D", { date: "2026-11-30", time: "09:00", durationH: 3, crew: ["RA"] }),
+  ];
+  const rows = report.hoursReport(all, R, "2026-12");
+  const a = rows.find((r) => r.id === "RA")!, b = rows.find((r) => r.id === "RB")!;
+  assert.deepEqual([a.jobs, a.hours, a.realHours, a.plannedHours], [2, 8.5, 5.5, 3]);
+  assert.deepEqual([b.jobs, b.hours], [1, 5.5]);
+  assert.equal(rows.some((r) => r.id === "RT"), false);          // vehicles are not on the hours report
+  const csv = report.hoursCsv(rows, "2026-12");
+  assert.ok(csv.startsWith("﻿")); assert.match(csv, /"Ahmad";"";"2";"8,5";"5,5";"3"/);
+  const m = report.moneyReport(all, "2026-12-06", 3);
+  assert.deepEqual(m.months.map((x) => x.month), ["2026-10", "2026-11", "2026-12"]);
+  assert.equal(m.thisMonth.done, 5000); assert.equal(m.thisMonth.booked, 8000); assert.equal(m.upcoming.total, 3000);
+});
+
+const settings = await import("../lib/booking/settings.ts");
+test("omdöme: en gång, bara klara jobb med e-post, rätt dag, inte gamla jobb", async () => {
+  await assert.rejects(settings.updateSettings({ reviewOn: true }), /länken/);
+  await assert.rejects(settings.updateSettings({ reviewUrl: "https://evil.example/x" }), /Google/);
+  const s = await settings.updateSettings({ reviewUrl: "https://g.page/r/abc/review", reviewOn: true, reviewDelayDays: 1 });
+  assert.equal((await settings.getSettings()).reviewOn, true);
+  const b = { status: "done", date: "2026-12-05", data: { email: "a@b.se" } } as any;
+  assert.equal(settings.reviewDue(b, s, "2026-12-05"), false);       // same day, delay 1
+  assert.equal(settings.reviewDue(b, s, "2026-12-06"), true);
+  assert.equal(settings.reviewDue(b, s, "2026-12-25"), false);       // older than 14 days
+  assert.equal(settings.reviewDue({ ...b, reviewSentAt: 1 }, s, "2026-12-06"), false);
+  assert.equal(settings.reviewDue({ ...b, status: "signed" }, s, "2026-12-06"), false);
+  assert.equal(settings.reviewDue({ ...b, data: {} }, s, "2026-12-06"), false);
+  assert.equal(settings.reviewDue(b, { ...s, reviewOn: false }, "2026-12-06"), false);
+});
+
+const push = await import("../lib/booking/push.ts");
+const webpush = (await import("web-push")).default;
+const { createECDH, randomBytes } = await import("node:crypto");
+test("push: nycklar skapas en gång, notisen krypteras, borttagna enheter rensas", async () => {
+  const v1 = await push.vapid(), v2 = await push.vapid();
+  assert.equal(v1.publicKey, v2.publicKey);
+  const ecdh = createECDH("prime256v1"); ecdh.generateKeys();
+  const keys = { p256dh: ecdh.getPublicKey().toString("base64url"), auth: randomBytes(16).toString("base64url") };
+  await assert.rejects(push.addSub({ id: "owner", name: "Ägaren" }, { endpoint: "http://x", keys }, "Mac"), /Ogiltig/);
+  await push.addSub({ id: "owner", name: "Ägaren" }, { endpoint: "https://push.example/a", keys }, "Mac");
+  await push.addSub({ id: "U1", name: "Sara" }, { endpoint: "https://push.example/b", keys }, "Android");
+  webpush.setVapidDetails("mailto:info@fxflytt.se", v1.publicKey, v1.privateKey);
+  const req = webpush.generateRequestDetails({ endpoint: "https://push.example/a", keys }, JSON.stringify({ title: "t" }));
+  assert.equal(req.method, "POST"); assert.match(String(req.headers.Authorization), /^vapid t=/);
+  // the push service says device "b" is gone → it is removed, "a" stays
+  const orig = webpush.sendNotification;
+  (webpush as any).sendNotification = async (s: { endpoint: string }) => { if (s.endpoint.endsWith("/b")) throw Object.assign(new Error("gone"), { statusCode: 410 }); return {}; };
+  try { assert.equal(await push.notifyAll({ title: "x", body: "y", url: "/admin" }), 1); }
+  finally { (webpush as any).sendNotification = orig; }
+  assert.deepEqual((await push.listSubs()).map((s) => s.userName), ["Ägaren"]);
+});

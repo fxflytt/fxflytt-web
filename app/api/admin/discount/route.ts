@@ -1,6 +1,6 @@
 // Admin: lower the price by a percentage and e-mail the customer the new offer (POST ?id= {pct, send}).
 // pct 0 removes an earlier discount. With send=false only the new price is saved (no e-mail).
-import { isAdmin, unauthorized } from "@/lib/booking/auth.ts";
+import { requireUser } from "@/lib/booking/auth.ts";
 import { getBooking, saveBooking, issueToken, applyDiscount } from "@/lib/booking/store.ts";
 import { discountEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 const SITE = process.env.SITE_URL || "https://www.fxflytt.se";
 
 export async function POST(req: Request) {
-  if (!isAdmin(req)) return unauthorized();
+  const u = await requireUser(req); if (u instanceof Response) return u;
   const b = await getBooking(new URL(req.url).searchParams.get("id") || "");
   if (!b) return Response.json({ error: "not-found" }, { status: 404 });
   if (b.status === "signed" || b.status === "done" || b.status === "cancelled") return Response.json({ error: "Rabatt går inte att ge på en signerad eller avbokad bokning." }, { status: 400 });
@@ -31,6 +31,6 @@ export async function POST(req: Request) {
   b.status = "sent"; b.sentAt = Date.now(); b.reminders = []; b.declinedAt = undefined;
   await saveBooking(b, pct > 0
     ? `Rabatt ${pct} %: ${before} → ${b.offer!.total} kr${mailed ? ", nytt pris mejlat till " + b.data.email : " (skickas manuellt)"}`
-    : `Rabatten borttagen: ${before} → ${b.offer!.total} kr`);
+    : `Rabatten borttagen: ${before} → ${b.offer!.total} kr`, u.name);
   return Response.json({ ok: true, url, mailed, booking: b });
 }

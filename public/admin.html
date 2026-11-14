@@ -8,6 +8,11 @@
 <meta name="theme-color" content="#0d2a3f">
 <title>Admin – FX Flytt</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/admin.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FX Admin">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{--navy:#0d2a3f;--navy2:#16384f;--accent:#ff7a1a;--accent2:#e8650a;--ink:#14212b;--muted:#5d6d7a;--line:#e2e8ee;--line2:#cfd9e2;--bg:#f3f6f9;--card:#fff;--green:#1f8a4c;--red:#b42318;--blue:#1f5fae;--side:236px;
     --sh:0 1px 2px rgba(13,42,63,.06),0 2px 8px rgba(13,42,63,.04);--sh2:0 12px 32px rgba(13,42,63,.16)}
@@ -28,6 +33,8 @@
   #side .ct{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;font-weight:800;border-radius:999px;min-width:20px;height:20px;line-height:20px;text-align:center;padding:0 6px}
   #side a.newbtn{display:flex;align-items:center;justify-content:center;gap:8px;margin:18px 4px 0;background:var(--accent);color:#fff;text-decoration:none;font-weight:800;border-radius:12px;padding:11px;font-size:14.5px}
   #side a.newbtn:hover{background:var(--accent2)}
+  #side .lbl-m{display:none}
+  body.office .own{display:none!important}
   .side-foot{margin-top:auto;padding:12px 10px 0;border-top:1px solid rgba(255,255,255,.1);font-size:12px;color:#8fa6b8}
   .side-foot button{background:none;border:0;color:#c4d5e2;font:inherit;font-weight:600;padding:6px 0;cursor:pointer;display:flex;align-items:center;gap:8px}
   #wrap{margin-left:var(--side);min-height:100vh}
@@ -41,7 +48,7 @@
   body.out #wrap{margin-left:0}
   @media (max-width:899px){
     #side{top:auto;right:0;width:auto;height:calc(62px + env(safe-area-inset-bottom));flex-direction:row;padding:0 2px env(safe-area-inset-bottom);border-top:1px solid #0a2232;box-shadow:0 -4px 16px rgba(13,42,63,.12)}
-    .brand,.side-foot,#side .lbl-long{display:none}
+    .brand,.side-foot,#side .lbl-long{display:none}#side .lbl-m{display:inline}
     #side a.nav{flex:1;flex-direction:column;justify-content:center;gap:3px;padding:6px 2px;margin:0;font-size:10.5px;border-radius:0}
     #side a.nav.on{background:none;color:#fff}#side a.nav.on::before{left:30%;right:30%;top:0;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
     #side .ct{position:absolute;top:4px;left:calc(50% + 6px);margin:0;min-width:17px;height:17px;line-height:17px;font-size:10px;padding:0 4px}
@@ -148,6 +155,20 @@
   .crewday b{display:block;font-size:14px}.crewday small{color:var(--green);font-weight:700;font-size:12.5px}
   .crewday a{display:block;font-size:12.5px;color:var(--ink);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.crewday a:hover{text-decoration:underline}
 
+  .phgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin-top:10px}
+  .phgrid>div{position:relative;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#eef2f5}
+  .phgrid img{width:100%;height:100%;object-fit:cover;display:block}
+  .phgrid span{position:absolute;left:4px;bottom:4px;background:rgba(13,42,63,.8);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px}
+  .phgrid span.damage{background:var(--red)}
+  .phgrid button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:var(--red);font-weight:800;cursor:pointer}
+  .htab th{text-align:left;font-size:12px;color:var(--muted);font-weight:700;padding:10px 8px 6px 0;border-bottom:1px solid var(--line)}
+  .htab td{width:auto;padding:10px 8px 10px 0;vertical-align:middle;color:var(--ink)}.htab td:first-child{width:auto}
+  .htab a.hist{font-size:13.5px}
+  @media (max-width:600px){.htab .hm{display:none}}
+  .ptab{width:100%}.ptab th{text-align:left;font-size:12px;color:var(--muted);padding:4px 6px 4px 0}.ptab td{padding:3px 6px 3px 0;border:0;width:auto}
+  .ptab input{padding:7px 9px;font-size:15px}.ptab td:last-child{width:44px}
+  .chg input,.chg{background:#fff8d6}.chg input{border-color:#e8c547}
+  .pdiff{max-height:220px;overflow:auto;margin-bottom:4px}.pdiff>div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}.pdiff s{color:var(--muted)}
   /* ---------- planning (booking detail) ---------- */
   .pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
   .pk{display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line2);background:#fff;border-radius:12px;padding:9px 11px;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
@@ -248,9 +269,10 @@
   <a class="nav" href="#bokningar" data-v="list"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Bokningar<span class="ct" id="ctNew" hidden></span></a>
   <a class="nav" href="#kalender" data-v="cal"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalender</a>
   <a class="nav" href="#personal" data-v="team"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.9.8 3.1 2.5 3.5 5.2"/></svg><span>Personal<span class="lbl-long"> och fordon</span></span><span class="ct" id="ctCrew" hidden></span></a>
-  <a class="nav" href="#statistik" data-v="stat"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistik</a>
+  <a class="nav own" href="#statistik" data-v="stat"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistik</a>
+  <a class="nav" href="#installningar" data-v="set"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="lbl-m">Mer</span><span class="lbl-long">Inställningar</span></a>
   <a class="newbtn" href="#ny"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Ny bokning</span></a>
-  <div class="side-foot"><button id="logout"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Logga ut</button></div>
+  <div class="side-foot"><div id="whoami" style="padding:0 0 6px"></div><button id="logout"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Logga ut</button></div>
 </nav>
 <div id="wrap">
   <header id="top"><h1 id="title">Idag</h1>
@@ -262,6 +284,7 @@
 <div id="npanel" hidden></div><div id="toast" hidden></div>
 <script src="/price-calc.js"></script>
 <script src="/fx-schedule.js"></script>
+<script src="/fx-prices.js" defer></script>
 <script>
 (function(){
   const $=(s,el=document)=>el.querySelector(s);
@@ -284,7 +307,11 @@
   const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
   const root=$('#root');
   const S=window.FXSchedule;
-  let newPrefill=null, lastNav='';
+  let newPrefill=null, lastNav='', me=null;
+  function applyRole(){
+    document.body.classList.toggle('office',!!me&&me.role!=='owner');
+    $('#whoami').innerHTML=me?`<b style="color:#fff">${esc(me.name)}</b> · ${me.role==='owner'?'Ägare':'Kontor'}`:'';
+  }
   let res=[], teamKind='person', teamEdit=null, showArch=false, openRes=null;
   let all=[], view='today', filter='active', calMonth=today().slice(0,7), calDay=null, q='', sortBy='created', statPeriod='12';
 
@@ -299,7 +326,7 @@
   // ---------- login ----------
   async function start(){
     const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
-    if(s.admin){ document.body.classList.remove('out'); await load(); route(); startNotices(); }
+    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); swReg().catch(()=>{}); }
     else showLogin(s.setup);
   }
   function showLogin(setup){
@@ -307,10 +334,11 @@
     const miss=setup?[!setup.password&&'Lösenord (ADMIN_PASSWORD)',!setup.storage&&'Lagring (Upstash Redis)',!setup.mail&&'E-post (SMTP)'].filter(Boolean):[];
     root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><div class="card"><h3 style="font-size:20px">Logga in i admin</h3>
       ${miss.length?`<div class="warn">Saknas i Vercel: ${esc(miss.join(', '))}</div>`:''}
+      <label class="f" for="un">Användarnamn <span class="muted" style="font-weight:500">(tomt = ägarlösenordet)</span></label><input id="un" autocomplete="username" autocapitalize="none" spellcheck="false">
       <label class="f" for="pw">Lösenord</label><input id="pw" type="password" autocomplete="current-password">
       <button class="btn" id="go">Logga in</button><div class="err" id="err"></div></div></div>`;
     const go=async()=>{ $('#err').textContent='';
-      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('#pw').value})});
+      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('#un').value,password:$('#pw').value})});
       const j=await r.json().catch(()=>({}));
       if(r.ok){ start(); } else $('#err').textContent=j.error||'Fel';
     };
@@ -384,18 +412,20 @@
     if(/^FX\d{6}-[0-9A-F]{6}$/.test(id)) return showDetail(id);
     if(id==='ny') return showNew();
     if(id==='kalender') return showCal();
-    if(id==='statistik') return showStats();
+    if(id==='statistik'&&isOwner()) return showStats();
     if(id==='personal') return showTeam();
+    if(id==='installningar') return showSettings();
+    if(id==='statistik'&&!isOwner()) return showToday();
     if(id==='bokningar') return showList();
     return showToday();
   }
   window.addEventListener('hashchange',()=>{ Promise.resolve().then(route).catch(()=>{}); });
   // Marks the menu item and sets the page title. Returns '' so the views can keep `navBar(x)+…`.
-  const TITLES={today:'Idag',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny bokning'};
+  const TITLES={today:'Idag',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny bokning',set:'Inställningar'};
   function navBar(active,title){
     document.querySelectorAll('#side a.nav').forEach(a=>a.classList.toggle('on',a.dataset.v===active));
     $('#title').textContent=title||TITLES[active]||'';
-    document.body.className=title?'v-detail':'v-'+active;
+    document.body.className=(title?'v-detail':'v-'+active)+(me&&me.role!=='owner'?' office':'');
     const key=active+'|'+(title||''); if(key!==lastNav){ window.scrollTo(0,0); lastNav=key; }
     return '';
   }
@@ -405,7 +435,9 @@
   // An offer that was sent but not answered counts as expired ("förfallen") after 14 days, or when the moving day has come.
   const EXPIRE_DAYS=14;
   const isExpired=(b)=>b.status==='sent'&&((b.sentAt&&Date.now()-b.sentAt>EXPIRE_DAYS*864e5)||(b.date&&b.date<=today()));
-  const FILTERS={active:['Aktiva',b=>['new','sent','signed'].includes(b.status)&&!isExpired(b)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'&&!isExpired(b)],expired:['Förfallna',isExpired],signed:['Bokade',b=>b.status==='signed'],done:['Klara',b=>b.status==='done'],closed:['Nekade/avbokade',b=>['declined','cancelled'].includes(b.status)],all:['Alla',()=>true]};
+  const boxesLeft=(b)=>b.boxes?b.boxes.qty-b.boxes.returned:0;
+  const rentsBoxes=(b)=>(b.offer?.lines||[]).some(l=>/kartong.*hyr/i.test(l.label))||(b.extras||[]).some(e=>b.extrasChosen?.includes(e.id)&&/kartong.*hyr/i.test(e.label))||(b.data?.extras||[]).some(x=>/kartong/i.test(x));
+  const FILTERS={active:['Aktiva',b=>['new','sent','signed'].includes(b.status)&&!isExpired(b)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'&&!isExpired(b)],expired:['Förfallna',isExpired],signed:['Bokade',b=>b.status==='signed'],done:['Klara',b=>b.status==='done'],closed:['Nekade/avbokade',b=>['declined','cancelled'].includes(b.status)],boxes:['Kartonger ute',b=>boxesLeft(b)>0],all:['Alla',()=>true]};
   function itemHtml(b){
     const o=b.offer, d=b.data||{};
     const route=[d.from,d.to].filter(Boolean).map(x=>String(x).split(',')[0]).join(' → ');
@@ -421,6 +453,7 @@
     if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 ${b.views}× · ${esc(ago(b.lastViewAt))}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
     if(b.reminders?.length) t.push(`<span class="tag">🔔 ${b.reminders.length} påminnelse${b.reminders.length>1?'r':''}</span>`);
     if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
+    if(boxesLeft(b)) t.push(`<span class="tag${b.boxes.dueDate<today()?' no':''}">📦 ${boxesLeft(b)} kartonger ute${b.boxes.dueDate<today()?' – försenade':''}</span>`);
     if(b.discount) t.push(`<span class="tag ok">−${b.discount.pct} %</span>`);
     if(b.status==='declined'&&b.decline) t.push(`<span class="tag no">${esc(WHY[b.decline.reason]||'')}</span>`);
     const s=t.filter(Boolean).join('');
@@ -455,6 +488,8 @@
 
   // ---------- statistics ----------
   function showStats(){
+    if(statTab==='money') return showMoney();
+    if(statTab==='hours') return showHours();
     view='stat';
     const now=Date.now(), months=statPeriod==='all'?null:Number(statPeriod);
     const from=months?new Date(new Date().getFullYear(),new Date().getMonth()-months+1,1).getTime():0;
@@ -482,7 +517,7 @@
     const src=(s)=>{const l=inP.filter(b=>(b.source==='web'?'web':'manual')===s);const w=l.filter(b=>b.status==='signed'||b.status==='done').length;return {n:l.length,w};};
     const web=src('web'), man=src('manual');
     const disc=inP.filter(b=>b.discount), discWon=disc.filter(b=>b.status==='signed'||b.status==='done');
-    root.innerHTML=navBar('stat')+`<main>
+    root.innerHTML=navBar('stat')+`<main>${statTabs()}
       <div class="chips">${[['1','Denna månad'],['3','3 mån'],['12','12 mån'],['all','Allt']].map(([k,l])=>`<button data-p="${k}" class="${k===statPeriod?'on':''}">${l}</button>`).join('')}</div>
       <div class="kpis">
         <div class="kpi" style="background:#1f8a4c"><small>Vunnet (signerat)</small><b>${kr(sum(won))}</b><small>${won.length} bokning${won.length===1?'':'ar'}</small></div>
@@ -505,6 +540,7 @@
     </main>`;
     bindNav();
     root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ statPeriod=b.dataset.p; showStats(); });
+    bindStatTabs();
   }
 
   // ---------- calendar ----------
@@ -766,6 +802,21 @@
         <div class="btns"><button class="btn" id="woopen">🖨 Öppna / skriv ut</button><button class="btn sec" id="wolink">Kopiera länk</button></div>
         <div id="wosms" class="tags" style="margin-top:10px"></div><div id="msgw"></div>
         <button class="back" id="worenew"${b.workToken?'':' hidden'} style="padding:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)">Gör en ny länk (den gamla slutar fungera)</button></div>
+      ${['declined','cancelled'].includes(b.status)&&!b.boxes?'':`<div class="card" id="bx"><h3>Hyrkartonger ${boxesLeft(b)?`<span class="sub">${boxesLeft(b)} ute</span>`:''}</h3>
+        ${!b.boxes?`${rentsBoxes(b)?'<div class="warn" style="margin-top:0">Kunden har valt flyttkartonger – registrera dem när de lämnas ut.</div>':'<div class="muted">Inga hyrkartonger.</div>'}<button class="btn sec" id="bx_new">+ Lämna ut kartonger</button>`
+        :`${boxesLeft(b)===0?`<div class="okmsg" style="margin-top:0">Alla ${b.boxes.qty} kartonger är tillbaka${b.boxes.returnedDate?' ('+esc(fmtDate(b.boxes.returnedDate))+')':''}.</div>`
+          :b.boxes.dueDate<today()?`<div class="warn" style="margin-top:0"><b>Försenade:</b> ${boxesLeft(b)} kartonger skulle varit tillbaka ${esc(fmtDate(b.boxes.dueDate))}</div>`
+          :`<div class="muted">${boxesLeft(b)} av ${b.boxes.qty} ute · tillbaka senast <b>${esc(fmtDate(b.boxes.dueDate))}</b></div>`}`}
+        <div id="bx_form"${b.boxes?'':' hidden'}>
+          <div class="row2"><div><label class="f" for="bx_qty">Antal utlämnade</label><input id="bx_qty" type="number" inputmode="numeric" min="1" value="${b.boxes?b.boxes.qty:((window.FX_PRICES||{}).boxes||{}).qty||50}"></div>
+            <div><label class="f" for="bx_ret">Tillbaka hittills</label><input id="bx_ret" type="number" inputmode="numeric" min="0" value="${b.boxes?b.boxes.returned:0}"></div></div>
+          <div class="row2"><div><label class="f" for="bx_out">Utlämnade</label><input id="bx_out" type="date" value="${esc(b.boxes?.outDate||today())}"></div>
+            <div><label class="f" for="bx_due">Tillbaka senast</label><input id="bx_due" type="date" value="${esc(b.boxes?.dueDate||addDays(b.date&&b.date>today()?b.date:today(),30))}"></div></div>
+          <label class="f" for="bx_note">Anteckning</label><input id="bx_note" value="${esc(b.boxes?.note||'')}" placeholder="T.ex. hämtas vid trapphuset">
+          <div class="btns"><button class="btn sec" id="bx_save">Spara</button>${b.boxes&&boxesLeft(b)?'<button class="btn gray" id="bx_all">Alla tillbaka</button>':''}</div>
+          ${b.boxes&&boxesLeft(b)&&d.email?`<button class="btn sec" id="bx_mail">Mejla påminnelse till kunden</button>${b.boxes.remindedAt?`<div class="muted" style="margin-top:6px">Påminnelse skickad ${esc(fmtTs(b.boxes.remindedAt))}</div>`:''}`:''}
+          ${b.boxes?'<button class="back" id="bx_del" style="padding:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)">Ta bort registreringen</button>':''}
+        </div><div id="bx_msg"></div></div>`}
       <div class="card"><h3>Pris</h3>
         ${locked?'<div class="warn">Offerten är signerad. Ändrar du priset nu gäller det inte automatiskt – prata med kunden först.</div>':''}
         <label class="f" for="tot">Pris efter RUT (kr)</label><input id="tot" type="number" inputmode="numeric" value="${o?esc(o.total):''}">
@@ -793,6 +844,14 @@
         <div class="chips" id="pcts">${[5,10,15,20].map(p=>`<button class="chip" data-p="${p}">${p} %</button>`).join('')}<input id="pct" type="number" inputmode="numeric" min="1" max="50" placeholder="Egen %" style="width:110px"></div>
         <div id="dprev"></div><div id="msg3"></div></div>`:''}
     </div><div>
+      ${(()=>{ const w=b.work||{}, ph=b.photos||[]; if(!w.startedAt&&!ph.length&&!w.sign) return '';
+        const K={before:'Före',after:'Efter',damage:'Skada'}, hm=(t)=>new Date(t).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});
+        const real=w.startedAt&&w.finishedAt?(w.finishedAt-w.startedAt)/36e5:null;
+        return `<div class="card" id="done"><h3>Utfört arbete</h3>
+          <div>${w.startedAt?`Start <b>${hm(w.startedAt)}</b>`:''}${w.finishedAt?` · Klart <b>${hm(w.finishedAt)}</b>`:w.startedAt?' · <span class="tag wn">pågår</span>':''}${real!=null?` · <b>${fmtH(Math.round(real*10)/10)}</b> <span class="muted">(planerat ${fmtH(S.hoursOf(b))})</span>`:''}</div>
+          ${ph.some(p=>p.kind==='damage')?'<div class="warn">Personalen har fotograferat en skada.</div>':''}
+          ${ph.length?`<div class="phgrid">${ph.map(p=>`<div><a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="" loading="lazy"></a><span class="${p.kind}">${K[p.kind]}</span><button data-delph="${esc(p.url)}" aria-label="Ta bort">✕</button></div>`).join('')}</div>`:''}
+          ${w.sign?`<div class="okmsg" style="margin-top:12px">Kunden kvitterade: ${esc(w.sign.name)} · ${esc(fmtTs(w.sign.at))}</div><img src="${esc(w.sign.img)}" alt="Signatur" style="max-width:100%;height:90px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#fff">${w.sign.note?`<div class="warn"><b>Kundens anmärkning:</b> ${esc(w.sign.note)}</div>`:''}`:''}</div>`; })()}
       <div class="card"><h3>Uppgifter från kunden</h3><table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table></div>
       <div class="card"><h3>Status</h3><div class="btns">
         ${b.status!=='done'?'<button class="btn gray" data-s="done">Markera klar</button>':''}
@@ -801,13 +860,28 @@
       </div></div>
       ${b.extrasChosen?.length?`<div class="card"><h3>Kunden valde tillval</h3>${(b.extras||[]).filter(e=>b.extrasChosen.includes(e.id)).map(e=>`<div style="display:flex;justify-content:space-between"><span>${esc(e.label)}</span><b>+${kr(e.price)}</b></div>`).join('')}</div>`:''}
       ${(()=>{ const k=digits(d.phone); const other=k?all.filter(x=>x.id!==b.id&&digits((x.data||{}).phone)===k):[]; return other.length?`<div class="card"><h3>Kundens andra bokningar (${other.length})</h3>${other.map(x=>`<a class="hist" href="#${esc(x.id)}">${esc(fmtDate(x.date))} · ${x.offer?kr(x.offer.total):'Inget pris'} · ${esc(ST[x.status])}</a>`).join('')}</div>`:''; })()}
-      <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}</div>`).join('')}</div>
+      <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}${h.by?` <span class="muted">· ${esc(h.by)}</span>`:''}</div>`).join('')}</div>
     </div></div></main>`;
     bindNav();
     $('#back').onclick=()=>{ location.hash={cal:'kalender',today:'',team:'personal',stat:'statistik'}[view]??'bokningar'; };
     const msg=(el,t,ok)=>{ $(el).innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
     let lastConflicts=[];
     const patch=async(body)=>{ try{ const {conflicts,...nb}=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); lastConflicts=conflicts||[]; Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; updateCounts(); return true; }catch(e){ msg(body&&'crew' in body?'#msgp':'#msg',e.message,false); return false; } };
+    root.querySelectorAll('[data-delph]').forEach(x=>x.onclick=async()=>{
+      if(!confirm('Ta bort fotot?')) return;
+      try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
+    });
+    // ---- rented boxes ----
+    if($('#bx')){
+      const bxBody=(extra)=>({boxes:{qty:Number($('#bx_qty').value),returned:Number($('#bx_ret').value),outDate:$('#bx_out').value,dueDate:$('#bx_due').value,note:$('#bx_note').value,...extra}});
+      const bxSave=async(body,txt)=>{ if(await patch(body)){ await showDetail(b.id); notify(txt); } else msg('#bx_msg',$('#msg').textContent,false); };
+      if($('#bx_new')) $('#bx_new').onclick=()=>{ $('#bx_form').hidden=false; $('#bx_new').hidden=true; $('#bx_qty').focus(); };
+      $('#bx_save').onclick=()=>bxSave(bxBody(),'Kartongerna är sparade ✓');
+      if($('#bx_all')) $('#bx_all').onclick=()=>bxSave(bxBody({returned:Number($('#bx_qty').value)}),'Alla kartonger tillbaka ✓');
+      if($('#bx_del')) $('#bx_del').onclick=()=>{ if(confirm('Ta bort registreringen av hyrkartonger?')) bxSave({boxes:null},'Borttaget'); };
+      if($('#bx_mail')) $('#bx_mail').onclick=async()=>{ if(!confirm('Mejla en påminnelse om kartongerna till '+d.email+'?')) return;
+        try{ await api('/api/admin/remind?id='+b.id+'&kind=boxes',{method:'POST'}); await showDetail(b.id); notify('Påminnelsen är skickad ✓'); }catch(e){ msg('#bx_msg',e.message,false); } };
+    }
     // ---- job sheet for the crew ----
     if($('#wo')){
       const saveNote=async()=>{ if($('#cw').value===(b.crewNote||'')) return true; return patch({crewNote:$('#cw').value}); };
@@ -1099,6 +1173,7 @@
       ['Saknar personal','wn',miss.map(b=>({b,sub:when(b)}))],
       ['Saknar starttid','wn',all.filter(b=>soon(b)&&!b.time).sort(byTime).map(b=>({b,sub:esc(fmtDate(b.date))}))],
       ['Genomförda – markera klara','',all.filter(b=>b.status==='signed'&&b.date&&b.date<t).sort(byTime).map(b=>({b,sub:when(b),act:`<button class="btn gray sm" data-done="${esc(b.id)}">Klar</button>`}))],
+      ['Hyrkartonger att hämta','wn',all.filter(b=>boxesLeft(b)>0&&b.boxes.dueDate<=addDays(t,3)).sort((x,y)=>x.boxes.dueDate.localeCompare(y.boxes.dueDate)).map(b=>({b,sub:`${boxesLeft(b)} kartonger · ${b.boxes.dueDate<t?'<b style="color:var(--red)">försenade sedan '+esc(fmtDate(b.boxes.dueDate))+'</b>':'senast '+esc(fmtDate(b.boxes.dueDate))}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['Heta offerter – ring kunden','ok',all.filter(b=>b.status==='sent'&&!isExpired(b)&&(b.views||0)>=2).sort((x,y)=>(y.lastViewAt||0)-(x.lastViewAt||0)).map(b=>({b,sub:`Öppnad ${b.views} gånger, senast ${esc(ago(b.lastViewAt))} · ${b.offer?kr(b.offer.total):''}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['Förfallna offerter','',all.filter(isExpired).sort((x,y)=>(y.sentAt||0)-(x.sentAt||0)).map(b=>({b,sub:`Skickad ${esc(ago(b.sentAt))} · ${esc(fmtDate(b.date))}`}))],
     ].filter(g=>g[2].length);
@@ -1134,6 +1209,209 @@
       catch(e){ x.disabled=false; notify(e.message); }
     });
   }
+
+  // ---------- statistics tabs: sales (above), money, hours report ----------
+  let statTab='sales', hoursMonth=today().slice(0,7), openHours=null;
+  const statTabs=()=>`<div class="seg" id="sttabs" style="margin-bottom:16px">${[['sales','Försäljning'],['money','Ekonomi'],['hours','Timrapport']].map(([k,l])=>`<button data-k="${k}" class="${statTab===k?'on':''}">${l}</button>`).join('')}</div>`;
+  const bindStatTabs=()=>root.querySelectorAll('#sttabs button').forEach(x=>x.onclick=()=>{ statTab=x.dataset.k; showStats(); });
+  const monthName=(m)=>new Date(m+'-15T12:00:00Z').toLocaleDateString('sv-SE',{month:'long',year:'numeric',timeZone:'UTC'});
+  const pctTxt=(a,b)=>!b?'':(a>=b?'▲ ':'▼ ')+Math.abs(Math.round((a-b)*100/b))+' % mot förra månaden';
+
+  async function showMoney(){
+    view='stat';
+    root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="mpane"><div class="empty">Laddar…</div></div></main>`; bindStatTabs();
+    let r; try{ r=await api('/api/admin/report?type=money'); }catch(e){ $('#mpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    if(view!=='stat'||statTab!=='money') return;
+    const max=Math.max(1,...r.months.map(m=>m.booked));
+    $('#mpane').innerHTML=`<div class="kpis">
+        <div class="kpi" style="background:#1f8a4c"><small>Utfört denna månad</small><b>${kr(r.thisMonth.done)}</b><small>${r.thisMonth.doneJobs} jobb ${esc(pctTxt(r.thisMonth.done,r.lastMonth.done))}</small></div>
+        <div class="kpi" style="background:var(--navy)"><small>Bokat denna månad</small><b>${kr(r.thisMonth.booked)}</b><small>utfört + kvar att göra</small></div>
+        <div class="kpi" style="background:#2f6fb2"><small>Kommande bokade jobb</small><b>${kr(r.upcoming.total)}</b><small>${r.upcoming.jobs} jobb från i dag</small></div>
+        <div class="kpi lt"><small>Öppna offerter</small><b>${kr(r.openOffers.total)}</b><small>${r.openOffers.count} väntar på svar</small></div></div>
+      <div class="card"><h3>Per månad <span class="sub">Snittjobb ${kr(r.avgJob)}</span></h3>
+        <div class="bars">${r.months.map(m=>`<div class="m"><i style="height:${Math.round(m.done*100/max)}%;background:#1f8a4c;width:38%" title="Utfört ${kr(m.done)}"></i><i style="height:${Math.round((m.booked-m.done)*100/max)}%;background:#9fc6e8;width:38%" title="Bokat, ej utfört ${kr(m.booked-m.done)}"></i></div>`).join('')}</div>
+        <div class="blab">${r.months.map(m=>`<span>${esc(new Date(m.month+'-15T12:00:00Z').toLocaleDateString('sv-SE',{month:'short',timeZone:'UTC'}))}</span>`).join('')}</div>
+        <div class="leg"><span><i style="background:#1f8a4c"></i>Utfört (klart)</span><span><i style="background:#9fc6e8"></i>Bokat, inte klart än</span></div>
+        <table style="margin-top:14px"><tbody>${r.months.slice().reverse().filter(m=>m.booked).map(m=>`<tr><td style="text-transform:capitalize">${esc(monthName(m.month))}</td><td style="text-align:right"><b>${kr(m.done)}</b> <span class="muted">· ${m.doneJobs} jobb utförda${m.booked>m.done?` · ${kr(m.booked-m.done)} kvar`:''}</span></td></tr>`).join('')||'<tr><td>Inga jobb ännu.</td><td></td></tr>'}</tbody></table></div>
+      <div class="muted" style="margin:4px 2px 20px">Beloppen är kundens pris efter RUT-avdrag (det kunden betalar till er). RUT-delen som Skatteverket betalar ingår inte. Månaden räknas på flyttdatum.</div>`;
+  }
+
+  async function showHours(){
+    view='stat';
+    root.innerHTML=navBar('stat')+`<main>${statTabs()}
+      <div class="calbar"><div class="cnav"><button id="hprev" aria-label="Föregående månad">‹</button><button id="hnow">Denna månad</button><button id="hnext" aria-label="Nästa månad">›</button></div>
+        <b class="ctitle">${esc(monthName(hoursMonth))}</b>
+        <a class="btn sec sm" style="margin-left:auto" href="/api/admin/report?type=hours&month=${hoursMonth}&format=csv">⬇ Ladda ner till Excel</a></div>
+      <div id="hpane"><div class="empty">Laddar…</div></div></main>`;
+    bindStatTabs();
+    const step=(k)=>{ const [y,m]=hoursMonth.split('-').map(Number); hoursMonth=new Date(Date.UTC(y,m-1+k,1)).toISOString().slice(0,7); openHours=null; showHours(); };
+    $('#hprev').onclick=()=>step(-1); $('#hnext').onclick=()=>step(1); $('#hnow').onclick=()=>{ hoursMonth=today().slice(0,7); showHours(); };
+    let r; try{ r=await api('/api/admin/report?type=hours&month='+hoursMonth); }catch(e){ $('#hpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    if(view!=='stat'||statTab!=='hours') return;
+    const tot=r.rows.reduce((a,x)=>a+x.hours,0);
+    $('#hpane').innerHTML=r.rows.length?`<div class="card" style="padding:6px 18px 14px"><table class="htab"><thead><tr><th>Namn</th><th>Jobb</th><th>Timmar</th><th class="hm">Uppmätt</th><th class="hm">Planerad</th><th></th></tr></thead><tbody>
+      ${r.rows.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="muted">${esc(x.role)}</div></td><td>${x.jobs}</td><td><b>${esc(fmtH(x.hours))}</b></td><td class="hm">${esc(fmtH(x.realHours))}</td><td class="hm">${esc(fmtH(x.plannedHours))}</td><td style="text-align:right">${x.jobs?`<button class="btn gray sm" data-open="${esc(x.id)}">${openHours===x.id?'Dölj':'Visa jobb'}</button>`:''}</td></tr>
+        ${openHours===x.id?`<tr><td colspan="6" style="background:#fafcfd">${x.lines.map(l=>`<a class="hist" href="#${esc(l.bookingId)}">${esc(fmtDate(l.date))} ${esc(l.time)} · ${esc(l.customer)} · <b>${esc(fmtH(l.hours))}</b> <span class="tag${l.real?' ok':''}">${l.real?'uppmätt':'planerad'}</span></a>`).join('')}</td></tr>`:''}`).join('')}
+      <tr><td><b>Totalt</b></td><td></td><td><b>${esc(fmtH(Math.round(tot*10)/10))}</b></td><td class="hm"></td><td class="hm"></td><td></td></tr></tbody></table></div>
+      <div class="muted" style="margin:4px 2px 20px"><b>Uppmätt</b> = personalen tryckte Start och Klart på arbetsordern. <b>Planerad</b> = jobbets planerade längd (används när Start/Klart saknas). Bara bokade och utförda jobb räknas, inte avbokade. Excel-filen har en rad per person och en rad per jobb.</div>`
+      :'<div class="card empty">Ingen personal inlagd.</div>';
+    root.querySelectorAll('[data-open]').forEach(x=>x.onclick=()=>{ openHours=openHours===x.dataset.open?null:x.dataset.open; showHours(); });
+  }
+
+  // ---------- settings ----------
+  // Tabs; each feature adds its own. Owner-only tabs are hidden for office accounts (the server checks too).
+  const isOwner=()=>me&&me.role==='owner';
+  const ROLE={owner:'Ägare',office:'Kontor'};
+  let setTab='users';
+  const SET_TABS=[['users','Användare',true]];
+  async function showSettings(){
+    view='set';
+    const tabs=SET_TABS.filter(t=>!t[2]||isOwner());
+    if(!tabs.some(t=>t[0]===setTab)) setTab=tabs[0]?.[0];
+    root.innerHTML=navBar('set')+`<main style="max-width:980px"><div class="seg" id="stabs" style="margin-bottom:16px">${tabs.map(([k,l])=>`<button data-k="${k}" class="${k===setTab?'on':''}">${l}</button>`).join('')}</div><div id="spane"><div class="empty">Laddar…</div></div></main>`;
+    root.querySelectorAll('#stabs button').forEach(x=>x.onclick=()=>{ setTab=x.dataset.k; showSettings(); });
+    const fn=SETTINGS[setTab]; if(fn) await fn($('#spane')); else $('#spane').innerHTML='<div class="card empty">Inga inställningar för din roll.</div>';
+  }
+  const SETTINGS={};
+  SETTINGS.users=async(el)=>{
+    let users=[]; try{ users=(await api('/api/admin/users')).users; }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const draw=()=>{
+      el.innerHTML=`<div class="card"><h3>Användare <span class="sub">${users.filter(u=>u.active).length} aktiva</span></h3>
+        <div class="muted" style="margin-bottom:10px"><b>Ägare</b> ser allt. <b>Kontor</b> sköter förfrågningar, offerter, kalender, personal och arbetsordrar – men ser inte statistik, ekonomi, timrapport, priser eller användare. Ägarlösenordet i Vercel fungerar alltid (lämna användarnamnet tomt).</div>
+        ${users.length?users.map(u=>`<div class="todo"><a><b>${esc(u.name)} <span class="tag${u.role==='owner'?' ok':''}">${ROLE[u.role]}</span>${u.active?'':' <span class="tag no">Avstängd</span>'}</b><small>${esc(u.username)} · ${u.lastLoginAt?'senast inloggad '+esc(ago(u.lastLoginAt)):'aldrig inloggad'}</small></a>
+          <button class="btn sec sm" data-pw="${u.id}">Nytt lösenord</button>
+          <button class="btn sec sm" data-role="${u.id}">${u.role==='owner'?'Gör till kontor':'Gör till ägare'}</button>
+          <button class="btn ${u.active?'red':'gray'} sm" data-act="${u.id}">${u.active?'Stäng av':'Aktivera'}</button></div>`).join(''):'<div class="muted">Inga användare än.</div>'}</div>
+        <div class="card"><h3>Ny användare</h3>
+          <div class="row2"><div><label class="f" for="u_name">Namn</label><input id="u_name" autocomplete="off"></div><div><label class="f" for="u_user">Användarnamn</label><input id="u_user" autocomplete="off" autocapitalize="none" placeholder="t.ex. sara"></div></div>
+          <div class="row2"><div><label class="f" for="u_pw">Lösenord (minst 8 tecken)</label><input id="u_pw" type="text" autocomplete="new-password"></div><div><label class="f" for="u_role">Roll</label><select id="u_role"><option value="office">Kontor</option><option value="owner">Ägare</option></select></div></div>
+          <button class="btn" id="u_add">Skapa användare</button><div id="u_msg"></div></div>`;
+      const upd=async(id,body)=>{ try{ const r=await api('/api/admin/users?id='+id,{method:'PATCH',body:JSON.stringify(body)}); users=users.map(x=>x.id===id?r:x); draw(); notify('Sparat ✓'); }catch(e){ notify(e.message); } };
+      el.querySelectorAll('[data-pw]').forEach(x=>x.onclick=()=>{ const pw=prompt('Nytt lösenord (minst 8 tecken). Användaren loggas ut överallt.'); if(pw) upd(x.dataset.pw,{password:pw}); });
+      el.querySelectorAll('[data-role]').forEach(x=>x.onclick=()=>{ const u=users.find(y=>y.id===x.dataset.role); upd(u.id,{role:u.role==='owner'?'office':'owner'}); });
+      el.querySelectorAll('[data-act]').forEach(x=>x.onclick=()=>{ const u=users.find(y=>y.id===x.dataset.act); if(u.active&&!confirm(`Stänga av ${u.name}? Hen loggas ut direkt.`)) return; upd(u.id,{active:!u.active}); });
+      $('#u_add').onclick=async()=>{
+        try{ const u=await api('/api/admin/users',{method:'POST',body:JSON.stringify({name:$('#u_name').value,username:$('#u_user').value,password:$('#u_pw').value,role:$('#u_role').value})});
+          users.push(u); draw(); notify(`${u.name} kan nu logga in med användarnamnet ${u.username}`); }
+        catch(e){ $('#u_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; }
+      };
+    };
+    draw();
+  };
+
+  SET_TABS.push(['review','Omdömen',true]);
+  SETTINGS.review=async(el)=>{
+    let s; try{ s=await api('/api/admin/settings'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const sentN=all.filter(b=>b.reviewSentAt).length;
+    el.innerHTML=`<div class="card"><h3>Be kunder om omdöme på Google <span class="sub">${sentN} skickade hittills</span></h3>
+      <div class="muted">När ett jobb är <b>klart</b> får kunden ett kort tackmejl med en knapp till ert Google-omdöme. Skickas en gång per bokning, bara till kunder med e-post, och aldrig för jobb äldre än 14 dagar. Mejlet går ut på morgonen.</div>
+      <label class="f" style="display:flex;align-items:center;gap:10px;margin-top:16px"><input type="checkbox" id="r_on" style="width:20px;height:20px"${s.reviewOn?' checked':''}> Skicka förfrågan automatiskt</label>
+      <label class="f" for="r_url">Länk till Google-omdöme</label><input id="r_url" value="${esc(s.reviewUrl)}" placeholder="https://g.page/r/…/review" inputmode="url">
+      <div class="muted" style="margin-top:6px">Hittas i Google Business Profile: sök på <b>FX Flytt</b> i Google när du är inloggad → <b>Be om omdömen</b> (Få fler omdömen) → kopiera länken.</div>
+      <label class="f" for="r_days">När</label><select id="r_days">${[0,1,2,3,5,7].map(n=>`<option value="${n}"${s.reviewDelayDays===n?' selected':''}>${n===0?'Samma dag som flytten':n===1?'Dagen efter flytten':n+' dagar efter flytten'}</option>`).join('')}</select>
+      <div class="btns"><button class="btn sec" id="r_test">Skicka ett testmejl till oss</button><button class="btn" id="r_save">Spara</button></div><div id="r_msg"></div></div>`;
+    $('#r_save').onclick=async()=>{ try{ s=await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({reviewUrl:$('#r_url').value,reviewDelayDays:Number($('#r_days').value),reviewOn:$('#r_on').checked})}); $('#r_msg').innerHTML=`<div class="okmsg">Sparat ✓ ${s.reviewOn?'– förfrågningar skickas automatiskt.':'– automatiska förfrågningar är avstängda.'}</div>`; }catch(e){ $('#r_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    $('#r_test').onclick=async()=>{ try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({reviewUrl:$('#r_url').value})}); const r=await api('/api/admin/settings',{method:'POST'}); $('#r_msg').innerHTML=`<div class="okmsg">Testmejlet är skickat till ${esc(r.to)}.</div>`; }catch(e){ $('#r_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+  };
+
+  // ---- notifications on this device (all roles) ----
+  const pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+  const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent), standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const swReg=()=>pushOk()?navigator.serviceWorker.register('/admin-sw.js',{scope:'/admin'}):Promise.resolve(null);
+  const b64=(s)=>{ const p='='.repeat((4-s.length%4)%4), r=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(r,c=>c.charCodeAt(0)); };
+  SET_TABS.unshift(['push','Notiser',false]);
+  if(setTab==='users') setTab='push';
+  SETTINGS.push=async(el)=>{
+    let info; try{ info=await api('/api/admin/push'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const reg=await swReg().catch(()=>null), cur=reg?await reg.pushManager.getSubscription().catch(()=>null):null;
+    const here=cur&&info.mine.some(m=>m.endpoint===cur.endpoint);
+    const draw=()=>{
+      el.innerHTML=`<div class="card"><h3>Notiser i mobilen och datorn</h3>
+        <div class="muted">Få en notis direkt när en <b>ny förfrågan</b> kommer in, när en kund <b>signerar</b> eller <b>tackar nej</b> – även när admin inte är öppen.</div>
+        ${!pushOk()?(isIOS&&!standalone?`<div class="warn"><b>På iPhone:</b> lägg först till admin på hemskärmen: tryck på <b>Dela</b> (rutan med pil) i Safari → <b>Lägg till på hemskärmen</b>. Öppna sedan FX Admin från hemskärmen och kom tillbaka hit.</div>`:'<div class="warn">Den här webbläsaren kan inte ta emot notiser. Använd Chrome, Edge, Firefox eller Safari.</div>')
+          :Notification.permission==='denied'?'<div class="warn">Notiser är blockerade för sidan. Tillåt dem i webbläsarens inställningar för den här webbplatsen och ladda om.</div>'
+          :here?`<div class="okmsg">Notiser är på för den här enheten ✓</div><div class="btns"><button class="btn sec" id="p_test">Skicka en testnotis</button><button class="btn red" id="p_off">Stäng av här</button></div>`
+          :'<button class="btn" id="p_on">🔔 Slå på notiser på den här enheten</button>'}
+        <div id="p_msg"></div></div>
+        <div class="card"><h3>Dina enheter <span class="sub">${info.mine.length}</span></h3>${info.mine.length?info.mine.map(m=>`<div class="todo"><a><b>${esc(m.device)}${cur&&m.endpoint===cur.endpoint?' <span class="tag ok">den här</span>':''}</b><small>sedan ${esc(fmtTs(m.createdAt))}</small></a><button class="btn gray sm" data-rm="${esc(m.endpoint)}">Ta bort</button></div>`).join(''):'<div class="muted">Inga enheter ännu.</div>'}</div>
+        <div class="card"><h3>Installera som app</h3><div class="muted">${isIOS?'iPhone: Safari → <b>Dela</b> → <b>Lägg till på hemskärmen</b>.':'Android/dator: i Chrome, öppna menyn ⋮ → <b>Installera app</b> (eller <b>Lägg till på startskärmen</b>).'} Då öppnas admin som en egen app med FX-ikonen.</div></div>`;
+      const m=(t,ok)=>{ $('#p_msg').innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
+      if($('#p_on')) $('#p_on').onclick=async()=>{
+        try{
+          if(await Notification.requestPermission()!=='granted') return m('Du behöver tillåta notiser.',false);
+          const r=await swReg(); await navigator.serviceWorker.ready;
+          const sub=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(info.publicKey)});
+          info=await api('/api/admin/push',{method:'POST',body:JSON.stringify(sub.toJSON())}); SETTINGS.push(el);
+        }catch(e){ m('Kunde inte slå på: '+e.message,false); }
+      };
+      if($('#p_test')) $('#p_test').onclick=async()=>{ try{ await api('/api/admin/push?test=1',{method:'POST'}); m('Testnotisen är skickad – den ska dyka upp om några sekunder.',true); }catch(e){ m(e.message,false); } };
+      if($('#p_off')) $('#p_off').onclick=async()=>{ try{ await api('/api/admin/push?endpoint='+encodeURIComponent(cur.endpoint),{method:'DELETE'}); await cur.unsubscribe().catch(()=>{}); SETTINGS.push(el); }catch(e){ m(e.message,false); } };
+      el.querySelectorAll('[data-rm]').forEach(x=>x.onclick=async()=>{ await api('/api/admin/push?endpoint='+encodeURIComponent(x.dataset.rm),{method:'DELETE'}); if(cur&&cur.endpoint===x.dataset.rm) await cur.unsubscribe().catch(()=>{}); SETTINGS.push(el); });
+    };
+    draw();
+  };
+
+  // ---- price list (owner) ----
+  SET_TABS.push(['prices','Priser',true]);
+  SETTINGS.prices=async(el)=>{
+    let data; try{ data=await api('/api/admin/prices'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const clone=(p)=>JSON.parse(JSON.stringify({moveFixed:p.moveFixed,cleaning:p.cleaning,hourly:p.hourly,km:p.km,boxes:p.boxes}));
+    let cur=data.current, f=clone(cur);
+    const n=(v)=>Number(v);
+    // what changed compared with the prices in use: [label, old, new]
+    const diff=()=>{
+      const d=[], c=clone(cur), add=(l,a,b)=>{ if(a!==b) d.push([l,a,b]); };
+      [['2','2 personer, kr/tim'],['3','3 personer, kr/tim'],['4','4 personer, kr/tim'],['minHours','Minsta antal timmar']].forEach(([k,l])=>add(l,c.hourly[k],f.hourly[k]));
+      add('Kr per km',c.km.pricePerKm,f.km.pricePerKm); add('Gratis under km',c.km.freeBelowKm,f.km.freeBelowKm);
+      add('Kartonger, antal',c.boxes.qty,f.boxes.qty); add('Kartonger, köp',c.boxes.buy,f.boxes.buy); add('Kartonger, hyra',c.boxes.rent,f.boxes.rent);
+      const tbl=(name,a,b,cars)=>{ const len=Math.max(a.length,b.length);
+        for(let i=0;i<len;i++){ const x=a[i], y=b[i];
+          if(!x) d.push([`${name}: ny rad upp till ${y[0]} m²`,'–',`${kr(y[1])}${cars?' · '+y[2]+' bil':''}`]);
+          else if(!y) d.push([`${name}: rad upp till ${x[0]} m² borttagen`,kr(x[1]),'–']);
+          else if(x.join()!==y.join()) d.push([`${name}: upp till ${y[0]} m²`,`${x[0]!==y[0]?x[0]+' m² · ':''}${kr(x[1])}${cars&&x[2]!==y[2]?' · '+x[2]+' bil':''}`,`${kr(y[1])}${cars&&x[2]!==y[2]?' · '+y[2]+' bil':''}`]); } };
+      tbl('Flytt',c.moveFixed,f.moveFixed,true); tbl('Flyttstäd',c.cleaning,f.cleaning,false);
+      return d;
+    };
+    const inp=(path,val,w)=>`<input class="pin" data-p="${path}" type="number" inputmode="numeric" value="${esc(val)}" style="${w?'width:'+w:''}">`;
+    const ch=(a,b)=>a!==b?' chg':'';
+    const tblHtml=(key,rows,cars)=>{ const c=cur[key];
+      return `<table class="ptab"><thead><tr><th>Upp till m²</th>${cars?'<th>Bilar</th>':''}<th>Pris (kr)</th><th></th></tr></thead><tbody>${rows.map((r,i)=>`<tr>
+        <td class="${ch(c[i]?.[0],r[0])}">${inp(key+'.'+i+'.0',r[0])}</td>${cars?`<td class="${ch(c[i]?.[2],r[2])}">${inp(key+'.'+i+'.2',r[2])}</td>`:''}<td class="${ch(c[i]?.[1],r[1])}">${inp(key+'.'+i+'.1',r[1])}</td>
+        <td><button class="btn gray sm" data-del="${key}.${i}" aria-label="Ta bort rad">✕</button></td></tr>`).join('')}</tbody></table>
+        <button class="btn sec sm" data-addrow="${key}" style="margin-top:8px">+ Rad</button>`; };
+    const draw=()=>{
+      const d=diff(), c=cur, fld=(label,path,val,old)=>`<div><label class="f">${label}</label><div class="${ch(old,val)}" style="border-radius:10px">${inp(path,val)}</div></div>`;
+      el.innerHTML=`<div class="card"><h3>Prislista <span class="sub">${c.changedAt?'ändrad '+esc(fmtTs(c.changedAt))+(c.changedBy?' av '+esc(c.changedBy):''):'standardpriserna'}</span></h3>
+          <div class="muted">Alla priser inkl. moms <b>efter RUT-avdrag</b>. Nya priser gäller direkt i prisräknaren på hemsidan, på alla sidor med priser, i chatten och i nya offerter. <b>Skickade och signerade offerter behåller sitt pris.</b> Paketrabatterna (Premium −${c.packages.premium.discountPct} %, Deluxe −${c.packages.deluxe.discountPct} %) ändras inte här.</div></div>
+        <div class="cols"><div>
+          <div class="card"><h3>Flytt per timme</h3><div class="row2">${fld('2 personer + bil','hourly.2',f.hourly['2'],c.hourly['2'])}${fld('3 personer + bil','hourly.3',f.hourly['3'],c.hourly['3'])}</div>
+            <div class="row2">${fld('4 personer + 2 bilar','hourly.4',f.hourly['4'],c.hourly['4'])}${fld('Minst antal timmar','hourly.minHours',f.hourly.minHours,c.hourly.minHours)}</div></div>
+          <div class="card"><h3>Körsträcka (fast pris)</h3><div class="row2">${fld('Kr per km','km.pricePerKm',f.km.pricePerKm,c.km.pricePerKm)}${fld('Gratis under (km)','km.freeBelowKm',f.km.freeBelowKm,c.km.freeBelowKm)}</div></div>
+          <div class="card"><h3>Flyttkartonger</h3><div class="row3">${fld('Antal','boxes.qty',f.boxes.qty,c.boxes.qty)}${fld('Köpa (kr)','boxes.buy',f.boxes.buy,c.boxes.buy)}${fld('Hyra (kr)','boxes.rent',f.boxes.rent,c.boxes.rent)}</div></div>
+          <div class="card"><h3>Flyttstäd – fast pris efter boyta</h3>${tblHtml('cleaning',f.cleaning,false)}</div>
+        </div><div>
+          <div class="card"><h3>Flytt – fast pris efter boyta</h3><div class="muted" style="margin-bottom:6px">Boytan avrundas uppåt till närmaste rad. Över sista raden: offert.</div>${tblHtml('moveFixed',f.moveFixed,true)}</div>
+        </div></div>
+        <div class="card" id="pchg" style="position:sticky;bottom:${matchMedia('(max-width:899px)').matches?'76':'12'}px;z-index:5;box-shadow:var(--sh2)">
+          ${d.length?`<h3>${d.length} ändring${d.length>1?'ar':''} – inte sparade än</h3><div class="pdiff">${d.slice(0,12).map(x=>`<div><span>${esc(x[0])}</span><span><s>${esc(typeof x[1]==='number'?String(x[1]):x[1])}</s> → <b>${esc(typeof x[2]==='number'?String(x[2]):x[2])}</b></span></div>`).join('')}${d.length>12?`<div class="muted">+${d.length-12} till</div>`:''}</div>
+            <div class="btns"><button class="btn gray" id="p_reset">Ångra ändringarna</button><button class="btn" id="p_save">Spara nya priser</button></div>`
+          :'<div class="muted">Inga ändringar. Ändra ett pris ovan – ändrade fält blir gula.</div>'}<div id="p_msg"></div></div>
+        <div class="card"><h3>Tidigare prislistor</h3>${data.log.length?data.log.map((p,i)=>`<div class="todo"><a><b>${p.changedAt?esc(fmtTs(p.changedAt)):'Standardpriserna'}${p.changedBy?' · '+esc(p.changedBy):''}</b><small>2 pers ${p.hourly['2']} kr/tim · ${p.km.pricePerKm} kr/km · flytt från ${kr(p.moveFixed[0][1])} · städ från ${kr(p.cleaning[0][1])}</small></a><button class="btn sec sm" data-load="${i}">Ladda in</button></div>`).join(''):'<div class="muted">Inga tidigare ändringar.</div>'}
+          <button class="btn sec sm" id="p_default" style="margin-top:10px">Ladda in standardpriserna</button></div>`;
+      el.querySelectorAll('.pin').forEach(x=>x.onchange=()=>{ const p=x.dataset.p.split('.'); let o=f; while(p.length>1) o=o[p.shift()]; o[p[0]]=n(x.value); draw(); });
+      el.querySelectorAll('[data-del]').forEach(x=>x.onclick=()=>{ const [k,i]=x.dataset.del.split('.'); if(f[k].length<=1) return; f[k].splice(Number(i),1); draw(); });
+      el.querySelectorAll('[data-addrow]').forEach(x=>x.onclick=()=>{ const k=x.dataset.addrow, last=f[k][f[k].length-1]; f[k].push(k==='moveFixed'?[last[0]+20,last[1]+1000,last[2]]:[last[0]+20,last[1]+500]); draw(); });
+      el.querySelectorAll('[data-load]').forEach(x=>x.onclick=()=>{ f=clone(data.log[Number(x.dataset.load)]); draw(); $('#pchg').scrollIntoView({block:'end',behavior:'smooth'}); });
+      $('#p_default').onclick=()=>{ f=clone(data.default); draw(); };
+      if($('#p_reset')) $('#p_reset').onclick=()=>{ f=clone(cur); draw(); };
+      if($('#p_save')) $('#p_save').onclick=async()=>{
+        if(!confirm(`Spara ${d.length} prisändring${d.length>1?'ar':''}? De gäller direkt på hemsidan och i nya offerter.`)) return;
+        try{ cur=await api('/api/admin/prices',{method:'PUT',body:JSON.stringify(f)}); data=await api('/api/admin/prices'); cur=data.current; f=clone(cur); window.FX_PRICES={...window.FX_PRICES,...cur}; draw(); notify('Nya priser sparade ✓ – hemsidan visar dem inom en minut'); }
+        catch(e){ $('#p_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; }
+      };
+    };
+    draw();
+  };
 
   // ---------- staff and vehicles ----------
   const ROLES={person:['Flyttledare','Flyttare','Städare','Chaufför','Montör'],vehicle:['Lastbil','Skåpbil','Släp']};

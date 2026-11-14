@@ -121,3 +121,28 @@ export function discountEmail(b: Booking, url: string) {
   const text = `Hej ${b.data.name}!\n\nVi har sänkt priset på din flytt med ${pct} %.\nNytt pris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}${b.discount ? " (tidigare " + kr(b.discount.before) + ")" : ""}\nDatum: ${fmtDate(b.date)}\n\nSe och signera här:\n${url}\n\nFX Flytt AB · 076-300 07 23`;
   return { subject, html, text };
 }
+
+export function reviewEmail(b: Booking, reviewUrl: string) {
+  const first = b.data.name.split(" ")[0];
+  const subject = "Tack för att du flyttade med FX Flytt!";
+  const html = shell(subject, { text: "TACK", bg: "#e6f5ec", fg: GREEN },
+    `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Tack ${esc(first)}!</h1></td></tr>` +
+    p("Vi hoppas att flytten gick bra och att du har kommit på plats i ditt nya hem.") +
+    p("Vi är ett litet företag och dina ord betyder mycket – både för oss och för andra som letar efter en flyttfirma. Har du en minut över? Skriv gärna vad du tyckte på Google.") +
+    button(reviewUrl, "★ Skriv ett omdöme på Google") +
+    p(`<span style="color:${MUTED};font-size:13px">Var det något som inte blev bra? Svara på det här mejlet eller ring oss på 076-300 07 23 – vi vill gärna veta och ställa det till rätta.</span>`));
+  const text = `Tack ${first}!\n\nVi hoppas att flytten gick bra. Har du en minut över? Skriv gärna ett omdöme på Google:\n${reviewUrl}\n\nVar något inte bra? Svara på mejlet eller ring 076-300 07 23.\nFX Flytt AB`;
+  return { subject, html, text };
+}
+
+export function boxesReminderEmail(b: Booking) {
+  const first = b.data.name.split(" ")[0], bx = b.boxes!, left = bx.qty - bx.returned;
+  const subject = `Dags att lämna tillbaka flyttkartongerna – ${b.id}`;
+  const html = shell(subject, { text: "KARTONGER", bg: "#fff1e6", fg: "#c2560a" },
+    `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Hej ${esc(first)}!</h1></td></tr>` +
+    p(`Vi hoppas att du har kommit i ordning i ditt nya hem. Du hyr <b>${left} flyttkartonger</b> av oss som ska vara tillbaka senast <b>${esc(fmtDate(bx.dueDate))}</b>.`) +
+    p("Svara på det här mejlet eller ring oss så bestämmer vi en tid när vi hämtar dem – eller om du hellre vill köpa dem.") +
+    p(`<span style="color:${MUTED};font-size:13px">Ring oss på 076-300 07 23. Bokning ${esc(b.id)}.</span>`));
+  const text = `Hej ${first}!\n\nDu hyr ${left} flyttkartonger av FX Flytt som ska vara tillbaka senast ${fmtDate(bx.dueDate)}.\nSvara på mejlet eller ring 076-300 07 23 så bestämmer vi en tid när vi hämtar dem.\n\nFX Flytt AB (${b.id})`;
+  return { subject, html, text };
+}

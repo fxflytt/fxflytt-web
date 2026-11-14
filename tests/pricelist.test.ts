@@ -81,3 +81,21 @@ test("Bas + flyttstäd som tillval läggs till utan rabatt", () => {
   const p = computePrice({ service: "move", pkg: "premium", areaM2: 60, distanceKm: 10, extraCleaning: true }, P);
   assert.equal(p.totalAfterRut, 6345);
 });
+
+import { validatePrices } from "../lib/pricing/current.ts";
+import { systemPrompt } from "../lib/assistant/facts.ts";
+test("prislista från admin: kontroller, och chatten använder nya priser", () => {
+  const ok = { moveFixed: P.moveFixed, cleaning: P.cleaning, hourly: { ...P.hourly, "2": 650 }, km: P.km, boxes: P.boxes };
+  const v = validatePrices(ok as never);
+  assert.equal(v.hourly["2"], 650); assert.deepEqual(v.packages, P.packages);
+  assert.equal(computePrice({ service: "hourly", crew: 2, hours: 3 }, v).totalAfterRut, 3 * 650);
+  assert.throws(() => validatePrices({ ...ok, moveFixed: [[30, 2800, 1], [30, 3000, 1]] } as never), /m² måste öka/);
+  assert.throws(() => validatePrices({ ...ok, moveFixed: [[30, 2800, 2], [40, 3000, 1]] } as never), /bilar kan inte minska/);
+  assert.throws(() => validatePrices({ ...ok, hourly: { ...P.hourly, "3": -1 } } as never), /3 personer/);
+  assert.throws(() => validatePrices({ ...ok, cleaning: [] } as never), /1–40 rader/);
+  assert.throws(() => validatePrices({ ...ok, km: { pricePerKm: "x", freeBelowKm: 15 } } as never), /Pris per km/);
+  const s = systemPrompt(v);
+  assert.match(s, /2 personer \+ 1 bil 650 kr\/tim/);
+  assert.doesNotMatch(s, /595 kr\/tim/);
+  assert.match(systemPrompt(), /2 personer \+ 1 bil 595 kr\/tim/);
+});
