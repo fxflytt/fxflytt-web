@@ -170,6 +170,15 @@
   .chg input,.chg{background:#fff8d6}.chg input{border-color:#e8c547}
   .pdiff{max-height:220px;overflow:auto;margin-bottom:4px}.pdiff>div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}.pdiff s{color:var(--muted)}
   .appst{margin-top:6px;font-size:12.5px}
+  .board{display:grid;grid-template-columns:repeat(6,minmax(220px,1fr));gap:10px;min-width:1340px;align-items:start}
+  .bcol{background:#e9eef3;border-radius:14px;padding:8px;min-height:200px}.bcol.hot{outline:2px dashed var(--accent);background:#fff4e9}
+  .bhead{display:flex;justify-content:space-between;align-items:center;padding:4px 6px;border-top:3px solid var(--c);border-radius:4px}.bhead b{font-size:13.5px}.bhead span{font-weight:800;color:var(--muted)}
+  .bsum{padding:0 6px 6px;font-size:12px}.bempty{text-align:center;padding:16px}
+  .bcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:6px;cursor:grab;user-select:none;-webkit-user-select:none;box-shadow:var(--sh)}
+  .bcard b{display:block;font-size:14px}.bcard .bmeta{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-top:4px}.bcard .tags{margin-top:4px}.bcard.lift{opacity:.3}
+  .gbar{position:relative;height:12px;border-radius:6px;background:#eef2f5;margin:10px 0 8px;overflow:visible}.gbar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--green))}.gbar s{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--navy)}
+  .callbtns{display:flex;gap:6px;flex-wrap:wrap}
+  .calls{margin-top:10px;border-top:1px solid var(--line)}.calls>div{font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)}
   .sel2{display:flex;gap:16px;flex-wrap:wrap}.sel2 label{display:flex;align-items:center;gap:6px;font-weight:600;cursor:pointer}.sel2 input{width:18px;height:18px}
   .msgrow{padding:10px 0;border-bottom:1px solid var(--line)}.msgrow .mt{white-space:pre-wrap;margin-top:4px}
   .pk.abs{border-style:dashed;background:#fafbfc}.pk.abs small{color:var(--red);font-weight:700}
@@ -477,8 +486,9 @@
     return s?`<div class="tags">${s}</div>`:'';
   }
   function showList(){
+    if(listMode==='board') return showBoard();
     view='list';
-    root.innerHTML=navBar('list')+`<main><div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortBy==='created'?' selected':''}>Senaste</option><option value="date"${sortBy==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortBy==='price'?' selected':''}>Pris</option></select></div>
+    root.innerHTML=navBar('list')+`<main>${listToggle()}<div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortBy==='created'?' selected':''}>Senaste</option><option value="date"${sortBy==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortBy==='price'?' selected':''}>Pris</option></select></div>
       <div class="chips">${Object.entries(FILTERS).map(([k,v])=>`<button data-f="${k}" class="${k===filter?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
       <div id="items"></div>
       <button class="btn gray sm" id="reload" style="margin-top:6px">Uppdatera</button></main>`;
@@ -498,6 +508,7 @@
     };
     fill();
     root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ filter=b.dataset.f; q=''; showList(); });
+    bindListToggle();
     $('#q').oninput=()=>{ q=$('#q').value; fill(); };
     $('#sort').onchange=()=>{ sortBy=$('#sort').value; fill(); };
     $('#reload').onclick=async()=>{ await load(); showList(); };
@@ -534,7 +545,14 @@
     const src=(s)=>{const l=inP.filter(b=>(b.source==='web'?'web':'manual')===s);const w=l.filter(b=>b.status==='signed'||b.status==='done').length;return {n:l.length,w};};
     const web=src('web'), man=src('manual');
     const disc=inP.filter(b=>b.discount), discWon=disc.filter(b=>b.status==='signed'||b.status==='done');
+    // per seller (who sent the offer) and speed to lead, in the period
+    const sentP=all.filter(b=>b.sentAt&&b.sentAt>=from), sellers=new Map();
+    for(const b of sentP){ const k=b.sentBy||'Före säljstatistiken'; if(!sellers.has(k)) sellers.set(k,{n:0,w:0,v:0,l:0}); const x=sellers.get(k); x.n++;
+      if(b.status==='signed'||b.status==='done'){ x.w++; x.v+=b.offer?.total||0; } else if(b.status==='declined'||isExpired(b)) x.l++; }
+    const resp=inP.filter(b=>b.source==='web'&&b.firstResponseAt).map(b=>(b.firstResponseAt-b.createdAt)/6e4).sort((a,b)=>a-b);
+    const respMed=resp.length?resp[Math.floor(resp.length/2)]:null, respHour=resp.length?Math.round(resp.filter(m=>m<=60).length*100/resp.length):null;
     root.innerHTML=navBar('stat')+`<main>${statTabs()}
+      <div id="goalbox"></div>
       <div class="chips">${[['1','Denna månad'],['3','3 mån'],['12','12 mån'],['all','Allt']].map(([k,l])=>`<button data-p="${k}" class="${k===statPeriod?'on':''}">${l}</button>`).join('')}</div>
       <div class="kpis">
         <div class="kpi" style="background:#1f8a4c"><small>Vunnet (signerat)</small><b>${kr(sum(won))}</b><small>${won.length} bokning${won.length===1?'':'ar'}</small></div>
@@ -542,6 +560,12 @@
         <div class="kpi" style="background:#a2479b"><small>Tid till signering</small><b>${fmtH(med)}</b><small>median från skickad offert</small></div>
         <div class="kpi" style="background:#c2560a"><small>Väntar på svar</small><b>${kr(sum(open))}</b><small>${open.length} offert${open.length===1?'':'er'}</small></div>
       </div>
+      <div class="cols"><div class="card"><h3>Per säljare <span class="sub">offerter skickade under perioden</span></h3>
+        ${sellers.size?`<table class="htab"><thead><tr><th>Namn</th><th>Skickade</th><th>Bokade</th><th>Vinstandel</th><th>Värde</th></tr></thead><tbody>${[...sellers.entries()].sort((a,b)=>b[1].v-a[1].v).map(([k,x])=>`<tr><td><b>${esc(k)}</b></td><td>${x.n}</td><td>${x.w}</td><td>${x.w+x.l?Math.round(x.w*100/(x.w+x.l))+' %':'–'}</td><td><b>${kr(x.v)}</b></td></tr>`).join('')}</tbody></table>`:'<div class="muted">Inga skickade offerter under perioden.</div>'}</div>
+      <div class="card"><h3>Svarstid på förfrågningar från hemsidan</h3>
+        ${respMed!=null?`<div style="font-size:28px;font-weight:800;color:var(--navy)">${esc(waitTxt(Math.max(1,Math.round(respMed))))}</div><div class="muted">median till första svar · <b>${respHour} %</b> fick svar inom en timme</div>
+          <div class="hbar" style="margin-top:10px"><i style="width:${respHour}%;background:${respHour>=80?'var(--green)':respHour>=50?'var(--accent)':'var(--red)'}"></i></div>`:'<div class="muted">Ingen mätning än – den börjar när någon svarar på nya förfrågningar.</div>'}
+        <div class="muted" style="margin-top:8px">Den som svarar först får oftast jobbet. Sikta på under en timme.</div></div></div>
       <div class="card"><h3>Affärsvärde per månad</h3>
         <div class="bars">${per.map(p=>`<div class="m"><i style="height:${h(p.w)};background:#1f8a4c" title="Vunnet ${kr(p.w)}"></i><i style="height:${h(p.x)};background:#f08a24" title="Förlorat ${kr(p.x)}"></i><i style="height:${h(p.o)};background:#c5d0da" title="Väntar ${kr(p.o)}"></i></div>`).join('')}</div>
         <div class="blab">${per.map(p=>`<span>${esc(p.l)}</span>`).join('')}</div>
@@ -558,6 +582,18 @@
     bindNav();
     root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ statPeriod=b.dataset.p; showStats(); });
     bindStatTabs();
+    // monthly goal: signed value this month (by signing date)
+    api('/api/admin/settings').then(st=>{ if(view!=='stat'||statTab!=='sales') return;
+      const m=today().slice(0,7), signedM=all.filter(b=>(b.status==='signed'||b.status==='done')&&b.signedAt&&new Date(b.signedAt).toLocaleDateString('sv-SE').slice(0,7)===m);
+      const val=signedM.reduce((a,b)=>a+(b.offer?.total||0),0), goal=st.salesGoal||0, pct=goal?Math.min(100,Math.round(val*100/goal)):0;
+      const dim=new Date(Number(m.slice(0,4)),Number(m.slice(5,7)),0).getDate(), dayN=Number(today().slice(8)), pace=goal?Math.round(goal*dayN/dim):0;
+      $('#goalbox').innerHTML=`<div class="card goal"><h3>Mål för ${esc(monthName(m))} <span class="sub"><button class="back" id="g_edit" style="padding:0;font-size:13px">${goal?'Ändra mål':'Sätt ett mål'}</button></span></h3>
+        ${goal?`<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px"><div><b style="font-size:28px;color:var(--navy)">${kr(val)}</b> <span class="muted">av ${kr(goal)} · ${signedM.length} bokningar signerade</span></div><b style="font-size:20px;color:${val>=pace?'var(--green)':'var(--accent2)'}">${pct} %</b></div>
+          <div class="gbar"><i style="width:${pct}%"></i><s style="left:${Math.min(100,Math.round(dayN*100/dim))}%" title="Där du borde vara i dag"></s></div>
+          <div class="muted">${val>=pace?'✓ Före planen':'Efter planen'} – i dag borde ni ligga på ${kr(pace)}. ${goal>val?`Kvar: <b>${kr(goal-val)}</b> på ${dim-dayN} dagar.`:'Målet är nått! 🎉'}</div>`
+        :`<div class="muted">Sätt ett mål för signerat värde per månad, så ser du direkt om ni ligger före eller efter.</div>`}</div>`;
+      $('#g_edit').onclick=async()=>{ const v=prompt('Mål per månad (kr, signerat värde efter RUT):',goal||''); if(v==null) return; try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({salesGoal:Number(String(v).replace(/\s/g,''))||0})}); showStats(); }catch(e){ notify(e.message); } };
+    }).catch(()=>{});
   }
 
   // ---------- calendar ----------
@@ -802,6 +838,16 @@
         ${d.email?`<div class="muted" style="margin-top:8px">E-post: <a href="mailto:${esc(d.email)}">${esc(d.email)}</a></div>`:'<div class="warn">Kunden har ingen e-post – skicka länken via SMS.</div>'}
       </div>
       ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}"${b.signature.pnr?` · Personnr ${esc(b.signature.pnr)}`:''}${b.signature.orgnr?` · Org.nr ${esc(b.signature.orgnr)} (företag)`:''} ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
+      ${b.status==='new'||b.status==='sent'?`<div class="card" id="sales"><h3>Försäljning <span class="sub">${esc(STAGES.find(x=>x[0]===stageOf(b))[1])}</span></h3>
+        ${b.source==='web'?`<div class="muted">${b.firstResponseAt?`Första svar efter <b>${esc(waitTxt(Math.max(1,Math.round((b.firstResponseAt-b.createdAt)/6e4))))}</b>`:`<span class="tag ${waitMin(b)>=60?'no':'wn'}">⏱ Ingen har svarat än – ${esc(waitTxt(waitMin(b)))}</span>`}</div>`:''}
+        <label class="f">Logga samtal</label>
+        <div class="callbtns">${Object.entries(OUT).filter(([k])=>k!=='contacted').map(([k,l])=>`<button class="btn sec sm" data-call="${k}">${esc(l)}</button>`).join('')}</div>
+        <input id="cnote" placeholder="Anteckning (frivilligt), t.ex. vill ha pris för packning" style="margin-top:8px">
+        <label class="f">Ring igen</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="fu_d" type="date" value="${esc(b.followUp?.at.slice(0,10)||addDays(today(),1))}" style="width:auto;flex:1"><input id="fu_t" type="time" value="${esc(b.followUp?.at.slice(11)||'10:00')}" style="width:auto"><button class="btn sec sm" id="fu_set">${b.followUp?'Ändra':'Påminn mig'}</button>${b.followUp?'<button class="btn gray sm" id="fu_del">Klar</button>':''}</div>
+        ${b.followUp?`<div class="${followDue(b)?'warn':'okmsg'}" style="margin-top:8px">📞 Ring ${esc(fmtDate(b.followUp.at.slice(0,10)))} kl. ${esc(b.followUp.at.slice(11))}${b.followUp.note?' – '+esc(b.followUp.note):''}</div>`:''}
+        ${(b.calls||[]).length?`<div class="calls">${b.calls.slice().reverse().map(c=>`<div><span class="muted">${esc(fmtTs(c.at))} · ${esc(c.by)}</span> <b>${esc(OUT[c.outcome])}</b>${c.note?' – '+esc(c.note):''}</div>`).join('')}</div>`:''}
+        <button class="back" id="lostbtn" style="padding:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)">Kunden tackade nej i telefon…</button></div>`:''}
       <div class="card" id="plan"><h3>Planering</h3>
         ${locked?'<div class="warn">Offerten är signerad. Flyttar du datum eller tid – prata med kunden först.</div>':''}
         <div class="row3"><div><label class="f" for="dt">Flyttdatum</label><input id="dt" type="date" value="${esc(b.date||'')}"></div>
@@ -894,6 +940,13 @@
       if(!confirm('Ta bort fotot?')) return;
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
     });
+    // ---- sales follow-up ----
+    if($('#sales')){
+      root.querySelectorAll('[data-call]').forEach(x=>x.onclick=()=>salesAct(b,{call:{outcome:x.dataset.call,note:$('#cnote').value}},'Samtalet är loggat ✓'));
+      $('#fu_set').onclick=()=>salesAct(b,{followUp:{at:$('#fu_d').value+'T'+$('#fu_t').value,note:$('#cnote').value}},'Påminnelse sparad ✓');
+      if($('#fu_del')) $('#fu_del').onclick=()=>salesAct(b,{followUp:null});
+      $('#lostbtn').onclick=()=>lostDialog(b);
+    }
     // ---- rented boxes ----
     if($('#bx')){
       const bxBody=(extra)=>({boxes:{qty:Number($('#bx_qty').value),returned:Number($('#bx_ret').value),outDate:$('#bx_out').value,dueDate:$('#bx_due').value,note:$('#bx_note').value,...extra}});
@@ -1203,6 +1256,8 @@
     // --- to-do list: everything that needs a decision or a call ---
     const soon=(b)=>booked(b)&&b.status==='signed'&&b.date>=t&&b.date<=in14;
     const groups=[
+      ['Obesvarade förfrågningar','no',all.filter(b=>waitMin(b)!=null).sort((x,y)=>x.createdAt-y.createdAt).map(b=>({b,sub:`Kom in för ${esc(waitTxt(waitMin(b)))} sedan${(b.data||{}).phone?'':''}`,act:(b.data||{}).phone?`<a class="btn sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
+      ['Ring i dag','wn',all.filter(b=>followDue(b)&&!['signed','done','cancelled','declined'].includes(b.status)).sort((x,y)=>x.followUp.at.localeCompare(y.followUp.at)).map(b=>({b,sub:`${b.followUp.at.slice(0,10)<today()?'<b style="color:var(--red)">sen</b> · ':''}kl. ${esc(b.followUp.at.slice(11))}${b.followUp.note?' · '+esc(b.followUp.note):''}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['Frånvarande på jobb','no',all.filter(b=>soon(b)).flatMap(b=>(b.crew||[]).map(id=>({b,r:resById(id),a:absOn(id,b.date).find(a=>a.status==='approved')})).filter(x=>x.r&&x.a)).map(x=>({b:x.b,sub:`${when(x.b)} · <b>${esc(x.r.name)}</b> ${esc(ABSK[x.a.kind].toLowerCase())}`}))],
       ['Ledighet att besluta','wn',pendingAbs().sort((x,y)=>x.from.localeCompare(y.from)).map(a=>({b:{id:'franvaro',data:{name:a.name}},sub:`${esc(ABSK[a.kind])} · ${esc(spanTxt(a))}`,act:`<a class="btn sec sm" href="#franvaro">Svara</a>`}))],
       ['Dubbelbokningar','no',all.filter(b=>soon(b)&&S.conflicts(b,all,res).length).sort(byTime).map(b=>{ const c=S.conflicts(b,all,res); return {b,sub:`${when(b)} · ${esc([...new Set(c.map(x=>x.name))].join(', '))} på två jobb samtidigt`}; })],
@@ -1330,6 +1385,63 @@
     root.querySelectorAll('[data-dsh]').forEach(x=>x.onclick=async()=>{ const v=shifts.find(y=>y.id===x.dataset.dsh);
       if(!confirm(`Ta bort stämplingen ${fmtDate(v.date)} för ${v.name}?`)) return;
       try{ await api('/api/admin/clock?month='+v.date.slice(0,7)+'&id='+v.id,{method:'DELETE'}); showHours(); }catch(e){ notify(e.message); } });
+  }
+
+  // ---------- sales board (Bokningar → Tavla) ----------
+  // Stage is worked out from the booking; only "Kontaktad" and "Förlorad" are set by hand.
+  let listMode=(()=>{ try{ return localStorage.getItem('fx_listmode')||'list'; }catch(_){ return 'list'; } })();
+  const STAGES=[['new','Ny förfrågan','#c2560a'],['contacted','Kontaktad','#5a52c7'],['sent','Offert skickad','#2f6fb2'],['opened','Kunden har öppnat','#0f8a8a'],['won','Bokad','#1f8a4c'],['lost','Förlorad','#8a96a3']];
+  const stageOf=(b)=>b.status==='signed'||b.status==='done'?'won':b.status==='declined'||b.status==='cancelled'||isExpired(b)?'lost':b.status==='sent'?(b.views?'opened':'sent'):(b.contactedAt||(b.calls||[]).length?'contacted':'new');
+  const OUT={answered:'Pratade med kunden',noanswer:'Inget svar',callback:'Ringer tillbaka / vill fundera',notinterested:'Inte intresserad',contacted:'Kontaktad'};
+  const followDue=(b)=>b.followUp&&b.followUp.at.slice(0,10)<=today();
+  const waitMin=(b)=>b.status==='new'&&b.source==='web'&&!b.firstResponseAt?Math.floor((Date.now()-b.createdAt)/6e4):null;
+  const waitTxt=(m)=>m<60?m+' min':m<1440?Math.floor(m/60)+' tim':Math.floor(m/1440)+' d';
+  function boardCard(b){
+    const d=b.data||{}, w=waitMin(b), last=(b.calls||[]).slice(-1)[0];
+    return `<div class="bcard" data-drag data-id="${esc(b.id)}"><b>${esc(d.name)}</b>
+      <div class="muted">${esc([d.from,d.to].filter(Boolean).map(town).join(' → ')||d.size||'')}</div>
+      <div class="bmeta"><span>${b.offer?kr(b.offer.total):''}</span><span class="muted">${esc(fmtDate(b.date))}</span></div>
+      <div class="tags">${w!=null?`<span class="tag ${w>=60?'no':'wn'}">⏱ obesvarad ${waitTxt(w)}</span>`:''}
+        ${b.followUp?`<span class="tag ${followDue(b)?'no':''}">📞 ${esc(b.followUp.at.slice(5,10).replace('-','/'))} ${esc(b.followUp.at.slice(11))}</span>`:''}
+        ${last&&stageOf(b)!=='won'?`<span class="tag">${esc(OUT[last.outcome])}</span>`:''}${b.views&&b.status==='sent'?`<span class="tag seen">👁 ${b.views}×</span>`:''}</div></div>`;
+  }
+  function showBoard(){
+    view='list';
+    const since=Date.now()-60*864e5;   // won/lost: the last 60 days
+    const cols=STAGES.map(([k,l,c])=>{ const list=all.filter(b=>stageOf(b)===k&&(k!=='won'&&k!=='lost'||(b.updatedAt||b.createdAt)>=since)).sort((x,y)=>(followDue(y)?1:0)-(followDue(x)?1:0)||(y.updatedAt||0)-(x.updatedAt||0));
+      const sum=list.reduce((a,b)=>a+(b.offer?.total||0),0);
+      return `<div class="bcol" data-stage="${k}"><div class="bhead" style="--c:${c}"><b>${l}</b><span>${list.length}</span></div><div class="bsum muted">${sum?kr(sum):''}</div>${list.slice(0,60).map(boardCard).join('')||'<div class="muted bempty">–</div>'}</div>`; }).join('');
+    root.innerHTML=navBar('list')+`<main style="max-width:none">${listToggle()}
+      <div class="xs"><div class="board">${cols}</div></div>
+      <p class="muted" style="margin:10px 2px">Dra en kund till <b>Kontaktad</b> eller <b>Förlorad</b>. Resten flyttas av sig själv när du skickar offerten, kunden öppnar den eller signerar. Bokad och Förlorad visar de senaste 60 dagarna.</p></main>`;
+    bindListToggle();
+    root.querySelectorAll('.bcard').forEach(e=>e.addEventListener('click',()=>{ if(!justDragged) location.hash=e.dataset.id; }));
+    enableDrag(root.querySelector('.board'),{
+      start(el,p){ const b=byIdB(el.dataset.id); if(!b) return null; const r=el.getBoundingClientRect(); const g=el.cloneNode(true); g.classList.add('mghost'); g.style.width=r.width+'px'; document.body.appendChild(g); return {b,g,ox:p.x-r.left,oy:p.y-r.top}; },
+      move(c,x,y){ c.g.style.left=(x-c.ox)+'px'; c.g.style.top=(y-c.oy)+'px'; root.querySelectorAll('.bcol.hot').forEach(e=>e.classList.remove('hot')); const col=[...root.querySelectorAll('.bcol')].find(e=>{ const r=e.getBoundingClientRect(); return x>=r.left&&x<r.right; }); if(col) col.classList.add('hot'); c.to=col?.dataset.stage; },
+      async drop(c){ c.g.remove(); root.querySelectorAll('.bcol.hot').forEach(e=>e.classList.remove('hot'));
+        const from=stageOf(c.b); if(!c.to||c.to===from) return showBoard();
+        if(c.to==='contacted'&&c.b.status==='new') await salesAct(c.b,{stage:'contacted'},'Kontaktad ✓');
+        else if(c.to==='lost') lostDialog(c.b);
+        else { notify(c.to==='won'?'Bokad blir den när kunden signerar offerten.':'Öppna bokningen och skicka offerten.'); showBoard(); } },
+      cancel(c){ c.g.remove(); showBoard(); },
+    });
+  }
+  const listToggle=()=>`<div class="seg" id="lmode" style="margin-bottom:12px"><button data-m="list" class="${listMode==='list'?'on':''}">Lista</button><button data-m="board" class="${listMode==='board'?'on':''}">Försäljningstavla</button></div>`;
+  const bindListToggle=()=>root.querySelectorAll('#lmode button').forEach(x=>x.onclick=()=>{ listMode=x.dataset.m; try{ localStorage.setItem('fx_listmode',listMode); }catch(_){} showList(); });
+  async function salesAct(b,body,ok){
+    try{ const nb=await api('/api/admin/sales?id='+b.id,{method:'POST',body:JSON.stringify(body)}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; updateCounts(); if(ok) notify(ok); }
+    catch(e){ notify(e.message); }
+    if(view==='list') showList(); else if(location.hash.slice(1)===b.id) showDetail(b.id);
+  }
+  function lostDialog(b){
+    const box=document.createElement('div'); box.className='pinbox';
+    box.innerHTML=`<div class="card"><h3>Förlorad – ${esc((b.data||{}).name)}</h3><label class="f">Varför?</label><select id="lr">${Object.entries(WHY).map(([k,l])=>`<option value="${k}">${esc(l)}</option>`).join('')}</select>
+      <label class="f">Anteckning</label><input id="lt" placeholder="T.ex. valde en firma 500 kr billigare">
+      <div class="btns"><button class="btn gray" id="lx">Avbryt</button><button class="btn red" id="lok">Markera som förlorad</button></div></div>`;
+    document.body.appendChild(box);
+    box.querySelector('#lx').onclick=()=>{ box.remove(); if(view==='list') showList(); };
+    box.querySelector('#lok').onclick=async()=>{ const r=box.querySelector('#lr').value, t=box.querySelector('#lt').value; box.remove(); await salesAct(b,{stage:'lost',reason:r,text:t},'Markerad som förlorad'); };
   }
 
   // ---------- settings ----------

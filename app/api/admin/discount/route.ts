@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     try { await send(b.data.email, discountEmail(b, url), COMPANY_TO); mailed = true; }
     catch (e) { return Response.json({ error: "Kunde inte skicka: " + (e as Error).message }, { status: 502 }); }
   }
-  b.status = "sent"; b.sentAt = Date.now(); b.reminders = []; b.declinedAt = undefined;
+  b.status = "sent"; b.sentAt = Date.now(); b.reminders = []; if (!b.sentById) { b.sentBy = u.name; b.sentById = u.id; } b.declinedAt = undefined;
   await saveBooking(b, pct > 0
     ? `Rabatt ${pct} %: ${before} → ${b.offer!.total} kr${mailed ? ", nytt pris mejlat till " + b.data.email : " (skickas manuellt)"}`
     : `Rabatten borttagen: ${before} → ${b.offer!.total} kr`, u.name);

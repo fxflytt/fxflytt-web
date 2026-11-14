@@ -9,8 +9,9 @@ export type Settings = {
   clockOn: boolean;
   office: { lat: number; lon: number; label: string } | null;
   clockRadiusM: number;
+  salesGoal: number;        // signed value per month (kr, after RUT) – 0 = no goal
 };
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500 };
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0 };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
@@ -39,6 +40,7 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
   }
   if ("clockRadiusM" in d) { const n = Math.round(Number(d.clockRadiusM)); if (!(n >= 100 && n <= 5000)) throw new Error("Avstånd: 100–5 000 m."); cur.clockRadiusM = n; }
   if ("clockOn" in d) cur.clockOn = d.clockOn === true;
+  if ("salesGoal" in d) { const n = Math.round(Number(d.salesGoal)); if (!(n >= 0 && n <= 100_000_000)) throw new Error("Ogiltigt mål."); cur.salesGoal = n; }
   if (cur.clockOn && !cur.office) throw new Error("Ange kontorets position först.");
   await kv(["SET", KEY, JSON.stringify(cur)]);
   return cur;

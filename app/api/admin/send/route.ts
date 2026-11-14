@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     catch (e) { return Response.json({ error: "Kunde inte skicka: " + (e as Error).message }, { status: 502 }); }
   }
   if (b.status === "new" || b.status === "declined") b.status = "sent";
-  b.sentAt = Date.now(); b.reminders = [];
+  b.sentAt = Date.now(); b.reminders = []; if (!b.sentById) { b.sentBy = u.name; b.sentById = u.id; }
   await saveBooking(b, only ? "Länk skapad (skickas manuellt)" : "Offert skickad till " + b.data.email, u.name);
   return Response.json({ ok: true, url, booking: b });
 }

@@ -37,6 +37,12 @@ export type Booking = {
   crewNote?: string;       // shown to the crew on the job sheet
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
+  // Sales follow-up
+  firstResponseAt?: number;   // first time someone in the office acted on a web request (speed to lead)
+  contactedAt?: number;       // the customer has been reached (call answered, or moved to "Kontaktad")
+  calls?: Call[];             // call log
+  followUp?: { at: string; note: string; by: string };   // next time to call ("YYYY-MM-DDTHH:MM", Stockholm time)
+  sentBy?: string; sentById?: string;                     // who sent the offer (sales per person)
   openCall?: OpenCall;     // "Vem kan jobba?" – sent to the crew app, first come first served
   boxes?: Boxes;           // rented moving boxes out with the customer
   reviewSentAt?: number;   // when the Google review request was e-mailed
@@ -57,6 +63,9 @@ export type Booking = {
 };
 
 export type Extra = { id: string; label: string; price: number };
+export type CallOutcome = "answered" | "noanswer" | "callback" | "notinterested" | "contacted";
+export const CALL_OUTCOMES: Record<CallOutcome, string> = { answered: "Pratade med kunden", noanswer: "Inget svar", callback: "Ringer tillbaka / vill fundera", notinterested: "Inte intresserad", contacted: "Kontaktad" };
+export type Call = { at: number; by: string; outcome: CallOutcome; note: string };
 export type OpenCall = { need: number; note: string; at: number; by: string; asked: string[]; yes: string[]; no: string[]; closedAt?: number };
 export type Boxes = { qty: number; outDate: string; dueDate: string; returned: number; returnedDate?: string; note?: string; remindedAt?: number };
 
@@ -114,6 +123,7 @@ export async function getBooking(id: string): Promise<Booking | null> {
 export async function saveBooking(b: Booking, what?: string, by?: string) {
   b.updatedAt = Date.now();
   if (what) b.history.push(by ? { at: b.updatedAt, what, by } : { at: b.updatedAt, what });
+  if (by && what && b.source === "web" && !b.firstResponseAt) b.firstResponseAt = b.updatedAt;
   if (b.history.length > 60) b.history = b.history.slice(-60);
   await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.upd, b.updatedAt, b.id]]);
 }
