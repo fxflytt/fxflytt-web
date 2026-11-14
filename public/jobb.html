@@ -62,6 +62,13 @@
   #pin{letter-spacing:.5em;font-weight:800;text-align:center}
   .err{color:var(--red);font-weight:700;margin-top:10px;text-align:center}
   .help{text-align:center;color:var(--muted);font-size:13.5px;margin-top:16px}.help a{color:var(--navy);font-weight:700}
+  .clock{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+  .clock .st{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:var(--navy)}
+  .clock .dot{width:12px;height:12px;border-radius:50%;background:#c5d0da;flex:0 0 auto}.clock .dot.on{background:var(--green);box-shadow:0 0 0 4px #1f8a4c22}
+  .clock .sub{color:var(--muted);font-size:13.5px;margin:4px 0 0 22px}
+  .clock .btn{margin-top:12px}.clock .btn.out{background:var(--navy)}
+  .clock .cerr{color:var(--red);font-weight:700;font-size:14px;margin-top:10px}
+  .clock .priv{color:var(--muted);font-size:12px;margin-top:8px;text-align:center}
   .upd{text-align:center;color:var(--muted);font-size:12.5px;margin-top:18px}
 </style>
 </head>
@@ -129,16 +136,47 @@
     const nextN=data.jobs.filter(j=>j.date>=t&&j.status!=='cancelled').length, todayN=data.jobs.filter(j=>j.date===t&&j.status!=='cancelled').length;
     root.innerHTML=`<main>
       <div class="hello"><h1>Hej ${esc(data.me.name.split(' ')[0])}!</h1><div>${todayN?`Du har ${todayN} jobb i dag`:'Inga jobb i dag'} · ${nextN} kommande</div></div>
+      <div id="clock"></div>
       <div id="pushban"></div>
       <div class="seg"><button data-t="next" class="${tab==='next'?'on':''}">Kommande</button><button data-t="past" class="${tab==='past'?'on':''}">Tidigare</button></div>
       ${groups.length?groups.map(g=>`<div class="day${g.date===t?' today':''}">${esc(label(g.date))}${g.date===t||g.date===tm?` <small>${esc(dayName(g.date))}</small>`:''}</div>${g.jobs.map(jobHtml).join('')}`).join('')
         :`<div class="empty">${tab==='next'?'Inga jobb inplanerade just nu.<br>Du får en notis när du får ett nytt jobb.':'Inga jobb de senaste två veckorna.'}</div>`}
       <div class="upd">Uppdaterad ${new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})}</div></main>`;
     root.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; showJobs(); });
-    pushBanner();
+    pushBanner(); drawClock();
     clearInterval(timer); timer=setInterval(()=>{ if(document.visibilityState==='visible') showJobs(); },60000);
   }
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&data&&!$('#top').hidden) showJobs(); });
+
+  // ---- time clock: clock in/out at the office (position read only when the button is pressed) ----
+  let clockInfo=null, clockTick=null;
+  const hm=(t)=>new Date(t).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Stockholm'});
+  const dur=(ms)=>{ const m=Math.max(0,Math.floor(ms/6e4)); return Math.floor(m/60)+' tim '+(m%60)+' min'; };
+  async function drawClock(msg){
+    const el=$('#clock'); if(!el) return;
+    try{ clockInfo=await fetch('/api/crew/clock',{cache:'no-store'}).then(r=>r.json()); }catch(_){ return; }
+    if(!clockInfo.on){ el.innerHTML=''; return; }
+    const o=clockInfo.open;
+    el.innerHTML=`<div class="clock"><div class="st"><span class="dot${o?' on':''}"></span>${o?'Instämplad sedan '+hm(o.in):'Inte instämplad'}</div>
+      <div class="sub" id="csub">${o?'Arbetad tid i dag: '+dur(Date.now()-o.in):'Stämpla in på '+esc(clockInfo.office)+' när arbetsdagen börjar.'}</div>
+      <button class="btn${o?' out':''}" id="cbtn">${o?'Stämpla ut':'Stämpla in'}</button>
+      <div class="cerr" id="cerr">${esc(msg||'')}</div>
+      <div class="priv">Din position läses bara när du trycker, för att se att du är vid kontoret (inom ${clockInfo.radius} m).</div></div>`;
+    clearInterval(clockTick); if(o) clockTick=setInterval(()=>{ const c=$('#csub'); if(c) c.textContent='Arbetad tid i dag: '+dur(Date.now()-o.in); },30000);
+    $('#cbtn').onclick=()=>stamp(o?'out':'in');
+  }
+  function stamp(action){
+    const b=$('#cbtn'), err=(t)=>{ b.disabled=false; b.textContent=action==='out'?'Stämpla ut':'Stämpla in'; $('#cerr').textContent=t; };
+    if(!('geolocation' in navigator)) return err('Telefonen kan inte ge position.');
+    if(action==='out'&&!confirm('Stämpla ut och avsluta arbetsdagen?')) return;
+    b.disabled=true; b.textContent='Hämtar position…'; $('#cerr').textContent='';
+    navigator.geolocation.getCurrentPosition(async(p)=>{
+      const r=await fetch('/api/crew/clock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy})});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok) return err(j.error||'Något gick fel.');
+      drawClock(); if(navigator.vibrate) navigator.vibrate(30);
+    },(e)=>err(e.code===1?'Du behöver tillåta plats för sidan (i telefonens inställningar) för att kunna stämpla.':'Kunde inte hitta din position. Försök igen, gärna utomhus.'),{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+  }
 
   // ---- notifications on this phone ----
   const pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
