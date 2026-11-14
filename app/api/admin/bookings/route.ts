@@ -1,5 +1,5 @@
 // Admin: list (GET), one booking (GET ?id=), create (POST), update (PATCH ?id=).
-import { isAdmin, unauthorized } from "@/lib/booking/auth.ts";
+import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { listBookings, getBooking, saveBooking, createBooking, STATUSES, type Status } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
@@ -13,7 +13,7 @@ const DATE = /^\d{4}-\d{2}-\d{2}$/, TIME = /^(0[7-9]|1[0-7]):(00|30)$|^18:00$/; 
 const noStorage = () => Response.json({ error: "Lagring saknas (Upstash Redis i Vercel)." }, { status: 503 });
 
 export async function GET(req: Request) {
-  if (!isAdmin(req)) return unauthorized();
+  const u = await requireUser(req); if (u instanceof Response) return u;
   if (!kvConfigured()) return noStorage();
   const id = new URL(req.url).searchParams.get("id");
   if (id) {
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (!isAdmin(req)) return unauthorized();
+  const u = await requireUser(req); if (u instanceof Response) return u;
   if (!kvConfigured()) return noStorage();
   const d = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const name = str(d.name, 120), phone = str(d.phone, 40);
@@ -40,6 +40,7 @@ export async function POST(req: Request) {
     offer: isFinite(total) && total > 0 ? offerFrom(Math.round(total), d) : undefined,
     time: TIME.test(str(d.time, 5)) ? str(d.time, 5) : undefined,
   });
+  b.history[0].by = u.name; await saveBooking(b);
   return Response.json(b);
 }
 
@@ -54,7 +55,7 @@ function offerFrom(total: number, d: Record<string, unknown>) {
 }
 
 export async function PATCH(req: Request) {
-  if (!isAdmin(req)) return unauthorized();
+  const u = await requireUser(req); if (u instanceof Response) return u;
   if (!kvConfigured()) return noStorage();
   const b = await getBooking(new URL(req.url).searchParams.get("id") || "");
   if (!b) return Response.json({ error: "not-found" }, { status: 404 });
@@ -112,7 +113,7 @@ export async function PATCH(req: Request) {
   }
   // A signed offer is a contract – changing price or date afterwards must be visible.
   if (b.signedAt && changes.some((c) => c.startsWith("pris") || c === "datum")) changes.push("(efter signering)");
-  await saveBooking(b, changes.length ? "Ändrat: " + changes.join(", ") : undefined);
+  await saveBooking(b, changes.length ? "Ändrat: " + changes.join(", ") : undefined, u.name);
   // Warn (never block) when someone on this job is already on another job at the same time.
   const planChanged = ["date", "time", "durationH", "crew", "status"].some((k) => k in d);
   const conflicts = planChanged && b.crew?.length ? schedule.conflicts(b, await listBookings(), resources || await listResources()) : [];

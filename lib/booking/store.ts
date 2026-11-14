@@ -47,7 +47,7 @@ export type Booking = {
   decline?: { reason: DeclineReason; text?: string };
   discount?: { pct: number; before: number; at: number };
   signature?: { name: string; pnr?: string; orgnr?: string; ip: string; ua: string; at: number; offerHash: string; terms: string };
-  history: { at: number; what: string }[];
+  history: { at: number; what: string; by?: string }[];   // by = admin user who made the change
 };
 
 export type Extra = { id: string; label: string; price: number };
@@ -88,9 +88,9 @@ export async function getBooking(id: string): Promise<Booking | null> {
   return s ? (JSON.parse(s) as Booking) : null;
 }
 
-export async function saveBooking(b: Booking, what?: string) {
+export async function saveBooking(b: Booking, what?: string, by?: string) {
   b.updatedAt = Date.now();
-  if (what) b.history.push({ at: b.updatedAt, what });
+  if (what) b.history.push(by ? { at: b.updatedAt, what, by } : { at: b.updatedAt, what });
   if (b.history.length > 60) b.history = b.history.slice(-60);
   await kv(["SET", K.b(b.id), JSON.stringify(b)]);
 }

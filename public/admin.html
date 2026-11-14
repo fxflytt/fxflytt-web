@@ -28,6 +28,8 @@
   #side .ct{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;font-weight:800;border-radius:999px;min-width:20px;height:20px;line-height:20px;text-align:center;padding:0 6px}
   #side a.newbtn{display:flex;align-items:center;justify-content:center;gap:8px;margin:18px 4px 0;background:var(--accent);color:#fff;text-decoration:none;font-weight:800;border-radius:12px;padding:11px;font-size:14.5px}
   #side a.newbtn:hover{background:var(--accent2)}
+  #side .lbl-m{display:none}
+  body.office .own{display:none!important}
   .side-foot{margin-top:auto;padding:12px 10px 0;border-top:1px solid rgba(255,255,255,.1);font-size:12px;color:#8fa6b8}
   .side-foot button{background:none;border:0;color:#c4d5e2;font:inherit;font-weight:600;padding:6px 0;cursor:pointer;display:flex;align-items:center;gap:8px}
   #wrap{margin-left:var(--side);min-height:100vh}
@@ -41,7 +43,7 @@
   body.out #wrap{margin-left:0}
   @media (max-width:899px){
     #side{top:auto;right:0;width:auto;height:calc(62px + env(safe-area-inset-bottom));flex-direction:row;padding:0 2px env(safe-area-inset-bottom);border-top:1px solid #0a2232;box-shadow:0 -4px 16px rgba(13,42,63,.12)}
-    .brand,.side-foot,#side .lbl-long{display:none}
+    .brand,.side-foot,#side .lbl-long{display:none}#side .lbl-m{display:inline}
     #side a.nav{flex:1;flex-direction:column;justify-content:center;gap:3px;padding:6px 2px;margin:0;font-size:10.5px;border-radius:0}
     #side a.nav.on{background:none;color:#fff}#side a.nav.on::before{left:30%;right:30%;top:0;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
     #side .ct{position:absolute;top:4px;left:calc(50% + 6px);margin:0;min-width:17px;height:17px;line-height:17px;font-size:10px;padding:0 4px}
@@ -248,9 +250,10 @@
   <a class="nav" href="#bokningar" data-v="list"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Bokningar<span class="ct" id="ctNew" hidden></span></a>
   <a class="nav" href="#kalender" data-v="cal"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalender</a>
   <a class="nav" href="#personal" data-v="team"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.9.8 3.1 2.5 3.5 5.2"/></svg><span>Personal<span class="lbl-long"> och fordon</span></span><span class="ct" id="ctCrew" hidden></span></a>
-  <a class="nav" href="#statistik" data-v="stat"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistik</a>
+  <a class="nav own" href="#statistik" data-v="stat"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistik</a>
+  <a class="nav" href="#installningar" data-v="set"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="lbl-m">Mer</span><span class="lbl-long">Inställningar</span></a>
   <a class="newbtn" href="#ny"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Ny bokning</span></a>
-  <div class="side-foot"><button id="logout"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Logga ut</button></div>
+  <div class="side-foot"><div id="whoami" style="padding:0 0 6px"></div><button id="logout"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Logga ut</button></div>
 </nav>
 <div id="wrap">
   <header id="top"><h1 id="title">Idag</h1>
@@ -284,7 +287,11 @@
   const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
   const root=$('#root');
   const S=window.FXSchedule;
-  let newPrefill=null, lastNav='';
+  let newPrefill=null, lastNav='', me=null;
+  function applyRole(){
+    document.body.classList.toggle('office',!!me&&me.role!=='owner');
+    $('#whoami').innerHTML=me?`<b style="color:#fff">${esc(me.name)}</b> · ${me.role==='owner'?'Ägare':'Kontor'}`:'';
+  }
   let res=[], teamKind='person', teamEdit=null, showArch=false, openRes=null;
   let all=[], view='today', filter='active', calMonth=today().slice(0,7), calDay=null, q='', sortBy='created', statPeriod='12';
 
@@ -299,7 +306,7 @@
   // ---------- login ----------
   async function start(){
     const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
-    if(s.admin){ document.body.classList.remove('out'); await load(); route(); startNotices(); }
+    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); }
     else showLogin(s.setup);
   }
   function showLogin(setup){
@@ -307,10 +314,11 @@
     const miss=setup?[!setup.password&&'Lösenord (ADMIN_PASSWORD)',!setup.storage&&'Lagring (Upstash Redis)',!setup.mail&&'E-post (SMTP)'].filter(Boolean):[];
     root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><div class="card"><h3 style="font-size:20px">Logga in i admin</h3>
       ${miss.length?`<div class="warn">Saknas i Vercel: ${esc(miss.join(', '))}</div>`:''}
+      <label class="f" for="un">Användarnamn <span class="muted" style="font-weight:500">(tomt = ägarlösenordet)</span></label><input id="un" autocomplete="username" autocapitalize="none" spellcheck="false">
       <label class="f" for="pw">Lösenord</label><input id="pw" type="password" autocomplete="current-password">
       <button class="btn" id="go">Logga in</button><div class="err" id="err"></div></div></div>`;
     const go=async()=>{ $('#err').textContent='';
-      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('#pw').value})});
+      const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:$('#un').value,password:$('#pw').value})});
       const j=await r.json().catch(()=>({}));
       if(r.ok){ start(); } else $('#err').textContent=j.error||'Fel';
     };
@@ -384,18 +392,20 @@
     if(/^FX\d{6}-[0-9A-F]{6}$/.test(id)) return showDetail(id);
     if(id==='ny') return showNew();
     if(id==='kalender') return showCal();
-    if(id==='statistik') return showStats();
+    if(id==='statistik'&&isOwner()) return showStats();
     if(id==='personal') return showTeam();
+    if(id==='installningar') return showSettings();
+    if(id==='statistik'&&!isOwner()) return showToday();
     if(id==='bokningar') return showList();
     return showToday();
   }
   window.addEventListener('hashchange',()=>{ Promise.resolve().then(route).catch(()=>{}); });
   // Marks the menu item and sets the page title. Returns '' so the views can keep `navBar(x)+…`.
-  const TITLES={today:'Idag',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny bokning'};
+  const TITLES={today:'Idag',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny bokning',set:'Inställningar'};
   function navBar(active,title){
     document.querySelectorAll('#side a.nav').forEach(a=>a.classList.toggle('on',a.dataset.v===active));
     $('#title').textContent=title||TITLES[active]||'';
-    document.body.className=title?'v-detail':'v-'+active;
+    document.body.className=(title?'v-detail':'v-'+active)+(me&&me.role!=='owner'?' office':'');
     const key=active+'|'+(title||''); if(key!==lastNav){ window.scrollTo(0,0); lastNav=key; }
     return '';
   }
@@ -801,7 +811,7 @@
       </div></div>
       ${b.extrasChosen?.length?`<div class="card"><h3>Kunden valde tillval</h3>${(b.extras||[]).filter(e=>b.extrasChosen.includes(e.id)).map(e=>`<div style="display:flex;justify-content:space-between"><span>${esc(e.label)}</span><b>+${kr(e.price)}</b></div>`).join('')}</div>`:''}
       ${(()=>{ const k=digits(d.phone); const other=k?all.filter(x=>x.id!==b.id&&digits((x.data||{}).phone)===k):[]; return other.length?`<div class="card"><h3>Kundens andra bokningar (${other.length})</h3>${other.map(x=>`<a class="hist" href="#${esc(x.id)}">${esc(fmtDate(x.date))} · ${x.offer?kr(x.offer.total):'Inget pris'} · ${esc(ST[x.status])}</a>`).join('')}</div>`:''; })()}
-      <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}</div>`).join('')}</div>
+      <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}${h.by?` <span class="muted">· ${esc(h.by)}</span>`:''}</div>`).join('')}</div>
     </div></div></main>`;
     bindNav();
     $('#back').onclick=()=>{ location.hash={cal:'kalender',today:'',team:'personal',stat:'statistik'}[view]??'bokningar'; };
@@ -1134,6 +1144,47 @@
       catch(e){ x.disabled=false; notify(e.message); }
     });
   }
+
+  // ---------- settings ----------
+  // Tabs; each feature adds its own. Owner-only tabs are hidden for office accounts (the server checks too).
+  const isOwner=()=>me&&me.role==='owner';
+  const ROLE={owner:'Ägare',office:'Kontor'};
+  let setTab='users';
+  const SET_TABS=[['users','Användare',true]];
+  async function showSettings(){
+    view='set';
+    const tabs=SET_TABS.filter(t=>!t[2]||isOwner());
+    if(!tabs.some(t=>t[0]===setTab)) setTab=tabs[0]?.[0];
+    root.innerHTML=navBar('set')+`<main style="max-width:980px"><div class="seg" id="stabs" style="margin-bottom:16px">${tabs.map(([k,l])=>`<button data-k="${k}" class="${k===setTab?'on':''}">${l}</button>`).join('')}</div><div id="spane"><div class="empty">Laddar…</div></div></main>`;
+    root.querySelectorAll('#stabs button').forEach(x=>x.onclick=()=>{ setTab=x.dataset.k; showSettings(); });
+    const fn=SETTINGS[setTab]; if(fn) await fn($('#spane')); else $('#spane').innerHTML='<div class="card empty">Inga inställningar för din roll.</div>';
+  }
+  const SETTINGS={};
+  SETTINGS.users=async(el)=>{
+    let users=[]; try{ users=(await api('/api/admin/users')).users; }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const draw=()=>{
+      el.innerHTML=`<div class="card"><h3>Användare <span class="sub">${users.filter(u=>u.active).length} aktiva</span></h3>
+        <div class="muted" style="margin-bottom:10px"><b>Ägare</b> ser allt. <b>Kontor</b> sköter förfrågningar, offerter, kalender, personal och arbetsordrar – men ser inte statistik, ekonomi, timrapport, priser eller användare. Ägarlösenordet i Vercel fungerar alltid (lämna användarnamnet tomt).</div>
+        ${users.length?users.map(u=>`<div class="todo"><a><b>${esc(u.name)} <span class="tag${u.role==='owner'?' ok':''}">${ROLE[u.role]}</span>${u.active?'':' <span class="tag no">Avstängd</span>'}</b><small>${esc(u.username)} · ${u.lastLoginAt?'senast inloggad '+esc(ago(u.lastLoginAt)):'aldrig inloggad'}</small></a>
+          <button class="btn sec sm" data-pw="${u.id}">Nytt lösenord</button>
+          <button class="btn sec sm" data-role="${u.id}">${u.role==='owner'?'Gör till kontor':'Gör till ägare'}</button>
+          <button class="btn ${u.active?'red':'gray'} sm" data-act="${u.id}">${u.active?'Stäng av':'Aktivera'}</button></div>`).join(''):'<div class="muted">Inga användare än.</div>'}</div>
+        <div class="card"><h3>Ny användare</h3>
+          <div class="row2"><div><label class="f" for="u_name">Namn</label><input id="u_name" autocomplete="off"></div><div><label class="f" for="u_user">Användarnamn</label><input id="u_user" autocomplete="off" autocapitalize="none" placeholder="t.ex. sara"></div></div>
+          <div class="row2"><div><label class="f" for="u_pw">Lösenord (minst 8 tecken)</label><input id="u_pw" type="text" autocomplete="new-password"></div><div><label class="f" for="u_role">Roll</label><select id="u_role"><option value="office">Kontor</option><option value="owner">Ägare</option></select></div></div>
+          <button class="btn" id="u_add">Skapa användare</button><div id="u_msg"></div></div>`;
+      const upd=async(id,body)=>{ try{ const r=await api('/api/admin/users?id='+id,{method:'PATCH',body:JSON.stringify(body)}); users=users.map(x=>x.id===id?r:x); draw(); notify('Sparat ✓'); }catch(e){ notify(e.message); } };
+      el.querySelectorAll('[data-pw]').forEach(x=>x.onclick=()=>{ const pw=prompt('Nytt lösenord (minst 8 tecken). Användaren loggas ut överallt.'); if(pw) upd(x.dataset.pw,{password:pw}); });
+      el.querySelectorAll('[data-role]').forEach(x=>x.onclick=()=>{ const u=users.find(y=>y.id===x.dataset.role); upd(u.id,{role:u.role==='owner'?'office':'owner'}); });
+      el.querySelectorAll('[data-act]').forEach(x=>x.onclick=()=>{ const u=users.find(y=>y.id===x.dataset.act); if(u.active&&!confirm(`Stänga av ${u.name}? Hen loggas ut direkt.`)) return; upd(u.id,{active:!u.active}); });
+      $('#u_add').onclick=async()=>{
+        try{ const u=await api('/api/admin/users',{method:'POST',body:JSON.stringify({name:$('#u_name').value,username:$('#u_user').value,password:$('#u_pw').value,role:$('#u_role').value})});
+          users.push(u); draw(); notify(`${u.name} kan nu logga in med användarnamnet ${u.username}`); }
+        catch(e){ $('#u_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; }
+      };
+    };
+    draw();
+  };
 
   // ---------- staff and vehicles ----------
   const ROLES={person:['Flyttledare','Flyttare','Städare','Chaufför','Montör'],vehicle:['Lastbil','Skåpbil','Släp']};

@@ -142,3 +142,31 @@ test("arbetsorder: egen länk, inget pris/e-post/intern anteckning, ny länk st�
   assert.equal(await store.bookingByWorkToken(t1), null);
   assert.equal((await store.bookingByWorkToken(t2))?.id, b.id);
 });
+
+import * as users from "../lib/booking/users.ts";
+test("användare: skapa, logga in, roll, avstängd/nytt lösenord loggar ut", async () => {
+  process.env.ADMIN_PASSWORD = "ägare-123";
+  await assert.rejects(users.createUser({ name: "Sara", username: "sara", password: "kort", role: "office" }), /8 tecken/);
+  await assert.rejects(users.createUser({ name: "Sara", username: "Sara Lind", password: "langtlosen", role: "office" }), /Användarnamn/);
+  const s = await users.createUser({ name: "Sara", username: "Sara", password: "langtlosen", role: "office" });
+  assert.equal(s.username, "sara"); assert.equal("hash" in s, false);
+  await assert.rejects(users.createUser({ name: "X", username: "sara", password: "langtlosen", role: "office" }), /finns redan/);
+  assert.equal(await users.verifyLogin("sara", "fel-losen"), null);
+  const u = (await users.verifyLogin("SARA", "langtlosen"))!;
+  assert.equal(u.id, s.id);
+  const cookie = auth.sessionCookie(u.id, u.sv).split(";")[0];
+  const req = () => new Request("https://x/", { headers: { cookie } });
+  assert.deepEqual(await auth.currentUser(req()), { id: s.id, name: "Sara", role: "office" });
+  assert.equal((await auth.requireUser(req(), "owner") as Response).status, 403);
+  const owner = new Request("https://x/", { headers: { cookie: auth.sessionCookie().split(";")[0] } });
+  assert.equal((await auth.currentUser(owner))?.role, "owner");
+  await users.updateUser(s.id, { password: "nyttlosen1" });
+  assert.equal(await auth.currentUser(req()), null);                 // old session is gone
+  const u2 = (await users.verifyLogin("sara", "nyttlosen1"))!;
+  const c2 = auth.sessionCookie(u2.id, u2.sv).split(";")[0];
+  await users.updateUser(s.id, { active: false });
+  assert.equal(await auth.currentUser(new Request("https://x/", { headers: { cookie: c2 } })), null);
+  assert.equal(await users.verifyLogin("sara", "nyttlosen1"), null);
+  const forged = c2.replace(/U[0-9A-F]{8}/, "owner");
+  assert.equal(await auth.currentUser(new Request("https://x/", { headers: { cookie: forged } })), null);
+});
