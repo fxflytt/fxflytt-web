@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { listBookings, bookingsChangedSince, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
+import { notifyAll } from "@/lib/booking/push.ts";
 import { listPhotos } from "@/lib/booking/work.ts";
 
 export const runtime = "nodejs";
@@ -64,6 +65,7 @@ export async function PATCH(req: Request) {
   if (!b) return Response.json({ error: "not-found" }, { status: 404 });
   const d = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const changes: string[] = [];
+  const before = { crew: [...(b.crew || [])], date: b.date, time: b.time, status: b.status };
 
   if ("date" in d) { const v = str(d.date, 10); b.date = DATE.test(v) ? v : undefined; changes.push("datum"); }
   if ("time" in d) { const v = str(d.time, 5); b.time = TIME.test(v) ? v : undefined; changes.push("tid"); }
@@ -125,6 +127,27 @@ export async function PATCH(req: Request) {
   // A signed offer is a contract – changing price or date afterwards must be visible.
   if (b.signedAt && changes.some((c) => c.startsWith("pris") || c === "datum")) changes.push("(efter signering)");
   await saveBooking(b, changes.length ? "Ändrat: " + changes.join(", ") : undefined, u.name);
+  await tellCrew(before, b);
   // Double bookings are worked out in the admin page, which already has every booking (public/fx-schedule.js).
   return Response.json(b);
+}
+
+// Notifications to the crew app: a new job, a moved job, a cancelled job. Only booked jobs; never throws.
+async function tellCrew(before: { crew: string[]; date?: string; time?: string; status: string }, b: Awaited<ReturnType<typeof getBooking>> & object) {
+  const booked = (st: string) => st === "signed" || st === "done";
+  const when = (b.date ? new Date(b.date + "T12:00:00Z").toLocaleDateString("sv-SE", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }) : "") + (b.time ? " kl. " + b.time : "");
+  const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
+  const where = [b.data.from, b.data.to].filter(Boolean).map(town).join(" → ");
+  const send = (ids: string[], title: string) => ids.length
+    ? notifyAll({ title, body: [when, where].filter(Boolean).join(" · "), url: "/jobb", tag: "job-" + b.id }, (s) => ids.some((id) => s.userId === "crew:" + id))
+    : Promise.resolve(0);
+  const now = b.crew || [];
+  if (b.status === "cancelled" && booked(before.status)) return send(before.crew, "Jobbet är avbokat");
+  if (!booked(b.status)) return;
+  const added = booked(before.status) ? now.filter((id) => !before.crew.includes(id)) : now;
+  const removed = booked(before.status) ? before.crew.filter((id) => !now.includes(id)) : [];
+  const moved = booked(before.status) && (before.date !== b.date || before.time !== b.time);
+  await send(added, "Nytt jobb");
+  await send(removed, "Du är borttagen från ett jobb");
+  if (moved) await send(now.filter((id) => !added.includes(id)), "Jobbet har flyttats");
 }

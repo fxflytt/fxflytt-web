@@ -64,6 +64,8 @@ export async function POST(req: Request) {
   b.status = "signed"; b.signedAt = now;
   b.signature = { name, ...(pnr ? { pnr } : { orgnr }), ip, ua: (req.headers.get("user-agent") || "").slice(0, 300), at: now, offerHash: offerHash(b), terms: TERMS_VERSION };
   await saveBooking(b, `Signerad av ${name}` + (chosen.length ? ` med tillval: ${chosen.map((e) => e.label).join(", ")}` : ""));
+  // Crew already planned on the job: it is now booked, tell them.
+  if (b.crew?.length) await notifyAll({ title: "Nytt jobb", body: b.date + (b.time ? " kl. " + b.time : ""), url: "/jobb", tag: "job-" + b.id }, (s) => b.crew!.some((id) => s.userId === "crew:" + id));
   await notifyAll({ title: "✅ " + b.data.name + " signerade!", body: `${b.offer.total.toLocaleString("sv-SE")} kr · ${b.date}` + (chosen.length ? " · med tillval" : ""), url: "/admin#" + b.id, tag: b.id });
   if (mailConfigured()) {
     await send(COMPANY_TO, companyNoticeEmail(b, "signed", adminUrl), b.data.email || undefined).catch((e) => console.error("notice", e));

@@ -15,7 +15,14 @@ export type Resource = {
   color: string;
   active: boolean;
   createdAt: number;
+  // The crew app (/jobb): a person logs in with their mobile number and a PIN the owner hands out.
+  pinSalt?: string; pinHash?: string;   // never sent to the admin page
+  sv?: number;                          // session version – bumped to log the person out everywhere
+  appAt?: number;                       // when the PIN was made
+  lastSeenAt?: number;                  // last time the person opened the app
 };
+// What the admin page may see: everything except the PIN hash.
+export const publicResource = ({ pinSalt, pinHash, ...r }: Resource) => ({ ...r, app: !!pinHash });
 
 export const COLORS = ["#2f6fb2", "#1f8a4c", "#c2560a", "#a2479b", "#0f8a8a", "#b42318", "#5a52c7", "#8a6d1f", "#3d5a6c", "#d6457a"];
 const KEY = "fx:res";

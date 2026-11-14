@@ -1,0 +1,15 @@
+{
+  "name": "FX Flytt – Mina jobb",
+  "short_name": "FX Jobb",
+  "description": "Jobb och arbetsordrar för personalen på FX Flytt",
+  "start_url": "/jobb",
+  "scope": "/jobb",
+  "display": "standalone",
+  "background_color": "#0d2a3f",
+  "theme_color": "#0d2a3f",
+  "lang": "sv",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

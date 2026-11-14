@@ -7,7 +7,7 @@ import type { NextConfig } from "next";
 const pages = [
   "tjanster", "flyttfirma", "paket", "om-oss", "radgivare", "integritetspolicy", "villkor",
   "flyttfirma-kungsor", "flyttfirma-orebro", "flyttfirma-eskilstuna", "flyttfirma-vasteras", "flyttfirma-katrineholm",
-  "flyttfirma-karlstad", "flyttfirma-sodertalje", "flyttfirma-akersberga", "flyttfirma-norrtalje", "flyttfirma-nykoping", "flyttfirma-norrkoping", "flyttfirma-linkoping", "flyttfirma-motala", "flyttfirma-mjolby", "flyttfirma-jonkoping", "flyttfirma-nassjo", "flyttfirma-tranas", "flyttfirma-vastervik", "flyttfirma-vimmerby", "flyttfirma-ludvika", "flyttstad", "kubikraknare", "rut-avdrag", "dodsbo", "utlandsflytt", "admin", "signera", "arbetsorder",
+  "flyttfirma-karlstad", "flyttfirma-sodertalje", "flyttfirma-akersberga", "flyttfirma-norrtalje", "flyttfirma-nykoping", "flyttfirma-norrkoping", "flyttfirma-linkoping", "flyttfirma-motala", "flyttfirma-mjolby", "flyttfirma-jonkoping", "flyttfirma-nassjo", "flyttfirma-tranas", "flyttfirma-vastervik", "flyttfirma-vimmerby", "flyttfirma-ludvika", "flyttstad", "kubikraknare", "rut-avdrag", "dodsbo", "utlandsflytt", "admin", "signera", "arbetsorder", "jobb",
 ];
 
 const securityHeaders = [
@@ -22,6 +22,7 @@ const config: NextConfig = {
     return {
       beforeFiles: [
         { source: "/", destination: "/index.html" },
+        { source: "/jobb/order", destination: "/arbetsorder.html" },   // job sheet inside the crew app
         ...pages.map((p) => ({ source: `/${p}`, destination: `/${p}.html` })),
       ],
     };

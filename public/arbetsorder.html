@@ -17,7 +17,7 @@
   body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
   a{color:var(--navy)}
   .bar{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:2}
-  .bar img{height:28px}.bar b{flex:1;font-size:16px}
+  .bar img{height:28px}.bar #back{color:#fff;text-decoration:none;font-weight:800;font-size:15px;white-space:nowrap}.bar b{flex:1;font-size:16px}
   .bar button{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:8px 14px;font:inherit;font-weight:800;cursor:pointer}
   .wrap{max-width:760px;margin:0 auto;padding:16px 14px 40px}
   .job{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(13,42,63,.06)}
@@ -84,7 +84,7 @@
 </style>
 </head>
 <body>
-<div class="bar"><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"><b id="ttl">Arbetsorder</b><button id="pr" hidden>Skriv ut</button></div>
+<div class="bar"><a id="back" href="/jobb" hidden>‹ Mina jobb</a><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"><b id="ttl">Arbetsorder</b><button id="pr" hidden>Skriv ut</button></div>
 <div class="wrap" id="root"><div class="empty">Laddar…</div></div>
 <script>
 (function(){
@@ -95,6 +95,9 @@
   const hrs=(h)=>String(h).replace('.',',')+' tim';
   const map=(a)=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(a+', Sverige');
   const q=new URLSearchParams(location.search), root=$('#root');
+  // Opened from the crew app (/jobb/order): back to the job list, no logo, no print button.
+  const inApp=location.pathname.startsWith('/jobb');
+  if(inApp){ $('#back').hidden=false; document.querySelector('.bar img').hidden=true; }
 
   function job(j){
     const addr=(n,cls,a,floor)=>a?`<div class="addr"><span class="pin ${cls}">${n}</span><div><b>${esc(a)}</b>${floor?`<small>${esc(floor)}</small>`:''}<a class="map" href="${esc(map(a))}" target="_blank" rel="noopener">Öppna i kartan ›</a></div></div>`:'';
@@ -203,7 +206,7 @@
     document.title=(d?'Arbetsordrar '+d:'Arbetsorder '+(j.date||''))+' – FX Flytt';
     root.innerHTML=jobs.length?jobs.map(job).join(''):'<div class="empty">Inga bokade jobb den dagen.</div>';
     if(t&&jobs.length){ root.innerHTML+=workHtml(j); bindWork(j); }
-    $('#pr').hidden=!jobs.length; $('#pr').onclick=()=>print();
+    $('#pr').hidden=!jobs.length||inApp; $('#pr').onclick=()=>print();
     if(q.get('print')==='1'&&jobs.length) setTimeout(()=>print(),300);
   }
   load().catch(()=>{ root.innerHTML='<div class="empty">Kunde inte ladda. Kontrollera nätet och försök igen.</div>'; });
