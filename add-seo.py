@@ -1,6 +1,6 @@
 # Adds canonical URL, og:url and (home page) LocalBusiness data to every page in public/,
 # and writes sitemap.xml + robots.txt. Run by build-site.sh.
-import glob, json, os, datetime
+import glob, json, os, datetime, re, subprocess
 BASE = "https://www.fxflytt.se"
 def url_for(f):
     name = os.path.basename(f)[:-5]
@@ -16,8 +16,14 @@ BUSINESS = {"@context": "https://schema.org", "@type": "MovingCompany", "@id": B
                 {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "07:00", "closes": "19:00"},
                 {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "17:00"}],
             "areaServed": [{"@type": "City", "name": c} for c in CITIES]}
+# Internal links point at the canonical clean addresses (/paket, not paket.html; / not index.html),
+# so Google sees one address per page. Old .html addresses redirect permanently (next.config.ts).
+_LINK = re.compile(r'href="(index|[a-z0-9-]+)\.html(#[^"]*)?"')
+def clean_links(html):
+    return _LINK.sub(lambda m: 'href="%s%s"' % ("/" if m.group(1) == "index" else "/" + m.group(1), m.group(2) or ""), html)
+
 for f in pages:
-    s = open(f, encoding="utf-8").read()
+    s = clean_links(open(f, encoding="utf-8").read())
     if 'rel="canonical"' in s:
         continue
     u = url_for(f)
@@ -43,6 +49,13 @@ for f in pages:
     s = s.replace("</head>", tags + "</head>", 1)
     open(f, "w", encoding="utf-8").write(s)
 today = datetime.date.today().isoformat()
-items = "".join(f"  <url><loc>{url_for(f)}</loc><lastmod>{today}</lastmod></url>\n" for f in pages)
+# lastmod = the day the page's content last changed (git), so Google can trust it.
+def lastmod(f):
+    try:
+        d = subprocess.run(["git", "log", "-1", "--format=%cs", "--", f], capture_output=True, text=True, timeout=10).stdout.strip()
+        return d or today
+    except Exception:
+        return today
+items = "".join(f"  <url><loc>{url_for(f)}</loc><lastmod>{lastmod(f)}</lastmod></url>\n" for f in pages)
 open("public/sitemap.xml", "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + items + "</urlset>\n")
 open("public/robots.txt", "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /signera\nDisallow: /arbetsorder\nDisallow: /jobb\n\nSitemap: {BASE}/sitemap.xml\n")

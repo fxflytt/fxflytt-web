@@ -32,7 +32,7 @@
         iconSize: home ? [40, 40] : [30, 30], iconAnchor: home ? [20, 20] : [15, 15], popupAnchor: [0, -16]
       });
       L.marker([o[2], o[3]], { icon: icon, title: home ? o[1] + " – kontor" : o[1], keyboard: true, zIndexOffset: home ? 1000 : 0 }).addTo(map)
-        .bindPopup('<b>' + (home ? "FX Flytt – kontor i " : "Flyttfirma ") + o[1] + '</b><br><a href="flyttfirma-' + o[0] + '.html">Läs mer →</a>');
+        .bindPopup('<b>' + (home ? "FX Flytt – kontor i " : "Flyttfirma ") + o[1] + '</b><br><a href="/flyttfirma-' + o[0] + '">Läs mer →</a>');
       pts.push([o[2], o[3]]);
     });
     map.fitBounds(pts, { padding: [18, 18] });

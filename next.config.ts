@@ -18,6 +18,13 @@ const securityHeaders = [
 ];
 
 const config: NextConfig = {
+  // Old addresses with .html move permanently to the clean ones, so Google keeps one address per page.
+  async redirects() {
+    return [
+      { source: "/index.html", destination: "/", permanent: true },
+      ...pages.filter((p) => !["admin", "signera", "arbetsorder", "jobb"].includes(p)).map((p) => ({ source: `/${p}.html`, destination: `/${p}`, permanent: true })),
+    ];
+  },
   async rewrites() {
     return {
       beforeFiles: [
