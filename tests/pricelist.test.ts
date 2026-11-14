@@ -99,3 +99,18 @@ test("prislista från admin: kontroller, och chatten använder nya priser", () =
   assert.doesNotMatch(s, /595 kr\/tim/);
   assert.match(systemPrompt(), /2 personer \+ 1 bil 595 kr\/tim/);
 });
+
+import { packagesFor, currentPkg } from "../lib/booking/packages.ts";
+test("paketval i offerten: Bas/Premium/Deluxe räknas, den valda behåller sina rader", () => {
+  const q = computePrice({ service: "move", pkg: "bas", areaM2: 60, distanceKm: 20, boxes: "rent" }, P);
+  const b: any = { data: { size: "Bara flytt – Bas", areaM2: "60", distanceKm: 20 }, offer: { total: q.totalAfterRut, lines: q.lines } };
+  assert.equal(currentPkg(b), "bas");
+  const pk = packagesFor(b, P as never)!;
+  assert.deepEqual(pk.map((p) => p.id), ["bas", "premium", "deluxe"]);
+  assert.equal(pk[0].total, q.totalAfterRut);
+  assert.equal(pk[1].total, computePrice({ service: "move", pkg: "premium", areaM2: 60, distanceKm: 20, boxes: "rent" }, P).totalAfterRut);
+  assert.ok(pk[2].lines.some((l) => /Packning/.test(l.label)) && pk[1].lines.some((l) => /kartong/i.test(l.label)));
+  assert.equal(packagesFor({ ...b, offer: { ...b.offer, custom: true } }, P as never), null);       // hand-set price
+  assert.equal(packagesFor({ ...b, discount: { pct: 10 } }, P as never), null);                     // after a discount
+  assert.equal(packagesFor({ ...b, data: { ...b.data, size: "Flytt per timme" } }, P as never), null);
+});

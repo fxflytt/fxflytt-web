@@ -9,6 +9,8 @@ import { saveBooking } from "@/lib/booking/store.ts";
 import { getSettings, reviewDue } from "@/lib/booking/settings.ts";
 import { reviewEmail } from "@/lib/mail/bookingEmail.ts";
 import { dailyBackup } from "@/lib/booking/backup.ts";
+import { issueCode } from "@/lib/booking/referral.ts";
+import { notifyAll } from "@/lib/booking/push.ts";
 import { send, mailConfigured } from "@/lib/mail/send.ts";
 
 export const runtime = "nodejs";
@@ -27,11 +29,19 @@ export async function GET(req: Request) {
   }
   const settings = await getSettings(), today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" });
   const reviews: string[] = [];
-  if (settings.reviewOn && mailConfigured()) for (const b of await listBookings(1000)) {
+  if ((settings.reviewOn || settings.refOn) && mailConfigured()) for (const b of await listBookings(1000)) {
     if (!reviewDue(b, settings, today)) continue;
-    try { await send(b.data.email!, reviewEmail(b, settings.reviewUrl)); b.reviewSentAt = Date.now(); await saveBooking(b, "Bad om omdöme på Google (e-post)"); reviews.push(b.id); }
+    try {
+      const ref = settings.refOn ? { code: await issueCode(b), kr: settings.refFriendKr, reward: settings.refReward } : null;
+      await send(b.data.email!, reviewEmail(b, settings.reviewOn ? settings.reviewUrl : "", ref)); b.reviewSentAt = Date.now();
+      await saveBooking(b, "Tackmejl skickat" + (settings.reviewOn ? " med länk till Google-omdöme" : "") + (ref ? ` och koden ${ref.code} (Tipsa en vän)` : "")); reviews.push(b.id); }
     catch (e) { failed.push(`${b.id}: ${(e as Error).message}`); }
   }
+  // Morning sales note to the office: calls to make today and requests nobody has answered.
+  const all = await listBookings();
+  const calls = all.filter((b) => b.followUp && b.followUp.at.slice(0, 10) <= today && !["signed", "done", "cancelled", "declined"].includes(b.status)).length;
+  const unanswered = all.filter((b) => b.status === "new" && b.source === "web" && !b.firstResponseAt).length;
+  if (calls || unanswered) await notifyAll({ title: "God morgon! Försäljning i dag", body: [calls ? `${calls} samtal att ringa` : "", unanswered ? `${unanswered} obesvarade förfrågningar` : ""].filter(Boolean).join(" · "), url: "/admin", tag: "morning" });
   // Daily backup to Vercel Blob (when connected). A failure must not stop the reminders above.
   const backup = await dailyBackup().catch((e) => "fel: " + (e as Error).message);
   return Response.json({ ok: true, sent, reviews, backup, failed });

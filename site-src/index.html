@@ -152,6 +152,12 @@ textarea{min-height:80px;resize:vertical}
 .calc-out .big{font-size:2.6rem;font-weight:800;color:var(--accent);line-height:1.1;margin:6px 0}
 .calc-out .det{font-size:.88rem;color:#c9d7e2;margin-top:10px;display:grid;gap:4px}
 .calc-out .btn{margin-top:20px}
+.c-mail-open{margin-top:12px;background:none;border:1px solid #47637a;color:#fff;border-radius:999px;padding:11px 16px;font:inherit;font-weight:700;cursor:pointer}
+.c-mail{margin-top:14px;display:grid;gap:8px;position:relative}
+.c-mail-t{font-size:.9rem;color:#c9d7e2}
+.c-mail input:not([type=checkbox]){width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:0}
+.c-mail-ok{display:flex;gap:8px;align-items:flex-start;font-size:.8rem;color:#c9d7e2;line-height:1.35}.c-mail-ok input{margin-top:3px}
+.c-mail .btn{margin-top:4px}.c-mail-msg{font-size:.9rem;font-weight:700}
 
 
 /* Services */
@@ -547,6 +553,7 @@ body.noscroll .mbar{display:none}
             <div><label class="f" for="tel">Telefon</label><input id="tel" name="Telefon" type="tel" required placeholder="07X-XXX XX XX"></div>
             <div><label class="f" for="email">E-post <small style="font-weight:500;color:var(--muted)">(för bekräftelse)</small></label><input id="email" name="E-post" type="email" placeholder="namn@mail.se"></div>
             <div class="full"><label class="f" for="msg">Övrigt (valfritt)</label><textarea id="msg" name="Övrigt" placeholder="T.ex. antal tunga möbler, parkering, förråd…"></textarea></div>
+            <div class="full"><label class="f" for="refc">Rabattkod från en vän (valfritt)</label><input id="refc" name="Rabattkod" autocomplete="off" autocapitalize="characters" placeholder="T.ex. ANNA-7K2Q" style="text-transform:uppercase"></div>
             <div class="hp" aria-hidden="true"><label for="website">Lämna tomt</label><input id="website" tabindex="-1" autocomplete="off"></div>
           </div>
         </div>
@@ -722,6 +729,17 @@ body.noscroll .mbar{display:none}
         <div class="big" id="c-res">–</div>
         <div class="det" id="c-det"></div>
         <a href="#offert" class="btn btn-accent" id="c-book">Boka med detta pris</a>
+        <button type="button" class="c-mail-open" id="c-mail-open">📩 Få priset på mejl</button>
+        <form class="c-mail" id="c-mail" hidden novalidate>
+          <div class="c-mail-t">Vi mejlar priset till dig – inga förpliktelser.</div>
+          <input id="cm-name" autocomplete="name" placeholder="Ditt namn" required>
+          <input id="cm-email" type="email" autocomplete="email" placeholder="Din e-post" required>
+          <input id="cm-phone" type="tel" autocomplete="tel" placeholder="Telefon (frivilligt – så kan vi svara på frågor)">
+          <input id="cm-web" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+          <label class="c-mail-ok"><input type="checkbox" id="cm-ok"> Jag godkänner att FX Flytt sparar uppgifterna och kontaktar mig om priset (<a href="integritetspolicy.html" style="color:#ffb37a">integritetspolicy</a>).</label>
+          <button class="btn btn-accent" id="cm-send" type="submit">Skicka priset till mig</button>
+          <div class="c-mail-msg" id="cm-msg" role="status"></div>
+        </form>
       </div>
     </div>
   </div>
@@ -998,7 +1016,8 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       size:(document.getElementById('fsvc').selectedOptions[0]||{}).text||'', areaM2:v('kvm'), home:v('typ'), date:v('date'),
       floorFrom:[v('vf'),v('hf'),'bärsträcka '+v('bf')].join(' · '), floorTo:[v('vt'),v('ht'),'bärsträcka '+v('bt')].join(' · '), message:v('msg'),
       extras:[...form.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value),
-      price: v('fsvc').startsWith('other') ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined
+      price: v('fsvc').startsWith('other') ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined,
+      refCode: v('refc').trim() || undefined
     };
     fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data, website:v('website')})}).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
       const ok=!!(j&&j.ok);
@@ -1032,6 +1051,17 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   }
   // New prices from admin (fx-prices.js): count again with them.
   window.addEventListener('fx:prices',()=>{ try{ calc(); }catch(_){} });
+  // "Få priset på mejl": the visitor gets the price by e-mail and the office gets a lead to follow up.
+  $('c-mail-open').addEventListener('click',()=>{ $('c-mail').hidden=false; $('c-mail-open').hidden=true; $('cm-name').focus(); });
+  $('c-mail').addEventListener('submit',async(e)=>{ e.preventDefault(); const m=$('cm-msg'), b=$('cm-send');
+    if(!$('cm-ok').checked){ m.style.color='#ffb37a'; m.textContent='Kryssa i rutan om att vi får kontakta dig.'; return; }
+    b.disabled=true; m.textContent='';
+    try{ const r=await fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('cm-name').value,email:$('cm-email').value,phone:$('cm-phone').value,website:$('cm-web').value,consent:true,input:window.fxCalcInput})});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok) throw new Error(j.error||'Något gick fel.');
+      $('c-mail').innerHTML='<div class="c-mail-msg" style="color:#8ee0b0">✓ Klart! Priset är skickat till '+$('cm-email').value.replace(/[<>&"]/g,'')+'. Kolla även skräpposten.</div>';
+      if(window.gtag) gtag('event','generate_lead',{method:'calculator_email',value:j.total,currency:'SEK'});
+    }catch(err){ b.disabled=false; m.style.color='#ffb37a'; m.textContent=err.message; } });
   function calc(){
     vis();
     if(!window.fxComputePrice) return;
@@ -1040,6 +1070,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       pkg:$('c-pkg').value,crew:+$('c-crew').value,hours:Math.max(3,+$('c-h').value||3),boxes:$('c-box').value,
       volumeM3:(s==='move'&&window.fxVolume&&window.fxVolume.m3>0)?window.fxVolume.m3:null,
       extraCleaning:s==='move'&&fxExtras().includes('Flyttstäd')};
+    window.fxCalcInput=inp;
     let q; try{ q=window.fxComputePrice(inp,window.FX_PRICES); }catch(e){ $('c-res').textContent='–'; $('c-det').textContent=e.message; return; }
     if(q.totalAfterRut==null){
       $('c-res').textContent='Pris enligt offert';

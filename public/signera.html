@@ -30,6 +30,13 @@
   .price .big{font-size:32px;font-weight:800;margin:2px 0 8px}
   .price .row{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:#dbe4ec;padding:2px 0}
   .price .off{font-size:15px;background:#1f8a4c;color:#fff;border-radius:999px;padding:3px 9px;vertical-align:middle}
+  .pkgs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+  @media (max-width:520px){.pkgs{grid-template-columns:1fr}}
+  .pkg{position:relative;text-align:left;border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px 12px;font:inherit;color:var(--ink);cursor:pointer}
+  .pkg b{display:block;font-size:17px}.pkg small{display:block;color:var(--muted);font-size:13px;line-height:1.35;min-height:2.7em}
+  .pkg .pp{font-size:20px;font-weight:800;color:var(--navy);margin-top:6px}.pkg .df{font-size:12.5px;font-weight:700;color:var(--muted)}
+  .pkg.on{border-color:var(--accent);background:#fff8f2;box-shadow:0 0 0 3px #ff7a1a22}
+  .pkg .pop{position:absolute;top:-10px;right:10px;background:var(--green);color:#fff;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px}
   .ad{display:flex;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}.ad input{width:22px;height:22px;flex:0 0 auto}.ad span{flex:1}.ad b{white-space:nowrap}
   .nobox{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
   .rs{display:flex;gap:8px;align-items:center;padding:7px 0;font-size:15px}.rs input{width:20px;height:20px}
@@ -81,8 +88,12 @@
       ${(o.notIncluded||[]).length?`<div class="note">Ingår inte i priset:</div>${o.notIncluded.map(x=>`<div class="row">• ${esc(x)}</div>`).join('')}`:''}
       <div style="color:#b9c7d3;font-size:12px;margin-top:10px">Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året.</div></div>`;
   }
+  let pkgSel=null;
+  // The offer as shown: with the package the customer has picked.
+  const curOffer=(v)=>{ const p=(v.packages||[]).find(x=>x.id===pkgSel); return p?{...v.offer,total:p.total,lines:p.lines}:v.offer; };
   function render(v){
     const first=esc((v.name||'').split(' ')[0]);
+    if(v.packages&&!pkgSel) pkgSel=v.pkg||v.packages[0].id;
     if(v.status==='signed'||v.status==='done'){
       app.innerHTML=`<div class="card ok"><h1>Din flytt är bokad ✓</h1><p>Signerad av <b>${esc(v.signedName)}</b> ${esc(new Date(v.signedAt).toLocaleString('sv-SE',{dateStyle:'long',timeStyle:'short'}))}.</p><p class="muted">Bokningsnummer ${esc(v.id)}. En bekräftelse har skickats till din e-post. Vi hör av oss innan flyttdagen.</p></div>`+
         `<div class="card">${details(v)}</div><div class="card">${price(v.offer,v.discount,v.addonsChosen)}</div>`+COMPANY;
@@ -95,7 +106,9 @@
     app.innerHTML=steps(v.status)+
       `<div class="card"><h1>Hej ${first}!</h1><p class="muted">Här är din offert från FX Flytt (${esc(v.id)}). Kontrollera uppgifterna och signera – då är flytten bokad.</p></div>`+
       `<div class="card">${details(v)}</div>`+
-      `<div class="card">${price(v.offer,v.discount)}</div>`+
+      (v.packages?`<div class="card"><h2 style="margin:0 0 2px;font-size:20px">Välj paket</h2><p class="muted" style="margin:0">Du kan byta paket här innan du signerar – priset uppdateras direkt.</p>
+        <div class="pkgs">${v.packages.map(p=>`<button type="button" class="pkg${p.id===pkgSel?' on':''}" data-pkg="${esc(p.id)}">${p.id==='premium'?'<span class="pop">Populärast</span>':''}<b>${esc(p.name)}</b><small>${esc(p.desc)}</small><div class="pp">${kr(p.total)}</div><div class="df" data-df="${esc(p.id)}"></div></button>`).join('')}</div></div>`:'')+
+      `<div class="card" id="pricecard">${price(curOffer(v),v.discount)}</div>`+
       ((v.addons||[]).length&&v.offer?`<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Lägg till i din flytt</h2><p class="muted" style="margin:0 0 6px">Kryssa i det du vill ha – priset uppdateras direkt. Priserna gäller efter RUT-avdrag.</p>
         ${v.addons.map(a=>`<label class="ad"><input type="checkbox" class="addon" value="${esc(a.id)}" data-p="${a.price}"><span>${esc(a.label)}</span><b>+${kr(a.price)}</b></label>`).join('')}</div>`:'')+
       `<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Signera och boka</h2>
@@ -119,12 +132,21 @@
         </div></div>`+COMPANY;
     document.querySelectorAll('input[name=kind]').forEach(r=>r.onchange=()=>{const c=kind()==='company';$('#pnrL').textContent=c?'Organisationsnummer':'Personnummer (för RUT-avdraget)';$('#pnr').placeholder=c?'XXXXXX-XXXX':'ÅÅÅÅMMDD-XXXX';$('#pnr').value='';});
     $('#sign').onclick=()=>act('sign');
-    document.querySelectorAll('.addon').forEach(c=>c.onchange=()=>{
+    const totals=()=>{
+      const o=curOffer(v), cleanIn=pkgSel&&pkgSel!=='bas';
+      document.querySelectorAll('.addon').forEach(c=>{ const cl=/flyttstäd/i.test(c.parentElement.textContent); c.closest('.ad').hidden=cl&&cleanIn; if(cl&&cleanIn) c.checked=false; });
       const sel=[...document.querySelectorAll('.addon:checked')], add=sel.reduce((a,x)=>a+Number(x.dataset.p),0);
-      $('#tot').textContent=kr(v.offer.total+add);
+      $('#tot').textContent=kr(o.total+add);
       const t=$('#totadd'); t.hidden=!add; t.innerHTML=add?`<span>varav tillval</span><span>+${kr(add)}</span>`:'';
-      $('#sign').textContent=add?'Signera och boka – '+kr(v.offer.total+add):'Signera och boka';
-    });
+      $('#sign').textContent=(add||v.packages)?'Signera och boka – '+kr(o.total+add):'Signera och boka';
+      (v.packages||[]).forEach(p=>{ const el=document.querySelector(`[data-df="${p.id}"]`), base=(v.packages.find(x=>x.id===pkgSel)||p).total; if(el) el.textContent=p.id===pkgSel?'Vald':(p.total>base?'+':'−')+kr(Math.abs(p.total-base)); });
+    };
+    document.querySelectorAll('.addon').forEach(c=>c.onchange=totals);
+    const SIZES={bas:'Bara flytt – Bas',premium:'Flytt + flyttstäd – Premium, 10 % rabatt',deluxe:'Flytt + flyttstäd + packning – Deluxe, 20 % rabatt'};
+    const setSize=()=>{ if(!v.packages) return; document.querySelectorAll('td').forEach(td=>{ if(td.textContent==='Tjänst'&&td.nextElementSibling) td.nextElementSibling.textContent=SIZES[pkgSel]||v.size; }); };
+    setSize();
+    document.querySelectorAll('.pkg').forEach(b=>b.onclick=()=>{ pkgSel=b.dataset.pkg; setSize(); document.querySelectorAll('.pkg').forEach(x=>x.classList.toggle('on',x===b)); $('#pricecard').innerHTML=price(curOffer(v),v.discount); totals(); });
+    totals();
     $('#no').onclick=()=>{ $('#nobox').hidden=false; $('#no').hidden=true; $('#nobox').scrollIntoView({behavior:'smooth',block:'center'}); };
     $('#nocancel').onclick=()=>{ $('#nobox').hidden=true; $('#no').hidden=false; };
     $('#nosend').onclick=()=>act('decline');
@@ -134,7 +156,7 @@
     const btn=action==='decline'?$('#nosend'):$('#sign'), label=btn.textContent, err=$('#err'); err.textContent=''; btn.disabled=true; btn.textContent=action==='decline'?'Skickar…':'Signerar…';
     try{
       const why=document.querySelector('input[name=why]:checked');
-      const body={t,action,name:($('#nm')||{}).value||'',pnr:($('#pnr')||{}).value||'',kind:kind(),extras:[...document.querySelectorAll('.addon:checked')].map(x=>x.value),accept:!!($('#ok')||{}).checked,reason:why?why.value:'',reasonText:($('#whytxt')||{}).value||''};
+      const body={t,action,name:($('#nm')||{}).value||'',pnr:($('#pnr')||{}).value||'',kind:kind(),extras:[...document.querySelectorAll('.addon:checked')].map(x=>x.value),pkg:pkgSel||undefined,accept:!!($('#ok')||{}).checked,reason:why?why.value:'',reasonText:($('#whytxt')||{}).value||''};
       if(action==='sign'&&!body.accept){ throw new Error('Kryssa i att du godkänner offerten och villkoren.'); }
       const r=await fetch('/api/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       const j=await r.json().catch(()=>({}));

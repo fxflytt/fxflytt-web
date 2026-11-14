@@ -37,6 +37,18 @@ export type Booking = {
   crewNote?: string;       // shown to the crew on the job sheet
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
+  // Sales follow-up
+  packages?: import("./packages.ts").Pkg[];   // Bas/Premium/Deluxe the customer can choose between in the offer
+  pkgChoiceOff?: boolean;  // the office turned the package choice off for this offer
+  refCode?: string;           // this customer's "Tipsa en vän" code
+  refRewards?: { bookingId: string; name: string; at: number; givenAt?: number; givenBy?: string }[];   // friends who booked
+  referral?: { code: string; fromId: string; fromName: string; kr: number; rewardedAt?: number };     // booked with a friend's code
+  lead?: "calc";             // came from "Få priset på mejl" in the website calculator (no request sent yet)
+  firstResponseAt?: number;   // first time someone in the office acted on a web request (speed to lead)
+  contactedAt?: number;       // the customer has been reached (call answered, or moved to "Kontaktad")
+  calls?: Call[];             // call log
+  followUp?: { at: string; note: string; by: string };   // next time to call ("YYYY-MM-DDTHH:MM", Stockholm time)
+  sentBy?: string; sentById?: string;                     // who sent the offer (sales per person)
   openCall?: OpenCall;     // "Vem kan jobba?" – sent to the crew app, first come first served
   boxes?: Boxes;           // rented moving boxes out with the customer
   reviewSentAt?: number;   // when the Google review request was e-mailed
@@ -57,6 +69,9 @@ export type Booking = {
 };
 
 export type Extra = { id: string; label: string; price: number };
+export type CallOutcome = "answered" | "noanswer" | "callback" | "notinterested" | "contacted";
+export const CALL_OUTCOMES: Record<CallOutcome, string> = { answered: "Pratade med kunden", noanswer: "Inget svar", callback: "Ringer tillbaka / vill fundera", notinterested: "Inte intresserad", contacted: "Kontaktad" };
+export type Call = { at: number; by: string; outcome: CallOutcome; note: string };
 export type OpenCall = { need: number; note: string; at: number; by: string; asked: string[]; yes: string[]; no: string[]; closedAt?: number };
 export type Boxes = { qty: number; outDate: string; dueDate: string; returned: number; returnedDate?: string; note?: string; remindedAt?: number };
 
@@ -114,6 +129,7 @@ export async function getBooking(id: string): Promise<Booking | null> {
 export async function saveBooking(b: Booking, what?: string, by?: string) {
   b.updatedAt = Date.now();
   if (what) b.history.push(by ? { at: b.updatedAt, what, by } : { at: b.updatedAt, what });
+  if (by && what && b.source === "web" && !b.firstResponseAt) b.firstResponseAt = b.updatedAt;
   if (b.history.length > 60) b.history = b.history.slice(-60);
   await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.upd, b.updatedAt, b.id]]);
 }
@@ -197,6 +213,8 @@ export function publicView(b: Booking) {
     signedAt: b.signedAt || null, signedName: b.signature?.name || null,
     discount: b.discount && b.offer ? { pct: b.discount.pct, before: b.discount.before } : null,
     addons: b.status === "signed" || b.status === "done" ? [] : (b.extras || []),
+    packages: b.status === "sent" && b.packages ? b.packages.map((p) => ({ id: p.id, name: p.name, desc: p.desc, total: p.total, lines: p.lines })) : null,
+    pkg: b.packages ? (b.packages.find((p) => p.total === b.offer?.total && JSON.stringify(p.lines) === JSON.stringify(b.offer?.lines))?.id || null) : null,
     addonsChosen: (b.extras || []).filter((e) => b.extrasChosen?.includes(e.id)),
   };
 }
@@ -205,7 +223,7 @@ export function publicView(b: Booking) {
 export function applyDiscount(b: Booking, pct: number) {
   if (!b.offer) throw new Error("Ingen offert");
   const before = b.discount ? b.discount.before : b.offer.total;
-  const lines = b.offer.lines.filter((l) => !/^Rabatt /.test(l.label));
+  const lines = b.offer.lines.filter((l) => !/^Rabatt \d/.test(l.label));
   const off = Math.round((before * pct) / 100);
   b.offer = { ...b.offer, lines: pct > 0 ? [...lines, { label: `Rabatt ${pct} %`, amount: -off }] : lines, total: before - off };
   b.discount = pct > 0 ? { pct, before, at: Date.now() } : undefined;

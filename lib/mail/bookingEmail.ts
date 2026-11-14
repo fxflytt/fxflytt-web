@@ -122,16 +122,24 @@ export function discountEmail(b: Booking, url: string) {
   return { subject, html, text };
 }
 
-export function reviewEmail(b: Booking, reviewUrl: string) {
+// Thank-you after the move: a Google review button (when switched on) and the "Tipsa en vän" code (when switched on).
+export function reviewEmail(b: Booking, reviewUrl: string, ref?: { code: string; kr: number; reward: string } | null) {
   const first = b.data.name.split(" ")[0];
   const subject = "Tack för att du flyttade med FX Flytt!";
+  const refBox = ref ? `<tr><td style="padding:10px 28px"><table role="presentation" width="100%" style="background:#fff7ef;border:1px dashed ${ACCENT};border-radius:12px"><tr><td style="padding:16px 18px">
+      <div style="font-weight:800;font-size:17px;color:${INK}">🎁 Tipsa en vän</div>
+      <div style="font-size:14px;color:${INK};line-height:21px;margin-top:4px">Ge din kod till någon som ska flytta. ${ref.kr ? `Din vän får <b>${esc(kr(ref.kr))} rabatt</b>` : "Din vän får ett bra pris"} – och du får <b>${esc(ref.reward)}</b>.</div>
+      <div style="font-size:26px;font-weight:900;letter-spacing:2px;color:${NAVY};margin-top:10px">${esc(ref.code)}</div>
+      <div style="font-size:12.5px;color:${MUTED};margin-top:4px">Vännen skriver koden i formuläret på fxflytt.se eller säger den när hen ringer.</div></td></tr></table></td></tr>` : "";
   const html = shell(subject, { text: "TACK", bg: "#e6f5ec", fg: GREEN },
     `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Tack ${esc(first)}!</h1></td></tr>` +
     p("Vi hoppas att flytten gick bra och att du har kommit på plats i ditt nya hem.") +
-    p("Vi är ett litet företag och dina ord betyder mycket – både för oss och för andra som letar efter en flyttfirma. Har du en minut över? Skriv gärna vad du tyckte på Google.") +
-    button(reviewUrl, "★ Skriv ett omdöme på Google") +
+    (reviewUrl ? p("Vi är ett litet företag och dina ord betyder mycket – både för oss och för andra som letar efter en flyttfirma. Har du en minut över? Skriv gärna vad du tyckte på Google.") + button(reviewUrl, "★ Skriv ett omdöme på Google") : "") +
+    refBox +
     p(`<span style="color:${MUTED};font-size:13px">Var det något som inte blev bra? Svara på det här mejlet eller ring oss på 076-300 07 23 – vi vill gärna veta och ställa det till rätta.</span>`));
-  const text = `Tack ${first}!\n\nVi hoppas att flytten gick bra. Har du en minut över? Skriv gärna ett omdöme på Google:\n${reviewUrl}\n\nVar något inte bra? Svara på mejlet eller ring 076-300 07 23.\nFX Flytt AB`;
+  const text = `Tack ${first}!\n\nVi hoppas att flytten gick bra.` + (reviewUrl ? ` Har du en minut över? Skriv gärna ett omdöme på Google:\n${reviewUrl}\n` : "\n") +
+    (ref ? `\nTipsa en vän: ge koden ${ref.code} till någon som ska flytta.${ref.kr ? ` Din vän får ${kr(ref.kr)} rabatt` : ""} och du får ${ref.reward}.\n` : "") +
+    `\nVar något inte bra? Svara på mejlet eller ring 076-300 07 23.\nFX Flytt AB`;
   return { subject, html, text };
 }
 
@@ -144,5 +152,22 @@ export function boxesReminderEmail(b: Booking) {
     p("Svara på det här mejlet eller ring oss så bestämmer vi en tid när vi hämtar dem – eller om du hellre vill köpa dem.") +
     p(`<span style="color:${MUTED};font-size:13px">Ring oss på 076-300 07 23. Bokning ${esc(b.id)}.</span>`));
   const text = `Hej ${first}!\n\nDu hyr ${left} flyttkartonger av FX Flytt som ska vara tillbaka senast ${fmtDate(bx.dueDate)}.\nSvara på mejlet eller ring 076-300 07 23 så bestämmer vi en tid när vi hämtar dem.\n\nFX Flytt AB (${b.id})`;
+  return { subject, html, text };
+}
+
+// The price from the website calculator, e-mailed when the visitor asks for it ("Få priset på mejl").
+export function calcPriceEmail(name: string, label: string, price: { total: number; lines: { label: string; amount: number }[] }, bookUrl: string) {
+  const first = name.split(" ")[0];
+  const subject = `Ditt pris från FX Flytt: ${kr(price.total)}`;
+  const rows = price.lines.map((l) => `<tr><td style="padding:4px 0;color:${INK};font-size:14px">${esc(l.label)}</td><td style="padding:4px 0;text-align:right;font-size:14px;white-space:nowrap">${esc(kr(l.amount))}</td></tr>`).join("");
+  const html = shell(subject, { text: "DITT PRIS", bg: "#fff1e6", fg: "#c2560a" },
+    `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Hej ${esc(first)}!</h1></td></tr>` +
+    p(`Här är priset du räknade fram på fxflytt.se – <b>${esc(label)}</b>.`) +
+    `<tr><td style="padding:8px 28px"><table role="presentation" width="100%" style="border-collapse:collapse;border-top:1px solid ${LINE};border-bottom:1px solid ${LINE}">${rows}
+      <tr><td style="padding:10px 0 6px;font-weight:800;font-size:16px">Totalt efter RUT-avdrag</td><td style="padding:10px 0 6px;text-align:right;font-weight:800;font-size:18px;color:${GREEN}">${esc(kr(price.total))}</td></tr></table></td></tr>` +
+    p(`<span style="color:${MUTED};font-size:13px">Inkl. moms efter RUT-avdrag (privatpersoner). Priset gäller enligt dagens prislista.</span>`) +
+    button(bookUrl, "Boka flytten") +
+    p("Vill du hellre prata med oss? Svara på mejlet eller ring – vi hjälper dig gärna att välja datum och upplägg."));
+  const text = `Hej ${first}!\n\nDitt pris från FX Flytt (${label}):\n${price.lines.map((l) => `- ${l.label}: ${kr(l.amount)}`).join("\n")}\nTotalt efter RUT: ${kr(price.total)}\n\nBoka: ${bookUrl}\nFrågor? Ring 076-300 07 23.\nFX Flytt AB`;
   return { subject, html, text };
 }

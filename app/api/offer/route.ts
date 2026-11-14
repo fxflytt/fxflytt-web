@@ -4,8 +4,10 @@ import { sendMail } from "@/lib/mail/smtp.ts";
 import { offerEmail, customerConfirmation, type OfferData } from "@/lib/mail/offerEmail.ts";
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
-import { createBooking } from "@/lib/booking/store.ts";
+import { createBooking, saveBooking } from "@/lib/booking/store.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
+import { applyCode } from "@/lib/booking/referral.ts";
+import { getSettings } from "@/lib/booking/settings.ts";
 
 export const runtime = "nodejs";
 
@@ -58,6 +60,8 @@ export async function POST(req: Request) {
   if (kvConfigured()) {
     try {
       const b = await createBooking("web", data); adminUrl = `${process.env.SITE_URL || "https://www.fxflytt.se"}/admin#${b.id}`;
+      const code = str((d as Record<string, unknown>).refCode, 20);
+      if (code) { try { await saveBooking(b, await applyCode(b, code, await getSettings())); } catch (e) { await saveBooking(b, `Rabattkod ${code} gick inte att använda: ${(e as Error).message}`); } }
       const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
       await notifyAll({ title: "Ny förfrågan: " + data.name, body: [[data.from, data.to].filter(Boolean).map(town).join(" → "), data.size, data.price ? data.price.total.toLocaleString("sv-SE") + " kr" : ""].filter(Boolean).join(" · ") || "Från hemsidan", url: "/admin#" + b.id, tag: b.id });
     }
