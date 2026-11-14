@@ -347,9 +347,13 @@
   const logout=async()=>{ await fetch('/api/admin/login',{method:'DELETE'}); location.hash=''; showLogin(); };
   $('#logout').onclick=logout; $('#mlogout').onclick=()=>{ if(confirm('Logga ut?')) logout(); };
 
+  // First time: every booking. After that (every 30 s): only bookings changed since the last time.
+  let syncedAt=0;
   async function load(){
-    const [j,t]=await Promise.all([api('/api/admin/bookings'),api('/api/admin/team').catch(()=>({resources:res}))]);
-    all=j.bookings||[]; res=t.resources||[]; updateBell(); updateCounts();
+    const [j,t]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res}))]);
+    if(j.partial){ for(const b of j.bookings||[]){ const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=b; else all.unshift(b); } }
+    else all=j.bookings||[];
+    syncedAt=j.now||Date.now(); res=t.resources||[]; updateBell(); updateCounts();
   }
   // Sidebar badges: new requests, and booked jobs in the next 14 days that have nobody assigned.
   const needsCrew=(b)=>b.status==='signed'&&b.date&&b.date>=today()&&b.date<=addDays(today(),14)&&!(b.crew||[]).length;
@@ -589,8 +593,8 @@
     for(const k in ch) opt[k]=k==='time'?(ch.time||undefined):k==='durationH'?(ch.durationH??undefined):ch[k];
     all[i]=opt; showCal();
     try{
-      const {conflicts,...nb}=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(ch)});
-      const j=all.findIndex(x=>x.id===b.id); if(j>=0) all[j]=nb; updateCounts(); if(view==='cal'&&!dragging) showCal();
+      const nb=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(ch)});
+      const j=all.findIndex(x=>x.id===b.id); if(j>=0) all[j]=nb; const conflicts=S.conflicts(nb,all,res); updateCounts(); if(view==='cal'&&!dragging) showCal();
       const who=[...new Set((conflicts||[]).map(c=>c.name))];
       notify(who.length?`${what} – men ${who.join(', ')} är dubbelbokad`:`${what} ✓`,()=>moveJob(nb,before,'Ångrat',true));
     }catch(e){ const j=all.findIndex(x=>x.id===b.id); if(j>=0) all[j]=old; if(view==='cal') showCal(); notify(e.message); }
@@ -866,7 +870,7 @@
     $('#back').onclick=()=>{ location.hash={cal:'kalender',today:'',team:'personal',stat:'statistik'}[view]??'bokningar'; };
     const msg=(el,t,ok)=>{ $(el).innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
     let lastConflicts=[];
-    const patch=async(body)=>{ try{ const {conflicts,...nb}=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); lastConflicts=conflicts||[]; Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; updateCounts(); return true; }catch(e){ msg(body&&'crew' in body?'#msgp':'#msg',e.message,false); return false; } };
+    const patch=async(body)=>{ try{ const nb=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; lastConflicts=S.conflicts(nb,all,res); updateCounts(); return true; }catch(e){ msg(body&&'crew' in body?'#msgp':'#msg',e.message,false); return false; } };
     root.querySelectorAll('[data-delph]').forEach(x=>x.onclick=async()=>{
       if(!confirm('Ta bort fotot?')) return;
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
@@ -1205,7 +1209,7 @@
     root.querySelectorAll('.item').forEach(x=>x.onclick=()=>{ location.hash=x.dataset.id; });
     root.querySelectorAll('[data-done]').forEach(x=>x.onclick=async()=>{
       x.disabled=true;
-      try{ const {conflicts,...nb}=await api('/api/admin/bookings?id='+x.dataset.done,{method:'PATCH',body:JSON.stringify({status:'done'})}); const i=all.findIndex(y=>y.id===nb.id); if(i>=0) all[i]=nb; updateCounts(); showToday(); notify('Markerad som klar ✓'); }
+      try{ const nb=await api('/api/admin/bookings?id='+x.dataset.done,{method:'PATCH',body:JSON.stringify({status:'done'})}); const i=all.findIndex(y=>y.id===nb.id); if(i>=0) all[i]=nb; updateCounts(); showToday(); notify('Markerad som klar ✓'); }
       catch(e){ x.disabled=false; notify(e.message); }
     });
   }

@@ -1,6 +1,7 @@
 // Bookings, stored in Upstash Redis.
 //   fx:b:<id>    booking JSON
 //   fx:idx       sorted set of ids by creation time
+//   fx:upd       sorted set of ids by last change (the admin page fetches only what changed)
 //   fx:t:<token> id, for the customer's offer link
 import { randomBytes, createHash } from "node:crypto";
 import { kv, kvPipe } from "./kv.ts";
@@ -77,7 +78,7 @@ export const DECLINE_REASONS: Record<DeclineReason, string> = {
   no_move: "Flyttar inte längre", other: "Annat",
 };
 
-const K = { b: (id: string) => `fx:b:${id}`, idx: "fx:idx", t: (t: string) => `fx:t:${t}`, w: (t: string) => `fx:w:${t}` };
+const K = { b: (id: string) => `fx:b:${id}`, idx: "fx:idx", upd: "fx:upd", t: (t: string) => `fx:t:${t}`, w: (t: string) => `fx:w:${t}` };
 export const TERMS_VERSION = "villkor-2026-11-12";
 
 function newId(now: number) {
@@ -98,7 +99,7 @@ export async function createBooking(source: Booking["source"], data: OfferData, 
     history: [{ at: now, what: source === "web" ? "Förfrågan från hemsidan" : "Skapad manuellt" }],
     ...extra,
   };
-  await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.idx, now, b.id]]);
+  await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.idx, now, b.id], ["ZADD", K.upd, now, b.id]]);
   return b;
 }
 
@@ -112,14 +113,26 @@ export async function saveBooking(b: Booking, what?: string, by?: string) {
   b.updatedAt = Date.now();
   if (what) b.history.push(by ? { at: b.updatedAt, what, by } : { at: b.updatedAt, what });
   if (b.history.length > 60) b.history = b.history.slice(-60);
-  await kv(["SET", K.b(b.id), JSON.stringify(b)]);
+  await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.upd, b.updatedAt, b.id]]);
 }
 
-export async function listBookings(limit = 400): Promise<Booking[]> {
-  const ids = await kv<string[]>(["ZREVRANGE", K.idx, 0, limit - 1]);
+// Loads bookings by id, a few hundred per request (one pipeline), skipping ids that no longer exist.
+async function loadMany(ids: string[]): Promise<Booking[]> {
   if (!ids?.length) return [];
-  const vals = await kv<(string | null)[]>(["MGET", ...ids.map(K.b)]);
-  return vals.filter(Boolean).map((s) => JSON.parse(s!) as Booking);
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += 300) chunks.push(ids.slice(i, i + 300));
+  const res = (await kvPipe(chunks.map((c) => ["MGET", ...c.map(K.b)]))) as (string | null)[][];
+  return res.flat().filter(Boolean).map((s) => JSON.parse(s!) as Booking);
+}
+
+// All bookings, newest first. `limit` (0 = all) keeps only the newest ones.
+export async function listBookings(limit = 0): Promise<Booking[]> {
+  return loadMany(await kv<string[]>(["ZREVRANGE", K.idx, 0, limit > 0 ? limit - 1 : -1]));
+}
+
+// Bookings created or changed after `ts` (ms).
+export async function bookingsChangedSince(ts: number): Promise<Booking[]> {
+  return loadMany(await kv<string[]>(["ZRANGEBYSCORE", K.upd, "(" + Math.floor(ts), "+inf"]));
 }
 
 export async function issueToken(b: Booking): Promise<string> {
