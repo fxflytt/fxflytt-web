@@ -523,6 +523,7 @@ integritet = page("integritetspolicy.html",
       <li>Uppgifter om flytten: datum, möbellista, beräknad volym och valda tjänster.</li>
       <li>Personnummer – endast om du vill ha RUT-avdrag, eftersom det krävs för ansökan hos Skatteverket.</li>
       <li>Det du själv skriver i meddelanden till oss.</li>
+      <li>Om du ber om priset på mejl i prisräknaren: namn, e-post, telefon (om du anger det) och dina val i räknaren.</li>
     </ul>
 
     <h2>3. Varför vi behandlar uppgifterna och med vilken rättslig grund</h2>
@@ -530,6 +531,7 @@ integritet = page("integritetspolicy.html",
       <li><b>För att ge dig en offert och genomföra flytten</b> – åtgärder inför och fullgörande av avtal.</li>
       <li><b>För att ansöka om RUT-avdrag och sköta bokföring</b> – rättslig förpliktelse.</li>
       <li><b>För att besvara frågor och ge kundservice</b> – berättigat intresse.</li>
+      <li><b>För att mejla priset från prisräknaren och kontakta dig om det</b> – ditt samtycke, som du kan ta tillbaka när som helst genom att kontakta oss.</li>
     </ul>
 
     <h2>4. Vilka som får ta del av uppgifterna</h2>
