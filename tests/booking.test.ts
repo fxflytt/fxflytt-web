@@ -11,7 +11,8 @@ function run(c: string[]): unknown {
     case "DEL": db.delete(a[0]); return 1;
     case "MGET": return a.map((k) => db.get(k) ?? null);
     case "ZADD": { const m = z.get(a[0]) ?? new Map(); m.set(a[2], Number(a[1])); z.set(a[0], m); return 1; }
-    case "ZREVRANGE": { const m = z.get(a[0]) ?? new Map(); return [...m.entries()].sort((x, y) => y[1] - x[1]).map((e) => e[0]).slice(Number(a[1]), Number(a[2]) + 1); }
+    case "ZREVRANGE": { const m = z.get(a[0]) ?? new Map(); const l = [...m.entries()].sort((x, y) => y[1] - x[1]).map((e) => e[0]); const e = Number(a[2]); return l.slice(Number(a[1]), e < 0 ? l.length + e + 1 : e + 1); }
+    case "ZRANGEBYSCORE": { const m = z.get(a[0]) ?? new Map(); const lo = a[1].startsWith("(") ? Number(a[1].slice(1)) + 1e-9 : Number(a[1]); return [...m.entries()].filter((e) => e[1] >= lo).sort((x, y) => x[1] - y[1]).map((e) => e[0]); }
   }
   throw new Error("cmd " + cmd);
 }
@@ -183,4 +184,19 @@ test("hyrkartonger: kontroll av antal och datum, delvis återlämnade", () => {
   const b = cleanBoxes({ qty: 50, dueDate: "2026-12-30", returned: 50 }, "2026-12-10") as any;
   assert.equal(b.ok.returnedDate, "2026-12-10"); assert.equal(boxesOut({ boxes: b.ok }), 0);
   assert.deepEqual(cleanBoxes(null, "2026-12-01"), { ok: undefined });
+});
+
+test("fler än 400 bokningar listas, och bara ändrade hämtas med since", async () => {
+  const realNow = Date.now; let t = 1_700_000_000_000; Date.now = () => (t += 1000);
+  try {
+    for (let i = 0; i < 450; i++) await store.createBooking("web", { ...data, name: "Kund " + i });
+    const all = await store.listBookings();
+    assert.equal(all.length, 450); assert.equal(all[0].data.name, "Kund 449");
+    assert.equal((await store.listBookings(10)).length, 10);
+    const mark = Date.now();
+    const b = all[300]; b.adminNote = "x"; await store.saveBooking(b);
+    const nb = await store.createBooking("web", { ...data, name: "Ny" });
+    const changed = await store.bookingsChangedSince(mark);
+    assert.deepEqual(changed.map((x) => x.id).sort(), [b.id, nb.id].sort());
+  } finally { Date.now = realNow; }
 });

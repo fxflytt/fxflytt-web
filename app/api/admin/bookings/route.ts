@@ -1,10 +1,9 @@
 // Admin: list (GET), one booking (GET ?id=), create (POST), update (PATCH ?id=).
 import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
-import { listBookings, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status } from "@/lib/booking/store.ts";
+import { listBookings, bookingsChangedSince, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
 import { listPhotos } from "@/lib/booking/work.ts";
-import { schedule } from "@/lib/booking/schedule.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +20,10 @@ export async function GET(req: Request) {
     const b = await getBooking(id);
     return b ? Response.json({ ...b, photos: await listPhotos(b.id) }) : Response.json({ error: "not-found" }, { status: 404 });
   }
-  return Response.json({ bookings: await listBookings() });
+  // ?since=<ms>: only what changed since then (the admin page asks every 30 s); otherwise everything.
+  const now = Date.now(), since = Number(new URL(req.url).searchParams.get("since"));
+  if (since > 0) return Response.json({ bookings: await bookingsChangedSince(since - 5000), now, partial: true });
+  return Response.json({ bookings: await listBookings(), now });
 }
 
 export async function POST(req: Request) {
@@ -72,9 +74,8 @@ export async function PATCH(req: Request) {
     else return Response.json({ error: "Tid ska vara 0,5–14 timmar (halvtimmar)." }, { status: 400 });
     if (b.durationH !== was) changes.push("beräknad tid " + (b.durationH ? String(b.durationH).replace(".", ",") + " tim" : "auto"));
   }
-  let resources: Awaited<ReturnType<typeof listResources>> | null = null;
   if ("crew" in d) {
-    resources = await listResources();
+    const resources = await listResources();
     const ids = Array.isArray(d.crew) ? [...new Set(d.crew.filter((x): x is string => typeof x === "string"))].slice(0, 12) : [];
     const before = new Set(b.crew || []);
     const byId = new Map(resources.map((r) => [r.id, r]));
@@ -124,8 +125,6 @@ export async function PATCH(req: Request) {
   // A signed offer is a contract – changing price or date afterwards must be visible.
   if (b.signedAt && changes.some((c) => c.startsWith("pris") || c === "datum")) changes.push("(efter signering)");
   await saveBooking(b, changes.length ? "Ändrat: " + changes.join(", ") : undefined, u.name);
-  // Warn (never block) when someone on this job is already on another job at the same time.
-  const planChanged = ["date", "time", "durationH", "crew", "status"].some((k) => k in d);
-  const conflicts = planChanged && b.crew?.length ? schedule.conflicts(b, await listBookings(), resources || await listResources()) : [];
-  return Response.json({ ...b, conflicts });
+  // Double bookings are worked out in the admin page, which already has every booking (public/fx-schedule.js).
+  return Response.json(b);
 }
