@@ -62,3 +62,24 @@ test("personal och fordon: lägg till, ändra, arkivera; färger delas ut", asyn
   assert.equal(list.length, 2); assert.equal(list[0].id, a.id); assert.equal(list[0].active, false);
   assert.equal(await team.updateResource("nope", { name: "x" }), null);
 });
+
+const report = await import("../lib/booking/report.ts");
+test("timrapport: uppmätt tid före planerad, bara bokade jobb i månaden", () => {
+  const H = 36e5, t0 = Date.parse("2026-12-05T08:00:00Z");
+  const all: any[] = [
+    job("A", { date: "2026-12-05", time: "08:00", durationH: 4, crew: ["RA", "RB", "RT"], status: "done", work: { startedAt: t0, finishedAt: t0 + 5.5 * H }, offer: { total: 5000, lines: [] } }),
+    job("B", { date: "2026-12-07", time: "09:00", durationH: 3, crew: ["RA"], offer: { total: 3000, lines: [] } }),
+    job("C", { date: "2026-12-08", time: "09:00", durationH: 3, crew: ["RA"], status: "cancelled" }),
+    job("D", { date: "2026-11-30", time: "09:00", durationH: 3, crew: ["RA"] }),
+  ];
+  const rows = report.hoursReport(all, R, "2026-12");
+  const a = rows.find((r) => r.id === "RA")!, b = rows.find((r) => r.id === "RB")!;
+  assert.deepEqual([a.jobs, a.hours, a.realHours, a.plannedHours], [2, 8.5, 5.5, 3]);
+  assert.deepEqual([b.jobs, b.hours], [1, 5.5]);
+  assert.equal(rows.some((r) => r.id === "RT"), false);          // vehicles are not on the hours report
+  const csv = report.hoursCsv(rows, "2026-12");
+  assert.ok(csv.startsWith("﻿")); assert.match(csv, /"Ahmad";"";"2";"8,5";"5,5";"3"/);
+  const m = report.moneyReport(all, "2026-12-06", 3);
+  assert.deepEqual(m.months.map((x) => x.month), ["2026-10", "2026-11", "2026-12"]);
+  assert.equal(m.thisMonth.done, 5000); assert.equal(m.thisMonth.booked, 8000); assert.equal(m.upcoming.total, 3000);
+});

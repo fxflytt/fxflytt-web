@@ -156,6 +156,10 @@
   .phgrid span{position:absolute;left:4px;bottom:4px;background:rgba(13,42,63,.8);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px}
   .phgrid span.damage{background:var(--red)}
   .phgrid button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:var(--red);font-weight:800;cursor:pointer}
+  .htab th{text-align:left;font-size:12px;color:var(--muted);font-weight:700;padding:10px 8px 6px 0;border-bottom:1px solid var(--line)}
+  .htab td{width:auto;padding:10px 8px 10px 0;vertical-align:middle;color:var(--ink)}.htab td:first-child{width:auto}
+  .htab a.hist{font-size:13.5px}
+  @media (max-width:600px){.htab .hm{display:none}}
   /* ---------- planning (booking detail) ---------- */
   .pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
   .pk{display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line2);background:#fff;border-radius:12px;padding:9px 11px;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
@@ -471,6 +475,8 @@
 
   // ---------- statistics ----------
   function showStats(){
+    if(statTab==='money') return showMoney();
+    if(statTab==='hours') return showHours();
     view='stat';
     const now=Date.now(), months=statPeriod==='all'?null:Number(statPeriod);
     const from=months?new Date(new Date().getFullYear(),new Date().getMonth()-months+1,1).getTime():0;
@@ -498,7 +504,7 @@
     const src=(s)=>{const l=inP.filter(b=>(b.source==='web'?'web':'manual')===s);const w=l.filter(b=>b.status==='signed'||b.status==='done').length;return {n:l.length,w};};
     const web=src('web'), man=src('manual');
     const disc=inP.filter(b=>b.discount), discWon=disc.filter(b=>b.status==='signed'||b.status==='done');
-    root.innerHTML=navBar('stat')+`<main>
+    root.innerHTML=navBar('stat')+`<main>${statTabs()}
       <div class="chips">${[['1','Denna månad'],['3','3 mån'],['12','12 mån'],['all','Allt']].map(([k,l])=>`<button data-p="${k}" class="${k===statPeriod?'on':''}">${l}</button>`).join('')}</div>
       <div class="kpis">
         <div class="kpi" style="background:#1f8a4c"><small>Vunnet (signerat)</small><b>${kr(sum(won))}</b><small>${won.length} bokning${won.length===1?'':'ar'}</small></div>
@@ -521,6 +527,7 @@
     </main>`;
     bindNav();
     root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ statPeriod=b.dataset.p; showStats(); });
+    bindStatTabs();
   }
 
   // ---------- calendar ----------
@@ -1161,6 +1168,54 @@
       try{ const {conflicts,...nb}=await api('/api/admin/bookings?id='+x.dataset.done,{method:'PATCH',body:JSON.stringify({status:'done'})}); const i=all.findIndex(y=>y.id===nb.id); if(i>=0) all[i]=nb; updateCounts(); showToday(); notify('Markerad som klar ✓'); }
       catch(e){ x.disabled=false; notify(e.message); }
     });
+  }
+
+  // ---------- statistics tabs: sales (above), money, hours report ----------
+  let statTab='sales', hoursMonth=today().slice(0,7), openHours=null;
+  const statTabs=()=>`<div class="seg" id="sttabs" style="margin-bottom:16px">${[['sales','Försäljning'],['money','Ekonomi'],['hours','Timrapport']].map(([k,l])=>`<button data-k="${k}" class="${statTab===k?'on':''}">${l}</button>`).join('')}</div>`;
+  const bindStatTabs=()=>root.querySelectorAll('#sttabs button').forEach(x=>x.onclick=()=>{ statTab=x.dataset.k; showStats(); });
+  const monthName=(m)=>new Date(m+'-15T12:00:00Z').toLocaleDateString('sv-SE',{month:'long',year:'numeric',timeZone:'UTC'});
+  const pctTxt=(a,b)=>!b?'':(a>=b?'▲ ':'▼ ')+Math.abs(Math.round((a-b)*100/b))+' % mot förra månaden';
+
+  async function showMoney(){
+    view='stat';
+    root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="mpane"><div class="empty">Laddar…</div></div></main>`; bindStatTabs();
+    let r; try{ r=await api('/api/admin/report?type=money'); }catch(e){ $('#mpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    if(view!=='stat'||statTab!=='money') return;
+    const max=Math.max(1,...r.months.map(m=>m.booked));
+    $('#mpane').innerHTML=`<div class="kpis">
+        <div class="kpi" style="background:#1f8a4c"><small>Utfört denna månad</small><b>${kr(r.thisMonth.done)}</b><small>${r.thisMonth.doneJobs} jobb ${esc(pctTxt(r.thisMonth.done,r.lastMonth.done))}</small></div>
+        <div class="kpi" style="background:var(--navy)"><small>Bokat denna månad</small><b>${kr(r.thisMonth.booked)}</b><small>utfört + kvar att göra</small></div>
+        <div class="kpi" style="background:#2f6fb2"><small>Kommande bokade jobb</small><b>${kr(r.upcoming.total)}</b><small>${r.upcoming.jobs} jobb från i dag</small></div>
+        <div class="kpi lt"><small>Öppna offerter</small><b>${kr(r.openOffers.total)}</b><small>${r.openOffers.count} väntar på svar</small></div></div>
+      <div class="card"><h3>Per månad <span class="sub">Snittjobb ${kr(r.avgJob)}</span></h3>
+        <div class="bars">${r.months.map(m=>`<div class="m"><i style="height:${Math.round(m.done*100/max)}%;background:#1f8a4c;width:38%" title="Utfört ${kr(m.done)}"></i><i style="height:${Math.round((m.booked-m.done)*100/max)}%;background:#9fc6e8;width:38%" title="Bokat, ej utfört ${kr(m.booked-m.done)}"></i></div>`).join('')}</div>
+        <div class="blab">${r.months.map(m=>`<span>${esc(new Date(m.month+'-15T12:00:00Z').toLocaleDateString('sv-SE',{month:'short',timeZone:'UTC'}))}</span>`).join('')}</div>
+        <div class="leg"><span><i style="background:#1f8a4c"></i>Utfört (klart)</span><span><i style="background:#9fc6e8"></i>Bokat, inte klart än</span></div>
+        <table style="margin-top:14px"><tbody>${r.months.slice().reverse().filter(m=>m.booked).map(m=>`<tr><td style="text-transform:capitalize">${esc(monthName(m.month))}</td><td style="text-align:right"><b>${kr(m.done)}</b> <span class="muted">· ${m.doneJobs} jobb utförda${m.booked>m.done?` · ${kr(m.booked-m.done)} kvar`:''}</span></td></tr>`).join('')||'<tr><td>Inga jobb ännu.</td><td></td></tr>'}</tbody></table></div>
+      <div class="muted" style="margin:4px 2px 20px">Beloppen är kundens pris efter RUT-avdrag (det kunden betalar till er). RUT-delen som Skatteverket betalar ingår inte. Månaden räknas på flyttdatum.</div>`;
+  }
+
+  async function showHours(){
+    view='stat';
+    root.innerHTML=navBar('stat')+`<main>${statTabs()}
+      <div class="calbar"><div class="cnav"><button id="hprev" aria-label="Föregående månad">‹</button><button id="hnow">Denna månad</button><button id="hnext" aria-label="Nästa månad">›</button></div>
+        <b class="ctitle">${esc(monthName(hoursMonth))}</b>
+        <a class="btn sec sm" style="margin-left:auto" href="/api/admin/report?type=hours&month=${hoursMonth}&format=csv">⬇ Ladda ner till Excel</a></div>
+      <div id="hpane"><div class="empty">Laddar…</div></div></main>`;
+    bindStatTabs();
+    const step=(k)=>{ const [y,m]=hoursMonth.split('-').map(Number); hoursMonth=new Date(Date.UTC(y,m-1+k,1)).toISOString().slice(0,7); openHours=null; showHours(); };
+    $('#hprev').onclick=()=>step(-1); $('#hnext').onclick=()=>step(1); $('#hnow').onclick=()=>{ hoursMonth=today().slice(0,7); showHours(); };
+    let r; try{ r=await api('/api/admin/report?type=hours&month='+hoursMonth); }catch(e){ $('#hpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    if(view!=='stat'||statTab!=='hours') return;
+    const tot=r.rows.reduce((a,x)=>a+x.hours,0);
+    $('#hpane').innerHTML=r.rows.length?`<div class="card" style="padding:6px 18px 14px"><table class="htab"><thead><tr><th>Namn</th><th>Jobb</th><th>Timmar</th><th class="hm">Uppmätt</th><th class="hm">Planerad</th><th></th></tr></thead><tbody>
+      ${r.rows.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="muted">${esc(x.role)}</div></td><td>${x.jobs}</td><td><b>${esc(fmtH(x.hours))}</b></td><td class="hm">${esc(fmtH(x.realHours))}</td><td class="hm">${esc(fmtH(x.plannedHours))}</td><td style="text-align:right">${x.jobs?`<button class="btn gray sm" data-open="${esc(x.id)}">${openHours===x.id?'Dölj':'Visa jobb'}</button>`:''}</td></tr>
+        ${openHours===x.id?`<tr><td colspan="6" style="background:#fafcfd">${x.lines.map(l=>`<a class="hist" href="#${esc(l.bookingId)}">${esc(fmtDate(l.date))} ${esc(l.time)} · ${esc(l.customer)} · <b>${esc(fmtH(l.hours))}</b> <span class="tag${l.real?' ok':''}">${l.real?'uppmätt':'planerad'}</span></a>`).join('')}</td></tr>`:''}`).join('')}
+      <tr><td><b>Totalt</b></td><td></td><td><b>${esc(fmtH(Math.round(tot*10)/10))}</b></td><td class="hm"></td><td class="hm"></td><td></td></tr></tbody></table></div>
+      <div class="muted" style="margin:4px 2px 20px"><b>Uppmätt</b> = personalen tryckte Start och Klart på arbetsordern. <b>Planerad</b> = jobbets planerade längd (används när Start/Klart saknas). Bara bokade och utförda jobb räknas, inte avbokade. Excel-filen har en rad per person och en rad per jobb.</div>`
+      :'<div class="card empty">Ingen personal inlagd.</div>';
+    root.querySelectorAll('[data-open]').forEach(x=>x.onclick=()=>{ openHours=openHours===x.dataset.open?null:x.dataset.open; showHours(); });
   }
 
   // ---------- settings ----------
