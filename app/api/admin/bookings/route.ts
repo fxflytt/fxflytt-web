@@ -32,11 +32,23 @@ export async function POST(req: Request) {
   const b = await createBooking("admin", {
     name, phone, email: str(d.email, 200), from: str(d.from, 200), to: str(d.to, 200),
     size: str(d.size, 80), areaM2: str(d.areaM2, 10), date: DATE.test(date) ? date : "", message: str(d.message, 3000),
+    distanceKm: typeof d.distanceKm === "number" && d.distanceKm >= 0 && d.distanceKm < 5000 ? Math.round(d.distanceKm) : undefined,
+    floorFrom: str(d.floorFrom, 140), floorTo: str(d.floorTo, 140),
   }, {
-    offer: isFinite(total) && total > 0 ? { total: Math.round(total), lines: [], custom: true, customerNote: str(d.customerNote, 500) } : undefined,
+    offer: isFinite(total) && total > 0 ? offerFrom(Math.round(total), d) : undefined,
     time: TIME.test(str(d.time, 5)) ? str(d.time, 5) : undefined,
   });
   return Response.json(b);
+}
+
+// Lines from the admin price calculator are kept only when they add up to the total; otherwise the
+// price is a hand-set ("custom") price and the customer sees just the total.
+function offerFrom(total: number, d: Record<string, unknown>) {
+  const raw = Array.isArray(d.lines) ? d.lines.slice(0, 12) : [];
+  const lines = raw.map((l) => ({ label: str((l as { label?: unknown })?.label, 120), amount: Math.round(Number((l as { amount?: unknown })?.amount)) }))
+    .filter((l) => l.label && isFinite(l.amount) && Math.abs(l.amount) < 1e7);
+  const ok = lines.length > 0 && lines.length === raw.length && lines.reduce((a, l) => a + l.amount, 0) === total;
+  return { total, lines: ok ? lines : [], custom: !ok, customerNote: str(d.customerNote, 500), note: ok ? str(d.note, 200) || undefined : undefined };
 }
 
 export async function PATCH(req: Request) {
