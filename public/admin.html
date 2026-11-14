@@ -58,7 +58,7 @@
   #npanel{position:fixed;top:64px;right:16px;left:16px;max-width:420px;margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh2);z-index:30;max-height:70vh;overflow:auto}
   #npanel .ev{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:12px 16px;font:inherit;color:var(--ink);cursor:pointer}
   #npanel .ev.unread{background:#fff7ef}#npanel .ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-  #toast{position:fixed;left:16px;right:16px;bottom:24px;max-width:440px;margin:0 auto;background:var(--navy);color:#fff;border-radius:14px;padding:13px 16px;z-index:40;box-shadow:var(--sh2);font-weight:600;cursor:pointer}
+  #toast{display:flex;align-items:center;gap:12px;position:fixed;left:16px;right:16px;bottom:24px;max-width:440px;margin:0 auto;background:var(--navy);color:#fff;border-radius:14px;padding:13px 16px;z-index:40;box-shadow:var(--sh2);font-weight:600;cursor:pointer}
   @media (max-width:899px){#toast{bottom:calc(84px + env(safe-area-inset-bottom))}}
 
   /* ---------- building blocks ---------- */
@@ -163,20 +163,65 @@
   .jl{margin-top:10px}.jl a{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px dashed var(--line);font-size:13px;text-decoration:none;color:var(--ink)}
 
   /* ---------- calendar ---------- */
-  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .cal .h{font-size:12px;color:var(--muted);text-align:center;font-weight:700;padding-bottom:2px}
-  .cal button{min-height:74px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:6px;font:inherit;display:flex;flex-direction:column;align-items:flex-start;gap:3px;color:var(--ink);cursor:pointer}
-  .cal button:hover{border-color:#b9c8d4}.cal button.sel{border:2px solid var(--accent)}
-  .cal button.out{opacity:.4}.cal button.today .n{background:var(--navy);color:#fff;border-radius:999px;padding:0 7px}
-  .cal button .n{font-size:13px;font-weight:700}
-  .cal button .c{font-size:11px;font-weight:800;border-radius:999px;padding:1px 7px;background:#e6f5ec;color:var(--green)}
-  .cal button .c.mid{background:#fff4e5;color:#8a4b00}.cal button .c.full{background:#fdecec;color:var(--red)}
-  .cal button .p{font-size:10.5px;color:var(--blue);font-weight:600}
-  @media (max-width:599px){.cal{gap:3px}.cal button{min-height:0;aspect-ratio:1/1;align-items:center;justify-content:space-between;padding:4px}.cal button .p{font-size:9px}}
-  .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .calhead button{border:1px solid var(--line2);background:#fff;border-radius:10px;padding:8px 14px;font-size:16px;cursor:pointer}
-  .calhead b{font-size:17px;text-transform:capitalize;color:var(--navy)}
-
+  .calbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .cnav{display:inline-flex;gap:4px}.cnav button{border:1px solid var(--line2);background:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-weight:700;color:var(--navy);cursor:pointer;min-width:40px}
+  .ctitle{font-size:17px;color:var(--navy)}.ctitle::first-letter{text-transform:uppercase}
+  .tg{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}.tg input{width:18px;height:18px;margin:0;accent-color:var(--navy)}
+  @media (max-width:899px){.ctitle{order:5;width:100%}.tg{margin-left:0}}
+  .xs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  /* month */
+  .mon{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+  .mon .h{font-size:12px;color:var(--muted);text-align:center;font-weight:700}
+  .day{min-height:108px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0}
+  .day:hover{border-color:#b9c8d4}.day.out{opacity:.45}.day.sel{border:2px solid var(--navy)}.day.hot{background:#fff4e9;border:2px dashed var(--accent)}
+  .day .dh{display:flex;justify-content:space-between;align-items:center;gap:2px}
+  .day .n{font-size:13px;font-weight:700}.day.today .n{background:var(--navy);color:#fff;border-radius:999px;padding:0 7px}
+  .day .c{font-size:11px;font-weight:800;border-radius:999px;padding:1px 7px;background:#e6f5ec;color:var(--green)}
+  .day .c.mid{background:#fff4e5;color:#8a4b00}.day .c.full{background:#fdecec;color:var(--red)}
+  .mev{font-size:11.5px;font-weight:600;padding:2px 6px;border-radius:6px;background:color-mix(in srgb,var(--c) 14%,#fff);border-left:3px solid var(--c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+  .mev.pre{background:#fff;border:1px dashed var(--c);border-left:3px solid var(--c)}
+  .mev.lift{opacity:.3}
+  .more{font-size:11px;color:var(--muted);font-weight:600;padding-left:2px}
+  @media (max-width:599px){.mon{gap:3px}.day{min-height:54px;padding:4px 2px;align-items:center}.mev,.more{display:none}.day .dh{flex-direction:column}}
+  /* week */
+  .wk{min-width:700px}
+  .wk-row{display:grid;grid-template-columns:44px repeat(7,minmax(0,1fr))}
+  .wk-h{text-align:center;padding:2px 0 8px;color:var(--muted);font-size:12px;font-weight:600}.wk-h b{display:block;font-size:19px;color:var(--ink);width:34px;height:34px;line-height:34px;margin:1px auto 0;border-radius:999px}
+  .wk-h.today b{color:#fff;background:var(--navy)}.wk-n{display:block;font-size:11px;color:var(--green);font-weight:700}
+  .wk-g{font-size:11px;color:var(--muted);text-align:right;padding-right:6px;line-height:1.1}
+  .wk-ad{border-left:1px solid var(--line);border-top:1px solid var(--line);border-bottom:2px solid var(--line);min-height:38px;padding:3px;display:flex;flex-direction:column;gap:3px;min-width:0}
+  .wk-ad.hot{background:#fff4e9}
+  .wk-times div{position:relative;top:-7px}.wk-times div:first-child{top:0}
+  .wk-col{position:relative;border-left:1px solid var(--line);background-image:repeating-linear-gradient(to bottom,var(--line) 0 1px,transparent 1px var(--px));min-width:0}
+  .wk-col.today{background-color:#f7fafd}
+  @media (pointer:fine){.wk-col{cursor:cell}}
+  .ev{position:absolute;border-radius:8px;padding:3px 7px;background:color-mix(in srgb,var(--c) 15%,#fff);border-left:4px solid var(--c);color:var(--ink);font-size:12px;line-height:1.25;overflow:hidden;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 1px 2px rgba(13,42,63,.12);z-index:2}
+  .ev:hover{z-index:3;box-shadow:0 3px 10px rgba(13,42,63,.18)}
+  .ev b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ev small{display:block;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ev .ec{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}.ev .ec .who{font-size:10.5px;padding:1px 6px}
+  .ev.pre{background:#fff;border:1.5px dashed var(--c);border-left:4px solid var(--c)}
+  .ev.clash{box-shadow:0 0 0 2px var(--red)}
+  .ev.ad{position:relative;padding:3px 6px}
+  .ev.allday{background-image:repeating-linear-gradient(135deg,transparent 0 6px,rgba(13,42,63,.06) 6px 12px)}
+  .ev.lift{opacity:.3}
+  .ev .rz{position:absolute;left:0;right:0;bottom:0;height:9px;cursor:ns-resize}
+  .ev.tl .rz{left:auto;top:0;width:10px;height:auto;cursor:ew-resize}
+  .ev.ad .rz,.ev.allday .rz{display:none}
+  .drop{position:absolute;left:2px;right:2px;border:2px dashed var(--accent);background:rgba(255,122,26,.13);border-radius:8px;pointer-events:none;z-index:5}
+  .drop span{position:absolute;top:2px;left:4px;font-size:11px;font-weight:800;color:#a34500;background:#fff;border-radius:4px;padding:0 4px;white-space:nowrap}
+  .now{position:absolute;left:0;right:0;height:2px;background:#e5484d;z-index:4;pointer-events:none}.now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:#e5484d}
+  .mghost{position:fixed;z-index:50;pointer-events:none;box-shadow:var(--sh2);transform:rotate(-2deg);opacity:.95}
+  /* staff timeline */
+  .tl{width:max-content;min-width:100%}
+  .tl-row{display:grid;grid-template-columns:160px var(--w);border-bottom:1px solid var(--line)}
+  .tl-name{position:sticky;left:0;z-index:6;background:#fff;padding:9px 10px 9px 12px;border-right:1px solid var(--line);box-shadow:inset 4px 0 0 var(--c,transparent);min-width:0}
+  .tl-name b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tl-name small{color:var(--muted);font-size:11.5px;white-space:nowrap}
+  .tl-track{position:relative;background-image:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px var(--pxh));min-height:50px}
+  .tl-head .tl-track{height:28px;min-height:0;background:none}.tl-head span{position:absolute;top:6px;font-size:11px;color:var(--muted);transform:translateX(-50%)}.tl-head span:first-child{transform:none;padding-left:3px}
+  .tl-row.un .tl-name{background:#fafbfc}.tl-row.un{background:#fafbfc}
+  .ev.tl{padding:3px 8px}
+  @media (max-width:899px){.tl-row{grid-template-columns:108px var(--w)}.tl-name{padding:8px 6px 8px 10px}}
+  #toast button{margin-left:auto;flex:0 0 auto;background:none;border:1px solid #47637a;color:#ffb27a;border-radius:999px;padding:5px 12px;font:inherit;font-weight:800;cursor:pointer}
   /* ---------- statistics ---------- */
   .bars{display:flex;align-items:flex-end;gap:6px;height:160px;border-bottom:1px solid var(--line);padding-top:6px}
   .bars .m{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:2px;height:100%}
@@ -229,6 +274,7 @@
   const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
   const root=$('#root');
   const S=window.FXSchedule;
+  let newPrefill=null, lastNav='';
   let res=[], teamKind='person', teamEdit=null, showArch=false, openRes=null;
   let all=[], view='today', filter='active', calMonth=today().slice(0,7), calDay=null, q='', sortBy='created', statPeriod='12';
 
@@ -317,7 +363,7 @@
       try{ await load(); }catch(_){ return; }
       const fresh=events().filter(e=>e.t>newestSeenInSession);
       if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].ic} ${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,fresh[0].id);
-        if(view==='list'&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); }
+        if(view==='list'&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); else if(view==='cal'&&!dragging) showCal(); }
     },30000);
   }
   const signedOn=(d)=>all.filter(b=>(b.status==='signed'||b.status==='done')&&b.date===d);
@@ -340,7 +386,7 @@
     document.querySelectorAll('#side a.nav').forEach(a=>a.classList.toggle('on',a.dataset.v===active));
     $('#title').textContent=title||TITLES[active]||'';
     document.body.className=title?'v-detail':'v-'+active;
-    window.scrollTo(0,0);
+    const key=active+'|'+(title||''); if(key!==lastNav){ window.scrollTo(0,0); lastNav=key; }
     return '';
   }
   function bindNav(){}
@@ -452,32 +498,228 @@
   }
 
   // ---------- calendar ----------
+  // Three views on the same jobs:
+  //   Månad    – overview, drag a job to another day
+  //   Vecka    – hours, drag to move (day + time), drag the bottom edge to change the length
+  //   Personal – one day, one row per person/vehicle; drag along the row to change the time,
+  //              to another row to swap who does the job, the right edge to change the length
+  // Dragging works with the mouse and, on phones, by holding a job for a moment first.
+  const lsGet=(k,d)=>{ try{ return localStorage.getItem(k)??d; }catch(_){ return d; } };
+  const lsSet=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(_){} };
+  let calView=lsGet('fx_calview','week'), calDate=today(), showPre=lsGet('fx_calpre','1')==='1', dragging=false, justDragged=false, lastCalView='';
+  const OPEN=S.OPEN, CLOSE=S.CLOSE, HOURS=(CLOSE-OPEN)/60;
+  const snap=(m)=>Math.round(m/30)*30;
+  const clampStart=(m)=>Math.min(18*60,Math.max(OPEN,m));          // the server accepts 07:00–18:00
+  const onCal=(b)=>b.date&&!S.INACTIVE.includes(b.status)&&(booked(b)||showPre);
+  const colorOf=(b)=>{ const p=(b.crew||[]).map(resById).find(r=>r&&r.kind==='person'); return p?p.color:'#7a8b99'; };
+  const byIdB=(id)=>all.find(x=>x.id===id);
+  const weekStart=(d)=>addDays(d,-((new Date(d+'T12:00:00Z').getUTCDay()+6)%7));
+  const isoWeek=(d)=>{ const x=new Date(d+'T12:00:00Z'), w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w+3); const f=new Date(Date.UTC(x.getUTCFullYear(),0,4)); return 1+Math.round(((x-f)/864e5-3+((f.getUTCDay()+6)%7))/7); };
+  const dfmt=(d,o)=>new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{timeZone:'UTC',...o});
+  const town=(a)=>String(a||'').split(',').pop().replace(/\d/g,'').trim();
+  const evInner=(b,s)=>`<b>${s&&!s.allDay?S.fmtMin(s.start)+' ':''}${esc((b.data||{}).name||b.id)}</b><small>${esc([b.data?.from,b.data?.to].filter(Boolean).map(town).join(' → '))}</small>`;
+  // Side-by-side columns for overlapping jobs: sets .lane and .n (lanes in its overlap group).
+  function lanes(items){
+    const out=[]; let group=[], end=-1;
+    const flush=()=>{ const cols=[]; for(const it of group){ let i=cols.findIndex(e=>e<=it.s.start); if(i<0){ i=cols.length; cols.push(0); } cols[i]=it.s.end; it.lane=i; } group.forEach(it=>it.n=cols.length); out.push(...group); group=[]; };
+    for(const it of items.sort((x,y)=>x.s.start-y.s.start||y.s.end-x.s.end)){ if(group.length&&it.s.start>=end) flush(); group.push(it); end=Math.max(end,it.s.end); }
+    if(group.length) flush(); return out;
+  }
+
+  function notify(msg,undo){
+    const t=$('#toast'); t.innerHTML=`<span>${esc(msg)}</span>${undo?'<button type="button" id="undo">Ångra</button>':''}`; t.hidden=false; t.onclick=()=>{ t.hidden=true; };
+    if(undo) $('#undo').onclick=(e)=>{ e.stopPropagation(); t.hidden=true; undo(); };
+    clearTimeout(toast.h); toast.h=setTimeout(()=>{ t.hidden=true; },8000);
+  }
+
+  // Saves a drag. Shows the result at once, rolls back on error, offers "Ångra".
+  async function moveJob(b,changes,what,noAsk){
+    const cur=(k)=>k==='crew'?(b.crew||[]):k==='durationH'?(b.durationH??null):(b[k]||'');
+    const ch={}; for(const k in changes) if(JSON.stringify(changes[k])!==JSON.stringify(cur(k))) ch[k]=changes[k];
+    if(!Object.keys(ch).length){ showCal(); return; }
+    if(!noAsk&&b.status==='signed'&&('date' in ch||'time' in ch)&&!confirm(`${(b.data||{}).name} har redan signerat offerten (${fmtDate(b.date)}${b.time?' '+b.time:''}).\n\nFlytta ändå? Prata med kunden.`)){ showCal(); return; }
+    const before={}; for(const k in ch) before[k]=cur(k);
+    const i=all.findIndex(x=>x.id===b.id), old=all[i], opt={...b};
+    for(const k in ch) opt[k]=k==='time'?(ch.time||undefined):k==='durationH'?(ch.durationH??undefined):ch[k];
+    all[i]=opt; showCal();
+    try{
+      const {conflicts,...nb}=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(ch)});
+      const j=all.findIndex(x=>x.id===b.id); if(j>=0) all[j]=nb; updateCounts(); if(view==='cal'&&!dragging) showCal();
+      const who=[...new Set((conflicts||[]).map(c=>c.name))];
+      notify(who.length?`${what} – men ${who.join(', ')} är dubbelbokad`:`${what} ✓`,()=>moveJob(nb,before,'Ångrat',true));
+    }catch(e){ const j=all.findIndex(x=>x.id===b.id); if(j>=0) all[j]=old; if(view==='cal') showCal(); notify(e.message); }
+  }
+
+  // Pointer-based drag: mouse starts after a few pixels, touch after holding ~0.3 s (so the page still scrolls).
+  document.addEventListener('touchmove',(e)=>{ if(dragging) e.preventDefault(); },{passive:false});
+  function enableDrag(scope,h){
+    scope.querySelectorAll('[data-drag]').forEach(el=>{
+      el.addEventListener('contextmenu',(e)=>e.preventDefault());
+      el.addEventListener('pointerdown',(e)=>{
+        if(e.button>0) return;
+        const touch=e.pointerType!=='mouse', sx=e.clientX, sy=e.clientY, rz=!!e.target.closest('[data-rz]');
+        let ctx=null, timer=null, lx=sx, ly=sy;
+        if(!touch) e.preventDefault();
+        const off=()=>{ clearTimeout(timer); document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); document.removeEventListener('pointercancel',cancel); };
+        const begin=()=>{ ctx=h.start(el,{x:sx,y:sy,resize:rz}); if(!ctx) return off(); dragging=true; el.classList.add('lift'); if(touch&&navigator.vibrate) navigator.vibrate(12); h.move(ctx,lx,ly); };
+        const mv=(ev)=>{ lx=ev.clientX; ly=ev.clientY;
+          if(!ctx){ const d=Math.hypot(lx-sx,ly-sy); if(touch){ if(d>8) off(); } else if(d>4) begin(); return; }
+          ev.preventDefault(); edgeScroll(lx,ly); h.move(ctx,lx,ly); };
+        const up=()=>{ off(); if(!ctx) return; dragging=false; justDragged=true; setTimeout(()=>{ justDragged=false; },250); h.drop(ctx); };
+        const cancel=()=>{ off(); if(!ctx) return; dragging=false; h.cancel(ctx); };
+        if(touch) timer=setTimeout(begin,300);
+        document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up); document.addEventListener('pointercancel',cancel);
+      });
+    });
+  }
+  function edgeScroll(x,y){
+    const xs=root.querySelector('.xs');
+    if(xs){ const r=xs.getBoundingClientRect(); if(x<r.left+40) xs.scrollLeft-=14; else if(x>r.right-40) xs.scrollLeft+=14; }
+    if(y<90) window.scrollBy(0,-14); else if(y>innerHeight-90) window.scrollBy(0,14);
+  }
+  const clearDrop=()=>{ root.querySelectorAll('.drop').forEach(x=>x.remove()); root.querySelectorAll('.hot').forEach(x=>x.classList.remove('hot')); };
+  const dropBox=(parent,style,label)=>{ const d=document.createElement('div'); d.className='drop'; d.style.cssText=style; d.innerHTML=`<span>${esc(label)}</span>`; parent.appendChild(d); };
+  const hit=(sel,x,y,useX=true)=>[...root.querySelectorAll(sel)].find(c=>{ const r=c.getBoundingClientRect(); return (!useX||(x>=r.left&&x<r.right))&&y>=r.top&&y<r.bottom; });
+  const rangeTxt=(s,dur)=>S.fmtMin(s)+'–'+S.fmtMin(s+dur);
+
   function showCal(){
     view='cal';
-    const [y,m]=calMonth.split('-').map(Number);
-    const first=new Date(Date.UTC(y,m-1,1)), startDow=(first.getUTCDay()+6)%7;
-    const days=[]; for(let i=-startDow;i<42-startDow;i++){ const d=new Date(Date.UTC(y,m-1,1+i)); days.push(d.toISOString().slice(0,10)); }
-    const title=first.toLocaleDateString('sv-SE',{month:'long',year:'numeric',timeZone:'UTC'});
-    const t=today();
-    const cells=days.map(d=>{
-      const n=signedOn(d).length, p=all.filter(b=>b.status==='sent'&&b.date===d).length;
-      const cls=n>=CAP?'full':n>=CAP-3?'mid':'';
-      return `<button data-d="${d}" class="${d.slice(0,7)!==calMonth?'out':''} ${d===t?'today':''} ${d===calDay?'sel':''}"><span class="n">${Number(d.slice(8))}</span>${n?`<span class="c ${cls}">${n}</span>`:'<span></span>'}${p?`<span class="p">${p} väntar</span>`:'<span></span>'}</button>`;
-    }).join('');
-    let dayList='';
-    if(calDay){
-      const list=all.filter(b=>b.date===calDay&&!['declined','cancelled'].includes(b.status)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-      const n=signedOn(calDay).length;
-      dayList=`<div class="card" style="margin-top:16px"><h3>${esc(fmtDate(calDay))} <span class="sub">${n} bokade av max ${CAP}</span></h3>${n>=CAP?'<div class="warn">Dagen är full.</div>':''}${list.length?list.map(itemHtml).join(''):'<div class="muted">Inga bokningar.</div>'}</div>`;
+    const t=today(), keepX=lastCalView===calView?(root.querySelector('.xs')?.scrollLeft||0):null;
+    let title='', body='', handlers=null;
+    const fine=matchMedia('(pointer:fine)').matches, small=matchMedia('(max-width:899px)').matches;
+
+    if(calView==='month'){
+      const [y,m]=calDate.slice(0,7).split('-').map(Number);
+      const first=new Date(Date.UTC(y,m-1,1)), startDow=(first.getUTCDay()+6)%7, mk=calDate.slice(0,7);
+      const days=[]; for(let i=-startDow;i<42-startDow;i++) days.push(new Date(Date.UTC(y,m-1,1+i)).toISOString().slice(0,10));
+      title=first.toLocaleDateString('sv-SE',{month:'long',year:'numeric',timeZone:'UTC'});
+      const cells=days.map(d=>{
+        const list=all.filter(b=>onCal(b)&&b.date===d).sort(byTime), n=signedOn(d).length, cls=n>=CAP?'full':n>=CAP-3?'mid':'';
+        return `<div class="day${d.slice(0,7)!==mk?' out':''}${d===t?' today':''}${d===calDay?' sel':''}" data-d="${d}"><div class="dh"><span class="n">${Number(d.slice(8))}</span>${n?`<span class="c ${cls}">${n}</span>`:''}</div>
+          ${list.slice(0,3).map(b=>`<div class="mev${booked(b)?'':' pre'}" data-drag data-id="${esc(b.id)}" style="--c:${esc(colorOf(b))}">${b.time?esc(b.time)+' ':''}${esc((b.data||{}).name||'')}</div>`).join('')}${list.length>3?`<div class="more">+${list.length-3} till</div>`:''}</div>`;
+      }).join('');
+      let dayList='';
+      if(calDay){
+        const list=all.filter(b=>b.date===calDay&&!S.INACTIVE.includes(b.status)).sort(byTime), n=signedOn(calDay).length;
+        dayList=`<div class="card" style="margin-top:16px"><h3>${esc(fmtDate(calDay))} <span class="sub">${n} bokade av max ${CAP}</span></h3>${n>=CAP?'<div class="warn">Dagen är full.</div>':''}<div id="items">${list.length?list.map(itemHtml).join(''):'<div class="muted">Inga bokningar.</div>'}</div></div>`;
+      }
+      body=`<div class="card" style="padding:12px"><div class="mon">${['Mån','Tis','Ons','Tor','Fre','Lör','Sön'].map(x=>`<div class="h">${x}</div>`).join('')}${cells}</div>
+        <p class="muted" style="margin:10px 2px 0">Siffran = bokade jobb (orange nästan fullt, röd fullt ${CAP}). Streckade = offert ej signerad. Dra ett jobb till en annan dag för att flytta det.</p></div>${dayList}`;
+      handlers={
+        start(el,p){ const b=byIdB(el.dataset.id); if(!b) return null; const r=el.getBoundingClientRect(); const g=el.cloneNode(true); g.classList.add('mghost'); g.style.width=r.width+'px'; document.body.appendChild(g); return {b,g,ox:p.x-r.left,oy:p.y-r.top}; },
+        move(c,x,y){ c.g.style.left=(x-c.ox)+'px'; c.g.style.top=(y-c.oy)+'px'; clearDrop(); const cell=hit('.day',x,y); if(cell) cell.classList.add('hot'); c.to=cell?cell.dataset.d:null; },
+        drop(c){ c.g.remove(); clearDrop(); if(!c.to) return showCal(); moveJob(c.b,{date:c.to},'Flyttad till '+dfmt(c.to,{weekday:'short',day:'numeric',month:'short'})); },
+        cancel(c){ c.g.remove(); clearDrop(); showCal(); },
+      };
     }
-    root.innerHTML=navBar('cal')+`<main><div class="card"><div class="calhead"><button id="prev" aria-label="Föregående månad">‹</button><b>${esc(title)}</b><button id="next" aria-label="Nästa månad">›</button></div>
-      <div class="cal">${['Mån','Tis','Ons','Tor','Fre','Lör','Sön'].map(x=>`<div class="h">${x}</div>`).join('')}${cells}</div>
-      <p class="muted" style="margin:12px 0 0">Grön siffra = bokade (signerade). Orange = nästan fullt, röd = fullt (${CAP}). Blå = offerter som väntar på signatur.</p></div>${dayList}</main>`;
-    bindNav();
-    const shift=(k)=>{ const d=new Date(Date.UTC(y,m-1+k,1)); calMonth=d.toISOString().slice(0,7); calDay=null; showCal(); };
-    $('#prev').onclick=()=>shift(-1); $('#next').onclick=()=>shift(1);
-    root.querySelectorAll('.cal button').forEach(b=>b.onclick=()=>{ calDay=b.dataset.d; showCal(); });
-    root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.id; });
+
+    if(calView==='week'){
+      const ws=weekStart(calDate), days=[...Array(7)].map((_,i)=>addDays(ws,i)), PX=46;
+      title=`v. ${isoWeek(ws)} · ${dfmt(ws,{day:'numeric',month:'short'})} – ${dfmt(days[6],{day:'numeric',month:'short',year:'numeric'})}`;
+      const nowMin=new Date().getHours()*60+new Date().getMinutes();
+      const head=days.map(d=>{ const n=signedOn(d).length; return `<div class="wk-h${d===t?' today':''}"><small>${esc(dfmt(d,{weekday:'short'}))}</small><b>${Number(d.slice(8))}</b>${n?`<small class="wk-n">${n} jobb</small>`:''}</div>`; }).join('');
+      const ad=days.map(d=>`<div class="wk-ad" data-d="${d}">${all.filter(b=>onCal(b)&&b.date===d&&!b.time).map(b=>`<div class="ev ad${booked(b)?'':' pre'}" data-drag data-id="${esc(b.id)}" style="--c:${esc(colorOf(b))}">${evInner(b,null)}</div>`).join('')}</div>`).join('');
+      const cols=days.map(d=>{
+        const items=lanes(all.filter(b=>onCal(b)&&b.date===d&&b.time).map(b=>({b,s:S.span(b)})));
+        return `<div class="wk-col${d===t?' today':''}" data-d="${d}" style="height:${HOURS*PX}px">${d===t&&nowMin>OPEN&&nowMin<CLOSE?`<div class="now" style="top:${(nowMin-OPEN)/60*PX}px"></div>`:''}${items.map(({b,s,lane,n})=>{
+          const top=(s.start-OPEN)/60*PX, h=Math.max(24,(Math.min(s.end,CLOSE)-s.start)/60*PX), clash=S.conflicts(b,all,res).length;
+          return `<div class="ev${booked(b)?'':' pre'}${clash?' clash':''}" data-drag data-id="${esc(b.id)}" title="${clash?'Dubbelbokad personal/fordon':''}" style="top:${top}px;height:${h}px;left:calc(${lane*100/n}% + 2px);width:calc(${100/n}% - 4px);--c:${esc(colorOf(b))}">${evInner(b,s)}${h>58?`<div class="ec">${crewChips(b)}</div>`:''}<i class="rz" data-rz></i></div>`;
+        }).join('')}</div>`;
+      }).join('');
+      const gut=[...Array(HOURS)].map((_,i)=>`<div style="height:${PX}px">${String(OPEN/60+i).padStart(2,'0')}</div>`).join('');
+      body=`<div class="card" style="padding:12px 12px 16px"><div class="xs"><div class="wk" style="--px:${PX}px">
+        <div class="wk-row"><div></div>${head}</div>
+        <div class="wk-row"><div class="wk-g" style="padding-top:8px">Ingen tid</div>${ad}</div>
+        <div class="wk-row"><div class="wk-g wk-times">${gut}</div>${cols}</div></div></div>
+        <p class="muted" style="margin:12px 2px 0">Dra ett jobb för att flytta det, dra nederkanten för att ändra längden.${fine?' Klicka på en tom tid för att skapa en ny bokning.':' Håll kvar fingret på ett jobb för att dra det.'} Röd ram = någon är dubbelbokad.</p></div>`;
+      handlers={
+        start(el,p){ const b=byIdB(el.dataset.id); if(!b) return null; const s=S.span(b), r=el.getBoundingClientRect(); return {b,s,resize:p.resize&&!!b.time,offY:b.time?p.y-r.top:12,dur:Math.round(S.hoursOf(b)*60)}; },
+        move(c,x,y){
+          clearDrop();
+          if(c.resize){ const col=root.querySelector(`.wk-col[data-d="${c.b.date}"]`), r=col.getBoundingClientRect(); const dur=Math.max(60,Math.min(14*60,snap(OPEN+(y-r.top)/PX*60)-c.s.start)); c.res={dur}; dropBox(col,`top:${(c.s.start-OPEN)/60*PX}px;height:${dur/60*PX}px`,rangeTxt(c.s.start,dur)+' · '+fmtH(dur/60)); return; }
+          const tg=hit('.wk-col,.wk-ad',x,y); if(!tg){ c.res=null; return; }
+          if(tg.classList.contains('wk-ad')){ tg.classList.add('hot'); c.res={date:tg.dataset.d}; return; }
+          const r=tg.getBoundingClientRect(), start=clampStart(snap(OPEN+(y-c.offY-r.top)/PX*60));
+          c.res={date:tg.dataset.d,start}; dropBox(tg,`top:${(start-OPEN)/60*PX}px;height:${Math.max(24,c.dur/60*PX)}px`,rangeTxt(start,c.dur));
+        },
+        drop(c){ clearDrop(); const r=c.res; if(!r) return showCal();
+          if(c.resize) return moveJob(c.b,{durationH:r.dur/60},'Längd '+fmtH(r.dur/60));
+          const ch={date:r.date}; if(r.start!=null) ch.time=S.fmtMin(r.start);
+          moveJob(c.b,ch,'Flyttad till '+dfmt(r.date,{weekday:'short',day:'numeric',month:'short'})+((ch.time||c.b.time)?' '+(ch.time||c.b.time):''));
+        },
+        cancel(){ clearDrop(); showCal(); },
+      };
+      if(fine) setTimeout(()=>root.querySelectorAll('.wk-col').forEach(col=>col.addEventListener('click',(e)=>{
+        if(e.target!==col||justDragged) return; const r=col.getBoundingClientRect();
+        newPrefill={date:col.dataset.d,time:S.fmtMin(clampStart(Math.floor((OPEN+(e.clientY-r.top)/PX*60)/30)*30))}; location.hash='ny';
+      })),0);
+    }
+
+    if(calView==='team'){
+      const d=calDate, PXH=small?60:Math.max(64,Math.floor((Math.min(1200,innerWidth-236)-64-164)/HOURS)), jobs=all.filter(b=>onCal(b)&&b.date===d);
+      title=dfmt(d,{weekday:'long',day:'numeric',month:'long'});
+      const used=new Set(jobs.flatMap(b=>b.crew||[]));
+      const rows=[...res.filter(r=>r.kind==='person'&&(r.active||used.has(r.id))),...res.filter(r=>r.kind==='vehicle'&&(r.active||used.has(r.id)))];
+      const row=(rid,kind,name,sub,color,list,cls)=>{
+        const items=lanes(list.map(b=>({b,s:S.span(b)}))), L=Math.max(1,...items.map(i=>i.n));
+        return `<div class="tl-row${cls||''}" data-r="${esc(rid)}" data-k="${kind}"><div class="tl-name" style="--c:${esc(color)}"><b>${esc(name)}</b><small>${esc(sub)}</small></div>
+          <div class="tl-track" style="height:${L*42+8}px">${items.map(({b,s,lane,n})=>{
+            const left=(s.start-OPEN)/60*PXH, w=Math.max(44,(Math.min(s.end,CLOSE)-s.start)/60*PXH);
+            return `<div class="ev tl${booked(b)?'':' pre'}${n>1&&rid?' clash':''}${s.allDay?' allday':''}" data-drag data-id="${esc(b.id)}" style="left:${left}px;width:${w}px;top:${4+lane*42}px;height:38px;--c:${esc(rid?color:colorOf(b))}">${evInner(b,s)}<i class="rz" data-rz></i></div>`;
+          }).join('')}</div></div>`;
+      };
+      const sub=(list)=>list.length?`${list.length} jobb · ${fmtH(list.reduce((a,b)=>a+S.hoursOf(b),0))}`:'Ledig';
+      const un=jobs.filter(b=>!(b.crew||[]).some(id=>resById(id)?.kind==='person'));
+      const ticks=[...Array(HOURS+1)].map((_,i)=>`<span style="left:${i*PXH}px">${String(OPEN/60+i).padStart(2,'0')}</span>`).join('');
+      body=rows.length?`<div class="card" style="padding:0;overflow:hidden"><div class="xs"><div class="tl" style="--w:${HOURS*PXH}px;--pxh:${PXH}px">
+          <div class="tl-row tl-head"><div class="tl-name"></div><div class="tl-track">${ticks}</div></div>
+          ${un.length?row('','','Ej tilldelade',un.length+' jobb utan personal','#9aa8b4',un,' un'):''}
+          ${rows.map(r=>{ const l=jobs.filter(b=>(b.crew||[]).includes(r.id)); return row(r.id,r.kind,r.name+(r.active?'':' (arkiverad)'),sub(l),r.color,l); }).join('')}
+        </div></div></div>
+        <p class="muted" style="margin:12px 2px 0">Dra längs raden för att ändra tid, till en annan rad för att byta vem som gör jobbet, högerkanten för att ändra längden.${fine?'':' Håll kvar fingret på ett jobb för att dra det.'} Röd ram = samma person/fordon på två jobb samtidigt.</p>`
+        :`<div class="card empty">Lägg till personal och fordon först – <a href="#personal">Personal och fordon</a>.</div>`;
+      handlers={
+        start(el,p){ const b=byIdB(el.dataset.id); if(!b) return null; const row=el.closest('.tl-row'), s=S.span(b), r=el.getBoundingClientRect();
+          return {b,s,row,from:row.dataset.r,kind:row.dataset.k,resize:p.resize&&!s.allDay,offX:s.allDay?10:p.x-r.left,dur:Math.round(S.hoursOf(b)*60)}; },
+        move(c,x,y){
+          clearDrop();
+          let row=hit('.tl-row[data-r]',x,y,false)||c.row;
+          const track=()=>row.querySelector('.tl-track');
+          if(c.resize){ row=c.row; const r=track().getBoundingClientRect(); const dur=Math.max(60,Math.min(14*60,snap(OPEN+(x-r.left)/PXH*60)-c.s.start)); c.res={dur}; dropBox(track(),`left:${(c.s.start-OPEN)/60*PXH}px;width:${dur/60*PXH}px;top:4px;height:38px`,fmtH(dur/60)); return; }
+          if(row.dataset.r&&c.kind&&row.dataset.k!==c.kind) row=c.row;       // a person can't become a vehicle
+          const r=track().getBoundingClientRect(), start=clampStart(snap(OPEN+(x-c.offX-r.left)/PXH*60));
+          const to=row.dataset.r, nm=to?resById(to)?.name:'Ej tilldelad';
+          c.res={to,start}; dropBox(track(),`left:${(start-OPEN)/60*PXH}px;width:${Math.max(44,c.dur/60*PXH)}px;top:4px;height:38px`,rangeTxt(start,c.dur)+(to!==c.from?' → '+nm:''));
+        },
+        drop(c){ clearDrop(); const r=c.res; if(!r) return showCal();
+          if(c.resize) return moveJob(c.b,{durationH:r.dur/60},'Längd '+fmtH(r.dur/60));
+          const ch={}, parts=[];
+          if(r.start!==c.s.start||c.s.allDay){ ch.time=S.fmtMin(r.start); parts.push('kl. '+ch.time); }
+          if(r.to!==c.from){ const crew=(c.b.crew||[]).filter(id=>id!==c.from); if(r.to&&!crew.includes(r.to)) crew.push(r.to); ch.crew=crew;
+            parts.unshift((c.from?resById(c.from)?.name:'Ej tilldelad')+' → '+(r.to?resById(r.to)?.name:'ingen')); }
+          moveJob(c.b,ch,((c.b.data||{}).name||'')+': '+parts.join(', '));
+        },
+        cancel(){ clearDrop(); showCal(); },
+      };
+    }
+
+    root.innerHTML=navBar('cal')+`<main><div class="calbar">
+        <div class="seg" id="cv">${[['month','Månad'],['week','Vecka'],['team','Personal']].map(([k,l])=>`<button data-k="${k}" class="${calView===k?'on':''}">${l}</button>`).join('')}</div>
+        <div class="cnav"><button id="prev" aria-label="Föregående">‹</button><button id="tdy">Idag</button><button id="next" aria-label="Nästa">›</button></div>
+        <b class="ctitle">${esc(title)}</b>
+        <label class="tg"><input type="checkbox" id="pre"${showPre?' checked':''}> Visa ej signerade offerter</label></div>
+      ${body}</main>`;
+    lastCalView=calView;
+    const xs=root.querySelector('.xs');
+    if(xs&&keepX!=null) xs.scrollLeft=keepX;
+    else if(xs&&calView==='team'){ const first=Math.min(...[...root.querySelectorAll('.tl-track .ev')].map(e=>e.offsetLeft)); if(isFinite(first)) xs.scrollLeft=Math.max(0,first-40); }
+    root.querySelectorAll('#cv button').forEach(x=>x.onclick=()=>{ calView=x.dataset.k; lsSet('fx_calview',calView); showCal(); });
+    const step=(k)=>{ if(calView==='month'){ const [y,m]=calDate.split('-').map(Number); calDate=new Date(Date.UTC(y,m-1+k,1)).toISOString().slice(0,10); calDay=null; } else calDate=addDays(calDate,calView==='week'?7*k:k); showCal(); };
+    $('#prev').onclick=()=>step(-1); $('#next').onclick=()=>step(1); $('#tdy').onclick=()=>{ calDate=today(); calDay=null; showCal(); };
+    $('#pre').onchange=()=>{ showPre=$('#pre').checked; lsSet('fx_calpre',showPre?'1':'0'); showCal(); };
+    root.querySelectorAll('.day').forEach(c=>c.onclick=()=>{ if(justDragged) return; calDay=c.dataset.d; showCal(); });
+    root.querySelectorAll('[data-id]').forEach(e=>e.addEventListener('click',(ev)=>{ ev.stopPropagation(); if(justDragged) return; location.hash=e.dataset.id; }));
+    if(handlers) enableDrag(root.querySelector('main'),handlers);
   }
 
   // ---------- detail ----------
@@ -714,6 +956,7 @@
       <button class="btn" id="create">Spara bokning</button><div class="err" id="err"></div></div></main>`;
     bindNav();
     const v=(id)=>$('#'+id).value;
+    if(newPrefill){ $('#n_date').value=newPrefill.date; $('#n_time').value=newPrefill.time; newPrefill=null; }
     // --- existing customers ---
     const pickCust=(c)=>{ $('#n_name').value=c.name||''; $('#n_phone').value=c.phone||''; if(c.email) $('#n_email').value=c.email; $('#sugg').innerHTML=''; showKnown(); };
     const suggest=(q)=>{
