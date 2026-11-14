@@ -20,6 +20,7 @@ globalThis.fetch = (async (url: string, init: RequestInit) => {
   return new Response(JSON.stringify(out), { status: 200 });
 }) as typeof fetch;
 
+import type { Resource } from "../lib/booking/team.ts";
 const team = await import("../lib/booking/team.ts");
 const crew = await import("../lib/booking/crew.ts");
 const req = (cookie: string) => new Request("https://x/", { headers: { cookie: cookie.split(";")[0] } });
@@ -38,20 +39,20 @@ test("personalappen: kod, inloggning, spärr, utloggning vid ny kod/avstängd/ar
   assert.ok("error" in await crew.login("0701112233", "000000".replace(/./g, (d, i) => String((Number(pin[i]) + 1) % 10))));
   const ok = await crew.login("+46 70 111 22 33", pin);                        // any way of writing the number
   assert.ok("person" in ok);
-  const c1 = crew.crewCookie((ok as { person: team.Resource }).person);
+  const c1 = crew.crewCookie((ok as { person: Resource }).person);
   assert.equal((await crew.crewUser(req(c1)))?.name, "Ahmad");
   assert.equal(await crew.crewUser(req(c1.replace(/\.[^.;]+;/, ".AAAA;"))), null);   // forged signature
 
   const { pin: pin2 } = await crew.invite(a.id);                               // new PIN → old phone logged out
   assert.equal(await crew.crewUser(req(c1)), null);
   assert.ok("error" in await crew.login("0701112233", pin === pin2 ? "x" : pin));
-  const c2 = crew.crewCookie(((await crew.login("0701112233", pin2)) as { person: team.Resource }).person);
+  const c2 = crew.crewCookie(((await crew.login("0701112233", pin2)) as { person: Resource }).person);
   await crew.disable(a.id);
   assert.equal(await crew.crewUser(req(c2)), null);
 
   const b = await team.addResource({ kind: "person", name: "Sara", phone: "073-555 66 77" });
   const { pin: pb } = await crew.invite(b.id);
-  const c3 = crew.crewCookie(((await crew.login("0735556677", pb)) as { person: team.Resource }).person);
+  const c3 = crew.crewCookie(((await crew.login("0735556677", pb)) as { person: Resource }).person);
   await team.updateResource(b.id, { active: false });
   assert.equal(await crew.crewUser(req(c3)), null);                            // archived
 
