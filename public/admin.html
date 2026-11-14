@@ -479,6 +479,7 @@
     if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 ${b.views}× · ${esc(ago(b.lastViewAt))}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
     if(b.reminders?.length) t.push(`<span class="tag">🔔 ${b.reminders.length} påminnelse${b.reminders.length>1?'r':''}</span>`);
     if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
+    if(b.lead==='calc'&&b.status==='new') t.push('<span class="tag wn">💡 Prisräknaren – fick priset på mejl</span>');
     if(boxesLeft(b)) t.push(`<span class="tag${b.boxes.dueDate<today()?' no':''}">📦 ${boxesLeft(b)} kartonger ute${b.boxes.dueDate<today()?' – försenade':''}</span>`);
     if(b.discount) t.push(`<span class="tag ok">−${b.discount.pct} %</span>`);
     if(b.status==='declined'&&b.decline) t.push(`<span class="tag no">${esc(WHY[b.decline.reason]||'')}</span>`);
@@ -543,7 +544,7 @@
     const rc={}; dec.forEach(b=>{const r=b.decline?.reason||'none'; rc[r]=(rc[r]||0)+1;});
     const rl=Object.entries(rc).sort((a,b)=>b[1]-a[1]);
     const src=(s)=>{const l=inP.filter(b=>(b.source==='web'?'web':'manual')===s);const w=l.filter(b=>b.status==='signed'||b.status==='done').length;return {n:l.length,w};};
-    const web=src('web'), man=src('manual');
+    const web=src('web'), man=src('manual'), calcL=inP.filter(b=>b.lead==='calc'), calcW=calcL.filter(b=>b.status==='signed'||b.status==='done').length;
     const disc=inP.filter(b=>b.discount), discWon=disc.filter(b=>b.status==='signed'||b.status==='done');
     // per seller (who sent the offer) and speed to lead, in the period
     const sentP=all.filter(b=>b.sentAt&&b.sentAt>=from), sellers=new Map();
@@ -576,7 +577,8 @@
         ${disc.length?`<div class="muted">Rabatt gavs på ${disc.length} offert${disc.length===1?'':'er'} – ${discWon.length} blev bokade efteråt.</div>`:''}</div>
       <div class="card"><h3>Var förfrågningarna kommer ifrån</h3>
         <div style="display:flex;justify-content:space-between"><span>Hemsidan</span><b>${web.n} st · ${web.w} bokade</b></div>
-        <div style="display:flex;justify-content:space-between;margin-top:6px"><span>Manuellt inlagda</span><b>${man.n} st · ${man.w} bokade</b></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px"><span>Manuellt inlagda</span><b>${man.n} st · ${man.w} bokade</b></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px"><span>💡 Prisräknaren (fick priset på mejl, ingår i Hemsidan)</span><b>${calcL.length} st · ${calcW} bokade</b></div></div>
       <div class="muted" style="margin:4px 2px 20px">Perioden räknas från datumet förfrågan kom in. En offert räknas som förfallen efter ${EXPIRE_DAYS} dagar utan svar eller när flyttdagen har passerat.</div>
     </main>`;
     bindNav();
@@ -1401,7 +1403,7 @@
     return `<div class="bcard" data-drag data-id="${esc(b.id)}"><b>${esc(d.name)}</b>
       <div class="muted">${esc([d.from,d.to].filter(Boolean).map(town).join(' → ')||d.size||'')}</div>
       <div class="bmeta"><span>${b.offer?kr(b.offer.total):''}</span><span class="muted">${esc(fmtDate(b.date))}</span></div>
-      <div class="tags">${w!=null?`<span class="tag ${w>=60?'no':'wn'}">⏱ obesvarad ${waitTxt(w)}</span>`:''}
+      <div class="tags">${b.lead==='calc'&&b.status==='new'?'<span class="tag wn">💡 Prisräknaren</span>':''}${w!=null?`<span class="tag ${w>=60?'no':'wn'}">⏱ obesvarad ${waitTxt(w)}</span>`:''}
         ${b.followUp?`<span class="tag ${followDue(b)?'no':''}">📞 ${esc(b.followUp.at.slice(5,10).replace('-','/'))} ${esc(b.followUp.at.slice(11))}</span>`:''}
         ${last&&stageOf(b)!=='won'?`<span class="tag">${esc(OUT[last.outcome])}</span>`:''}${b.views&&b.status==='sent'?`<span class="tag seen">👁 ${b.views}×</span>`:''}</div></div>`;
   }

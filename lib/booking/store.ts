@@ -38,6 +38,7 @@ export type Booking = {
   token?: string;
   workToken?: string;      // link to the job sheet for the crew (separate from the customer's link)
   // Sales follow-up
+  lead?: "calc";             // came from "Få priset på mejl" in the website calculator (no request sent yet)
   firstResponseAt?: number;   // first time someone in the office acted on a web request (speed to lead)
   contactedAt?: number;       // the customer has been reached (call answered, or moved to "Kontaktad")
   calls?: Call[];             // call log
