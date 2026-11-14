@@ -8,6 +8,11 @@
 <meta name="theme-color" content="#0d2a3f">
 <title>Admin – FX Flytt</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/admin.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FX Admin">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{--navy:#0d2a3f;--navy2:#16384f;--accent:#ff7a1a;--accent2:#e8650a;--ink:#14212b;--muted:#5d6d7a;--line:#e2e8ee;--line2:#cfd9e2;--bg:#f3f6f9;--card:#fff;--green:#1f8a4c;--red:#b42318;--blue:#1f5fae;--side:236px;
     --sh:0 1px 2px rgba(13,42,63,.06),0 2px 8px rgba(13,42,63,.04);--sh2:0 12px 32px rgba(13,42,63,.16)}
@@ -316,7 +321,7 @@
   // ---------- login ----------
   async function start(){
     const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
-    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); }
+    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); swReg().catch(()=>{}); }
     else showLogin(s.setup);
   }
   function showLogin(setup){
@@ -1302,6 +1307,43 @@
       <div class="btns"><button class="btn sec" id="r_test">Skicka ett testmejl till oss</button><button class="btn" id="r_save">Spara</button></div><div id="r_msg"></div></div>`;
     $('#r_save').onclick=async()=>{ try{ s=await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({reviewUrl:$('#r_url').value,reviewDelayDays:Number($('#r_days').value),reviewOn:$('#r_on').checked})}); $('#r_msg').innerHTML=`<div class="okmsg">Sparat ✓ ${s.reviewOn?'– förfrågningar skickas automatiskt.':'– automatiska förfrågningar är avstängda.'}</div>`; }catch(e){ $('#r_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
     $('#r_test').onclick=async()=>{ try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({reviewUrl:$('#r_url').value})}); const r=await api('/api/admin/settings',{method:'POST'}); $('#r_msg').innerHTML=`<div class="okmsg">Testmejlet är skickat till ${esc(r.to)}.</div>`; }catch(e){ $('#r_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+  };
+
+  // ---- notifications on this device (all roles) ----
+  const pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+  const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent), standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const swReg=()=>pushOk()?navigator.serviceWorker.register('/admin-sw.js',{scope:'/admin'}):Promise.resolve(null);
+  const b64=(s)=>{ const p='='.repeat((4-s.length%4)%4), r=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(r,c=>c.charCodeAt(0)); };
+  SET_TABS.unshift(['push','Notiser',false]);
+  if(setTab==='users') setTab='push';
+  SETTINGS.push=async(el)=>{
+    let info; try{ info=await api('/api/admin/push'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const reg=await swReg().catch(()=>null), cur=reg?await reg.pushManager.getSubscription().catch(()=>null):null;
+    const here=cur&&info.mine.some(m=>m.endpoint===cur.endpoint);
+    const draw=()=>{
+      el.innerHTML=`<div class="card"><h3>Notiser i mobilen och datorn</h3>
+        <div class="muted">Få en notis direkt när en <b>ny förfrågan</b> kommer in, när en kund <b>signerar</b> eller <b>tackar nej</b> – även när admin inte är öppen.</div>
+        ${!pushOk()?(isIOS&&!standalone?`<div class="warn"><b>På iPhone:</b> lägg först till admin på hemskärmen: tryck på <b>Dela</b> (rutan med pil) i Safari → <b>Lägg till på hemskärmen</b>. Öppna sedan FX Admin från hemskärmen och kom tillbaka hit.</div>`:'<div class="warn">Den här webbläsaren kan inte ta emot notiser. Använd Chrome, Edge, Firefox eller Safari.</div>')
+          :Notification.permission==='denied'?'<div class="warn">Notiser är blockerade för sidan. Tillåt dem i webbläsarens inställningar för den här webbplatsen och ladda om.</div>'
+          :here?`<div class="okmsg">Notiser är på för den här enheten ✓</div><div class="btns"><button class="btn sec" id="p_test">Skicka en testnotis</button><button class="btn red" id="p_off">Stäng av här</button></div>`
+          :'<button class="btn" id="p_on">🔔 Slå på notiser på den här enheten</button>'}
+        <div id="p_msg"></div></div>
+        <div class="card"><h3>Dina enheter <span class="sub">${info.mine.length}</span></h3>${info.mine.length?info.mine.map(m=>`<div class="todo"><a><b>${esc(m.device)}${cur&&m.endpoint===cur.endpoint?' <span class="tag ok">den här</span>':''}</b><small>sedan ${esc(fmtTs(m.createdAt))}</small></a><button class="btn gray sm" data-rm="${esc(m.endpoint)}">Ta bort</button></div>`).join(''):'<div class="muted">Inga enheter ännu.</div>'}</div>
+        <div class="card"><h3>Installera som app</h3><div class="muted">${isIOS?'iPhone: Safari → <b>Dela</b> → <b>Lägg till på hemskärmen</b>.':'Android/dator: i Chrome, öppna menyn ⋮ → <b>Installera app</b> (eller <b>Lägg till på startskärmen</b>).'} Då öppnas admin som en egen app med FX-ikonen.</div></div>`;
+      const m=(t,ok)=>{ $('#p_msg').innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
+      if($('#p_on')) $('#p_on').onclick=async()=>{
+        try{
+          if(await Notification.requestPermission()!=='granted') return m('Du behöver tillåta notiser.',false);
+          const r=await swReg(); await navigator.serviceWorker.ready;
+          const sub=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(info.publicKey)});
+          info=await api('/api/admin/push',{method:'POST',body:JSON.stringify(sub.toJSON())}); SETTINGS.push(el);
+        }catch(e){ m('Kunde inte slå på: '+e.message,false); }
+      };
+      if($('#p_test')) $('#p_test').onclick=async()=>{ try{ await api('/api/admin/push?test=1',{method:'POST'}); m('Testnotisen är skickad – den ska dyka upp om några sekunder.',true); }catch(e){ m(e.message,false); } };
+      if($('#p_off')) $('#p_off').onclick=async()=>{ try{ await api('/api/admin/push?endpoint='+encodeURIComponent(cur.endpoint),{method:'DELETE'}); await cur.unsubscribe().catch(()=>{}); SETTINGS.push(el); }catch(e){ m(e.message,false); } };
+      el.querySelectorAll('[data-rm]').forEach(x=>x.onclick=async()=>{ await api('/api/admin/push?endpoint='+encodeURIComponent(x.dataset.rm),{method:'DELETE'}); if(cur&&cur.endpoint===x.dataset.rm) await cur.unsubscribe().catch(()=>{}); SETTINGS.push(el); });
+    };
+    draw();
   };
 
   // ---------- staff and vehicles ----------

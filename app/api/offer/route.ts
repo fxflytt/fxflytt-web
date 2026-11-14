@@ -5,6 +5,7 @@ import { offerEmail, customerConfirmation, type OfferData } from "@/lib/mail/off
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { createBooking } from "@/lib/booking/store.ts";
+import { notifyAll } from "@/lib/booking/push.ts";
 
 export const runtime = "nodejs";
 
@@ -55,7 +56,11 @@ export async function POST(req: Request) {
   // Save it in the booking system too (if storage is set up). A failure here must not lose the e-mail.
   let adminUrl: string | undefined;
   if (kvConfigured()) {
-    try { const b = await createBooking("web", data); adminUrl = `${process.env.SITE_URL || "https://www.fxflytt.se"}/admin#${b.id}`; }
+    try {
+      const b = await createBooking("web", data); adminUrl = `${process.env.SITE_URL || "https://www.fxflytt.se"}/admin#${b.id}`;
+      const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
+      await notifyAll({ title: "Ny förfrågan: " + data.name, body: [[data.from, data.to].filter(Boolean).map(town).join(" → "), data.size, data.price ? data.price.total.toLocaleString("sv-SE") + " kr" : ""].filter(Boolean).join(" · ") || "Från hemsidan", url: "/admin#" + b.id, tag: b.id });
+    }
     catch (e) { console.error("booking save failed", (e as Error).message); }
   }
   const mail = offerEmail(data, new Date(), adminUrl);

@@ -1,6 +1,7 @@
 // Customer side of the offer: view (GET ?t=) and sign or decline (POST {t, action, name, accept}).
 import { bookingByToken, publicView, saveBooking, offerHash, applyExtras, TERMS_VERSION, DECLINE_REASONS, type DeclineReason } from "@/lib/booking/store.ts";
 import { isAdmin } from "@/lib/booking/auth.ts";
+import { notifyAll } from "@/lib/booking/push.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { signedCustomerEmail, companyNoticeEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
     b.decline = reason || text ? { reason: reason || "other", ...(text ? { text } : {}) } : undefined;
     await saveBooking(b, "Kunden nekade offerten" + (b.decline ? ` – ${DECLINE_REASONS[b.decline.reason]}${text ? ": " + text : ""}` : ""));
     if (mailConfigured()) await send(COMPANY_TO, companyNoticeEmail(b, "declined", adminUrl)).catch(() => {});
+    await notifyAll({ title: "❌ " + b.data.name + " tackade nej", body: b.decline ? DECLINE_REASONS[b.decline.reason] + (text ? ": " + text : "") : "Ingen anledning angiven", url: "/admin#" + b.id, tag: b.id });
     return Response.json({ ok: true, view: publicView(b) });
   }
 
@@ -62,6 +64,7 @@ export async function POST(req: Request) {
   b.status = "signed"; b.signedAt = now;
   b.signature = { name, ...(pnr ? { pnr } : { orgnr }), ip, ua: (req.headers.get("user-agent") || "").slice(0, 300), at: now, offerHash: offerHash(b), terms: TERMS_VERSION };
   await saveBooking(b, `Signerad av ${name}` + (chosen.length ? ` med tillval: ${chosen.map((e) => e.label).join(", ")}` : ""));
+  await notifyAll({ title: "✅ " + b.data.name + " signerade!", body: `${b.offer.total.toLocaleString("sv-SE")} kr · ${b.date}` + (chosen.length ? " · med tillval" : ""), url: "/admin#" + b.id, tag: b.id });
   if (mailConfigured()) {
     await send(COMPANY_TO, companyNoticeEmail(b, "signed", adminUrl), b.data.email || undefined).catch((e) => console.error("notice", e));
     if (b.data.email) await send(b.data.email, signedCustomerEmail(b), COMPANY_TO).catch((e) => console.error("confirm", e));

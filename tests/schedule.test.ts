@@ -99,3 +99,25 @@ test("omdöme: en gång, bara klara jobb med e-post, rätt dag, inte gamla jobb"
   assert.equal(settings.reviewDue({ ...b, data: {} }, s, "2026-12-06"), false);
   assert.equal(settings.reviewDue(b, { ...s, reviewOn: false }, "2026-12-06"), false);
 });
+
+const push = await import("../lib/booking/push.ts");
+const webpush = (await import("web-push")).default;
+const { createECDH, randomBytes } = await import("node:crypto");
+test("push: nycklar skapas en gång, notisen krypteras, borttagna enheter rensas", async () => {
+  const v1 = await push.vapid(), v2 = await push.vapid();
+  assert.equal(v1.publicKey, v2.publicKey);
+  const ecdh = createECDH("prime256v1"); ecdh.generateKeys();
+  const keys = { p256dh: ecdh.getPublicKey().toString("base64url"), auth: randomBytes(16).toString("base64url") };
+  await assert.rejects(push.addSub({ id: "owner", name: "Ägaren" }, { endpoint: "http://x", keys }, "Mac"), /Ogiltig/);
+  await push.addSub({ id: "owner", name: "Ägaren" }, { endpoint: "https://push.example/a", keys }, "Mac");
+  await push.addSub({ id: "U1", name: "Sara" }, { endpoint: "https://push.example/b", keys }, "Android");
+  webpush.setVapidDetails("mailto:info@fxflytt.se", v1.publicKey, v1.privateKey);
+  const req = webpush.generateRequestDetails({ endpoint: "https://push.example/a", keys }, JSON.stringify({ title: "t" }));
+  assert.equal(req.method, "POST"); assert.match(String(req.headers.Authorization), /^vapid t=/);
+  // the push service says device "b" is gone → it is removed, "a" stays
+  const orig = webpush.sendNotification;
+  (webpush as any).sendNotification = async (s: { endpoint: string }) => { if (s.endpoint.endsWith("/b")) throw Object.assign(new Error("gone"), { statusCode: 410 }); return {}; };
+  try { assert.equal(await push.notifyAll({ title: "x", body: "y", url: "/admin" }), 1); }
+  finally { (webpush as any).sendNotification = orig; }
+  assert.deepEqual((await push.listSubs()).map((s) => s.userName), ["Ägaren"]);
+});
