@@ -480,6 +480,7 @@
     if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 ${b.views}× · ${esc(ago(b.lastViewAt))}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
     if(b.reminders?.length) t.push(`<span class="tag">🔔 ${b.reminders.length} påminnelse${b.reminders.length>1?'r':''}</span>`);
     if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
+    if(b.referral) t.push(`<span class="tag ok">🎁 Kod ${esc(b.referral.code)}</span>`);
     if(b.lead==='calc'&&b.status==='new') t.push('<span class="tag wn">💡 Prisräknaren – fick priset på mejl</span>');
     if(boxesLeft(b)) t.push(`<span class="tag${b.boxes.dueDate<today()?' no':''}">📦 ${boxesLeft(b)} kartonger ute${b.boxes.dueDate<today()?' – försenade':''}</span>`);
     if(b.discount) t.push(`<span class="tag ok">−${b.discount.pct} %</span>`);
@@ -926,6 +927,14 @@
           ${ph.some(p=>p.kind==='damage')?'<div class="warn">Personalen har fotograferat en skada.</div>':''}
           ${ph.length?`<div class="phgrid">${ph.map(p=>`<div><a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="" loading="lazy"></a><span class="${p.kind}">${K[p.kind]}</span><button data-delph="${esc(p.url)}" aria-label="Ta bort">✕</button></div>`).join('')}</div>`:''}
           ${w.sign?`<div class="okmsg" style="margin-top:12px">Kunden kvitterade: ${esc(w.sign.name)} · ${esc(fmtTs(w.sign.at))}</div><img src="${esc(w.sign.img)}" alt="Signatur" style="max-width:100%;height:90px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#fff">${w.sign.note?`<div class="warn"><b>Kundens anmärkning:</b> ${esc(w.sign.note)}</div>`:''}`:''}</div>`; })()}
+      ${(()=>{ const rw=b.refRewards||[], showCode=b.status==='done'||b.status==='signed';
+        if(!b.referral&&!showCode&&!rw.length&&b.status!=='new'&&b.status!=='sent') return '';
+        const smsTxt=b.refCode?`Hej! Ska du flytta? Boka FX Flytt med min kod ${b.refCode} på fxflytt.se så får du rabatt.`:'';
+        return `<div class="card" id="refc"><h3>🎁 Tipsa en vän</h3>
+          ${b.referral?`<div class="okmsg" style="margin-top:0">Bokad med koden <b>${esc(b.referral.code)}</b> från <a href="#${esc(b.referral.fromId)}">${esc(b.referral.fromName)}</a>${b.referral.kr?` – ${kr(b.referral.kr)} rabatt i offerten`:''}.</div>`
+            :(b.status==='new'||b.status==='sent')&&!b.signedAt?`<div style="display:flex;gap:8px"><input id="rc_in" placeholder="Väns kod, t.ex. ANNA-7K2Q" style="text-transform:uppercase"><button class="btn sec sm" id="rc_go">Använd</button></div><div class="muted" style="margin-top:4px">Om kunden har fått en kod av en vän.</div>`:''}
+          ${showCode?(b.refCode?`<div style="margin-top:8px">Kundens kod: <b style="font-size:18px;letter-spacing:1px">${esc(b.refCode)}</b></div>${(b.data||{}).phone?`<a class="btn sec sm" style="display:inline-flex;margin-top:6px" href="sms:${esc(String(b.data.phone).replace(/[^\d+]/g,''))}?&body=${encodeURIComponent('Tack för att du flyttade med oss! Tipsa en vän: med koden '+b.refCode+' får din vän rabatt hos FX Flytt, och du får en belöning.')}">SMS:a koden till kunden</a>`:''}`:'<button class="btn sec sm" id="rc_mk" style="margin-top:6px">Skapa kod till kunden</button>'):''}
+          ${rw.length?`<div class="calls">${rw.map(r=>`<div><a href="#${esc(r.bookingId)}"><b>${esc(r.name)}</b></a> bokade med koden · ${esc(fmtTs(r.at))} ${r.givenAt?`<span class="tag ok">Belöning given</span>`:`<button class="btn sm" data-rgive="${esc(r.bookingId)}">Belöning given</button>`}</div>`).join('')}</div>`:''}</div>`; })()}
       <div class="card"><h3>Uppgifter från kunden</h3><table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table></div>
       <div class="card"><h3>Status</h3><div class="btns">
         ${b.status!=='done'?'<button class="btn gray" data-s="done">Markera klar</button>':''}
@@ -946,6 +955,10 @@
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
     });
     if($('#pkgch')) $('#pkgch').onchange=async()=>{ if(await patch({pkgChoiceOff:!$('#pkgch').checked})) notify($('#pkgch').checked?'Kunden får välja paket när du skickar ✓':'Paketval av'); };
+    // ---- Tipsa en vän ----
+    if($('#rc_go')) $('#rc_go').onclick=()=>salesAct(b,{refCode:$('#rc_in').value},'Rabattkoden är tillagd ✓');
+    if($('#rc_mk')) $('#rc_mk').onclick=()=>salesAct(b,{issueCode:true},'Koden är skapad ✓');
+    root.querySelectorAll('[data-rgive]').forEach(x=>x.onclick=()=>salesAct(b,{rewardGiven:x.dataset.rgive},'Markerad som given ✓'));
     // ---- sales follow-up ----
     if($('#sales')){
       root.querySelectorAll('[data-call]').forEach(x=>x.onclick=()=>salesAct(b,{call:{outcome:x.dataset.call,note:$('#cnote').value}},'Samtalet är loggat ✓'));
@@ -1264,6 +1277,7 @@
     const groups=[
       ['Obesvarade förfrågningar','no',all.filter(b=>waitMin(b)!=null).sort((x,y)=>x.createdAt-y.createdAt).map(b=>({b,sub:`Kom in för ${esc(waitTxt(waitMin(b)))} sedan${(b.data||{}).phone?'':''}`,act:(b.data||{}).phone?`<a class="btn sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['Ring i dag','wn',all.filter(b=>followDue(b)&&!['signed','done','cancelled','declined'].includes(b.status)).sort((x,y)=>x.followUp.at.localeCompare(y.followUp.at)).map(b=>({b,sub:`${b.followUp.at.slice(0,10)<today()?'<b style="color:var(--red)">sen</b> · ':''}kl. ${esc(b.followUp.at.slice(11))}${b.followUp.note?' · '+esc(b.followUp.note):''}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
+      ['🎁 Belöningar att ge','ok',all.flatMap(b=>(b.refRewards||[]).filter(r=>!r.givenAt).map(r=>({b,sub:`${esc(r.name)} bokade med koden ${esc(b.refCode||'')}`})))],
       ['Frånvarande på jobb','no',all.filter(b=>soon(b)).flatMap(b=>(b.crew||[]).map(id=>({b,r:resById(id),a:absOn(id,b.date).find(a=>a.status==='approved')})).filter(x=>x.r&&x.a)).map(x=>({b:x.b,sub:`${when(x.b)} · <b>${esc(x.r.name)}</b> ${esc(ABSK[x.a.kind].toLowerCase())}`}))],
       ['Ledighet att besluta','wn',pendingAbs().sort((x,y)=>x.from.localeCompare(y.from)).map(a=>({b:{id:'franvaro',data:{name:a.name}},sub:`${esc(ABSK[a.kind])} · ${esc(spanTxt(a))}`,act:`<a class="btn sec sm" href="#franvaro">Svara</a>`}))],
       ['Dubbelbokningar','no',all.filter(b=>soon(b)&&S.conflicts(b,all,res).length).sort(byTime).map(b=>{ const c=S.conflicts(b,all,res); return {b,sub:`${when(b)} · ${esc([...new Set(c.map(x=>x.name))].join(', '))} på två jobb samtidigt`}; })],
@@ -1737,6 +1751,22 @@
       catch(e){ $('#m_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
     root.querySelectorAll('[data-mdel]').forEach(x=>x.onclick=async()=>{ if(!confirm('Ta bort meddelandet? Det försvinner också i appen.')) return; await api('/api/admin/messages?id='+x.dataset.mdel,{method:'DELETE'}); showMsgAdmin(); });
   }
+
+  // ---- Tipsa en vän (owner) ----
+  SET_TABS.push(['ref','Tipsa en vän',true]);
+  SETTINGS.ref=async(el)=>{
+    let s; try{ s=await api('/api/admin/settings'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const used=all.filter(b=>b.referral), due=all.flatMap(b=>(b.refRewards||[]).filter(r=>!r.givenAt));
+    el.innerHTML=`<div class="card"><h3>Tipsa en vän <span class="sub">${used.length} bokningar med kod · ${due.length} belöningar att ge</span></h3>
+      <div class="muted">Efter flytten får kunden en personlig kod i tackmejlet (t.ex. <b>ANNA-7K2Q</b>). En vän som bokar med koden får rabatt direkt i offerten. När vännen har signerat ser du på <b>Idag</b> att belöningen ska ges – och markerar den som given.</div>
+      <label class="f" style="display:flex;align-items:center;gap:10px;margin-top:14px"><input type="checkbox" id="rf_on" style="width:20px;height:20px"${s.refOn?' checked':''}> Tipsa en vän är på</label>
+      <div class="row2"><div><label class="f" for="rf_kr">Vännen får (kr rabatt)</label><input id="rf_kr" type="number" inputmode="numeric" value="${s.refFriendKr}"></div>
+        <div><label class="f" for="rf_rw">Kunden som tipsade får</label><input id="rf_rw" value="${esc(s.refReward)}"></div></div>
+      <div class="muted" style="margin-top:6px">Tackmejlet skickas dagen efter flytten (samma mejl som Google-omdömet, se Omdömen).</div>
+      <div class="btns"><button class="btn sec" id="rf_test">Skicka ett testmejl till oss</button><button class="btn" id="rf_save">Spara</button></div><div id="rf_msg"></div></div>`;
+    $('#rf_save').onclick=async()=>{ try{ s=await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({refOn:$('#rf_on').checked,refFriendKr:Number($('#rf_kr').value),refReward:$('#rf_rw').value})}); $('#rf_msg').innerHTML=`<div class="okmsg">Sparat ✓ ${s.refOn?'– koder skickas i tackmejlet.':'– avstängt.'}</div>`; }catch(e){ $('#rf_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    $('#rf_test').onclick=async()=>{ try{ const r=await api('/api/admin/settings',{method:'POST'}); $('#rf_msg').innerHTML=`<div class="okmsg">Testmejlet är skickat till ${esc(r.to)}.</div>`; }catch(e){ $('#rf_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+  };
 
   // ---------- staff and vehicles ----------
   const ROLES={person:['Flyttledare','Flyttare','Städare','Chaufför','Montör'],vehicle:['Lastbil','Skåpbil','Släp']};

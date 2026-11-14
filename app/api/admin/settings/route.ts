@@ -26,9 +26,9 @@ export async function POST(req: Request) {
   const { reviewEmail } = await import("@/lib/mail/bookingEmail.ts");
   if (!mailConfigured()) return Response.json({ error: "E-post är inte inställd." }, { status: 503 });
   const s = await getSettings();
-  if (!s.reviewUrl) return Response.json({ error: "Lägg in länken till Google först." }, { status: 400 });
+  if (!s.reviewUrl && !s.refOn) return Response.json({ error: "Lägg in länken till Google först." }, { status: 400 });
   const sample = { id: "FX000000-TEST00", data: { name: "Anna Exempel" } } as Parameters<typeof reviewEmail>[0];
-  const m = reviewEmail(sample, s.reviewUrl);
+  const m = reviewEmail(sample, s.reviewOn || !s.refOn ? s.reviewUrl : "", s.refOn ? { code: "ANNA-7K2Q", kr: s.refFriendKr, reward: s.refReward } : null);
   try { await send(COMPANY_TO, { ...m, subject: "[Test] " + m.subject }); }
   catch (e) { return Response.json({ error: "Kunde inte skicka: " + (e as Error).message }, { status: 502 }); }
   return Response.json({ ok: true, to: COMPANY_TO });

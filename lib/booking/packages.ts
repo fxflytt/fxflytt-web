@@ -32,6 +32,8 @@ export function packagesFor(b: Booking, P: Prices): Pkg[] | null {
     catch { return null; }
     if (q.totalAfterRut == null) return null;
     const mine = id === cur;
+    const ref = !mine && b.referral && b.referral.kr > 0 ? [{ label: `Rabattkod ${b.referral.code} (tips från en vän)`, amount: -b.referral.kr }] : [];
+    if (ref.length) { q.lines = [...q.lines, ...ref]; q.totalAfterRut = Math.max(0, q.totalAfterRut - b.referral!.kr); }
     out.push({ id, name: PKG_NAMES[id][0], desc: PKG_NAMES[id][1],
       total: mine ? b.offer.total : q.totalAfterRut,
       lines: mine ? lines.map((l) => ({ label: l.label, amount: l.amount })) : q.lines.map((l: { label: string; amount: number }) => ({ label: l.label, amount: l.amount })) });

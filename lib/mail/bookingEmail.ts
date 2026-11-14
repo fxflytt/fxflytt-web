@@ -122,16 +122,24 @@ export function discountEmail(b: Booking, url: string) {
   return { subject, html, text };
 }
 
-export function reviewEmail(b: Booking, reviewUrl: string) {
+// Thank-you after the move: a Google review button (when switched on) and the "Tipsa en vän" code (when switched on).
+export function reviewEmail(b: Booking, reviewUrl: string, ref?: { code: string; kr: number; reward: string } | null) {
   const first = b.data.name.split(" ")[0];
   const subject = "Tack för att du flyttade med FX Flytt!";
+  const refBox = ref ? `<tr><td style="padding:10px 28px"><table role="presentation" width="100%" style="background:#fff7ef;border:1px dashed ${ACCENT};border-radius:12px"><tr><td style="padding:16px 18px">
+      <div style="font-weight:800;font-size:17px;color:${INK}">🎁 Tipsa en vän</div>
+      <div style="font-size:14px;color:${INK};line-height:21px;margin-top:4px">Ge din kod till någon som ska flytta. ${ref.kr ? `Din vän får <b>${esc(kr(ref.kr))} rabatt</b>` : "Din vän får ett bra pris"} – och du får <b>${esc(ref.reward)}</b>.</div>
+      <div style="font-size:26px;font-weight:900;letter-spacing:2px;color:${NAVY};margin-top:10px">${esc(ref.code)}</div>
+      <div style="font-size:12.5px;color:${MUTED};margin-top:4px">Vännen skriver koden i formuläret på fxflytt.se eller säger den när hen ringer.</div></td></tr></table></td></tr>` : "";
   const html = shell(subject, { text: "TACK", bg: "#e6f5ec", fg: GREEN },
     `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Tack ${esc(first)}!</h1></td></tr>` +
     p("Vi hoppas att flytten gick bra och att du har kommit på plats i ditt nya hem.") +
-    p("Vi är ett litet företag och dina ord betyder mycket – både för oss och för andra som letar efter en flyttfirma. Har du en minut över? Skriv gärna vad du tyckte på Google.") +
-    button(reviewUrl, "★ Skriv ett omdöme på Google") +
+    (reviewUrl ? p("Vi är ett litet företag och dina ord betyder mycket – både för oss och för andra som letar efter en flyttfirma. Har du en minut över? Skriv gärna vad du tyckte på Google.") + button(reviewUrl, "★ Skriv ett omdöme på Google") : "") +
+    refBox +
     p(`<span style="color:${MUTED};font-size:13px">Var det något som inte blev bra? Svara på det här mejlet eller ring oss på 076-300 07 23 – vi vill gärna veta och ställa det till rätta.</span>`));
-  const text = `Tack ${first}!\n\nVi hoppas att flytten gick bra. Har du en minut över? Skriv gärna ett omdöme på Google:\n${reviewUrl}\n\nVar något inte bra? Svara på mejlet eller ring 076-300 07 23.\nFX Flytt AB`;
+  const text = `Tack ${first}!\n\nVi hoppas att flytten gick bra.` + (reviewUrl ? ` Har du en minut över? Skriv gärna ett omdöme på Google:\n${reviewUrl}\n` : "\n") +
+    (ref ? `\nTipsa en vän: ge koden ${ref.code} till någon som ska flytta.${ref.kr ? ` Din vän får ${kr(ref.kr)} rabatt` : ""} och du får ${ref.reward}.\n` : "") +
+    `\nVar något inte bra? Svara på mejlet eller ring 076-300 07 23.\nFX Flytt AB`;
   return { subject, html, text };
 }
 

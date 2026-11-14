@@ -3,7 +3,10 @@
 //   {followUp: {at: "YYYY-MM-DDTHH:MM", note}} | {followUp: null}   next time to call
 //   {stage: "contacted"}                     moved on the sales board
 //   {stage: "lost", reason, text}            the customer said no (on the phone)
+//   {refCode} a friend's code (Tipsa en vän) · {issueCode: true} make this customer's code · {rewardGiven: friendId}
 import { requireUser } from "@/lib/booking/auth.ts";
+import { applyCode, issueCode, markGiven } from "@/lib/booking/referral.ts";
+import { getSettings } from "@/lib/booking/settings.ts";
 import { getBooking, saveBooking, CALL_OUTCOMES, DECLINE_REASONS, type CallOutcome, type DeclineReason } from "@/lib/booking/store.ts";
 
 export const runtime = "nodejs";
@@ -45,6 +48,14 @@ export async function POST(req: Request) {
     const text = str(d.text, 400);
     b.status = "declined"; b.declinedAt = now; b.decline = { reason, ...(text ? { text } : {}) }; b.followUp = undefined;
     await saveBooking(b, `Förlorad: ${DECLINE_REASONS[reason]}${text ? " – " + text : ""}`, u.name);
+  } else if ("refCode" in d) {
+    try { const msg = await applyCode(b, d.refCode, await getSettings()); await saveBooking(b, msg, u.name); }
+    catch (e) { return err((e as Error).message); }
+  } else if (d.issueCode === true) {
+    if (b.status !== "done" && b.status !== "signed") return err("Koden ges efter flytten.");
+    const had = !!b.refCode; const code = await issueCode(b); if (!had) await saveBooking(b, `Kod för Tipsa en vän: ${code}`, u.name);
+  } else if (typeof d.rewardGiven === "string") {
+    try { await markGiven(b, d.rewardGiven, u.name); } catch (e) { return err((e as Error).message); }
   } else return err("Okänd åtgärd.");
   return Response.json(b);
 }

@@ -40,6 +40,9 @@ export type Booking = {
   // Sales follow-up
   packages?: import("./packages.ts").Pkg[];   // Bas/Premium/Deluxe the customer can choose between in the offer
   pkgChoiceOff?: boolean;  // the office turned the package choice off for this offer
+  refCode?: string;           // this customer's "Tipsa en vän" code
+  refRewards?: { bookingId: string; name: string; at: number; givenAt?: number; givenBy?: string }[];   // friends who booked
+  referral?: { code: string; fromId: string; fromName: string; kr: number; rewardedAt?: number };     // booked with a friend's code
   lead?: "calc";             // came from "Få priset på mejl" in the website calculator (no request sent yet)
   firstResponseAt?: number;   // first time someone in the office acted on a web request (speed to lead)
   contactedAt?: number;       // the customer has been reached (call answered, or moved to "Kontaktad")
@@ -220,7 +223,7 @@ export function publicView(b: Booking) {
 export function applyDiscount(b: Booking, pct: number) {
   if (!b.offer) throw new Error("Ingen offert");
   const before = b.discount ? b.discount.before : b.offer.total;
-  const lines = b.offer.lines.filter((l) => !/^Rabatt /.test(l.label));
+  const lines = b.offer.lines.filter((l) => !/^Rabatt \d/.test(l.label));
   const off = Math.round((before * pct) / 100);
   b.offer = { ...b.offer, lines: pct > 0 ? [...lines, { label: `Rabatt ${pct} %`, amount: -off }] : lines, total: before - off };
   b.discount = pct > 0 ? { pct, before, at: Date.now() } : undefined;

@@ -9,6 +9,7 @@ import { saveBooking } from "@/lib/booking/store.ts";
 import { getSettings, reviewDue } from "@/lib/booking/settings.ts";
 import { reviewEmail } from "@/lib/mail/bookingEmail.ts";
 import { dailyBackup } from "@/lib/booking/backup.ts";
+import { issueCode } from "@/lib/booking/referral.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
 import { send, mailConfigured } from "@/lib/mail/send.ts";
 
@@ -28,9 +29,12 @@ export async function GET(req: Request) {
   }
   const settings = await getSettings(), today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" });
   const reviews: string[] = [];
-  if (settings.reviewOn && mailConfigured()) for (const b of await listBookings(1000)) {
+  if ((settings.reviewOn || settings.refOn) && mailConfigured()) for (const b of await listBookings(1000)) {
     if (!reviewDue(b, settings, today)) continue;
-    try { await send(b.data.email!, reviewEmail(b, settings.reviewUrl)); b.reviewSentAt = Date.now(); await saveBooking(b, "Bad om omdöme på Google (e-post)"); reviews.push(b.id); }
+    try {
+      const ref = settings.refOn ? { code: await issueCode(b), kr: settings.refFriendKr, reward: settings.refReward } : null;
+      await send(b.data.email!, reviewEmail(b, settings.reviewOn ? settings.reviewUrl : "", ref)); b.reviewSentAt = Date.now();
+      await saveBooking(b, "Tackmejl skickat" + (settings.reviewOn ? " med länk till Google-omdöme" : "") + (ref ? ` och koden ${ref.code} (Tipsa en vän)` : "")); reviews.push(b.id); }
     catch (e) { failed.push(`${b.id}: ${(e as Error).message}`); }
   }
   // Morning sales note to the office: calls to make today and requests nobody has answered.

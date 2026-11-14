@@ -553,6 +553,7 @@ body.noscroll .mbar{display:none}
             <div><label class="f" for="tel">Telefon</label><input id="tel" name="Telefon" type="tel" required placeholder="07X-XXX XX XX"></div>
             <div><label class="f" for="email">E-post <small style="font-weight:500;color:var(--muted)">(för bekräftelse)</small></label><input id="email" name="E-post" type="email" placeholder="namn@mail.se"></div>
             <div class="full"><label class="f" for="msg">Övrigt (valfritt)</label><textarea id="msg" name="Övrigt" placeholder="T.ex. antal tunga möbler, parkering, förråd…"></textarea></div>
+            <div class="full"><label class="f" for="refc">Rabattkod från en vän (valfritt)</label><input id="refc" name="Rabattkod" autocomplete="off" autocapitalize="characters" placeholder="T.ex. ANNA-7K2Q" style="text-transform:uppercase"></div>
             <div class="hp" aria-hidden="true"><label for="website">Lämna tomt</label><input id="website" tabindex="-1" autocomplete="off"></div>
           </div>
         </div>
@@ -1015,7 +1016,8 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       size:(document.getElementById('fsvc').selectedOptions[0]||{}).text||'', areaM2:v('kvm'), home:v('typ'), date:v('date'),
       floorFrom:[v('vf'),v('hf'),'bärsträcka '+v('bf')].join(' · '), floorTo:[v('vt'),v('ht'),'bärsträcka '+v('bt')].join(' · '), message:v('msg'),
       extras:[...form.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value),
-      price: v('fsvc').startsWith('other') ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined
+      price: v('fsvc').startsWith('other') ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined,
+      refCode: v('refc').trim() || undefined
     };
     fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data, website:v('website')})}).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
       const ok=!!(j&&j.ok);

@@ -2,6 +2,7 @@
 import { bookingByToken, publicView, saveBooking, offerHash, applyExtras, TERMS_VERSION, DECLINE_REASONS, type DeclineReason } from "@/lib/booking/store.ts";
 import { isAdmin } from "@/lib/booking/auth.ts";
 import { SIZE_LABEL, type PkgId } from "@/lib/booking/packages.ts";
+import { rewardOnSign } from "@/lib/booking/referral.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { signedCustomerEmail, companyNoticeEmail } from "@/lib/mail/bookingEmail.ts";
@@ -74,9 +75,11 @@ export async function POST(req: Request) {
   const now = Date.now();
   b.status = "signed"; b.signedAt = now;
   b.signature = { name, ...(pnr ? { pnr } : { orgnr }), ip, ua: (req.headers.get("user-agent") || "").slice(0, 300), at: now, offerHash: offerHash(b), terms: TERMS_VERSION };
+  const referrer = await rewardOnSign(b).catch(() => null);
   await saveBooking(b, `Signerad av ${name}` + pkgNote + (chosen.length ? ` med tillval: ${chosen.map((e) => e.label).join(", ")}` : ""));
   // Crew already planned on the job: it is now booked, tell them.
   if (b.crew?.length) await notifyAll({ title: "Nytt jobb", body: b.date + (b.time ? " kl. " + b.time : ""), url: "/jobb", tag: "job-" + b.id }, (s) => b.crew!.some((id) => s.userId === "crew:" + id));
+  if (referrer) await notifyAll({ title: "🎁 Belöning att ge", body: `${b.data.name} bokade med ${referrer.data.name}s kod`, url: "/admin#" + referrer.id, tag: "ref-" + b.id });
   await notifyAll({ title: "✅ " + b.data.name + " signerade!", body: `${b.offer.total.toLocaleString("sv-SE")} kr · ${b.date}` + (chosen.length ? " · med tillval" : ""), url: "/admin#" + b.id, tag: b.id });
   if (mailConfigured()) {
     await send(COMPANY_TO, companyNoticeEmail(b, "signed", adminUrl), b.data.email || undefined).catch((e) => console.error("notice", e));
