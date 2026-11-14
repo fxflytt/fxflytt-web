@@ -169,6 +169,10 @@
   .ptab input{padding:7px 9px;font-size:15px}.ptab td:last-child{width:44px}
   .chg input,.chg{background:#fff8d6}.chg input{border-color:#e8c547}
   .pdiff{max-height:220px;overflow:auto;margin-bottom:4px}.pdiff>div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}.pdiff s{color:var(--muted)}
+  .appst{margin-top:6px;font-size:12.5px}
+  .pinbox{position:fixed;inset:0;z-index:60;background:rgba(13,42,63,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+  .pinbox .card{max-width:420px;width:100%;margin:0}
+  .pinbox .pin{font-size:40px;font-weight:900;letter-spacing:.12em;text-align:center;color:var(--navy);background:#f3f6f9;border-radius:14px;padding:14px;margin:4px 0 12px;font-variant-numeric:tabular-nums}
   /* ---------- planning (booking detail) ---------- */
   .pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
   .pk{display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line2);background:#fff;border-radius:12px;padding:9px 11px;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
@@ -1467,11 +1471,13 @@
       return `<div class="tcard${r.active?'':' off'}" style="--c:${esc(r.color)}">
         <div class="nm">${esc(r.name)}${r.active?'':'<span class="tag">Arkiverad</span>'}</div>
         <div class="meta">${esc(r.role||(r.kind==='vehicle'?'Fordon':'Personal'))}${r.phone?` · <a href="${esc(tel(r.phone))}">${esc(r.phone)}</a>`:''}</div>
+        ${r.kind==='person'&&r.active?`<div class="appst">${r.app?`<span class="tag ok">📱 Appen</span> <span class="muted">${r.lastSeenAt?'senast inne '+esc(ago(r.lastSeenAt)):'inte inloggad än'}</span>`:'<span class="tag">📱 Ingen app</span>'}</div>`:''}
         ${r.note?`<div class="meta" style="margin-top:4px">${esc(r.note)}</div>`:''}
         <div class="next">${nx?`Nästa: <b>${esc(fmtDate(nx.date))}</b> ${esc(whenTxt(nx))} · ${esc((nx.data||{}).name||'')}<div class="muted">${soon.length} jobb kommande 30 dagar</div>`:'<span class="muted">Inga kommande jobb</span>'}</div>
         ${openRes===r.id&&up.length?`<div class="jl">${up.slice(0,12).map(b=>`<a href="#${esc(b.id)}"><span>${esc(fmtDate(b.date))} · ${esc(whenTxt(b))}</span><b>${esc((b.data||{}).name||b.id)}</b></a>`).join('')}</div>`:''}
         <div class="acts">${up.length?`<button class="btn gray sm" data-open="${esc(r.id)}">${openRes===r.id?'Dölj jobb':'Visa jobb'}</button>`:''}
           <button class="btn sec sm" data-edit="${esc(r.id)}">Ändra</button>
+          ${r.kind==='person'&&r.active?`<button class="btn ${r.app?'sec':''} sm" data-inv="${esc(r.id)}">${r.app?'Ny kod':'Bjud in till appen'}</button>${r.app?`<button class="btn gray sm" data-noapp="${esc(r.id)}">Stäng av appen</button>`:''}`:''}
           ${r.active?`<button class="btn red sm" data-arch="${esc(r.id)}">Arkivera</button>`:`<button class="btn sec sm" data-restore="${esc(r.id)}">Återställ</button>`}</div></div>`;
     };
     const e=teamEdit, editing=e&&(e.id?res.find(x=>x.id===e.id):null);
@@ -1500,6 +1506,29 @@
       const r=resById(x.dataset.arch), n=upcoming(r).length;
       if(!confirm(`Arkivera ${r.name}?`+(n?`\n\n${r.kind==='vehicle'?'Fordonet':'Personen'} står kvar på ${n} kommande jobb – byt ut ${r.kind==='vehicle'?'det':'personen'} där.`:''))) return;
       try{ await teamSave(r.id,{active:false}); showTeam(); }catch(err){ alert(err.message); }
+    });
+    // ---- crew app: make a PIN (shown once) and send it by SMS ----
+    root.querySelectorAll('[data-inv]').forEach(x=>x.onclick=async()=>{
+      const r=resById(x.dataset.inv);
+      if(r.app&&!confirm(`Göra en ny kod för ${r.name}? Den gamla slutar fungera och ${r.name} loggas ut på sin telefon.`)) return;
+      try{
+        const j=await api('/api/admin/team?do=invite&id='+r.id,{method:'POST'});
+        const i=res.findIndex(y=>y.id===r.id); if(i>=0) res[i]=j.person; showTeam();
+        const url=location.origin+'/jobb', txt=`Hej ${r.name}! Här är FX Flytts personalapp: ${url}\nLogga in med ditt mobilnummer och koden ${j.pin}\nTips: lägg till sidan på hemskärmen.`;
+        const box=document.createElement('div'); box.className='pinbox';
+        box.innerHTML=`<div class="card"><h3>Kod till ${esc(r.name)}</h3>
+          <div class="pin">${esc(j.pin.slice(0,3))} ${esc(j.pin.slice(3))}</div>
+          <div class="muted">${esc(r.name)} loggar in på <b>${esc(url)}</b> med mobilnumret <b>${esc(r.phone)}</b> och koden ovan. <b>Koden visas bara nu</b> – skicka den direkt.</div>
+          <a class="btn" href="sms:${esc(String(r.phone).replace(/[^\d+]/g,''))}?&body=${encodeURIComponent(txt)}">Skicka SMS till ${esc(r.name)}</a>
+          <button class="btn sec" id="pin_copy">Kopiera meddelandet</button><button class="btn gray" id="pin_close">Klar</button></div>`;
+        document.body.appendChild(box);
+        box.querySelector('#pin_copy').onclick=async()=>{ try{ await navigator.clipboard.writeText(txt); notify('Kopierat ✓'); }catch(_){ prompt('Kopiera:',txt); } };
+        box.querySelector('#pin_close').onclick=()=>box.remove();
+      }catch(e){ alert(e.message); }
+    });
+    root.querySelectorAll('[data-noapp]').forEach(x=>x.onclick=async()=>{
+      const r=resById(x.dataset.noapp); if(!confirm(`Stänga av appen för ${r.name}? Hen loggas ut direkt.`)) return;
+      try{ await api('/api/admin/team?do=disable&id='+r.id,{method:'POST'}); r.app=false; showTeam(); notify('Appen är avstängd för '+r.name); }catch(e){ alert(e.message); }
     });
     root.querySelectorAll('[data-restore]').forEach(x=>x.onclick=async()=>{ try{ await teamSave(x.dataset.restore,{active:true}); showTeam(); }catch(err){ alert(err.message); } });
     if(e){

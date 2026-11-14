@@ -4,5 +4,6 @@ Disallow: /api/
 Disallow: /admin
 Disallow: /signera
 Disallow: /arbetsorder
+Disallow: /jobb
 
 Sitemap: https://www.fxflytt.se/sitemap.xml

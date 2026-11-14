@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0d2a3f">
+<title>Mina jobb – FX Flytt</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/jobb.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FX Jobb">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- The crew app: people who go out on jobs log in with their mobile number and a PIN from the office,
+     and see their own jobs. Each job opens its job sheet (/jobb/order?t=…). No prices are shown. -->
+<style>
+  :root{--navy:#0d2a3f;--accent:#ff7a1a;--accent2:#e8650a;--ink:#14212b;--muted:#5d6d7a;--line:#e2e8ee;--line2:#cfd9e2;--bg:#f3f6f9;--green:#1f8a4c;--red:#b42318;--blue:#1f5fae;
+    --sh:0 1px 2px rgba(13,42,63,.06),0 2px 8px rgba(13,42,63,.04)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  a{color:inherit}
+  svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .top{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px}
+  .top img{height:30px}.top .sp{flex:1}
+  .ib{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;border:1px solid #2c4a61;background:none;color:#fff;cursor:pointer}
+  .ib.on{color:#ffb27a;border-color:#ff7a1a66}
+  main{max-width:640px;margin:0 auto;padding:16px 14px calc(30px + env(safe-area-inset-bottom))}
+  .hello{margin:4px 2px 14px}.hello h1{margin:0;font-size:24px;color:var(--navy)}.hello div{color:var(--muted);font-size:14px}
+  .seg{display:flex;background:#e8edf2;border-radius:12px;padding:3px;gap:2px;margin-bottom:14px}
+  .seg button{flex:1;border:0;background:none;padding:9px 6px;border-radius:9px;font:inherit;font-weight:700;font-size:14.5px;color:#47525c;cursor:pointer}
+  .seg button.on{background:#fff;color:var(--navy);box-shadow:var(--sh)}
+  .day{display:flex;align-items:baseline;gap:8px;margin:18px 2px 8px;font-weight:800;color:var(--navy);font-size:15px}
+  .day::first-letter{text-transform:uppercase}.day small{color:var(--muted);font-weight:600;font-size:13px}
+  .day.today{color:var(--accent2)}
+  .job{display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px;text-decoration:none;box-shadow:var(--sh)}
+  .job:active{transform:scale(.99)}
+  .job .t{text-align:center;border-right:1px solid var(--line);padding-right:10px}
+  .job .t b{display:block;font-size:18px;color:var(--navy)}.job .t small{display:block;color:var(--muted);font-size:12px}
+  .job .m{min-width:0}.job .m b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .job .m .r{color:#33434f;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .job .m .w{color:var(--muted);font-size:12.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .job .go{color:var(--line2)}
+  .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .tag{font-size:11.5px;font-weight:800;border-radius:999px;padding:2px 9px;background:#eef2f5;color:#4a5a67}
+  .tag.ok{background:#e6f5ec;color:var(--green)}.tag.run{background:#fff1e6;color:#c2560a}.tag.no{background:#fdecec;color:var(--red)}.tag.note{background:#fff8d6;color:#7a5b00}
+  .job.off{opacity:.7}.job.off .m b{text-decoration:line-through}
+  .empty{text-align:center;color:var(--muted);padding:44px 16px;background:#fff;border:1px dashed var(--line2);border-radius:16px}
+  .banner{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid #ffd6a8;border-radius:14px;padding:12px 14px;margin-bottom:12px;box-shadow:var(--sh)}
+  .banner div{flex:1;font-size:13.5px}.banner b{display:block;font-size:14.5px}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;padding:14px;font:inherit;font-size:16px;font-weight:800;background:var(--accent);color:#fff;cursor:pointer;text-decoration:none}
+  .btn:disabled{opacity:.6}.btn.sm{width:auto;padding:9px 14px;font-size:14px;border-radius:10px}
+  .login{max-width:400px;margin:0 auto;padding:10vh 18px 40px}
+  .login .logo{display:flex;justify-content:center;margin-bottom:8px}.login .logo img{height:46px}
+  .login h1{text-align:center;font-size:20px;color:var(--navy);margin:6px 0 22px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--sh)}
+  label{display:block;font-weight:700;font-size:13.5px;margin:12px 0 6px;color:#33434f}
+  input{width:100%;font:inherit;font-size:18px;padding:12px 14px;border:1.5px solid var(--line2);border-radius:12px;background:#fff;color:var(--ink)}
+  input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(13,42,63,.1)}
+  #pin{letter-spacing:.5em;font-weight:800;text-align:center}
+  .err{color:var(--red);font-weight:700;margin-top:10px;text-align:center}
+  .help{text-align:center;color:var(--muted);font-size:13.5px;margin-top:16px}.help a{color:var(--navy);font-weight:700}
+  .upd{text-align:center;color:var(--muted);font-size:12.5px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="top" id="top" hidden><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"><span class="sp"></span>
+  <button class="ib" id="bell" aria-label="Notiser"><svg class="i" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button>
+  <button class="ib" id="out" aria-label="Logga ut"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg></button>
+</div>
+<div id="root"></div>
+<script>
+(function(){
+  const $=(s)=>document.querySelector(s), root=$('#root');
+  const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const addDays=(d,n)=>{ const x=new Date(d+'T12:00:00Z'); x.setUTCDate(x.getUTCDate()+n); return x.toISOString().slice(0,10); };
+  const dayName=(d)=>new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'});
+  const hrs=(h)=>String(h).replace('.',',')+' tim';
+  let data=null, tab='next', timer=null;
+
+  async function start(){
+    const s=await fetch('/api/crew/login',{cache:'no-store'}).then(r=>r.json()).catch(()=>({}));
+    if(s.person) return showJobs(); showLogin();
+  }
+
+  function showLogin(msg){
+    $('#top').hidden=true; clearInterval(timer);
+    root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><h1>Personalappen</h1>
+      <form class="card" id="f"><label for="ph">Mobilnummer</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="070-123 45 67">
+      <label for="pin">Kod (6 siffror)</label><input id="pin" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*">
+      <button class="btn" id="go" style="margin-top:18px">Logga in</button><div class="err" id="err">${esc(msg||'')}</div></form>
+      <div class="help">Ingen kod? Ring kontoret: <a href="tel:+46763000723">076-300 07 23</a></div></div>`;
+    $('#f').onsubmit=async(e)=>{ e.preventDefault(); const b=$('#go'); b.disabled=true; $('#err').textContent='';
+      const r=await fetch('/api/crew/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:$('#ph').value,pin:$('#pin').value})});
+      const j=await r.json().catch(()=>({}));
+      if(r.ok) return showJobs();
+      b.disabled=false; $('#err').textContent=j.error||'Något gick fel.'; $('#pin').value=''; $('#pin').focus(); };
+  }
+
+  async function load(){
+    const r=await fetch('/api/crew/jobs',{cache:'no-store'});
+    if(r.status===401){ showLogin('Du har loggats ut. Logga in igen.'); return null; }
+    if(!r.ok) throw new Error('Kunde inte hämta jobben.');
+    return r.json();
+  }
+
+  function jobHtml(j){
+    const off=j.status==='cancelled';
+    const state=off?'<span class="tag no">Avbokad</span>':j.finished||j.status==='done'?'<span class="tag ok">Klar ✓</span>':j.started?'<span class="tag run">Pågår</span>':'';
+    const mates=j.mates.length?'Med '+j.mates.map(m=>m.name).join(', '):'';
+    const inner=`<div class="t"><b>${esc(j.time||'–')}</b><small>${j.end?'– '+esc(j.end):esc(hrs(j.hours))}</small></div>
+      <div class="m"><b>${esc(j.customer)}</b><div class="r">${esc([j.from,j.to].filter(Boolean).join(' → ')||j.size)}</div>
+        ${mates?`<div class="w">${esc(mates)}</div>`:''}
+        <div class="tags">${state}${j.note&&!off?'<span class="tag note">Att tänka på</span>':''}${j.areaM2?`<span class="tag">${esc(j.areaM2)} m²</span>`:''}</div></div>
+      <svg class="i go" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
+    return j.url?`<a class="job" href="${esc(j.url)}">${inner}</a>`:`<div class="job off">${inner}</div>`;
+  }
+
+  async function showJobs(){
+    try{ const d=await load(); if(!d) return; data=d; }catch(e){ if(!data){ root.innerHTML=`<main><div class="empty">${esc(e.message)}</div></main>`; return; } }
+    $('#top').hidden=false;
+    const t=data.today, tm=addDays(t,1);
+    const list=data.jobs.filter(j=>tab==='next'?j.date>=t:j.date<t);
+    if(tab==='past') list.reverse();
+    const groups=[]; for(const j of list){ const g=groups[groups.length-1]; if(g&&g.date===j.date) g.jobs.push(j); else groups.push({date:j.date,jobs:[j]}); }
+    const label=(d)=>d===t?'I dag':d===tm?'I morgon':dayName(d);
+    const nextN=data.jobs.filter(j=>j.date>=t&&j.status!=='cancelled').length, todayN=data.jobs.filter(j=>j.date===t&&j.status!=='cancelled').length;
+    root.innerHTML=`<main>
+      <div class="hello"><h1>Hej ${esc(data.me.name.split(' ')[0])}!</h1><div>${todayN?`Du har ${todayN} jobb i dag`:'Inga jobb i dag'} · ${nextN} kommande</div></div>
+      <div id="pushban"></div>
+      <div class="seg"><button data-t="next" class="${tab==='next'?'on':''}">Kommande</button><button data-t="past" class="${tab==='past'?'on':''}">Tidigare</button></div>
+      ${groups.length?groups.map(g=>`<div class="day${g.date===t?' today':''}">${esc(label(g.date))}${g.date===t||g.date===tm?` <small>${esc(dayName(g.date))}</small>`:''}</div>${g.jobs.map(jobHtml).join('')}`).join('')
+        :`<div class="empty">${tab==='next'?'Inga jobb inplanerade just nu.<br>Du får en notis när du får ett nytt jobb.':'Inga jobb de senaste två veckorna.'}</div>`}
+      <div class="upd">Uppdaterad ${new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})}</div></main>`;
+    root.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; showJobs(); });
+    pushBanner();
+    clearInterval(timer); timer=setInterval(()=>{ if(document.visibilityState==='visible') showJobs(); },60000);
+  }
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&data&&!$('#top').hidden) showJobs(); });
+
+  // ---- notifications on this phone ----
+  const pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+  const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent), standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const reg=()=>pushOk()?navigator.serviceWorker.register('/crew-sw.js',{scope:'/jobb'}):Promise.resolve(null);
+  const b64=(s)=>{ const p='='.repeat((4-s.length%4)%4), r=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(r,c=>c.charCodeAt(0)); };
+  async function pushState(){
+    if(!pushOk()) return {can:false};
+    const r=await reg().catch(()=>null), sub=r?await r.pushManager.getSubscription().catch(()=>null):null;
+    const info=await fetch('/api/crew/push').then(x=>x.json()).catch(()=>({endpoints:[]}));
+    return {can:Notification.permission!=='denied',on:!!sub&&(info.endpoints||[]).includes(sub.endpoint),sub,key:info.publicKey};
+  }
+  async function pushBanner(){
+    const el=$('#pushban'); if(!el) return;
+    const s=await pushState(); $('#bell').classList.toggle('on',!!s.on);
+    if(s.on){ el.innerHTML=''; return; }
+    el.innerHTML=!pushOk()&&isIOS&&!standalone?`<div class="banner"><div><b>Få notis om nya jobb</b>Tryck på Dela i Safari → <b>Lägg till på hemskärmen</b>. Öppna sedan appen därifrån.</div></div>`
+      :s.can?`<div class="banner"><div><b>Få notis om nya jobb</b>Du får veta direkt när du får ett jobb eller när det ändras.</div><button class="btn sm" id="pon">Slå på</button></div>`:'';
+    if($('#pon')) $('#pon').onclick=turnOn;
+  }
+  async function turnOn(){
+    try{
+      if(await Notification.requestPermission()!=='granted') return;
+      const s=await pushState(), r=await reg(); await navigator.serviceWorker.ready;
+      const sub=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(s.key)});
+      await fetch('/api/crew/push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub.toJSON())});
+      pushBanner();
+    }catch(e){ alert('Kunde inte slå på notiser: '+e.message); }
+  }
+  $('#bell').onclick=async()=>{ const s=await pushState(); if(!s.on) return turnOn();
+    if(confirm('Stänga av notiser på den här telefonen?')){ await fetch('/api/crew/push?endpoint='+encodeURIComponent(s.sub.endpoint),{method:'DELETE'}); await s.sub.unsubscribe().catch(()=>{}); pushBanner(); } };
+  $('#out').onclick=async()=>{ if(!confirm('Logga ut?')) return; await fetch('/api/crew/login',{method:'DELETE'}); data=null; showLogin(); };
+  reg().catch(()=>{});
+  start().catch(()=>showLogin());
+})();
+</script>
+</body>
+</html>

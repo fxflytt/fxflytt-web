@@ -45,7 +45,8 @@ export type Note = { title: string; body: string; url: string; tag?: string };
 // Sends to every device (or only `only`). Never throws – a failed notification must not break a booking.
 export async function notifyAll(n: Note, only?: (s: Sub) => boolean): Promise<number> {
   try {
-    const subs = (await listSubs()).filter(only || (() => true));
+    // Default: only admin devices. Crew phones (userId "crew:…") get only what is meant for them.
+    const subs = (await listSubs()).filter(only || ((s) => !s.userId.startsWith("crew:")));
     if (!subs.length) return 0;
     const v = await vapid();
     webpush.setVapidDetails("mailto:" + (process.env.OFFER_TO || "info@fxflytt.se"), v.publicKey, v.privateKey);
