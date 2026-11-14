@@ -170,6 +170,9 @@
   .chg input,.chg{background:#fff8d6}.chg input{border-color:#e8c547}
   .pdiff{max-height:220px;overflow:auto;margin-bottom:4px}.pdiff>div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}.pdiff s{color:var(--muted)}
   .appst{margin-top:6px;font-size:12.5px}
+  .sub-h{font-weight:800;font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:8px 0 4px}
+  .shrow>span:last-child{display:flex;gap:6px;flex:0 0 auto}
+  .shrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
   .pinbox{position:fixed;inset:0;z-index:60;background:rgba(13,42,63,.55);display:flex;align-items:center;justify-content:center;padding:16px}
   .pinbox .card{max-width:420px;width:100%;margin:0}
   .pinbox .pin{font-size:40px;font-weight:900;letter-spacing:.12em;text-align:center;color:var(--navy);background:#f3f6f9;border-radius:14px;padding:14px;margin:4px 0 12px;font-variant-numeric:tabular-nums}
@@ -1189,8 +1192,8 @@
       :'<div class="empty" style="padding:18px">Inget att göra just nu 👍</div>';
     // --- who is where today ---
     const staff=res.filter(r=>r.active&&r.kind==='person');
-    const staffHtml=staff.length?`<div class="card"><h3>Personal i dag</h3><div class="crewday">${staff.map(r=>{ const l=jt.filter(b=>(b.crew||[]).includes(r.id));
-      return `<div style="--c:${esc(r.color)}"><b>${esc(r.name)}</b>${l.length?l.map(b=>`<a href="#${esc(b.id)}">${esc(whenTxt(b))} · ${nm(b)}</a>`).join(''):'<small>Ledig</small>'}</div>`; }).join('')}</div></div>`:'';
+    const staffHtml=staff.length?`<div class="card"><h3>Personal i dag <span class="sub" id="inNow"></span></h3><div class="crewday">${staff.map(r=>{ const l=jt.filter(b=>(b.crew||[]).includes(r.id));
+      return `<div style="--c:${esc(r.color)}" data-person="${esc(r.id)}"><b>${esc(r.name)}<span class="instamp"></span></b>${l.length?l.map(b=>`<a href="#${esc(b.id)}">${esc(whenTxt(b))} · ${nm(b)}</a>`).join(''):'<small>Ledig</small>'}</div>`; }).join('')}</div></div>`:'';
     root.innerHTML=navBar('today')+`<main>
       <div class="kpis">
         <a class="kpi" href="#kalender" style="background:var(--navy)"><small>Jobb i dag</small><b>${jt.length}</b><small>${people(jt)} i personalen ute</small></a>
@@ -1211,6 +1214,11 @@
         ${block('Nya förfrågningar',fresh.slice(0,6),'Inga nya förfrågningar.',fresh.length>6?`<a href="#bokningar">Visa alla ${fresh.length}</a>`:'')}
       </div></div></main>`;
     root.querySelectorAll('.item').forEach(x=>x.onclick=()=>{ location.hash=x.dataset.id; });
+    // who is clocked in right now (Stämpelklockan)
+    if($('#inNow')) api('/api/admin/clock?now=1').then(j=>{ if(view!=='today') return;
+      const open=j.open||[]; $('#inNow').textContent=open.length?open.length+' instämplade':'';
+      for(const o of open){ const el=root.querySelector(`[data-person="${o.rid}"] .instamp`); if(el) el.innerHTML=` <span class="tag ok">inne sedan ${new Date(o.in).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'})}</span>`; }
+    }).catch(()=>{});
     root.querySelectorAll('[data-done]').forEach(x=>x.onclick=async()=>{
       x.disabled=true;
       try{ const nb=await api('/api/admin/bookings?id='+x.dataset.done,{method:'PATCH',body:JSON.stringify({status:'done'})}); const i=all.findIndex(y=>y.id===nb.id); if(i>=0) all[i]=nb; updateCounts(); showToday(); notify('Markerad som klar ✓'); }
@@ -1254,16 +1262,48 @@
     bindStatTabs();
     const step=(k)=>{ const [y,m]=hoursMonth.split('-').map(Number); hoursMonth=new Date(Date.UTC(y,m-1+k,1)).toISOString().slice(0,7); openHours=null; showHours(); };
     $('#hprev').onclick=()=>step(-1); $('#hnext').onclick=()=>step(1); $('#hnow').onclick=()=>{ hoursMonth=today().slice(0,7); showHours(); };
-    let r; try{ r=await api('/api/admin/report?type=hours&month='+hoursMonth); }catch(e){ $('#hpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    let r, sh; try{ [r,sh]=await Promise.all([api('/api/admin/report?type=hours&month='+hoursMonth),api('/api/admin/clock?month='+hoursMonth)]); }catch(e){ $('#hpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     if(view!=='stat'||statTab!=='hours') return;
-    const tot=r.rows.reduce((a,x)=>a+x.hours,0);
-    $('#hpane').innerHTML=r.rows.length?`<div class="card" style="padding:6px 18px 14px"><table class="htab"><thead><tr><th>Namn</th><th>Jobb</th><th>Timmar</th><th class="hm">Uppmätt</th><th class="hm">Planerad</th><th></th></tr></thead><tbody>
-      ${r.rows.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="muted">${esc(x.role)}</div></td><td>${x.jobs}</td><td><b>${esc(fmtH(x.hours))}</b></td><td class="hm">${esc(fmtH(x.realHours))}</td><td class="hm">${esc(fmtH(x.plannedHours))}</td><td style="text-align:right">${x.jobs?`<button class="btn gray sm" data-open="${esc(x.id)}">${openHours===x.id?'Dölj':'Visa jobb'}</button>`:''}</td></tr>
-        ${openHours===x.id?`<tr><td colspan="6" style="background:#fafcfd">${x.lines.map(l=>`<a class="hist" href="#${esc(l.bookingId)}">${esc(fmtDate(l.date))} ${esc(l.time)} · ${esc(l.customer)} · <b>${esc(fmtH(l.hours))}</b> <span class="tag${l.real?' ok':''}">${l.real?'uppmätt':'planerad'}</span></a>`).join('')}</td></tr>`:''}`).join('')}
-      <tr><td><b>Totalt</b></td><td></td><td><b>${esc(fmtH(Math.round(tot*10)/10))}</b></td><td class="hm"></td><td class="hm"></td><td></td></tr></tbody></table></div>
-      <div class="muted" style="margin:4px 2px 20px"><b>Uppmätt</b> = personalen tryckte Start och Klart på arbetsordern. <b>Planerad</b> = jobbets planerade längd (används när Start/Klart saknas). Bara bokade och utförda jobb räknas, inte avbokade. Excel-filen har en rad per person och en rad per jobb.</div>`
+    const shifts=sh.shifts||[], hhmm=(t)=>new Date(t).toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Stockholm'});
+    const tot=r.rows.reduce((a,x)=>a+x.hours,0), ctot=r.rows.reduce((a,x)=>a+x.clockHours,0);
+    const shiftRows=(id)=>{ const l=shifts.filter(x=>x.rid===id);
+      return `<div class="sub-h">Stämplingar</div>${l.length?l.map(x=>{ const manual=!/i appen$/.test(x.log[0]?.what||''), edited=x.log.slice(1).some(g=>!/i appen$/.test(g.what)), far=[x.inLoc,x.outLoc].filter(Boolean).map(g=>g.dist);
+        return `<div class="shrow"><span><b>${esc(fmtDate(x.date))}</b> ${hhmm(x.in)}–${x.out?hhmm(x.out):'<span class="tag no">ej utstämplad</span>'}${x.out?` · <b>${esc(fmtH(Math.round((x.out-x.in)/36e5*10)/10))}</b>`:''}
+          ${manual?'<span class="tag">inlagd manuellt</span>':''}${edited?`<span class="tag wn" title="${esc(x.log.map(g=>fmtTs(g.at)+' '+g.by+': '+g.what).join('\n'))}">ändrad</span>`:''}${far.length?` <span class="muted">${far.map(d=>d+' m').join(' / ')} från kontoret</span>`:''}</span>
+          <span><button class="btn sec sm" data-esh="${esc(x.id)}">Ändra</button> <button class="btn gray sm" data-dsh="${esc(x.id)}" aria-label="Ta bort">✕</button></span></div>`; }).join(''):'<div class="muted" style="padding:6px 0">Inga stämplingar.</div>'}
+        <button class="btn sec sm" data-ash="${esc(id)}" style="margin:6px 0 10px">+ Lägg till stämpling</button>`; };
+    $('#hpane').innerHTML=r.rows.length?`<div class="card" style="padding:6px 18px 14px"><table class="htab"><thead><tr><th>Namn</th><th>Stämplat</th><th>Jobb</th><th>Jobbtimmar</th><th class="hm">Uppmätt</th><th class="hm">Planerad</th><th></th></tr></thead><tbody>
+      ${r.rows.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="muted">${esc(x.role)}</div></td>
+        <td><b>${esc(fmtH(x.clockHours))}</b><div class="muted">${x.days} dag${x.days===1?'':'ar'}</div>${x.openShifts?'<span class="tag no">ej utstämplad</span>':''}</td>
+        <td>${x.jobs}</td><td><b>${esc(fmtH(x.hours))}</b></td><td class="hm">${esc(fmtH(x.realHours))}</td><td class="hm">${esc(fmtH(x.plannedHours))}</td>
+        <td style="text-align:right"><button class="btn gray sm" data-open="${esc(x.id)}">${openHours===x.id?'Dölj':'Visa'}</button></td></tr>
+        ${openHours===x.id?`<tr><td colspan="7" style="background:#fafcfd">${shiftRows(x.id)}<div class="sub-h">Jobb</div>${x.lines.length?x.lines.map(l=>`<a class="hist" href="#${esc(l.bookingId)}">${esc(fmtDate(l.date))} ${esc(l.time)} · ${esc(l.customer)} · <b>${esc(fmtH(l.hours))}</b> <span class="tag${l.real?' ok':''}">${l.real?'uppmätt':'planerad'}</span></a>`).join(''):'<div class="muted">Inga jobb.</div>'}</td></tr>`:''}`).join('')}
+      <tr><td><b>Totalt</b></td><td><b>${esc(fmtH(Math.round(ctot*10)/10))}</b></td><td></td><td><b>${esc(fmtH(Math.round(tot*10)/10))}</b></td><td class="hm"></td><td class="hm"></td><td></td></tr></tbody></table></div>
+      <div class="muted" style="margin:4px 2px 20px"><b>Stämplat</b> = arbetsdagen från instämpling till utstämpling vid kontoret (Stämpelklockan i personalappen) – det ni normalt betalar lön efter. <b>Jobbtimmar</b> = tid på jobben: <b>uppmätt</b> med Start och Klart på arbetsordern, annars <b>planerad</b> längd. Avbokade jobb räknas inte. Excel-filen har en rad per person och en rad per jobb.</div>`
       :'<div class="card empty">Ingen personal inlagd.</div>';
     root.querySelectorAll('[data-open]').forEach(x=>x.onclick=()=>{ openHours=openHours===x.dataset.open?null:x.dataset.open; showHours(); });
+    // ---- correct stamps (owner): add, change, delete – every change is logged on the stamp ----
+    const local=(t)=>new Date(t).toLocaleString('sv-SE',{timeZone:'Europe/Stockholm'}).replace(' ','T').slice(0,16);   // stamps are kept in Stockholm time
+    const editor=(rid,x)=>{
+      const p=resById(rid)||{name:x?.name||''}, d0=x?local(x.in).slice(0,10):(hoursMonth===today().slice(0,7)?today():hoursMonth+'-01');
+      const box=document.createElement('div'); box.className='pinbox';
+      box.innerHTML=`<div class="card"><h3>${x?'Ändra stämpling':'Lägg till stämpling'} – ${esc(p.name)}</h3>
+        <label class="f">Datum</label><input id="sh_d" type="date" value="${esc(d0)}">
+        <div class="row2"><div><label class="f">Instämplad</label><input id="sh_in" type="time" value="${x?esc(local(x.in).slice(11)):'07:00'}"></div>
+          <div><label class="f">Utstämplad <span class="muted">(tom = fortfarande inne)</span></label><input id="sh_out" type="time" value="${x&&x.out?esc(local(x.out).slice(11)):(x?'':'16:00')}"></div></div>
+        <div class="muted" style="margin-top:8px">Går passet över midnatt? Lägg in utstämplingen som ett eget pass nästa dag. Ändringen sparas med ditt namn.</div>
+        <div class="btns"><button class="btn gray" id="sh_x">Avbryt</button><button class="btn" id="sh_ok">Spara</button></div><div id="sh_msg"></div></div>`;
+      document.body.appendChild(box);
+      box.querySelector('#sh_x').onclick=()=>box.remove();
+      box.querySelector('#sh_ok').onclick=async()=>{ const d=box.querySelector('#sh_d').value, i=box.querySelector('#sh_in').value, o=box.querySelector('#sh_out').value;
+        try{ await api('/api/admin/clock',{method:'POST',body:JSON.stringify({id:x?.id,month:x?.date.slice(0,7),rid,in:d+'T'+i,out:o?d+'T'+o:''})}); box.remove(); openHours=rid; showHours(); notify('Stämplingen är sparad ✓'); }
+        catch(e){ box.querySelector('#sh_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    };
+    root.querySelectorAll('[data-ash]').forEach(x=>x.onclick=()=>editor(x.dataset.ash,null));
+    root.querySelectorAll('[data-esh]').forEach(x=>x.onclick=()=>{ const v=shifts.find(y=>y.id===x.dataset.esh); editor(v.rid,v); });
+    root.querySelectorAll('[data-dsh]').forEach(x=>x.onclick=async()=>{ const v=shifts.find(y=>y.id===x.dataset.dsh);
+      if(!confirm(`Ta bort stämplingen ${fmtDate(v.date)} för ${v.name}?`)) return;
+      try{ await api('/api/admin/clock?month='+v.date.slice(0,7)+'&id='+v.id,{method:'DELETE'}); showHours(); }catch(e){ notify(e.message); } });
   }
 
   // ---------- settings ----------
@@ -1451,6 +1491,37 @@
       try{ await api('/api/admin/backup?do=run',{method:'POST'}); notify('Kopian är sparad ✓'); SETTINGS.backup(el); }catch(e){ x.disabled=false; x.textContent='Gör en kopia nu'; $('#b_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
     el.querySelectorAll('[data-rs]').forEach(x=>x.onclick=()=>restore('/api/admin/backup?do=restore&from='+encodeURIComponent(x.dataset.rs),null,'kopian'));
     $('#b_up').onclick=async()=>{ const f=$('#b_file').files[0]; if(!f) return $('#b_msg').innerHTML='<div class="err">Välj en fil först.</div>'; restore('/api/admin/backup?do=restore',await f.arrayBuffer(),f.name); };
+  };
+
+  // ---- time clock settings (owner) ----
+  SET_TABS.push(['clock','Stämpelklocka',true]);
+  SETTINGS.clock=async(el)=>{
+    let s; try{ s=await api('/api/admin/settings'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    let office=s.office;
+    const draw=()=>{
+      el.innerHTML=`<div class="card"><h3>Stämpelklocka i personalappen</h3>
+        <div class="muted">Personalen stämplar in när arbetsdagen börjar och ut när den slutar – bara vid kontoret. Telefonens position läses <b>bara i det ögonblick</b> de trycker och sparas med stämplingen. Ingen följs under dagen. Är någon för långt bort går det inte – de ringer dig och du lägger in tiden under Statistik → Timrapport.</div>
+        <div class="warn" style="margin-top:12px"><b>Informera personalen</b> innan ni börjar: att positionen kontrolleras och sparas när de stämplar, och att tiderna används för lönen (GDPR).</div>
+        <label class="f" style="display:flex;align-items:center;gap:10px;margin-top:14px"><input type="checkbox" id="c_on" style="width:20px;height:20px"${s.clockOn?' checked':''}> Stämpelklockan är på</label>
+        <label class="f">Kontorets position</label>
+        ${office?`<div class="okmsg" style="margin-top:0">📍 ${esc(office.label||'Kontoret (vald med din position)')} <a href="https://www.google.com/maps?q=${office.lat},${office.lon}" target="_blank" rel="noopener" style="margin-left:6px">Visa på kartan ›</a></div>`:'<div class="muted">Ingen position vald än.</div>'}
+        <div class="acw" style="margin-top:6px"><input id="c_q" placeholder="Sök kontorets adress, t.ex. Frejgatan 9B Kungsör" autocomplete="off"><div class="acl" id="c_ac" hidden></div></div>
+        <button class="btn sec sm" id="c_here" style="margin-top:8px">📍 Använd min position nu (stå på kontoret)</button>
+        <label class="f" for="c_r">Hur nära kontoret</label><select id="c_r">${[200,300,500,1000,2000].map(n=>`<option value="${n}"${s.clockRadiusM===n?' selected':''}>Inom ${n<1000?n+' m':n/1000+' km'}</option>`).join('')}</select>
+        <button class="btn" id="c_save">Spara</button><div id="c_msg"></div></div>`;
+      let t=null, items=[];
+      const box=$('#c_ac'), drawAc=()=>{ box.innerHTML=items.map((m,i)=>`<button type="button" data-i="${i}"><b>${esc(m.main)}</b><small>${esc(m.sub)}</small></button>`).join(''); box.hidden=!items.length;
+        box.querySelectorAll('button').forEach(b=>b.onmousedown=(e)=>{ e.preventDefault(); const m=items[b.dataset.i]; office={lat:m.lat,lon:m.lon,label:m.value}; items=[]; draw(); }); };
+      $('#c_q').oninput=()=>{ clearTimeout(t); const q=$('#c_q').value.trim(); if(q.length<3){ items=[]; drawAc(); return; } t=setTimeout(async()=>{ try{ items=await photon(q); drawAc(); }catch(_){} },300); };
+      $('#c_q').onblur=()=>setTimeout(()=>{ items=[]; drawAc(); },150);
+      $('#c_here').onclick=()=>{ const b=$('#c_here'); b.disabled=true; b.textContent='Hämtar position…';
+        navigator.geolocation.getCurrentPosition((p)=>{ office={lat:p.coords.latitude,lon:p.coords.longitude,label:''}; draw(); $('#c_msg').innerHTML=`<div class="okmsg">Positionen är hämtad (±${Math.round(p.coords.accuracy)} m). Tryck Spara.</div>`; },
+          ()=>{ b.disabled=false; b.textContent='📍 Använd min position nu (stå på kontoret)'; $('#c_msg').innerHTML='<div class="err">Kunde inte hämta positionen – tillåt plats i webbläsaren eller sök adressen.</div>'; },{enableHighAccuracy:true,timeout:20000}); };
+      $('#c_save').onclick=async()=>{ try{ s=await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({office,clockRadiusM:Number($('#c_r').value),clockOn:$('#c_on').checked})}); office=s.office; draw();
+          $('#c_msg').innerHTML=`<div class="okmsg">Sparat ✓ ${s.clockOn?'– personalen kan stämpla i appen.':'– stämpelklockan är avstängd.'}</div>`; }
+        catch(e){ $('#c_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    };
+    draw();
   };
 
   // ---------- staff and vehicles ----------

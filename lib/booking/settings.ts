@@ -5,8 +5,12 @@ export type Settings = {
   reviewOn: boolean;        // e-mail customers a request for a Google review after the job
   reviewUrl: string;        // the "write a review" link from Google Business Profile
   reviewDelayDays: number;  // days after the moving day
+  // Time clock (Stämpelklocka) in the crew app: clock in/out only within `clockRadiusM` of the office.
+  clockOn: boolean;
+  office: { lat: number; lon: number; label: string } | null;
+  clockRadiusM: number;
 };
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1 };
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500 };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
@@ -24,6 +28,18 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
   }
   if ("reviewDelayDays" in d) { const n = Math.round(Number(d.reviewDelayDays)); if (!(n >= 0 && n <= 14)) throw new Error("0–14 dagar."); cur.reviewDelayDays = n; }
   if (cur.reviewOn && !cur.reviewUrl) throw new Error("Lägg in länken till Google först.");
+  if ("office" in d) {
+    const o = d.office as { lat?: unknown; lon?: unknown; label?: unknown } | null;
+    if (o === null) cur.office = null;
+    else {
+      const lat = Number(o?.lat), lon = Number(o?.lon);
+      if (!(lat > 55 && lat < 70 && lon > 10 && lon < 25)) throw new Error("Kontorets position måste ligga i Sverige.");
+      cur.office = { lat: Math.round(lat * 1e6) / 1e6, lon: Math.round(lon * 1e6) / 1e6, label: typeof o?.label === "string" ? o.label.trim().slice(0, 160) : "" };
+    }
+  }
+  if ("clockRadiusM" in d) { const n = Math.round(Number(d.clockRadiusM)); if (!(n >= 100 && n <= 5000)) throw new Error("Avstånd: 100–5 000 m."); cur.clockRadiusM = n; }
+  if ("clockOn" in d) cur.clockOn = d.clockOn === true;
+  if (cur.clockOn && !cur.office) throw new Error("Ange kontorets position först.");
   await kv(["SET", KEY, JSON.stringify(cur)]);
   return cur;
 }
