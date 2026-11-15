@@ -64,7 +64,11 @@
   /* ---------- notices ---------- */
   #npanel{position:fixed;top:64px;right:16px;left:16px;max-width:420px;margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh2);z-index:30;max-height:70vh;overflow:auto}
   #npanel .ev{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:#fff;padding:12px 16px;font:inherit;color:var(--ink);cursor:pointer}
-  #npanel .ev.unread{background:#fff7ef}#npanel .ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  #npanel .ev{position:relative}#npanel .ev.unread{background:#fff7ef;font-weight:700;padding-left:28px}#npanel .ev.read{color:#5d6d7a}
+  #npanel .ndot{position:absolute;left:12px;top:18px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
+  #npanel .nhead{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;font-size:13px}#npanel .nhead span{color:var(--muted)}
+  #npanel .nhead button{margin-left:auto;border:0;background:none;color:var(--navy);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer;padding:4px 0}
+  #npanel .ev.unread small{font-weight:400}#npanel .ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
   #toast{display:flex;align-items:center;gap:12px;position:fixed;left:16px;right:16px;bottom:24px;max-width:440px;margin:0 auto;background:var(--navy);color:#fff;border-radius:14px;padding:13px 16px;z-index:40;box-shadow:var(--sh2);font-weight:600;cursor:pointer}
   @media (max-width:899px){#toast{bottom:calc(84px + env(safe-area-inset-bottom))}}
 
@@ -403,9 +407,14 @@
   const getSeen=()=>{ try{ return Number(localStorage.getItem(seenKey))||0; }catch(_){ return 0; } };
   const setSeen=(t)=>{ try{ localStorage.setItem(seenKey,String(t)); }catch(_){} };
   let newestSeenInSession=0;
+  // Each notice stays in the list; it counts as unread until it is opened (or "Markera alla som lästa").
+  const evKey=(e)=>e.id+':'+e.t+':'+e.ic;
+  const getRead=()=>{ try{ return new Set(JSON.parse(localStorage.getItem('fx_read')||'[]')); }catch(_){ return new Set(); } };
+  const setRead=(set)=>{ const keep=new Set(events().map(evKey)); try{ localStorage.setItem('fx_read',JSON.stringify([...set].filter(k=>keep.has(k)))); }catch(_){} };
+  const isUnread=(e,seen,read)=>e.t>seen&&!read.has(evKey(e));
   function updateBell(){
     const bell=$('#bell'); if(!bell) return;
-    const n=events().filter(e=>e.t>getSeen()).length, c=$('#bellN');
+    const seen=getSeen(), read=getRead(), n=events().filter(e=>isUnread(e,seen,read)).length, c=$('#bellN');
     c.hidden=!n; c.textContent=n>9?'9+':String(n);
     document.title=(n?`(${n}) `:'')+'Admin – FX Flytt';
   }
@@ -416,12 +425,17 @@
   function startNotices(){
     if(startNotices.on) return; startNotices.on=true;
     newestSeenInSession=Math.max(0,...events().map(e=>e.t));
+    const drawPanel=()=>{
+      const p=$('#npanel'), seen=getSeen(), read=getRead(), ev=events(), n=ev.filter(e=>isUnread(e,seen,read)).length;
+      p.innerHTML=ev.length?`<div class="nhead"><b>Notiser</b>${n?`<span>${n} olästa</span><button id="nall">Markera alla som lästa</button>`:'<span>Allt är läst ✓</span>'}</div>`
+        +ev.map(e=>{ const u=isUnread(e,seen,read); return `<button class="ev${u?' unread':' read'}" data-id="${esc(e.id)}" data-k="${esc(evKey(e))}">${u?'<i class="ndot"></i>':''}${e.ic} ${esc(e.txt)}<small>${esc(ago(e.t))}${u?'':' · Öppnad ✓'}</small></button>`; }).join('')
+        :'<div class="empty">Inga notiser än.</div>';
+      p.querySelectorAll('.ev').forEach(x=>x.onclick=()=>{ const r=getRead(); r.add(x.dataset.k); setRead(r); updateBell(); p.hidden=true; location.hash=x.dataset.id; });
+      if($('#nall')) $('#nall').onclick=(e)=>{ e.stopPropagation(); setSeen(Date.now()); setRead(new Set()); updateBell(); drawPanel(); };
+    };
     $('#bell').onclick=()=>{
       const p=$('#npanel'); if(!p.hidden){ p.hidden=true; return; }
-      const seen=getSeen(), ev=events();
-      p.innerHTML=ev.length?ev.map(e=>`<button class="ev${e.t>seen?' unread':''}" data-id="${esc(e.id)}">${e.ic} ${esc(e.txt)}<small>${esc(ago(e.t))}</small></button>`).join(''):'<div class="empty">Inga notiser än.</div>';
-      p.hidden=false; setSeen(Date.now()); updateBell();
-      p.querySelectorAll('.ev').forEach(x=>x.onclick=()=>{ p.hidden=true; location.hash=x.dataset.id; });
+      drawPanel(); p.hidden=false;
     };
     document.addEventListener('click',(e)=>{ const p=$('#npanel'); if(!p.hidden&&!p.contains(e.target)&&e.target.id!=='bell'&&!$('#bell').contains(e.target)) p.hidden=true; });
     // Check for news every 30 seconds while the page is open and visible.
