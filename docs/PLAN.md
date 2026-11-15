@@ -27,6 +27,8 @@ five city pages. The site has since grown past that scope; this document describ
 - "Få offert" on every page opens the quote form in a pop-up (`site-src/fx-offert.js` + `/offert`, the home page's own form
   alone). City pages pre-fill their town, Flyttstäd pre-selects flyttstäd. The visitor never leaves the page.
 - Cookie banner + Google Analytics 4 (`site-src/fx-consent.js`). Measurement ID G-EPPXSBN284.
+  Events: `generate_lead` (quote sent, also from the pop-up), `phone_click` / `email_click` with `placement`
+  (header, mobile_bar, menu, footer, chat, offert_popup, page). Mark `generate_lead` and `phone_click` as key events in GA.
   Lead events (`generate_lead`) are already sent from the quote form, price-by-email and call-back.
 
 **Booking system**
