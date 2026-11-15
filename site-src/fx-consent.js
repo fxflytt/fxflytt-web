@@ -52,7 +52,7 @@
     box.innerHTML =
       "<b>Får vi mäta besöken?</b>" +
       "<p>Vi vill använda Google Analytics för att se hur sidan används och göra den bättre. Inga kakor sätts förrän du godkänner. " +
-      "<a href=\"/integritetspolicy#kakor\">Läs mer</a></p>" +
+      "<a href=\"/integritetspolicy#kakor\">Läs mer om kakor</a></p>" +
       "<div class=\"r\"><button type=\"button\" class=\"n\">Nej tack</button><button type=\"button\" class=\"y\">Godkänn</button></div>";
     document.head.appendChild(css);
     document.body.appendChild(box);

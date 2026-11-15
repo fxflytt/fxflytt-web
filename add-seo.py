@@ -40,7 +40,7 @@ for f in pages:
         import re as _re
         h1 = _re.search(r"<h1[^>]*>(.*?)</h1>", s, _re.S)
         name = _re.sub(r"<[^>]+>", "", h1.group(1)).strip() if h1 else os.path.basename(f)[:-5]
-        crumbs = [{"@type": "ListItem", "position": 1, "name": "Start", "item": BASE + "/"}]
+        crumbs = [{"@type": "ListItem", "position": 1, "name": "FX Flytt", "item": BASE + "/"}]
         if os.path.basename(f).startswith("flyttfirma-"):
             crumbs.append({"@type": "ListItem", "position": 2, "name": "Flyttfirma", "item": BASE + "/flyttfirma"})
         crumbs.append({"@type": "ListItem", "position": len(crumbs) + 1, "name": name, "item": u})

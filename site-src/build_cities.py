@@ -189,7 +189,7 @@ def city_page(c):
 
 <section class="c-hero">
   <div class="wrap">
-    <div class="crumbs"><a href="index.html">Start</a> › Flyttfirma {c["name"]}</div>
+    <div class="crumbs"><a href="index.html">FX Flytt</a> › Flyttfirma {c["name"]}</div>
     <h1>{c["h1"]}</h1>
     <p>{c["lead"]}</p>
     <div class="hero-cta">

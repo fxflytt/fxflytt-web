@@ -12,7 +12,7 @@ five city pages. The site has since grown past that scope; this document describ
 | D3 | FX Flytt AB owns all accounts: hosting, database, domain, code repository, email, and later payments. |
 | D4 | RUT: method `selling_price`, 50 % of the mover labour lines. Not changed without the owner's approval; the accountant approves the calculation. |
 | D5 | Nothing outside the agreed scope is built without the owner's agreement. |
-| D6 | Prices are computed on the server only; personnummer only when needed; no card payments yet. |
+| D6 | Prices are computed on the server only; no card payments yet. Personnummer (private customers) is required when signing an offer, for RUT and as proof of who signed. It is shown in admin (owner/office) and in the company's booking email; never in the crew app, the customer's emails or the chat. Owner decision 2026-11-15; the privacy policy says the same. |
 | D7 | Google Analytics only after the visitor's consent (cookie banner). |
 
 ## 2. What runs today
@@ -65,6 +65,6 @@ five city pages. The site has since grown past that scope; this document describ
 | Customer reviews on the website (Google / Reco / Trustpilot) | In progress |
 | Google Analytics measurement ID (`G-…`) in `site-src/fx-consent.js` | Waiting for the ID |
 | Own photos of team and trucks (replace stock photos) | Photo session planned |
-| Accessibility fixes from Lighthouse: contrast on small orange labels, heading order, phone button without text label | Proposed |
-| Personnummer is shown in the company email after signing – check against D6 | To decide |
+| Accessibility: heading order, phone button label, breadcrumb text, darker orange for small text | Done 2026-11-15 |
+| Accessibility: white text on the orange buttons has low contrast | Waiting for the owner to choose a colour option |
 | Accountant sign-off on the RUT calculation | Open |

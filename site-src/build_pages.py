@@ -126,7 +126,7 @@ def page(file, title, desc, crumb, h1, lead, body, extra_head=""):
 {d}
 <section class="p-hero">
   <div class="wrap">
-    <div class="crumbs"><a href="index.html">Start</a> › {crumb}</div>
+    <div class="crumbs"><a href="index.html">FX Flytt</a> › {crumb}</div>
     <h1>{h1}</h1>
     <p>{lead}</p>
     <div class="hero-cta">
@@ -522,7 +522,8 @@ integritet = page("integritetspolicy.html",
       <li>Namn, telefonnummer och e-postadress.</li>
       <li>Adresser du flyttar från och till, samt uppgifter om bostaden (storlek, våning, hiss, bärsträcka).</li>
       <li>Uppgifter om flytten: datum, möbellista, beräknad volym och valda tjänster.</li>
-      <li>Personnummer – endast om du vill ha RUT-avdrag, eftersom det krävs för ansökan hos Skatteverket.</li>
+      <li>Personnummer (privatperson) eller organisationsnummer (företag) när du signerar offerten. Personnumret behövs för att ansöka om RUT-avdrag hos Skatteverket och för att visa vem som har godkänt avtalet.</li>
+      <li>När du signerar: namnet du skriver, tidpunkt, IP-adress och webbläsare – som bevis på att du har godkänt offerten och villkoren.</li>
       <li>Det du själv skriver i meddelanden till oss.</li>
       <li>Om du ber om priset på mejl i prisräknaren: namn, e-post, telefon (om du anger det) och dina val i räknaren.</li>
     </ul>
@@ -538,6 +539,7 @@ integritet = page("integritetspolicy.html",
     <h2>4. Vilka som får ta del av uppgifterna</h2>
     <ul>
       <li>Skatteverket, när vi ansöker om RUT-avdrag åt dig.</li>
+      <li>Inom FX Flytt: din bokning med personnummer visas i vårt bokningssystem för ägare och kontorspersonal och skickas till företagets bokningsmejl när du har signerat. Flyttpersonalen ser bara det som behövs för att utföra jobbet – aldrig personnummer, pris eller e-post.</li>
       <li>Leverantörer som hjälper oss att driva webbplatsen och ta emot förfrågningar (t.ex. webbhotell, e-posttjänst och AI-tjänsten för chatten). De får bara behandla uppgifterna för vår räkning.</li>
     </ul>
     <p>Vi säljer aldrig dina uppgifter.</p>
