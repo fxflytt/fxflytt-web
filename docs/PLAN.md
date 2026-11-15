@@ -19,7 +19,8 @@ five city pages. The site has since grown past that scope; this document describ
 
 **Public website** (plain HTML in `public/`, built from `site-src/` with `./build-site.sh`)
 - Home page with quote form and price calculator, 5 menu pages (tjänster, flyttfirma, paket, om oss, rådgivare),
-  20 city pages, flyttstäd, dödsbo, utlandsflytt, RUT-avdrag, kubikräknare, integritetspolicy, villkor.
+  20 city pages (each with its own "Bra att veta" text in `site-src/city_local.py` and a
+  route table with real prices to the 4 nearest cities), flyttstäd, dödsbo, utlandsflytt, RUT-avdrag, kubikräknare, integritetspolicy, villkor.
 - Prices from `lib/pricing/prices.json`; the owner can change them in admin and `public/fx-prices.js` shows the current ones.
 - SEO: unique titles/descriptions, canonical clean addresses (308 from `.html`), Open Graph image, MovingCompany +
   BreadcrumbList structured data, `sitemap.xml` (33 pages), `robots.txt`, Search Console verification.

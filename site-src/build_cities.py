@@ -119,6 +119,8 @@ CITIES = [
 
 from extra_cities import EXTRA
 CITIES += EXTRA
+from city_local import LOCAL
+assert all(c["slug"] in LOCAL for c in CITIES), "a city is missing its Bra att veta text in city_local.py"
 
 TRUCK = open("art_truck.svg", encoding="utf-8").read().strip()
 
@@ -138,6 +140,49 @@ def price_examples(c):
       <tbody>{rows}</tbody>
     </table></div>
     <p class="cmp-note">Flyttar du längre, till exempel från {c["name"]} till en annan ort, tillkommer 12 kr/km för hela sträckan när avståndet mellan adresserna (en väg) är 15 km eller mer. Våning och hiss påverkar inte priset. <a href="index.html#prisraknare">Räkna ut exakt pris</a></p>
+  </div>
+</section>
+"""
+
+# ---- Routes from each city (unique per page): distance to our office and prices to the nearest cities.
+# Distances are counted the same way as the price calculator on the site (straight line × 1,25, rounded).
+import math
+_T = json.loads(re.search(r"const TOWNS=(\[\[.*?\]\]);", SRC, re.S).group(1))
+_POS = {t[0]: (t[2], t[3]) for t in _T}
+def road_km(a, b):
+    (la1, lo1), (la2, lo2) = _POS[a], _POS[b]; r = math.pi / 180
+    h = math.sin((la2-la1)*r/2)**2 + math.cos(la1*r)*math.cos(la2*r)*math.sin((lo2-lo1)*r/2)**2
+    return max(1, round(2*6371*math.asin(math.sqrt(h))*1.25))
+def drive(km):  # rounded to 10 minutes – it is an estimate
+    m = int(round((km*1.6+5 if km < 20 else km*0.85+10) / 10) * 10)
+    return f"{m} min" if m < 60 else f"{m//60} tim" + (f" {m%60} min" if m % 60 else "")
+def mil(km): return str(round(km/10, 1)).replace(".", ",").replace(",0", "") + " mil"
+
+def route_section(c):
+    name = c["name"]
+    near = sorted((o for o in CITIES if o["slug"] != c["slug"]), key=lambda o: road_km(name, o["name"]))[:4]
+    kms = [road_km(name, o["name"]) for o in near]
+    pr = json.loads(subprocess.check_output(["node", "route_prices.mjs", json.dumps(kms)]))
+    rows = "".join(f"<tr><th scope='row'>{name} → <a href=\"flyttfirma-{o['slug']}.html\">{o['name']}</a></th><td>ca {k} km</td><td>{kr(p['bas'])}</td><td><b>{kr(p['premium'])}</b></td></tr>"
+                   for o, k, p in zip(near, kms, pr))
+    if c["slug"] == "kungsor":
+        office = (f"<p style='color:var(--muted);margin-bottom:14px'>Vårt kontor ligger på Drottninggatan i Kungsör – nära till dig när du flyttar inom kommunen. "
+                  f"Flyttar du härifrån är {near[0]['name']} ({mil(kms[0])}) och {near[1]['name']} ({mil(kms[1])}) de närmaste av våra orter.</p>")
+    else:
+        k = road_km("Kungsör", name)
+        office = (f"<p style='color:var(--muted);margin-bottom:14px'>Vi utgår från vårt kontor i Kungsör, ca {mil(k)} (ungefär {drive(k)} med bil) från {name}. "
+                  f"<b>Den resan betalar du inte för</b> – priset räknas bara på boytan och avståndet mellan din gamla och nya adress. "
+                  f"Flyttar du inom {name} (under 15 km) ingår körsträckan.</p>")
+    return f"""
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2 style="font-size:1.5rem;margin-bottom:6px">Flytt från {name} till andra orter</h2>
+    {office}
+    <div class="cmp-scroll"><table class="cmp ex">
+      <thead><tr><th>Sträcka</th><th>Avstånd</th><th>Flytt 60 m² (Bas)</th><th class="hot">Flytt + städ 60 m² (Premium)</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table></div>
+    <p class="cmp-note">Exempel för en lägenhet på 60 m², inkl. moms efter RUT-avdrag. Avståndet är ungefärligt mellan orternas centrum – i prisräknaren och offerten räknas det på dina riktiga adresser.</p>
   </div>
 </section>
 """
@@ -209,6 +254,8 @@ def city_page(c):
       <h3 style="color:var(--navy);margin-top:28px">Här hjälper vi till i {c["name"]}</h3>
       <div class="areas">{"".join(f"<span>{a}</span>" for a in c["areas"])}</div>
       {CITY_PHOTO(c)}
+      <h3 style="color:var(--navy);margin-top:28px">Bra att veta när du flyttar i {c["name"]}</h3>
+      {"".join(f"<p>{p}</p>" for p in LOCAL[c["slug"]])}
       <div class="tipbox"><b>Tips inför flytten i {c["name"]}</b><ul>{"".join(f"<li>{t}</li>" for t in c["tips"])}</ul></div>
     </div>
     <aside class="side">
@@ -225,6 +272,7 @@ def city_page(c):
 </section>
 
 {price_examples(c)}
+{route_section(c)}
 <section style="background:#fff">
   <div class="wrap">
     <div class="center">
