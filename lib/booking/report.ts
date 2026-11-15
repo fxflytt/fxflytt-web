@@ -6,6 +6,7 @@ import type { Resource } from "./team.ts";
 import { schedule } from "./schedule.ts";
 import { workedHours } from "./work.ts";
 import { hoursOf, type Shift } from "./clock.ts";
+import { paidMin, type Approved } from "./timesheet.ts";
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
 const booked = (b: Booking) => b.status === "signed" || b.status === "done";
@@ -13,12 +14,13 @@ const booked = (b: Booking) => b.status === "signed" || b.status === "done";
 export type HoursRow = {
   id: string; name: string; role: string; jobs: number; hours: number; realHours: number; plannedHours: number;
   clockHours: number; days: number; openShifts: number;   // from the time clock (Stämpelklocka)
+  approvedHours: number; approvedDays: number;            // Tidrapporter: approved paid time (after break)
   lines: { date: string; time: string; bookingId: string; customer: string; hours: number; real: boolean; status: string }[];
 };
 
-export function hoursReport(all: Booking[], resources: Resource[], month: string, shifts: Shift[] = []): HoursRow[] {
+export function hoursReport(all: Booking[], resources: Resource[], month: string, shifts: Shift[] = [], approved: Approved[] = []): HoursRow[] {
   const people = resources.filter((r) => r.kind === "person");
-  const rows = new Map<string, HoursRow>(people.map((r) => [r.id, { id: r.id, name: r.name, role: r.role || "", jobs: 0, hours: 0, realHours: 0, plannedHours: 0, clockHours: 0, days: 0, openShifts: 0, lines: [] }]));
+  const rows = new Map<string, HoursRow>(people.map((r) => [r.id, { id: r.id, name: r.name, role: r.role || "", jobs: 0, hours: 0, realHours: 0, plannedHours: 0, clockHours: 0, days: 0, openShifts: 0, approvedHours: 0, approvedDays: 0, lines: [] }]));
   for (const b of all) {
     if (!booked(b) || !b.date?.startsWith(month)) continue;
     const real = workedHours(b.work), h = real ?? schedule.hoursOf(b);
@@ -36,16 +38,20 @@ export function hoursReport(all: Booking[], resources: Resource[], month: string
     if (!dayset.has(s.rid)) dayset.set(s.rid, new Set()); dayset.get(s.rid)!.add(s.date);
   }
   for (const [rid, d] of dayset) rows.get(rid)!.days = d.size;
-  return [...rows.values()].filter((r) => r.jobs > 0 || r.clockHours > 0 || r.openShifts > 0 || people.find((p) => p.id === r.id)?.active)
-    .map((r) => ({ ...r, hours: r1(r.hours), realHours: r1(r.realHours), plannedHours: r1(r.plannedHours), clockHours: r1(r.clockHours), lines: r.lines.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)) }))
+  for (const a of approved) {
+    const row = rows.get(a.rid); if (!row || !a.date.startsWith(month)) continue;
+    row.approvedHours += paidMin(a.start, a.end, a.breakMin) / 60; row.approvedDays++;
+  }
+  return [...rows.values()].filter((r) => r.jobs > 0 || r.clockHours > 0 || r.approvedDays > 0 || r.openShifts > 0 || people.find((p) => p.id === r.id)?.active)
+    .map((r) => ({ ...r, hours: r1(r.hours), realHours: r1(r.realHours), plannedHours: r1(r.plannedHours), clockHours: r1(r.clockHours), approvedHours: Math.round(r.approvedHours * 100) / 100, lines: r.lines.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)) }))
     .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name));
 }
 
 // Excel-friendly (Swedish Excel: semicolon, decimal comma, BOM so å/ä/ö show right).
 export function hoursCsv(rows: HoursRow[], month: string): string {
   const q = (s: unknown) => `"${String(s ?? "").replace(/"/g, '""')}"`, n = (x: number) => String(x).replace(".", ",");
-  const out = [["Timrapport " + month], [], ["Namn", "Roll", "Stämplad tid (timmar)", "Arbetsdagar", "Jobb", "Jobbtimmar totalt", "varav uppmätta (Start–Klart)", "varav planerade"]];
-  for (const r of rows) out.push([r.name, r.role, n(r.clockHours), String(r.days), String(r.jobs), n(r.hours), n(r.realHours), n(r.plannedHours)]);
+  const out = [["Timrapport " + month], [], ["Namn", "Roll", "Godkänd tid att betala (timmar)", "Godkända dagar", "Stämplad tid (timmar)", "Arbetsdagar", "Jobb", "Jobbtimmar totalt", "varav uppmätta (Start–Klart)", "varav planerade"]];
+  for (const r of rows) out.push([r.name, r.role, n(r.approvedHours), String(r.approvedDays), n(r.clockHours), String(r.days), String(r.jobs), n(r.hours), n(r.realHours), n(r.plannedHours)]);
   out.push([], ["Namn", "Datum", "Start", "Bokning", "Kund", "Timmar", "Källa"]);
   for (const r of rows) for (const l of r.lines) out.push([r.name, l.date, l.time, l.bookingId, l.customer, n(l.hours), l.real ? "uppmätt" : "planerad"]);
   return "﻿" + out.map((row) => row.map(q).join(";")).join("\r\n");

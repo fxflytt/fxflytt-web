@@ -78,7 +78,7 @@ test("timrapport: uppmätt tid före planerad, bara bokade jobb i månaden", () 
   assert.deepEqual([b.jobs, b.hours], [1, 5.5]);
   assert.equal(rows.some((r) => r.id === "RT"), false);          // vehicles are not on the hours report
   const csv = report.hoursCsv(rows, "2026-12");
-  assert.ok(csv.startsWith("﻿")); assert.match(csv, /"Ahmad";"";"0";"0";"2";"8,5";"5,5";"3"/);
+  assert.ok(csv.startsWith("﻿")); assert.match(csv, /"Ahmad";"";"0";"0";"0";"0";"2";"8,5";"5,5";"3"/);
   const m = report.moneyReport(all, "2026-12-06", 3);
   assert.deepEqual(m.months.map((x) => x.month), ["2026-10", "2026-11", "2026-12"]);
   assert.equal(m.thisMonth.done, 5000); assert.equal(m.thisMonth.booked, 8000); assert.equal(m.upcoming.total, 3000);
