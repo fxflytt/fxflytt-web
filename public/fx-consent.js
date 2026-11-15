@@ -6,7 +6,20 @@
   var KEY = "fx-consent"; // "granted" | "denied"
   var EMBED = window.parent !== window;
   if (!/^G-[A-Z0-9]+$/.test(GA_ID)) return;
-  if (window.parent !== window) return; // inside the quote pop-up: the page around it handles analytics
+
+  // Clicks on the phone number and the e-mail address, as events "phone_click" / "email_click".
+  // Sent only if GA is loaded (the visitor accepted); inside the quote pop-up they go to the page around it.
+  // "placement" says which button: header, mobile bar, menu, footer, pop-up or page.
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest('a[href^="tel:"],a[href^="mailto:"]');
+    if (!a || typeof window.gtag !== "function") return;
+    var phone = a.getAttribute("href").indexOf("tel:") === 0;
+    var where = EMBED ? "offert_popup" : a.closest(".mbar") ? "mobile_bar" : a.closest("header") ? "header" :
+      a.closest(".drawer") ? "menu" : a.closest("footer") ? "footer" : a.closest(".fxc-panel,[class*=fxc]") ? "chat" : "page";
+    try { window.gtag("event", phone ? "phone_click" : "email_click", { placement: where }); } catch (x) {}
+  }, true);
+
+  if (EMBED) return; // inside the quote pop-up: the page around it handles analytics
 
   function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function set(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
