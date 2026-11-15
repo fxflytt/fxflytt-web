@@ -32,7 +32,7 @@ export function companyFacts(P: PriceList = DEFAULT_PRICES): string {
   return `
 FÖRETAG
 - Varumärke: FX Flytt (juridiskt namn FX Flytt AB). Säg "FX Flytt" till kunden. Flyttfirma med bas i Kungsör.
-- Adress: Frejgatan 9B, 736 30 Kungsör.
+- Adress: Drottninggatan 1, 736 31 Kungsör.
 - Telefon: 076-300 07 23. E-post: info@fxflytt.se. Webbplats: fxflytt.se
 - F-skatt: ja.
 - Öppettider: mån–fre 07–19, lör 09–17, sön enligt överenskommelse.

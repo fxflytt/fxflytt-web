@@ -33,7 +33,7 @@ test("askClaude sends the system prompt, model and redacted messages; returns te
   const reply = await askClaude([{ role: "user", content: "pnr 19900101-1234, vad kostar det?" }], "test-key", fake);
   assert.equal(reply, "Hej! 695 kr/tim efter RUT.");
   assert.equal(sent.model, MODEL);
-  assert.ok(sent.system[0].text.includes("Frejgatan 9B"));
+  assert.ok(sent.system[0].text.includes("Drottninggatan 1"));
   assert.ok(!JSON.stringify(sent.messages).includes("19900101"));
 });
 

@@ -112,7 +112,7 @@ export function offerEmail(d: OfferData, sentAt: Date, adminUrl?: string) {
     ${d.email ? "Klicka på <b>Svara</b> för att svara kunden direkt." : "Kunden lämnade ingen e-post – ring kunden."}
   </td></tr>
 </table>
-<div style="color:#9aa8b4;font-size:11px;padding:14px">FX Flytt AB · Frejgatan 9B, 736 30 Kungsör · 076-300 07 23</div>
+<div style="color:#9aa8b4;font-size:11px;padding:14px">FX Flytt AB · Drottninggatan 1, 736 31 Kungsör · 076-300 07 23</div>
 </td></tr></table></body></html>`;
 
   const t = (k: string, v?: string) => (v && v.trim() ? `${k}: ${v}\n` : "");
@@ -157,13 +157,13 @@ export function customerConfirmation(d: OfferData) {
     <a href="https://www.fxflytt.se/villkor" style="color:${NAVY}">Villkor</a> · <a href="https://www.fxflytt.se/integritetspolicy" style="color:${NAVY}">Integritetspolicy</a>
   </td></tr>
 </table>
-<div style="color:#9aa8b4;font-size:11px;padding:14px">FX Flytt AB · Frejgatan 9B, 736 30 Kungsör · 076-300 07 23 · info@fxflytt.se</div>
+<div style="color:#9aa8b4;font-size:11px;padding:14px">FX Flytt AB · Drottninggatan 1, 736 31 Kungsör · 076-300 07 23 · info@fxflytt.se</div>
 </td></tr></table></body></html>`;
 
   const text =
     `Tack${first ? " " + first : ""}!\n\nVi har tagit emot din förfrågan och återkommer inom 24 timmar med en offert som du kan läsa och signera direkt i mobilen.\n\n` +
     (d.size ? `Tjänst: ${d.size}\n` : "") + (d.date ? `Önskat datum: ${fmtDate(d.date)}\n` : "") +
-    `\nFrågor? Ring 076-300 07 23 eller svara på det här mejlet.\n\nVänliga hälsningar\nFX Flytt\nFrejgatan 9B, 736 30 Kungsör`;
+    `\nFrågor? Ring 076-300 07 23 eller svara på det här mejlet.\n\nVänliga hälsningar\nFX Flytt\nDrottninggatan 1, 736 31 Kungsör`;
   return { subject, html, text };
 }
 

@@ -29,7 +29,7 @@ function shell(title: string, badge: { text: string; bg: string; fg: string }, i
     <a href="https://www.fxflytt.se/villkor" style="color:${NAVY}">Villkor</a>
   </td></tr>
 </table>
-<div style="color:#9aa8b4;font-size:11px;padding:14px">FX Flytt AB · Frejgatan 9B, 736 30 Kungsör · 076-300 07 23 · info@fxflytt.se</div>
+<div style="color:#9aa8b4;font-size:11px;padding:14px">FX Flytt AB · Drottninggatan 1, 736 31 Kungsör · 076-300 07 23 · info@fxflytt.se</div>
 </td></tr></table></body></html>`;
 }
 

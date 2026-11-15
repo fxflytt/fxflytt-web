@@ -70,7 +70,7 @@
   const fmtDate=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}):'Enligt överenskommelse';
   const t=new URLSearchParams(location.search).get('t')||'';
   const app=$('#app');
-  const COMPANY=`<div class="card"><b>FX Flytt AB</b><div class="muted">Frejgatan 9B, 736 30 Kungsör · <a href="tel:+46763000723">076-300 07 23</a> · <a href="mailto:info@fxflytt.se">info@fxflytt.se</a></div>
+  const COMPANY=`<div class="card"><b>FX Flytt AB</b><div class="muted">Drottninggatan 1, 736 31 Kungsör · <a href="tel:+46763000723">076-300 07 23</a> · <a href="mailto:info@fxflytt.se">info@fxflytt.se</a></div>
     <div class="badges"><span>F-skatt</span><span>Trafiktillstånd</span><span>Försäkrade hos Trygg-Hansa</span><span>7 dagars städgaranti</span></div></div>`;
 
   function steps(s){const i={sent:1,signed:3}[s]??1;return `<div class="steps"><span class="done">Offert skickad</span><span class="${i===1?'on':'done'}">Granska</span><span class="${i===3?'done':''}">Signera</span><span class="${i===3?'done':''}">Bokad</span></div>`;}

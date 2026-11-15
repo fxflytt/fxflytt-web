@@ -203,7 +203,7 @@ tjanster = page("tjanster.html",
 </section>""")
 
 # ---------------------------------------------------------------- Flyttfirma
-CITY = [("kungsor","Kungsör","Vår hemmabas. Korta avstånd och kontor på Frejgatan."),
+CITY = [("kungsor","Kungsör","Vår hemmabas. Korta avstånd och kontor på Drottninggatan."),
         ("orebro","Örebro","Lägenheter, studentbostäder och villor i alla stadsdelar."),
         ("eskilstuna","Eskilstuna","Hela Eskilstuna och Torshälla – nära vår bas."),
         ("vasteras","Västerås","Privatflytt och kontorsflytt i hela Västerås."),
@@ -361,7 +361,7 @@ om = page("om-oss.html",
       <h2>FX Flytt</h2>
       <div class="facts" style="margin-top:20px">
         <div><span>Företag</span><b>FX Flytt AB</b></div>
-        <div><span>Adress</span><b>Frejgatan 9B, Kungsör</b></div>
+        <div><span>Adress</span><b>Drottninggatan 1, Kungsör</b></div>
         <div><span>Telefon</span><b><a href="tel:+46763000723" style="text-decoration:none">076-300 07 23</a></b></div>
         <div><span>E-post</span><b style="word-break:break-all">info@fxflytt.se</b></div>
         <div><span>F-skatt</span><b>Ja</b></div>
@@ -372,10 +372,10 @@ om = page("om-oss.html",
     <div class="map-card">
       <div>
         <span class="eyebrow" style="color:#ffb37a">Hitta hit</span>
-        <h3>Frejgatan 9B, Kungsör</h3>
+        <h3>Drottninggatan 1, Kungsör</h3>
         <p style="color:#c9d7e2;margin-top:8px">Centralt mellan Eskilstuna, Västerås, Örebro och Katrineholm.</p>
       </div>
-      <a class="btn btn-accent" href="https://www.google.com/maps/search/?api=1&query=Frejgatan+9B+Kungs%C3%B6r" target="_blank" rel="noopener">Öppna i Google Maps</a>
+      <a class="btn btn-accent" href="https://www.google.com/maps/search/?api=1&query=Drottninggatan+1+Kungs%C3%B6r" target="_blank" rel="noopener">Öppna i Google Maps</a>
     </div>
   </div>
 </section>""")
@@ -514,7 +514,7 @@ integritet = page("integritetspolicy.html",
     <p class="upd">Senast uppdaterad: 2026-11-12</p>
 
     <h2>1. Personuppgiftsansvarig</h2>
-    <p>FX Flytt AB, Frejgatan 9B, Kungsör, är personuppgiftsansvarig för behandlingen av dina personuppgifter. Kontakt: info@fxflytt.se, telefon 076-300 07 23.</p>
+    <p>FX Flytt AB, Drottninggatan 1, Kungsör, är personuppgiftsansvarig för behandlingen av dina personuppgifter. Kontakt: info@fxflytt.se, telefon 076-300 07 23.</p>
 
     <h2>2. Vilka uppgifter vi samlar in</h2>
     <ul>
@@ -616,7 +616,7 @@ villkor = page("villkor.html",
     <p>Vid bohagsflytt inom Sverige för privatpersoner gäller <b>Bohag 2010 – allmänna flyttbestämmelser för konsument</b>, fastställda efter överenskommelse mellan Sveriges Åkeriföretag, Sveriges Möbeltransportörers Förbund och Konsumentverket. Det som står i dessa villkor och i din bokningsbekräftelse gäller i första hand. I övrigt gäller Bohag 2010. <a href="https://www.akeri.se/media/qiwcxppx/bohag-2010-original-dec-15.pdf" target="_blank" rel="noopener">Läs Bohag 2010 (PDF)</a>.</p>
 
     <h2>9. Kontakt</h2>
-    <p>FX Flytt AB, Frejgatan 9B, Kungsör · 076-300 07 23 · info@fxflytt.se</p>
+    <p>FX Flytt AB, Drottninggatan 1, Kungsör · 076-300 07 23 · info@fxflytt.se</p>
   </div>
 </section>""")
 

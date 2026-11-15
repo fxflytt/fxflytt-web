@@ -27,7 +27,7 @@ import type { Loc } from "../lib/booking/clock.ts";
 const clock = await import("../lib/booking/clock.ts");
 const { DEFAULTS } = await import("../lib/booking/settings.ts");
 const { hoursReport } = await import("../lib/booking/report.ts");
-const office = { lat: 59.4221, lon: 16.0972, label: "Frejgatan 9B, Kungsör" };
+const office = { lat: 59.4221, lon: 16.0972, label: "Drottninggatan 1, Kungsör" };
 const S0 = { ...DEFAULTS, clockOn: true, office, clockRadiusM: 500 };
 const P = { id: "RA", name: "Ahmad" };
 

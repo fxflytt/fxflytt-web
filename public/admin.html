@@ -1663,7 +1663,7 @@
         <label class="f" style="display:flex;align-items:center;gap:10px;margin-top:14px"><input type="checkbox" id="c_on" style="width:20px;height:20px"${s.clockOn?' checked':''}> Stämpelklockan är på</label>
         <label class="f">Kontorets position</label>
         ${office?`<div class="okmsg" style="margin-top:0">📍 ${esc(office.label||'Kontoret (vald med din position)')} <a href="https://www.google.com/maps?q=${office.lat},${office.lon}" target="_blank" rel="noopener" style="margin-left:6px">Visa på kartan ›</a></div>`:'<div class="muted">Ingen position vald än.</div>'}
-        <div class="acw" style="margin-top:6px"><input id="c_q" placeholder="Sök kontorets adress, t.ex. Frejgatan 9B Kungsör" autocomplete="off"><div class="acl" id="c_ac" hidden></div></div>
+        <div class="acw" style="margin-top:6px"><input id="c_q" placeholder="Sök kontorets adress, t.ex. Drottninggatan 1 Kungsör" autocomplete="off"><div class="acl" id="c_ac" hidden></div></div>
         <button class="btn sec sm" id="c_here" style="margin-top:8px">📍 Använd min position nu (stå på kontoret)</button>
         <label class="f" for="c_r">Hur nära kontoret</label><select id="c_r">${[200,300,500,1000,2000].map(n=>`<option value="${n}"${s.clockRadiusM===n?' selected':''}>Inom ${n<1000?n+' m':n/1000+' km'}</option>`).join('')}</select>
         <button class="btn" id="c_save">Spara</button><div id="c_msg"></div></div>`;

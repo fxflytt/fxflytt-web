@@ -18,7 +18,7 @@
     { k: ["städ", "flyttstäd", "clean", "تنظيف"], a: "Ja, vi gör flyttstäd enligt checklista – fönster och balkong ingår. Fast pris från 2 000 kr efter RUT-avdrag. Bokar du flytt och städ tillsammans får du 10 % rabatt (Premium)." },
     { k: ["boka", "offert", "book", "quote", "حجز", "عرض"], a: "Fyll i offertformuläret högst upp på sidan – det tar två minuter och är gratis och inte bindande. Du kan också ringa " + PHONE + "." },
     { k: ["tid", "lång", "timmar", "hours"], a: "En 2:a tar oftast 4–5 timmar med två flyttare, beroende på mängd, våning och avstånd." },
-    { k: ["kontakt", "telefon", "ring", "mail", "adress", "اتصال", "رقم"], a: "Ring oss på " + PHONE + " eller besök oss på Frejgatan 9B i Kungsör." }
+    { k: ["kontakt", "telefon", "ring", "mail", "adress", "اتصال", "رقم"], a: "Ring oss på " + PHONE + " eller besök oss på Drottninggatan 1 i Kungsör." }
   ];
   var QUICK = ["Vad kostar en flytt?", "Hur fungerar RUT-avdraget?", "Vilka orter flyttar ni i?", "Hur bokar jag?"];
 
