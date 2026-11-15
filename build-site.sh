@@ -7,7 +7,7 @@ python3 build_pages.py >/dev/null
 for f in *.html; do [ "$f" = "preview.html" ] || cp "$f" ../public/; done
 cp art_*.svg ../public/
 cp kubik.js kontakt.js ortkarta.js fx-consent.js fx-offert.js ../public/
-mkdir -p ../public/img && cp img/*.jpg ../public/img/
+mkdir -p ../public/img ../public/fonts && cp img/*.jpg img/*.webp ../public/img/ && cp fonts/* ../public/fonts/
 cd ..
 # Chat assistant: this ONE line adds it to every page. Delete the next line to remove the assistant.
 python3 add-prices.py

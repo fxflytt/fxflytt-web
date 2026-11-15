@@ -14,7 +14,7 @@ header  = part("<header>", "</header>")
 drawer  = part('<nav class="drawer"', "</nav>")
 footer  = part("<footer>", "</footer>")
 mbar    = part('<div class="mbar">', "</div>\n")
-fonts   = part('<link rel="preconnect" href="https://fonts.googleapis.com">', 'rel="stylesheet">')
+fonts   = part('<!--fonts-->', '<!--/fonts-->')
 
 # Links on sub-pages must point back to the home page.
 def homeify(s):
