@@ -159,7 +159,8 @@ def city_page(c):
       "address":{"@type":"PostalAddress","streetAddress":"Drottninggatan 1","postalCode":"736 31","addressLocality":"Kungsör","addressCountry":"SE"},
       "openingHoursSpecification":[
         {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"07:00","closes":"19:00"},
-        {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"09:00","closes":"17:00"}],
+        {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"09:00","closes":"17:00"},
+        {"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"12:00","closes":"16:00"}],
       "areaServed":{"@type":"City","name":c["name"]},
     }
     ld_faq = {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
