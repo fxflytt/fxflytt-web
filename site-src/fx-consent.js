@@ -4,6 +4,7 @@
 (function () {
   var GA_ID = "G-EPPXSBN284";
   var KEY = "fx-consent"; // "granted" | "denied"
+  var EMBED = window.parent !== window;
   if (!/^G-[A-Z0-9]+$/.test(GA_ID)) return;
 
   function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
@@ -14,7 +15,8 @@
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
     gtag("js", new Date());
-    gtag("config", GA_ID, { anonymize_ip: true });
+    // Inside the quote pop-up (/offert) only the lead event counts, not an extra page view.
+    gtag("config", GA_ID, { anonymize_ip: true, send_page_view: !EMBED });
     var s = document.createElement("script");
     s.async = true;
     s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
@@ -69,7 +71,7 @@
 
   var c = get();
   if (c === "granted") loadGA();
-  else if (c !== "denied") {
+  else if (c !== "denied" && !EMBED) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", banner);
     else banner();
   }

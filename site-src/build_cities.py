@@ -114,7 +114,7 @@ CITIES = [
   tips=["Bor du utanför tätorten – berätta om vägen fram till huset när du begär offert.","Villaflytt? Glöm inte förråd, garage och vind när du räknar volym.","Vill du bli av med saker – boka bortforsling samtidigt så sparar du en tur."],
   faq=[("Flyttar ni även på landsbygden runt Katrineholm?","Ja, både i tätorten och i mindre orter runt omkring."),
        ("Kan ni flytta från Katrineholm till Mälardalen?","Ja, vi kör regelbundet mellan Katrineholm och orter i Mälardalen och Örebro län."),
-       ("Hur får jag ett pris?","Fyll i formuläret på startsidan eller ring oss – offerten är gratis och inte bindande.")]),
+       ("Hur får jag ett pris?","Klicka på ”Få offert” och fyll i formuläret, eller ring oss – offerten är gratis och inte bindande.")]),
 ]
 
 from extra_cities import EXTRA

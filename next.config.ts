@@ -7,7 +7,7 @@ import type { NextConfig } from "next";
 const pages = [
   "tjanster", "flyttfirma", "paket", "om-oss", "radgivare", "integritetspolicy", "villkor",
   "flyttfirma-kungsor", "flyttfirma-orebro", "flyttfirma-eskilstuna", "flyttfirma-vasteras", "flyttfirma-katrineholm",
-  "flyttfirma-karlstad", "flyttfirma-sodertalje", "flyttfirma-akersberga", "flyttfirma-norrtalje", "flyttfirma-nykoping", "flyttfirma-norrkoping", "flyttfirma-linkoping", "flyttfirma-motala", "flyttfirma-mjolby", "flyttfirma-jonkoping", "flyttfirma-nassjo", "flyttfirma-tranas", "flyttfirma-vastervik", "flyttfirma-vimmerby", "flyttfirma-ludvika", "flyttstad", "kubikraknare", "rut-avdrag", "dodsbo", "utlandsflytt", "admin", "signera", "arbetsorder", "jobb",
+  "flyttfirma-karlstad", "flyttfirma-sodertalje", "flyttfirma-akersberga", "flyttfirma-norrtalje", "flyttfirma-nykoping", "flyttfirma-norrkoping", "flyttfirma-linkoping", "flyttfirma-motala", "flyttfirma-mjolby", "flyttfirma-jonkoping", "flyttfirma-nassjo", "flyttfirma-tranas", "flyttfirma-vastervik", "flyttfirma-vimmerby", "flyttfirma-ludvika", "flyttstad", "kubikraknare", "rut-avdrag", "dodsbo", "utlandsflytt", "admin", "signera", "arbetsorder", "jobb", "offert",
 ];
 
 const securityHeaders = [
@@ -22,7 +22,7 @@ const config: NextConfig = {
   async redirects() {
     return [
       { source: "/index.html", destination: "/", permanent: true },
-      ...pages.filter((p) => !["admin", "signera", "arbetsorder", "jobb"].includes(p)).map((p) => ({ source: `/${p}.html`, destination: `/${p}`, permanent: true })),
+      ...pages.filter((p) => !["admin", "signera", "arbetsorder", "jobb", "offert"].includes(p)).map((p) => ({ source: `/${p}.html`, destination: `/${p}`, permanent: true })),
     ];
   },
   async rewrites() {

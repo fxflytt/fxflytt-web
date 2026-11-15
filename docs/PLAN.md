@@ -24,7 +24,9 @@ five city pages. The site has since grown past that scope; this document describ
 - SEO: unique titles/descriptions, canonical clean addresses (308 from `.html`), Open Graph image, MovingCompany +
   BreadcrumbList structured data, `sitemap.xml` (33 pages), `robots.txt`, Search Console verification.
 - Chat assistant (Claude) answering only from `lib/assistant/facts.ts`; works with built-in answers without an API key.
-- Cookie banner + Google Analytics 4 (`site-src/fx-consent.js`). Inactive until `GA_ID` is filled in.
+- "Få offert" on every page opens the quote form in a pop-up (`site-src/fx-offert.js` + `/offert`, the home page's own form
+  alone). City pages pre-fill their town, Flyttstäd pre-selects flyttstäd. The visitor never leaves the page.
+- Cookie banner + Google Analytics 4 (`site-src/fx-consent.js`). Measurement ID G-EPPXSBN284.
   Lead events (`generate_lead`) are already sent from the quote form, price-by-email and call-back.
 
 **Booking system**
@@ -63,7 +65,6 @@ five city pages. The site has since grown past that scope; this document describ
 |---|---|
 | Org.nr in footer, terms and structured data | Waiting for the confirmed number (the earlier one had 11 digits) |
 | Customer reviews on the website (Google / Reco / Trustpilot) | In progress |
-| Google Analytics measurement ID (`G-…`) in `site-src/fx-consent.js` | Waiting for the ID |
 | Own photos of team and trucks (replace stock photos) | Photo session planned |
 | Accessibility: heading order, phone button label, breadcrumb text, darker orange for small text | Done 2026-11-15 |
 | Accessibility: orange buttons, labels and the orange band use dark navy text (owner chose option 3) | Done 2026-11-15 |

@@ -868,3 +868,39 @@ flyttstad = page("flyttstad.html",
 
 for f, s in [("dodsbo.html", dodsbo), ("utlandsflytt.html", utland), ("rut-avdrag.html", rutpage), ("kubikraknare.html", kubik), ("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)
+
+# ---------------------------------------------------------------- Offert (embedded quote form)
+# The home page's own quote form, alone on a page. Other pages open it in a pop-up (/fx-offert.js), so the visitor
+# stays on the page. Same form, same code, same /api/offer – only the rest of the home page is hidden.
+# URL parameters pre-fill it: ?from=Örebro (town), ?svc=cleaning| (value of "Vad behöver du?").
+EMBED_CSS = """<style id="embed-css">
+html.embed,html.embed body{background:#fff}
+html.embed body>*:not(.hero):not(script):not(style){display:none!important}
+html.embed .hero{padding:0;background:#fff}
+html.embed .hero::before,html.embed .hero::after{display:none}
+html.embed .hero-grid{display:block;max-width:none;padding:0}
+html.embed .hero-grid>div:first-child{display:none}
+html.embed .quote{box-shadow:none;border-radius:0;max-width:none;margin:0;padding:22px 20px 28px}
+html.embed .cb-hero{display:none}
+html.embed #qform>h2{display:none}
+</style>
+"""
+EMBED_JS = """<script>
+(function(){
+  var q=new URLSearchParams(location.search), $=function(id){return document.getElementById(id);};
+  // Links inside the form open in the real window, not in the pop-up.
+  document.querySelectorAll('.quote a[href]').forEach(function(a){ if(!/^(#|tel:|mailto:)/.test(a.getAttribute('href'))&&a.target!=='_blank') a.target='_top'; });
+  var svc=q.get('svc'), from=q.get('from');
+  if(svc&&$('fsvc')&&[].some.call($('fsvc').options,function(o){return o.value===svc;})){ $('fsvc').value=svc; $('fsvc').dispatchEvent(new Event('change')); }
+  if(from&&window.fxPrefillTown) window.fxPrefillTown('from',from);
+  // Tell the page around us when the request is sent (for its own close button text).
+  var done=$('done'); if(done&&window.parent!==window) new MutationObserver(function(){ if(done.classList.contains('show')) parent.postMessage({fxOffert:'done'},location.origin); }).observe(done,{attributes:true});
+})();
+</script>
+"""
+offert = SRC.replace('<html lang="sv">', '<html lang="sv" class="embed">', 1)
+assert 'class="embed"' in offert, "html tag not found"
+offert = re.sub(r"<title>.*?</title>", "<title>Begär offert | FX Flytt</title>", offert, count=1, flags=re.S)
+offert = offert.replace("</head>", '<meta name="robots" content="noindex">\n' + EMBED_CSS + "</head>", 1)
+offert = offert.replace("</body>", EMBED_JS + "</body>", 1)
+open("offert.html", "w", encoding="utf-8").write(offert); print("wrote offert.html")

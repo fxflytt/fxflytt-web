@@ -31,7 +31,7 @@ EXTRA = [
    ["Höghus: kolla hur stor hissen är – stora möbler kan behöva bäras i trappan.", "Berätta om parkeringen nära porten är begränsad.", "Rensa innan flytten – då går flyttdagen snabbare."],
    [("Flyttar ni även i Järna och Mölnbo?", "Ja, hela Södertälje kommun ingår."),
     ("Kan ni flytta från Södertälje till Mälardalen?", "Ja, vi kör ofta mellan Södertälje och orter som Strängnäs, Eskilstuna och Västerås."),
-    ("Hur får jag ett pris?", "Fyll i formuläret på startsidan eller ring oss – offerten är gratis och inte bindande.")]),
+    ("Hur får jag ett pris?", "Klicka på ”Få offert” och fyll i formuläret, eller ring oss – offerten är gratis och inte bindande.")]),
 
  C("akersberga", "Åkersberga", "Stockholms län",
    "Flyttfirma i Åkersberga och Österåker. FX Flytt hjälper dig med bohagsflytt, packning, montering och flyttstäd. Gratis offert, RUT-avdrag direkt på fakturan.",
@@ -53,7 +53,7 @@ EXTRA = [
    ["Bor du på landet – berätta om vägen fram till huset.", "Fritidshus? Kolla om det går att köra fram med lastbil året runt.", "Långt avstånd? Prisräknaren visar körsträckan direkt."],
    [("Flyttar ni ut till Rimbo och Hallstavik?", "Ja, hela Norrtälje kommun ingår."),
     ("Kan ni flytta från ett fritidshus?", "Ja, berätta om tillfarten så planerar vi rätt bil."),
-    ("Hur bokar jag?", "Fyll i formuläret på startsidan eller ring oss.")], far=True),
+    ("Hur bokar jag?", "Klicka på ”Få offert” och fyll i formuläret, eller ring oss.")], far=True),
 
  C("nykoping", "Nyköping", "Södermanlands län",
    "Flyttfirma i Nyköping. FX Flytt hjälper dig med bohagsflytt, packning, montering, flyttstäd och bortforsling i Nyköping med omnejd. Gratis offert, RUT-avdrag.",

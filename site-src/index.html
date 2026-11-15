@@ -1205,6 +1205,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     }
     function close(){list.classList.remove('open');act=-1;}
     function pick(m){input.value=m.value;pts[key]={lat:m.lat,lon:m.lon};input.style.borderColor='';close();update();}
+    input._fxPick=pick;
     input.addEventListener('input',()=>{
       pts[key]=null;update();
       const q=input.value.trim(); clearTimeout(timer);
@@ -1257,6 +1258,12 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   }
   setup(document.getElementById('from'));
   setup(document.getElementById('to'));
+  // Pre-fills a town (e.g. from a city page) with coordinates, so the distance is counted once the other address is chosen.
+  window.fxPrefillTown=function(key,name){
+    const el=document.getElementById(key); if(!el||!name) return;
+    const t=TOWNS.find(t=>norm(t[0])===norm(name));
+    if(t) el._fxPick({value:t[0],lat:t[2],lon:t[3]}); else el.value=name;
+  };
 })();
 
 /* ---- Mobile menu ---- */
