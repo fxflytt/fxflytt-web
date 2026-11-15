@@ -6,6 +6,7 @@
   var KEY = "fx-consent"; // "granted" | "denied"
   var EMBED = window.parent !== window;
   if (!/^G-[A-Z0-9]+$/.test(GA_ID)) return;
+  if (window.parent !== window) return; // inside the quote pop-up: the page around it handles analytics
 
   function get() { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
   function set(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
@@ -15,8 +16,7 @@
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () { window.dataLayer.push(arguments); };
     gtag("js", new Date());
-    // Inside the quote pop-up (/offert) only the lead event counts, not an extra page view.
-    gtag("config", GA_ID, { anonymize_ip: true, send_page_view: !EMBED });
+    gtag("config", GA_ID, { anonymize_ip: true });
     var s = document.createElement("script");
     s.async = true;
     s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;

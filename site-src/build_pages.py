@@ -886,6 +886,9 @@ html.embed #qform>h2{display:none}
 </style>
 """
 EMBED_JS = """<script>
+// Analytics inside the pop-up: nothing is loaded here. Events (the lead) go to the page around the pop-up,
+// which sends them if the visitor has accepted cookies – so the lead counts on the real page and there is no extra page view.
+if(window.parent!==window) window.gtag=function(){ try{ parent.postMessage({fxGtag:[].slice.call(arguments)},location.origin); }catch(e){} };
 (function(){
   var q=new URLSearchParams(location.search), $=function(id){return document.getElementById(id);};
   // Links inside the form open in the real window, not in the pop-up.
