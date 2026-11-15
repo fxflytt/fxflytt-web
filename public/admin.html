@@ -210,7 +210,7 @@
   .tcard .acts{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
   .tcard.off{opacity:.65}
   .sw{display:flex;gap:8px;flex-wrap:wrap}.sw button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line2);background:var(--c);cursor:pointer}.sw button.on{box-shadow:0 0 0 2.5px var(--navy)}
-  .seg{display:inline-flex;background:#e8edf2;border-radius:12px;padding:3px;gap:2px}.seg button{border:0;background:none;padding:8px 14px;border-radius:9px;font:inherit;font-weight:700;font-size:14px;color:#47525c;cursor:pointer}.seg button.on{background:#fff;color:var(--navy);box-shadow:var(--sh)}
+  .seg{display:inline-flex;background:#e8edf2;border-radius:12px;padding:3px;gap:2px;max-width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.seg::-webkit-scrollbar{display:none}.seg button{white-space:nowrap;flex:none;border:0;background:none;padding:8px 14px;border-radius:9px;font:inherit;font-weight:700;font-size:14px;color:#47525c;cursor:pointer}.seg button.on{background:#fff;color:var(--navy);box-shadow:var(--sh)}
   .jl{margin-top:10px}.jl a{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px dashed var(--line);font-size:13px;text-decoration:none;color:var(--ink)}
 
   /* ---------- calendar ---------- */
@@ -1476,6 +1476,7 @@
     if(!tabs.some(t=>t[0]===setTab)) setTab=tabs[0]?.[0];
     root.innerHTML=navBar('set')+`<main style="max-width:980px"><div class="seg" id="stabs" style="margin-bottom:16px">${tabs.map(([k,l])=>`<button data-k="${k}" class="${k===setTab?'on':''}">${l}</button>`).join('')}</div><div id="spane"><div class="empty">Laddar…</div></div></main>`;
     root.querySelectorAll('#stabs button').forEach(x=>x.onclick=()=>{ setTab=x.dataset.k; showSettings(); });
+    { const on=$('#stabs .on'), bar=$('#stabs'); if(on) bar.scrollLeft=on.offsetLeft-(bar.clientWidth-on.offsetWidth)/2; }
     const fn=SETTINGS[setTab]; if(fn) await fn($('#spane')); else $('#spane').innerHTML='<div class="card empty">Inga inställningar för din roll.</div>';
   }
   const SETTINGS={};
