@@ -66,5 +66,5 @@ five city pages. The site has since grown past that scope; this document describ
 | Google Analytics measurement ID (`G-…`) in `site-src/fx-consent.js` | Waiting for the ID |
 | Own photos of team and trucks (replace stock photos) | Photo session planned |
 | Accessibility: heading order, phone button label, breadcrumb text, darker orange for small text | Done 2026-11-15 |
-| Accessibility: white text on the orange buttons has low contrast | Waiting for the owner to choose a colour option |
+| Accessibility: orange buttons, labels and the orange band use dark navy text (owner chose option 3) | Done 2026-11-15 |
 | Accountant sign-off on the RUT calculation | Open |

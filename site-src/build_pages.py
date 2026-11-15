@@ -38,7 +38,7 @@ PAGE_CSS = """
 .cmp th,.cmp td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:center}
 .cmp th:first-child,.cmp td:first-child{text-align:left}
 .cmp thead th{background:var(--navy);color:#fff}
-.cmp thead th.hot{background:var(--accent)}
+.cmp thead th.hot{background:var(--accent);color:var(--navy)}
 .cmp svg{width:20px;height:20px;margin:auto}
 .cmp .y{color:var(--green)}.cmp .n{color:#c3ccd4}
 .city-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:36px}
