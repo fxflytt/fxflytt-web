@@ -2,7 +2,7 @@
 // Set GA_ID to the measurement ID from Google Analytics (Admin → Data streams), e.g. "G-ABC123XYZ".
 // While GA_ID is empty nothing is loaded and no banner is shown.
 (function () {
-  var GA_ID = "";
+  var GA_ID = "G-EPPXSBN284";
   var KEY = "fx-consent"; // "granted" | "denied"
   if (!/^G-[A-Z0-9]+$/.test(GA_ID)) return;
 
