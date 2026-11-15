@@ -45,6 +45,10 @@
     document.addEventListener("keydown", function (e) { if (open && e.key === "Escape") close(true); });
     window.addEventListener("message", function (e) {
       if (e.origin === location.origin && e.data && e.data.fxOffert === "done") box.querySelector(".fo-top span").textContent = "Tack för din förfrågan!";
+      // Lead events from the form in the pop-up are sent from this page (only if the visitor accepted cookies).
+      if (e.origin === location.origin && e.data && Array.isArray(e.data.fxGtag) && e.data.fxGtag[0] === "event" && window.gtag) {
+        try { window.gtag.apply(window, e.data.fxGtag); } catch (x) {}
+      }
     });
   }
 
