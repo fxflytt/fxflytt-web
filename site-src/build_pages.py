@@ -13,7 +13,7 @@ header = part("<header>", "</header>")
 drawer = part('<nav class="drawer"', "</nav>")
 footer = part("<footer>", "</footer>")
 mbar   = part('<div class="mbar">', "</div>\n")
-fonts  = part('<link rel="preconnect" href="https://fonts.googleapis.com">', 'rel="stylesheet">')
+fonts  = part('<!--fonts-->', '<!--/fonts-->')
 
 def homeify(s):
     s = re.sub(r'href="#(?!top"|i-)', 'href="index.html#', s)
@@ -553,7 +553,7 @@ integritet = page("integritetspolicy.html",
 
     <h2 id="kakor">6. Kakor (cookies) och tredjepartstjänster</h2>
     <p><b>Google Analytics.</b> Om du godkänner det i cookie-rutan använder vi Google Analytics 4 (Google Ireland Ltd) för att se hur webbplatsen används, till exempel vilka sidor som besöks, hur många som skickar en offertförfrågan och hur många som klickar på vårt telefonnummer eller vår e-postadress. Då sätts kakorna <code>_ga</code> och <code>_ga_*</code> (lagras upp till 14 månader) och IP-adressen förkortas. Utan ditt godkännande sätts inga sådana kakor och inget skickas till Google Analytics. Ditt val sparas i din webbläsare. Du kan när som helst <a href="#kakor" onclick="window.fxCookieSettings&&window.fxCookieSettings();return false">ändra cookie-inställningar</a>.</p>
-    <p>Utöver detta använder webbplatsen inga kakor för spårning eller marknadsföring. Typsnitt hämtas från Google Fonts, adressförslag från Photon (Komoot), kartan från OpenStreetMap och kartverktyget från Cloudflare (cdnjs). Det innebär att din IP-adress skickas till dessa leverantörer när sidan laddas.</p>
+    <p>Utöver detta använder webbplatsen inga kakor för spårning eller marknadsföring. Typsnittet ligger på vår egen server. Adressförslag hämtas från Photon (Komoot), kartan från OpenStreetMap och kartverktyget från Cloudflare (cdnjs). Det innebär att din IP-adress skickas till dessa leverantörer när sidan laddas.</p>
     <p><b>Chattassistenten:</b> Om du skriver i chatten på webbplatsen skickas ditt meddelande till Anthropic (leverantör av AI-tjänsten Claude) för att ta fram ett svar. Skriv inte personnummer eller andra känsliga uppgifter i chatten. Om vi senare inför statistik eller annonsspårning ber vi om ditt samtycke först.</p>
 
     <h2>7. Dina rättigheter</h2>
@@ -903,6 +903,7 @@ if(window.parent!==window) window.gtag=function(){ try{ parent.postMessage({fxGt
 """
 offert = SRC.replace('<html lang="sv">', '<html lang="sv" class="embed">', 1)
 assert 'class="embed"' in offert, "html tag not found"
+offert = re.sub(r'<link rel="preload" as="image"[^>]*>\n', "", offert)
 offert = re.sub(r"<title>.*?</title>", "<title>Begär offert | FX Flytt</title>", offert, count=1, flags=re.S)
 offert = offert.replace("</head>", '<meta name="robots" content="noindex">\n' + EMBED_CSS + "</head>", 1)
 offert = offert.replace("</body>", EMBED_JS + "</body>", 1)

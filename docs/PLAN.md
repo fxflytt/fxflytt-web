@@ -45,8 +45,9 @@ five city pages. The site has since grown past that scope; this document describ
 **Quality**
 - `npm test` – 70 tests (pricing, RUT, bookings, schedule, staff, clock, fleet, referral, backup, chat, SMTP).
 - Dependency versions are pinned exactly in `package.json`.
-- Lighthouse (local production build, 2026-11-15): performance 94–100, best practices 100, SEO 92–100,
-  accessibility 89–95.
+- Lighthouse (local production build, 2026-11-15, after self-hosting the font): performance, accessibility,
+  best practices and SEO 100 on mobile and desktop; LCP on mobile 1.4–1.5 s. The font (Plus Jakarta Sans, OFL)
+  is served from `/fonts`, the home page photo as WebP (768 px on phones).
 
 ## 3. Environment variables (Vercel → Settings → Environment Variables)
 
