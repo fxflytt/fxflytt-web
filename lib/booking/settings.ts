@@ -15,8 +15,11 @@ export type Settings = {
   refOn: boolean;
   refFriendKr: number;      // discount for the friend, kr off the offer
   refReward: string;        // what the recommending customer gets, in words
+  // Tidrapporter: an unpaid break is deducted when a working day is longer than breakAfterH hours.
+  breakAfterH: number;
+  breakMin: number;
 };
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss" };
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30 };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
@@ -45,6 +48,8 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
   }
   if ("clockRadiusM" in d) { const n = Math.round(Number(d.clockRadiusM)); if (!(n >= 100 && n <= 5000)) throw new Error("Avstånd: 100–5 000 m."); cur.clockRadiusM = n; }
   if ("clockOn" in d) cur.clockOn = d.clockOn === true;
+  if ("breakAfterH" in d) { const n = Number(d.breakAfterH); if (!(n >= 0 && n <= 12)) throw new Error("Rast efter: 0–12 timmar."); cur.breakAfterH = Math.round(n * 2) / 2; }
+  if ("breakMin" in d) { const n = Math.round(Number(d.breakMin)); if (!(n >= 0 && n <= 120)) throw new Error("Rast: 0–120 minuter."); cur.breakMin = n; }
   if ("refOn" in d) cur.refOn = d.refOn === true;
   if ("refFriendKr" in d) { const n = Math.round(Number(d.refFriendKr)); if (!(n >= 0 && n <= 10000)) throw new Error("Rabatt: 0–10 000 kr."); cur.refFriendKr = n; }
   if ("refReward" in d) { const t = typeof d.refReward === "string" ? d.refReward.trim().slice(0, 140) : ""; if (!t) throw new Error("Skriv vad kunden får."); cur.refReward = t; }
