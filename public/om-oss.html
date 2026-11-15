@@ -16,7 +16,7 @@
 <style>
 :root{
   --navy:#0d2a3f; --navy-2:#123a56; --ink:#14212b; --muted:#5b6b78;
-  --accent:#ff7a1a; --accent-d:#e8650a; --bg:#f5f7f9; --card:#fff; --line:#e3e8ed;
+  --accent:#ff7a1a; --accent-d:#b94a00; --bg:#f5f7f9; --card:#fff; --line:#e3e8ed;
   --green:#1a9e6a; --radius:16px; --shadow:0 10px 30px rgba(13,42,63,.10);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -44,8 +44,8 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdro
 .menu a{text-decoration:none;font-weight:600;font-size:.95rem;color:var(--navy)}
 .menu a:hover{color:var(--accent-d)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;font:inherit;font-weight:700;text-decoration:none;border-radius:999px;padding:13px 24px;transition:.2s}
-.btn-accent{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(255,122,26,.35)}
-.btn-accent:hover{background:var(--accent-d);transform:translateY(-1px)}
+.btn-accent{background:var(--accent);color:var(--navy);box-shadow:0 6px 18px rgba(255,122,26,.35)}
+.btn-accent:hover{background:#e8650a;transform:translateY(-1px)}
 .btn-ghost{background:transparent;color:var(--navy);border:2px solid var(--navy)}
 .btn-ghost:hover{background:var(--navy);color:#fff}
 .btn-phone{background:var(--navy);color:#fff;padding:10px 18px;font-size:.92rem}
@@ -70,7 +70,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdro
 
 /* Quote form */
 .quote{background:#fff;color:var(--ink);border-radius:22px;padding:28px;box-shadow:0 30px 60px rgba(0,0,0,.25)}
-.quote h3{font-size:1.35rem;color:var(--navy)}
+.quote h2{font-size:1.35rem;color:var(--navy)}
 .quote .hint{color:var(--muted);font-size:.9rem;margin:4px 0 18px}
 .steps-bar{display:flex;gap:6px;margin-bottom:18px}
 .steps-bar i{flex:1;height:5px;border-radius:5px;background:var(--line)}
@@ -117,7 +117,7 @@ textarea{min-height:80px;resize:vertical}
 .pk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;align-items:stretch}
 .pk{background:#fff;border-radius:20px;padding:30px;border:2px solid var(--line);display:flex;flex-direction:column;position:relative}
 .pk.hot{border-color:var(--accent);box-shadow:0 20px 40px rgba(255,122,26,.15);position:relative}
-.pk .tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.75rem;font-weight:800;padding:5px 14px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.pk .tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:var(--navy);font-size:.75rem;font-weight:800;padding:5px 14px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .pk h3{font-size:1.3rem;color:var(--navy)}
 .pk .for{color:var(--muted);font-size:.9rem;margin:4px 0 18px}
 .pk ul{list-style:none;display:grid;gap:10px;margin-bottom:24px;flex:1}
@@ -204,16 +204,16 @@ details p{color:var(--muted);padding-bottom:18px;font-size:.95rem}
 .map-card h3{font-size:1.5rem}
 
 /* CTA band */
-.band{background:var(--accent);color:#fff;padding:56px 0}
+.band{background:var(--accent);color:var(--navy);padding:56px 0}
 .band-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.band h2{color:#fff}
+.band h2{color:var(--navy)}
 .band .btn{background:#fff;color:var(--accent-d)}
 .band .btn.dark{background:var(--navy);color:#fff}
 
 /* Footer */
 footer{background:#0a1d2c;color:#9fb3c4;padding:56px 0 28px;font-size:.92rem}
 .f-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:30px}
-footer h4{color:#fff;margin-bottom:14px;font-size:1rem}
+footer .fh{color:#fff;margin-bottom:14px;font-size:1rem;letter-spacing:0}
 footer ul{list-style:none;display:grid;gap:8px}
 footer a{text-decoration:none}footer a:hover{color:#fff}
 footer .logo{color:#fff}
@@ -353,7 +353,7 @@ body.noscroll .mbar{display:none}
 .kb-row small{display:block;color:var(--muted);font-size:.75rem}
 .kb-custom{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px;padding:8px 14px 12px}
 .kb-custom input{padding:9px 10px;border:1.5px solid var(--line);border-radius:9px;font:inherit;min-width:0}
-.kb-add{background:var(--accent);color:#fff;border:0;border-radius:9px;padding:0 14px;font:inherit;font-weight:700;cursor:pointer}
+.kb-add{background:var(--accent);color:var(--navy);border:0;border-radius:9px;padding:0 14px;font:inherit;font-weight:700;cursor:pointer}
 .kb-x{border:0;background:none;color:var(--muted);font-size:1rem;cursor:pointer}
 .kb-norm{padding:10px 14px 14px;color:var(--muted);font-size:.8rem;margin:0}
 .kb-link{margin-top:6px;font-size:.82rem}
@@ -420,7 +420,7 @@ body.noscroll .mbar{display:none}
 .cmp th,.cmp td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:center}
 .cmp th:first-child,.cmp td:first-child{text-align:left}
 .cmp thead th{background:var(--navy);color:#fff}
-.cmp thead th.hot{background:var(--accent)}
+.cmp thead th.hot{background:var(--accent);color:var(--navy)}
 .cmp svg{width:20px;height:20px;margin:auto}
 .cmp .y{color:var(--green)}.cmp .n{color:#c3ccd4}
 .city-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:36px}
@@ -482,7 +482,7 @@ body.noscroll .mbar{display:none}
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="FX Flytt – Flytt Express">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Start", "item": "https://www.fxflytt.se/"}, {"@type": "ListItem", "position": 2, "name": "Om FX Flytt", "item": "https://www.fxflytt.se/om-oss"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "FX Flytt", "item": "https://www.fxflytt.se/"}, {"@type": "ListItem", "position": 2, "name": "Om FX Flytt", "item": "https://www.fxflytt.se/om-oss"}]}</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute">
@@ -519,7 +519,7 @@ body.noscroll .mbar{display:none}
       <li><a href="/om-oss" class="on" aria-current="page">Om oss</a></li>
       <li><a href="/radgivare">Rådgivare</a></li>
     </ul>
-    <a href="tel:+46763000723" class="btn btn-phone"><svg width="18" height="18"><use href="#i-phone"/></svg><span class="txt">076-300 07 23</span></a>
+    <a href="tel:+46763000723" class="btn btn-phone" aria-label="Ring FX Flytt: 076-300 07 23"><svg width="18" height="18" aria-hidden="true"><use href="#i-phone"/></svg><span class="txt">076-300 07 23</span></a>
     <a href="/#offert" class="btn btn-accent nav-cta">Få offert</a>
   </div>
 </header>
@@ -536,9 +536,9 @@ body.noscroll .mbar{display:none}
 </nav>
 <section class="p-hero">
   <div class="wrap">
-    <div class="crumbs"><a href="/">Start</a> › Om oss</div>
+    <div class="crumbs"><a href="/">FX Flytt</a> › Om oss</div>
     <h1>Om <span>FX Flytt</span></h1>
-    <p>FX Flytt är en flyttfirma med bas i Kungsör. Vi gör flytten enkel, trygg och tydlig.</p>
+    <p>FX Flytt är en flyttfirma med bas i Kungsör och erfarenhet av flytt sedan 2016. Vi gör flytten enkel, trygg och tydlig.</p>
     <div class="hero-cta">
       <a href="/#offert" class="btn btn-accent">Få gratis offert</a>
       <a href="tel:+46763000723" class="btn btn-ghost" style="color:#fff;border-color:rgba(255,255,255,.5)">Ring 076-300 07 23</a>
@@ -553,11 +553,12 @@ body.noscroll .mbar{display:none}
       <span class="eyebrow">Vilka vi är</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
       <p>FX Flytt hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd, packning och bortforsling.</p>
+      <p>Bakom FX Flytt står en grundare som har arbetat med flytt sedan 2016. Den erfarenheten märks i planeringen, i hur vi packar och bär – och i att vi vet vad som kan gå fel innan det händer.</p>
       <p>Vi tror på enkla priser, tydlig kommunikation och att göra det vi lovar. Därför får du en fast kontaktperson som följer din flytt från första samtalet till sista kartongen.</p>
     </div>
     <div class="vals">
       <div class="val"><div class="ico"><svg><use href="#i-user"/></svg></div><b>Personlig kontakt</b><span>En person som svarar på dina frågor hela vägen.</span></div>
-      <div class="val"><div class="ico"><svg><use href="#i-truck"/></svg></div><b>Rätt utrustning</b><span>Filtar, remmar och kärror för en säker flytt.</span></div>
+      <div class="val"><div class="ico"><svg><use href="#i-truck"/></svg></div><b>Erfarenhet sedan 2016</b><span>Många års flyttar – vi vet hur man skyddar dina saker.</span></div>
       <div class="val"><div class="ico"><svg><use href="#i-pct"/></svg></div><b>Tydliga priser</b><span>Fasta priser och RUT-avdrag direkt på fakturan.</span></div>
       <div class="val"><div class="ico"><svg><use href="#i-pin"/></svg></div><b>Lokalkännedom</b><span>Vi känner vägarna och orterna i regionen.</span></div>
     </div>
@@ -615,9 +616,9 @@ body.noscroll .mbar{display:none}
         <a href="/" class="logo" aria-label="FX Flytt"><div class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="28" fill="#ffffff"/><rect x="12" y="43" width="24" height="8" rx="4" fill="#ff7a1a"/><rect x="6" y="57" width="32" height="8" rx="4" fill="#ff7a1a"/><rect x="16" y="71" width="20" height="8" rx="4" fill="#ff7a1a"/><path transform="translate(40 78)" d="M2.60546875 0.0H10.5341796875L13.09068359375 -12.173828125H26.45494140625L27.785078125 -18.5078125H14.4208203125L16.20376953125 -26.998046875H31.02798828125L32.38642578125 -33.466796875H9.63349609375ZM27.03125 0.0H36.2177734375L41.897021484375 -6.4013671875C43.93265625 -8.71484375 44.758320312500004 -9.97265625 45.828583984375 -11.4326171875C46.285664062500004 -9.97265625 46.6055078125 -8.71484375 47.602099609375 -6.4013671875L50.435546875 0.0H59.8466796875L51.67359375 -17.33984375L65.72919921875 -33.466796875H56.78974609375L52.481064453125 -28.4580078125C50.626240234375004 -26.2568359375 49.462763671874995 -24.4599609375 48.318154296875 -22.7529296875C47.890498046874995 -24.4599609375 47.504169921875004 -26.2568359375 46.573837890625 -28.4580078125L44.43623046875 -33.466796875H35.24970703125L42.66451171875 -17.115234375Z" fill="#0d2a3f"/></svg></div><div>FX Flytt<small aria-hidden="true" data-t="Flytt Express" style="color:#9fb3c4"></small></div></a>
         <p style="margin-top:14px;max-width:300px">Flytt, flyttstäd och bortforsling i Mellansverige – från Kungsör till 20 orter.</p>
       </div>
-      <div><h4>Tjänster</h4><ul><li><a href="/tjanster">Bohagsflytt</a></li><li><a href="/flyttstad">Flyttstäd</a></li><li><a href="/kubikraknare">Kubikräknare</a></li><li><a href="/dodsbo">Dödsbo</a></li><li><a href="/utlandsflytt">Utlandsflytt</a></li><li><a href="/rut-avdrag">RUT-avdrag</a></li><li><a href="/tjanster">Magasinering</a></li><li><a href="/#ring-mig" data-callback>Bli uppringd</a></li><li><a href="/tjanster">Packning</a></li><li><a href="/tjanster">Kontorsflytt</a></li><li><a href="/tjanster">Bortforsling</a></li></ul></div>
-      <div><h4>Orter</h4><ul><li><a href="/flyttfirma-kungsor">Flyttfirma Kungsör</a></li><li><a href="/flyttfirma-orebro">Flyttfirma Örebro</a></li><li><a href="/flyttfirma-eskilstuna">Flyttfirma Eskilstuna</a></li><li><a href="/flyttfirma-vasteras">Flyttfirma Västerås</a></li><li><a href="/flyttfirma-katrineholm">Flyttfirma Katrineholm</a></li><li><a href="/flyttfirma">Alla orter →</a></li></ul></div>
-      <div><h4>Kontakt</h4><ul><li><a href="/om-oss">Om oss</a></li><li><a href="tel:+46763000723">076-300 07 23</a></li><li><a href="mailto:info@fxflytt.se">info@fxflytt.se</a></li><li>Drottninggatan 1, 736 31 Kungsör</li></ul></div>
+      <div><h2 class="fh">Tjänster</h2><ul><li><a href="/tjanster">Bohagsflytt</a></li><li><a href="/flyttstad">Flyttstäd</a></li><li><a href="/kubikraknare">Kubikräknare</a></li><li><a href="/dodsbo">Dödsbo</a></li><li><a href="/utlandsflytt">Utlandsflytt</a></li><li><a href="/rut-avdrag">RUT-avdrag</a></li><li><a href="/tjanster">Magasinering</a></li><li><a href="/#ring-mig" data-callback>Bli uppringd</a></li><li><a href="/tjanster">Packning</a></li><li><a href="/tjanster">Kontorsflytt</a></li><li><a href="/tjanster">Bortforsling</a></li></ul></div>
+      <div><h2 class="fh">Orter</h2><ul><li><a href="/flyttfirma-kungsor">Flyttfirma Kungsör</a></li><li><a href="/flyttfirma-orebro">Flyttfirma Örebro</a></li><li><a href="/flyttfirma-eskilstuna">Flyttfirma Eskilstuna</a></li><li><a href="/flyttfirma-vasteras">Flyttfirma Västerås</a></li><li><a href="/flyttfirma-katrineholm">Flyttfirma Katrineholm</a></li><li><a href="/flyttfirma">Alla orter →</a></li></ul></div>
+      <div><h2 class="fh">Kontakt</h2><ul><li><a href="/om-oss">Om oss</a></li><li><a href="tel:+46763000723">076-300 07 23</a></li><li><a href="mailto:info@fxflytt.se">info@fxflytt.se</a></li><li>Drottninggatan 1, 736 31 Kungsör</li></ul></div>
     </div>
     <div class="f-bottom">
       <span>© <span id="yr"></span> FX Flytt AB. Alla rättigheter förbehållna. · Godkänd för F-skatt · Flytt enligt <a href="/villkor">Bohag 2010</a></span>
@@ -641,5 +642,7 @@ d.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>set(false)));
 window.addEventListener('resize',()=>{if(innerWidth>900)set(false);});})();
 </script>
 <script src="/chat-widget.js" defer></script>
+<script src="/fx-consent.js" defer></script>
+<script src="/fx-offert.js" defer></script>
 </body>
 </html>

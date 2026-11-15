@@ -38,7 +38,7 @@ PAGE_CSS = """
 .cmp th,.cmp td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:center}
 .cmp th:first-child,.cmp td:first-child{text-align:left}
 .cmp thead th{background:var(--navy);color:#fff}
-.cmp thead th.hot{background:var(--accent)}
+.cmp thead th.hot{background:var(--accent);color:var(--navy)}
 .cmp svg{width:20px;height:20px;margin:auto}
 .cmp .y{color:var(--green)}.cmp .n{color:#c3ccd4}
 .city-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:36px}
@@ -126,7 +126,7 @@ def page(file, title, desc, crumb, h1, lead, body, extra_head=""):
 {d}
 <section class="p-hero">
   <div class="wrap">
-    <div class="crumbs"><a href="index.html">Start</a> › {crumb}</div>
+    <div class="crumbs"><a href="index.html">FX Flytt</a> › {crumb}</div>
     <h1>{h1}</h1>
     <p>{lead}</p>
     <div class="hero-cta">
@@ -324,7 +324,7 @@ om = page("om-oss.html",
  "Om oss – FX Flytt, flyttfirma i Kungsör",
  "FX Flytt är en flyttfirma med bas i Kungsör som hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd och bortforsling.",
  "Om oss", "Om <span>FX Flytt</span>",
- "FX Flytt är en flyttfirma med bas i Kungsör. Vi gör flytten enkel, trygg och tydlig.",
+ "FX Flytt är en flyttfirma med bas i Kungsör och erfarenhet av flytt sedan 2016. Vi gör flytten enkel, trygg och tydlig.",
  f"""
 <section style="background:#fff">
   <div class="wrap about">
@@ -333,11 +333,12 @@ om = page("om-oss.html",
       <span class="eyebrow">Vilka vi är</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
       <p>FX Flytt hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd, packning och bortforsling.</p>
+      <p>Bakom FX Flytt står en grundare som har arbetat med flytt sedan 2016. Den erfarenheten märks i planeringen, i hur vi packar och bär – och i att vi vet vad som kan gå fel innan det händer.</p>
       <p>Vi tror på enkla priser, tydlig kommunikation och att göra det vi lovar. Därför får du en fast kontaktperson som följer din flytt från första samtalet till sista kartongen.</p>
     </div>
     <div class="vals">
       <div class="val">{ico("user")}<b>Personlig kontakt</b><span>En person som svarar på dina frågor hela vägen.</span></div>
-      <div class="val">{ico("truck")}<b>Rätt utrustning</b><span>Filtar, remmar och kärror för en säker flytt.</span></div>
+      <div class="val">{ico("truck")}<b>Erfarenhet sedan 2016</b><span>Många års flyttar – vi vet hur man skyddar dina saker.</span></div>
       <div class="val">{ico("pct")}<b>Tydliga priser</b><span>Fasta priser och RUT-avdrag direkt på fakturan.</span></div>
       <div class="val">{ico("pin")}<b>Lokalkännedom</b><span>Vi känner vägarna och orterna i regionen.</span></div>
     </div>
@@ -521,7 +522,8 @@ integritet = page("integritetspolicy.html",
       <li>Namn, telefonnummer och e-postadress.</li>
       <li>Adresser du flyttar från och till, samt uppgifter om bostaden (storlek, våning, hiss, bärsträcka).</li>
       <li>Uppgifter om flytten: datum, möbellista, beräknad volym och valda tjänster.</li>
-      <li>Personnummer – endast om du vill ha RUT-avdrag, eftersom det krävs för ansökan hos Skatteverket.</li>
+      <li>Personnummer (privatperson) eller organisationsnummer (företag) när du signerar offerten. Personnumret behövs för att ansöka om RUT-avdrag hos Skatteverket och för att visa vem som har godkänt avtalet.</li>
+      <li>När du signerar: namnet du skriver, tidpunkt, IP-adress och webbläsare – som bevis på att du har godkänt offerten och villkoren.</li>
       <li>Det du själv skriver i meddelanden till oss.</li>
       <li>Om du ber om priset på mejl i prisräknaren: namn, e-post, telefon (om du anger det) och dina val i räknaren.</li>
     </ul>
@@ -537,6 +539,7 @@ integritet = page("integritetspolicy.html",
     <h2>4. Vilka som får ta del av uppgifterna</h2>
     <ul>
       <li>Skatteverket, när vi ansöker om RUT-avdrag åt dig.</li>
+      <li>Inom FX Flytt: din bokning med personnummer visas i vårt bokningssystem för ägare och kontorspersonal och skickas till företagets bokningsmejl när du har signerat. Flyttpersonalen ser bara det som behövs för att utföra jobbet – aldrig personnummer, pris eller e-post.</li>
       <li>Leverantörer som hjälper oss att driva webbplatsen och ta emot förfrågningar (t.ex. webbhotell, e-posttjänst och AI-tjänsten för chatten). De får bara behandla uppgifterna för vår räkning.</li>
     </ul>
     <p>Vi säljer aldrig dina uppgifter.</p>
@@ -548,8 +551,9 @@ integritet = page("integritetspolicy.html",
       <li>Personnummer sparas bara så länge det behövs för RUT-ärendet och bokföringen.</li>
     </ul>
 
-    <h2>6. Kakor (cookies) och tredjepartstjänster</h2>
-    <p>Webbplatsen använder i dag inga kakor för spårning eller marknadsföring. Typsnitt hämtas från Google Fonts, adressförslag från Photon (Komoot), kartan från OpenStreetMap och kartverktyget från Cloudflare (cdnjs). Det innebär att din IP-adress skickas till dessa leverantörer när sidan laddas.</p>
+    <h2 id="kakor">6. Kakor (cookies) och tredjepartstjänster</h2>
+    <p><b>Google Analytics.</b> Om du godkänner det i cookie-rutan använder vi Google Analytics 4 (Google Ireland Ltd) för att se hur webbplatsen används, till exempel vilka sidor som besöks och hur många som skickar en offertförfrågan. Då sätts kakorna <code>_ga</code> och <code>_ga_*</code> (lagras upp till 14 månader) och IP-adressen förkortas. Utan ditt godkännande sätts inga sådana kakor och inget skickas till Google Analytics. Ditt val sparas i din webbläsare. Du kan när som helst <a href="#kakor" onclick="window.fxCookieSettings&&window.fxCookieSettings();return false">ändra cookie-inställningar</a>.</p>
+    <p>Utöver detta använder webbplatsen inga kakor för spårning eller marknadsföring. Typsnitt hämtas från Google Fonts, adressförslag från Photon (Komoot), kartan från OpenStreetMap och kartverktyget från Cloudflare (cdnjs). Det innebär att din IP-adress skickas till dessa leverantörer när sidan laddas.</p>
     <p><b>Chattassistenten:</b> Om du skriver i chatten på webbplatsen skickas ditt meddelande till Anthropic (leverantör av AI-tjänsten Claude) för att ta fram ett svar. Skriv inte personnummer eller andra känsliga uppgifter i chatten. Om vi senare inför statistik eller annonsspårning ber vi om ditt samtycke först.</p>
 
     <h2>7. Dina rättigheter</h2>
@@ -864,3 +868,39 @@ flyttstad = page("flyttstad.html",
 
 for f, s in [("dodsbo.html", dodsbo), ("utlandsflytt.html", utland), ("rut-avdrag.html", rutpage), ("kubikraknare.html", kubik), ("flyttstad.html", flyttstad), ("tjanster.html", tjanster), ("flyttfirma.html", flyttfirma), ("paket.html", paket), ("om-oss.html", om), ("radgivare.html", radgivare), ("integritetspolicy.html", integritet), ("villkor.html", villkor)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)
+
+# ---------------------------------------------------------------- Offert (embedded quote form)
+# The home page's own quote form, alone on a page. Other pages open it in a pop-up (/fx-offert.js), so the visitor
+# stays on the page. Same form, same code, same /api/offer – only the rest of the home page is hidden.
+# URL parameters pre-fill it: ?from=Örebro (town), ?svc=cleaning| (value of "Vad behöver du?").
+EMBED_CSS = """<style id="embed-css">
+html.embed,html.embed body{background:#fff}
+html.embed body>*:not(.hero):not(script):not(style){display:none!important}
+html.embed .hero{padding:0;background:#fff}
+html.embed .hero::before,html.embed .hero::after{display:none}
+html.embed .hero-grid{display:block;max-width:none;padding:0}
+html.embed .hero-grid>div:first-child{display:none}
+html.embed .quote{box-shadow:none;border-radius:0;max-width:none;margin:0;padding:22px 20px 28px}
+html.embed .cb-hero{display:none}
+html.embed #qform>h2{display:none}
+</style>
+"""
+EMBED_JS = """<script>
+(function(){
+  var q=new URLSearchParams(location.search), $=function(id){return document.getElementById(id);};
+  // Links inside the form open in the real window, not in the pop-up.
+  document.querySelectorAll('.quote a[href]').forEach(function(a){ if(!/^(#|tel:|mailto:)/.test(a.getAttribute('href'))&&a.target!=='_blank') a.target='_top'; });
+  var svc=q.get('svc'), from=q.get('from');
+  if(svc&&$('fsvc')&&[].some.call($('fsvc').options,function(o){return o.value===svc;})){ $('fsvc').value=svc; $('fsvc').dispatchEvent(new Event('change')); }
+  if(from&&window.fxPrefillTown) window.fxPrefillTown('from',from);
+  // Tell the page around us when the request is sent (for its own close button text).
+  var done=$('done'); if(done&&window.parent!==window) new MutationObserver(function(){ if(done.classList.contains('show')) parent.postMessage({fxOffert:'done'},location.origin); }).observe(done,{attributes:true});
+})();
+</script>
+"""
+offert = SRC.replace('<html lang="sv">', '<html lang="sv" class="embed">', 1)
+assert 'class="embed"' in offert, "html tag not found"
+offert = re.sub(r"<title>.*?</title>", "<title>Begär offert | FX Flytt</title>", offert, count=1, flags=re.S)
+offert = offert.replace("</head>", '<meta name="robots" content="noindex">\n' + EMBED_CSS + "</head>", 1)
+offert = offert.replace("</body>", EMBED_JS + "</body>", 1)
+open("offert.html", "w", encoding="utf-8").write(offert); print("wrote offert.html")

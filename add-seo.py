@@ -5,7 +5,7 @@ BASE = "https://www.fxflytt.se"
 def url_for(f):
     name = os.path.basename(f)[:-5]
     return BASE + "/" if name == "index" else f"{BASE}/{name}"
-PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html"}  # booking system: no SEO, not in sitemap
+PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html", "offert.html"}  # booking system: no SEO, not in sitemap
 pages = sorted(f for f in glob.glob("public/*.html") if os.path.basename(f) not in PRIVATE)
 CITIES = ["Kungsör","Örebro","Eskilstuna","Västerås","Katrineholm","Karlstad","Södertälje","Åkersberga","Norrtälje","Nyköping",
           "Norrköping","Linköping","Motala","Mjölby","Jönköping","Nässjö","Tranås","Västervik","Vimmerby","Ludvika"]
@@ -40,7 +40,7 @@ for f in pages:
         import re as _re
         h1 = _re.search(r"<h1[^>]*>(.*?)</h1>", s, _re.S)
         name = _re.sub(r"<[^>]+>", "", h1.group(1)).strip() if h1 else os.path.basename(f)[:-5]
-        crumbs = [{"@type": "ListItem", "position": 1, "name": "Start", "item": BASE + "/"}]
+        crumbs = [{"@type": "ListItem", "position": 1, "name": "FX Flytt", "item": BASE + "/"}]
         if os.path.basename(f).startswith("flyttfirma-"):
             crumbs.append({"@type": "ListItem", "position": 2, "name": "Flyttfirma", "item": BASE + "/flyttfirma"})
         crumbs.append({"@type": "ListItem", "position": len(crumbs) + 1, "name": name, "item": u})
@@ -58,4 +58,4 @@ def lastmod(f):
         return today
 items = "".join(f"  <url><loc>{url_for(f)}</loc><lastmod>{lastmod(f)}</lastmod></url>\n" for f in pages)
 open("public/sitemap.xml", "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + items + "</urlset>\n")
-open("public/robots.txt", "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /signera\nDisallow: /arbetsorder\nDisallow: /jobb\n\nSitemap: {BASE}/sitemap.xml\n")
+open("public/robots.txt", "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /signera\nDisallow: /arbetsorder\nDisallow: /jobb\nDisallow: /offert\n\nSitemap: {BASE}/sitemap.xml\n")
