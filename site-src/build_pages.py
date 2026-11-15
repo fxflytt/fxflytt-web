@@ -324,7 +324,7 @@ om = page("om-oss.html",
  "Om oss – FX Flytt, flyttfirma i Kungsör",
  "FX Flytt är en flyttfirma med bas i Kungsör som hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd och bortforsling.",
  "Om oss", "Om <span>FX Flytt</span>",
- "FX Flytt är en flyttfirma med bas i Kungsör. Vi gör flytten enkel, trygg och tydlig.",
+ "FX Flytt är en flyttfirma med bas i Kungsör och erfarenhet av flytt sedan 2016. Vi gör flytten enkel, trygg och tydlig.",
  f"""
 <section style="background:#fff">
   <div class="wrap about">
@@ -333,11 +333,12 @@ om = page("om-oss.html",
       <span class="eyebrow">Vilka vi är</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
       <p>FX Flytt hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd, packning och bortforsling.</p>
+      <p>Bakom FX Flytt står en grundare som har arbetat med flytt sedan 2016. Den erfarenheten märks i planeringen, i hur vi packar och bär – och i att vi vet vad som kan gå fel innan det händer.</p>
       <p>Vi tror på enkla priser, tydlig kommunikation och att göra det vi lovar. Därför får du en fast kontaktperson som följer din flytt från första samtalet till sista kartongen.</p>
     </div>
     <div class="vals">
       <div class="val">{ico("user")}<b>Personlig kontakt</b><span>En person som svarar på dina frågor hela vägen.</span></div>
-      <div class="val">{ico("truck")}<b>Rätt utrustning</b><span>Filtar, remmar och kärror för en säker flytt.</span></div>
+      <div class="val">{ico("truck")}<b>Erfarenhet sedan 2016</b><span>Många års flyttar – vi vet hur man skyddar dina saker.</span></div>
       <div class="val">{ico("pct")}<b>Tydliga priser</b><span>Fasta priser och RUT-avdrag direkt på fakturan.</span></div>
       <div class="val">{ico("pin")}<b>Lokalkännedom</b><span>Vi känner vägarna och orterna i regionen.</span></div>
     </div>
@@ -548,8 +549,9 @@ integritet = page("integritetspolicy.html",
       <li>Personnummer sparas bara så länge det behövs för RUT-ärendet och bokföringen.</li>
     </ul>
 
-    <h2>6. Kakor (cookies) och tredjepartstjänster</h2>
-    <p>Webbplatsen använder i dag inga kakor för spårning eller marknadsföring. Typsnitt hämtas från Google Fonts, adressförslag från Photon (Komoot), kartan från OpenStreetMap och kartverktyget från Cloudflare (cdnjs). Det innebär att din IP-adress skickas till dessa leverantörer när sidan laddas.</p>
+    <h2 id="kakor">6. Kakor (cookies) och tredjepartstjänster</h2>
+    <p><b>Google Analytics.</b> Om du godkänner det i cookie-rutan använder vi Google Analytics 4 (Google Ireland Ltd) för att se hur webbplatsen används, till exempel vilka sidor som besöks och hur många som skickar en offertförfrågan. Då sätts kakorna <code>_ga</code> och <code>_ga_*</code> (lagras upp till 14 månader) och IP-adressen förkortas. Utan ditt godkännande sätts inga sådana kakor och inget skickas till Google Analytics. Ditt val sparas i din webbläsare. Du kan när som helst <a href="#kakor" onclick="window.fxCookieSettings&&window.fxCookieSettings();return false">ändra cookie-inställningar</a>.</p>
+    <p>Utöver detta använder webbplatsen inga kakor för spårning eller marknadsföring. Typsnitt hämtas från Google Fonts, adressförslag från Photon (Komoot), kartan från OpenStreetMap och kartverktyget från Cloudflare (cdnjs). Det innebär att din IP-adress skickas till dessa leverantörer när sidan laddas.</p>
     <p><b>Chattassistenten:</b> Om du skriver i chatten på webbplatsen skickas ditt meddelande till Anthropic (leverantör av AI-tjänsten Claude) för att ta fram ett svar. Skriv inte personnummer eller andra känsliga uppgifter i chatten. Om vi senare inför statistik eller annonsspårning ber vi om ditt samtycke först.</p>
 
     <h2>7. Dina rättigheter</h2>
