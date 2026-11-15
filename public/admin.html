@@ -209,6 +209,9 @@
   .tcard .next{margin-top:10px;font-size:13px;padding-top:10px;border-top:1px solid var(--line)}
   .tcard .acts{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
   .tcard.off{opacity:.65}
+  .vdue{width:100%;border-collapse:collapse}.vdue td{padding:8px 4px;border-bottom:1px solid var(--line);vertical-align:middle}.vdue td:nth-child(2){width:46%}.vdue td:last-child{text-align:right;width:1%;white-space:nowrap}.vdue input{padding:8px}
+  .vsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.vsum>div{background:#f6f8fa;border:1px solid var(--line);border-radius:12px;padding:10px 12px}.vsum small{display:block;color:var(--muted);font-size:12px;font-weight:700}.vsum b{display:block;font-size:20px;color:var(--navy)}.vsum span{color:var(--muted);font-size:12px}
+  .dph{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:10px}.dph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block}
   .sw{display:flex;gap:8px;flex-wrap:wrap}.sw button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1.5px var(--line2);background:var(--c);cursor:pointer}.sw button.on{box-shadow:0 0 0 2.5px var(--navy)}
   .seg{display:inline-flex;background:#e8edf2;border-radius:12px;padding:3px;gap:2px;max-width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.seg::-webkit-scrollbar{display:none}.seg button{white-space:nowrap;flex:none;border:0;background:none;padding:8px 14px;border-radius:9px;font:inherit;font-weight:700;font-size:14px;color:#47525c;cursor:pointer}.seg button.on{background:#fff;color:var(--navy);box-shadow:var(--sh)}
   .jl{margin-top:10px}.jl a{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px dashed var(--line);font-size:13px;text-decoration:none;color:var(--ink)}
@@ -332,7 +335,7 @@
     document.body.classList.toggle('office',!!me&&me.role!=='owner');
     $('#whoami').innerHTML=me?`<b style="color:#fff">${esc(me.name)}</b> · ${me.role==='owner'?'Ägare':'Kontor'}`:'';
   }
-  let absAll=[];
+  let absAll=[], fleet={fleet:{v:{},log:[]},due:[],year:{},month:{}}, dmgAll=[], vehOpen=null;
   let res=[], teamKind='person', teamEdit=null, showArch=false, openRes=null;
   let all=[], view='today', filter='active', calMonth=today().slice(0,7), calDay=null, q='', sortBy='created', statPeriod='12';
 
@@ -371,8 +374,8 @@
   // First time: every booking. After that (every 30 s): only bookings changed since the last time.
   let syncedAt=0;
   async function load(){
-    const [j,t,ab]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res})),api('/api/admin/absence').catch(()=>({absences:absAll}))]);
-    absAll=ab.absences||[];
+    const [j,t,ab,fl_,dm_]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res})),api('/api/admin/absence').catch(()=>({absences:absAll})),api('/api/admin/fleet').catch(()=>fleet),api('/api/admin/damage').catch(()=>({damages:dmgAll}))]);
+    absAll=ab.absences||[]; fleet=fl_; dmgAll=dm_.damages||[];
     if(j.partial){ for(const b of j.bookings||[]){ const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=b; else all.unshift(b); } }
     else all=j.bookings||[];
     syncedAt=j.now||Date.now(); res=t.resources||[]; updateBell(); updateCounts();
@@ -382,7 +385,7 @@
   function updateCounts(){
     const set=(id,n)=>{ const e=$(id); e.hidden=!n; e.textContent=n>99?'99+':String(n); };
     set('#ctNew',all.filter(b=>b.status==='new').length);
-    set('#ctCrew',all.filter(needsCrew).length+absAll.filter(a=>a.status==='pending').length);
+    set('#ctCrew',all.filter(needsCrew).length+absAll.filter(a=>a.status==='pending').length+dmgAll.filter(d=>d.status==='new').length+(fleet.due||[]).filter(x=>x.late).length);
   }
 
   // ---------- notices (only inside this page) ----------
@@ -441,6 +444,8 @@
     if(id==='statistik'&&isOwner()) return showStats();
     if(id==='personal') return showTeam();
     if(id==='franvaro'){ teamKind='abs'; return showTeam(); }
+    if(id==='fordon'){ teamKind='vehicle'; return showTeam(); }
+    if(id==='skador'){ teamKind='dmg'; return showTeam(); }
     if(id==='installningar') return showSettings();
     if(id==='statistik'&&!isOwner()) return showToday();
     if(id==='bokningar') return showList();
@@ -927,6 +932,9 @@
           ${ph.some(p=>p.kind==='damage')?'<div class="warn">Personalen har fotograferat en skada.</div>':''}
           ${ph.length?`<div class="phgrid">${ph.map(p=>`<div><a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="" loading="lazy"></a><span class="${p.kind}">${K[p.kind]}</span><button data-delph="${esc(p.url)}" aria-label="Ta bort">✕</button></div>`).join('')}</div>`:''}
           ${w.sign?`<div class="okmsg" style="margin-top:12px">Kunden kvitterade: ${esc(w.sign.name)} · ${esc(fmtTs(w.sign.at))}</div><img src="${esc(w.sign.img)}" alt="Signatur" style="max-width:100%;height:90px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#fff">${w.sign.note?`<div class="warn"><b>Kundens anmärkning:</b> ${esc(w.sign.note)}</div>`:''}`:''}</div>`; })()}
+      ${(()=>{ const ds=dmgAll.filter(d=>d.bookingId===b.id); if(!ds.length&&!['signed','done'].includes(b.status)) return '';
+        return `<div class="card"><h3>Skador</h3>${ds.map(d=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)"><a href="#skador" data-dgo="${esc(d.id)}"><b>${esc(d.title)}</b></a><span>${d.cost!=null?kr(d.cost)+' ':''}<span class="tag ${DST[d.status][1]}">${DST[d.status][0]}</span></span></div>`).join('')}
+          <button class="btn sec sm" id="dmg_new" style="margin-top:8px">Rapportera skada</button></div>`; })()}
       ${(()=>{ const rw=b.refRewards||[], showCode=b.status==='done'||b.status==='signed';
         if(!b.referral&&!showCode&&!rw.length&&b.status!=='new'&&b.status!=='sent') return '';
         const smsTxt=b.refCode?`Hej! Ska du flytta? Boka FX Flytt med min kod ${b.refCode} på fxflytt.se så får du rabatt.`:'';
@@ -955,6 +963,9 @@
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
     });
     if($('#pkgch')) $('#pkgch').onchange=async()=>{ if(await patch({pkgChoiceOff:!$('#pkgch').checked})) notify($('#pkgch').checked?'Kunden får välja paket när du skickar ✓':'Paketval av'); };
+    // ---- damage ----
+    if($('#dmg_new')) $('#dmg_new').onclick=()=>{ dmgNew={kind:'customer',bookingId:b.id}; teamKind='dmg'; location.hash='skador'; };
+    root.querySelectorAll('[data-dgo]').forEach(x=>x.onclick=()=>{ dmgOpen=x.dataset.dgo; dmgFilter='all'; });
     // ---- Tipsa en vän ----
     if($('#rc_go')) $('#rc_go').onclick=()=>salesAct(b,{refCode:$('#rc_in').value},'Rabattkoden är tillagd ✓');
     if($('#rc_mk')) $('#rc_mk').onclick=()=>salesAct(b,{issueCode:true},'Koden är skapad ✓');
@@ -1278,6 +1289,8 @@
       ['Obesvarade förfrågningar','no',all.filter(b=>waitMin(b)!=null).sort((x,y)=>x.createdAt-y.createdAt).map(b=>({b,sub:`Kom in för ${esc(waitTxt(waitMin(b)))} sedan${(b.data||{}).phone?'':''}`,act:(b.data||{}).phone?`<a class="btn sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['Ring i dag','wn',all.filter(b=>followDue(b)&&!['signed','done','cancelled','declined'].includes(b.status)).sort((x,y)=>x.followUp.at.localeCompare(y.followUp.at)).map(b=>({b,sub:`${b.followUp.at.slice(0,10)<today()?'<b style="color:var(--red)">sen</b> · ':''}kl. ${esc(b.followUp.at.slice(11))}${b.followUp.note?' · '+esc(b.followUp.note):''}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['🎁 Belöningar att ge','ok',all.flatMap(b=>(b.refRewards||[]).filter(r=>!r.givenAt).map(r=>({b,sub:`${esc(r.name)} bokade med koden ${esc(b.refCode||'')}`})))],
+      ['⚠️ Skador att hantera','no',dmgAll.filter(d=>d.status==='new').map(d=>({b:{id:'skador',data:{name:d.kind==='vehicle'?d.vehicle:d.customer}},sub:`${esc(d.title)} · ${esc(d.createdBy)}`}))],
+      ['🚚 Fordon','wn',(fleet.due||[]).map(x=>({b:{id:'fordon',data:{name:x.name}},sub:`${esc(x.label)} ${x.late?'<b style="color:var(--red)">'+esc(dueTxt(x))+'</b>':esc(dueTxt(x))}${x.date?' · '+esc(fmtDate(x.date)):''}`}))],
       ['Frånvarande på jobb','no',all.filter(b=>soon(b)).flatMap(b=>(b.crew||[]).map(id=>({b,r:resById(id),a:absOn(id,b.date).find(a=>a.status==='approved')})).filter(x=>x.r&&x.a)).map(x=>({b:x.b,sub:`${when(x.b)} · <b>${esc(x.r.name)}</b> ${esc(ABSK[x.a.kind].toLowerCase())}`}))],
       ['Ledighet att besluta','wn',pendingAbs().sort((x,y)=>x.from.localeCompare(y.from)).map(a=>({b:{id:'franvaro',data:{name:a.name}},sub:`${esc(ABSK[a.kind])} · ${esc(spanTxt(a))}`,act:`<a class="btn sec sm" href="#franvaro">Svara</a>`}))],
       ['Dubbelbokningar','no',all.filter(b=>soon(b)&&S.conflicts(b,all,res).length).sort(byTime).map(b=>{ const c=S.conflicts(b,all,res); return {b,sub:`${when(b)} · ${esc([...new Set(c.map(x=>x.name))].join(', '))} på två jobb samtidigt`}; })],
@@ -1688,8 +1701,8 @@
   const absOn=(rid,date)=>absAll.filter(a=>a.rid===rid&&a.status!=='rejected'&&a.from<=date&&a.to>=date);
   const absTxt=(a)=>(a.status==='pending'?'Söker ledigt':ABSK[a.kind]);
   const pendingAbs=()=>absAll.filter(a=>a.status==='pending');
-  const teamSeg=()=>`<div class="seg">${[['person',`Personal (${res.filter(r=>r.kind==='person'&&r.active).length})`],['vehicle',`Fordon (${res.filter(r=>r.kind==='vehicle'&&r.active).length})`],['abs',`Frånvaro${pendingAbs().length?` <span class="tag no">${pendingAbs().length}</span>`:''}`],['msg','Meddelanden']].map(([k,l])=>`<button data-k="${k}" class="${teamKind===k?'on':''}">${l}</button>`).join('')}</div>`;
-  const bindTeamSeg=()=>root.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{ teamKind=x.dataset.k; teamEdit=null; openRes=null; showTeam(); });
+  const teamSeg=()=>`<div class="seg">${[['person',`Personal (${res.filter(r=>r.kind==='person'&&r.active).length})`],['vehicle',`Fordon (${res.filter(r=>r.kind==='vehicle'&&r.active).length})`],['abs',`Frånvaro${pendingAbs().length?` <span class="tag no">${pendingAbs().length}</span>`:''}`],['dmg',`Skador${dmgAll.filter(d=>d.status==='new').length?` <span class="tag no">${dmgAll.filter(d=>d.status==='new').length}</span>`:''}`],['msg','Meddelanden']].map(([k,l])=>`<button data-k="${k}" class="${teamKind===k?'on':''}">${l}</button>`).join('')}</div>`;
+  const bindTeamSeg=()=>root.querySelectorAll('.seg button').forEach(x=>x.onclick=()=>{ teamKind=x.dataset.k; teamEdit=null; openRes=null; vehOpen=null; showTeam(); });
   const spanTxt=(a)=>a.from===a.to?fmtDate(a.from):fmtDate(a.from)+' – '+fmtDate(a.to);
 
   function showAbsAdmin(){
@@ -1780,6 +1793,8 @@
   function showTeam(){
     if(teamKind==='abs') return showAbsAdmin();
     if(teamKind==='msg') return showMsgAdmin();
+    if(teamKind==='dmg') return showDmgAdmin();
+    if(teamKind==='vehicle'&&vehOpen) return showVehicle(vehOpen);
     view='team';
     const t=today(), horizon=addDays(t,30);
     const upcoming=(r)=>all.filter(b=>!S.INACTIVE.includes(b.status)&&b.date&&b.date>=t&&(b.crew||[]).includes(r.id)).sort(byTime);
@@ -1791,9 +1806,11 @@
         <div class="meta">${esc(r.role||(r.kind==='vehicle'?'Fordon':'Personal'))}${r.phone?` · <a href="${esc(tel(r.phone))}">${esc(r.phone)}</a>`:''}</div>
         ${r.kind==='person'&&r.active?`<div class="appst">${r.app?`<span class="tag ok">📱 Appen</span> <span class="muted">${r.lastSeenAt?'senast inne '+esc(ago(r.lastSeenAt)):'inte inloggad än'}</span>`:'<span class="tag">📱 Ingen app</span>'}</div>`:''}
         ${r.note?`<div class="meta" style="margin-top:4px">${esc(r.note)}</div>`:''}
+        ${r.kind==='vehicle'&&r.active?vehChips(r):''}
         <div class="next">${nx?`Nästa: <b>${esc(fmtDate(nx.date))}</b> ${esc(whenTxt(nx))} · ${esc((nx.data||{}).name||'')}<div class="muted">${soon.length} jobb kommande 30 dagar</div>`:'<span class="muted">Inga kommande jobb</span>'}</div>
         ${openRes===r.id&&up.length?`<div class="jl">${up.slice(0,12).map(b=>`<a href="#${esc(b.id)}"><span>${esc(fmtDate(b.date))} · ${esc(whenTxt(b))}</span><b>${esc((b.data||{}).name||b.id)}</b></a>`).join('')}</div>`:''}
         <div class="acts">${up.length?`<button class="btn gray sm" data-open="${esc(r.id)}">${openRes===r.id?'Dölj jobb':'Visa jobb'}</button>`:''}
+          ${r.kind==='vehicle'&&r.active?`<button class="btn sm" data-veh="${esc(r.id)}">Påminnelser och kostnader</button>`:''}
           <button class="btn sec sm" data-edit="${esc(r.id)}">Ändra</button>
           ${r.kind==='person'&&r.active?`<button class="btn ${r.app?'sec':''} sm" data-inv="${esc(r.id)}">${r.app?'Ny kod':'Bjud in till appen'}</button>${r.app?`<button class="btn gray sm" data-noapp="${esc(r.id)}">Stäng av appen</button>`:''}`:''}
           ${r.active?`<button class="btn red sm" data-arch="${esc(r.id)}">Arkivera</button>`:`<button class="btn sec sm" data-restore="${esc(r.id)}">Återställ</button>`}</div></div>`;
@@ -1818,6 +1835,7 @@
     bindTeamSeg();
     $('#t_add').onclick=()=>{ teamEdit={}; showTeam(); $('#t_name').focus(); };
     if($('#t_arch')) $('#t_arch').onclick=()=>{ showArch=!showArch; showTeam(); };
+    root.querySelectorAll('[data-veh]').forEach(x=>x.onclick=()=>{ vehOpen=x.dataset.veh; showVehicle(vehOpen); scrollTo(0,0); });
     root.querySelectorAll('[data-open]').forEach(x=>x.onclick=()=>{ openRes=openRes===x.dataset.open?null:x.dataset.open; showTeam(); });
     root.querySelectorAll('[data-edit]').forEach(x=>x.onclick=()=>{ teamEdit={id:x.dataset.edit}; showTeam(); $('#tform').scrollIntoView({block:'start',behavior:'smooth'}); });
     root.querySelectorAll('[data-arch]').forEach(x=>x.onclick=async()=>{
@@ -1861,6 +1879,143 @@
         catch(err){ $('#t_err').textContent=err.message; btn.disabled=false; }
       };
     }
+  }
+
+  // ---------- vehicles: reminders and costs ----------
+  const DUEK={besiktning:'Besiktning',service:'Service',insurance:'Försäkring',tires:'Däckbyte'};
+  const LOGK={fuel:'Tankning',besiktning:'Besiktning',service:'Service',insurance:'Försäkring',tires:'Däckbyte',repair:'Reparation',other:'Övrigt'};
+  const fl=()=>fleet.fleet||{v:{},log:[]}, vinfo=(id)=>fl().v[id]||{due:{}};
+  const nfmt=(n)=>Number(n||0).toLocaleString('sv-SE');
+  async function shrink(file){
+    const img=await createImageBitmap(file).catch(()=>null); if(!img) return file;
+    const k=Math.min(1,1400/Math.max(img.width,img.height)), c=document.createElement('canvas');
+    c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(b=>r(b||file),'image/jpeg',.78));
+  }
+  const upPhoto=async(url,file)=>api(url,{method:'POST',headers:{'Content-Type':'image/jpeg'},body:await shrink(file)});
+  const dueTxt=(x)=>x.late?(x.days!==undefined?`försenad ${-x.days} d`:`${nfmt(-x.kmLeft)} km över`):x.days===0?'i dag':x.days!==undefined?`om ${x.days} d`:`om ${nfmt(x.kmLeft)} km`;
+  const reloadFleet=async()=>{ fleet=await api('/api/admin/fleet'); updateCounts(); };
+  // chips on the vehicle card
+  const vehChips=(r)=>{ const v=vinfo(r.id), d=(fleet.due||[]).filter(x=>x.vid===r.id);
+    return `<div class="meta" style="margin-top:4px">${v.reg?`<b>${esc(v.reg)}</b> · `:''}${v.km!=null?nfmt(v.km)+' km':'Mätarställning saknas'}</div>
+      ${d.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${d.map(x=>`<span class="tag ${x.late?'no':'wn'}">${esc(x.label)} ${esc(dueTxt(x))}</span>`).join('')}</div>`:''}`; };
+
+  function showVehicle(id){
+    view='team';
+    const r=resById(id); if(!r){ vehOpen=null; return showTeam(); }
+    const v=vinfo(id), t=today(), y=(fleet.year||{})[id]||{kr:0,fuelKr:0,liters:0,byKind:{}}, m=(fleet.month||{})[id]||{kr:0,fuelKr:0,liters:0};
+    const log=fl().log.filter(e=>e.vid===id).sort((a,b)=>(b.date+b.at).localeCompare(a.date+a.at));
+    const days=(d)=>Math.round((Date.parse(d)-Date.parse(t))/864e5);
+    const st=(k)=>{ const d=v.due[k]; if(!d) return '<span class="muted">Inget datum</span>'; const n=days(d); return `<span class="tag ${n<0?'no':n<=30?'wn':'ok'}">${n<0?`försenad ${-n} d`:n===0?'i dag':`om ${n} d`}</span>`; };
+    root.innerHTML=navBar('team')+`<main>
+      <button class="btn gray sm" id="v_back" style="margin-bottom:12px">← Alla fordon</button>
+      <div class="detail"><div>
+        <div class="card" style="border-left:5px solid ${esc(r.color)}"><h3>${esc(r.name)} <span class="sub">${esc(r.role||'Fordon')}</span></h3>
+          <div class="row2"><div><label class="f" for="v_reg">Reg.nr</label><input id="v_reg" value="${esc(v.reg||'')}" placeholder="ABC 123" style="text-transform:uppercase"></div>
+            <div><label class="f" for="v_km">Mätarställning (km)</label><input id="v_km" type="number" inputmode="numeric" value="${v.km??''}"></div></div>
+          ${v.kmAt?`<div class="muted" style="margin-top:4px">Senast uppdaterad ${esc(fmtTs(v.kmAt))}</div>`:''}</div>
+        <div class="card"><h3>Påminnelser</h3>
+          <table class="vdue">${Object.entries(DUEK).map(([k,l])=>`<tr><td><b>${l}</b><div>${st(k)}</div></td><td><input type="date" data-due="${k}" value="${esc(v.due[k]||'')}"></td><td><button class="btn sec sm" data-done="${k}">Klart ✓</button></td></tr>`).join('')}</table>
+          <div class="row2" style="margin-top:6px"><div><label class="f" for="v_skm">Nästa service vid (km)</label><input id="v_skm" type="number" inputmode="numeric" value="${v.serviceKm??''}"></div>
+            <div><label class="f" for="v_sev">Service var … km</label><input id="v_sev" type="number" inputmode="numeric" value="${v.serviceEveryKm??''}" placeholder="T.ex. 20000"></div></div>
+          <div class="muted" style="margin-top:6px">Du får en notis 30, 14, 7 och 1 dag innan. "Klart ✓" sparar det i loggen och flyttar fram datumet (${'1 år, däckbyte 6 mån'}).</div>
+          <div class="btns"><button class="btn" id="v_save">Spara</button></div><div id="v_msg"></div></div>
+      </div><div>
+        <div class="card"><h3>Kostnader</h3><div class="vsum">
+          <div><small>Denna månad</small><b>${kr(m.kr)}</b><span>varav bränsle ${kr(m.fuelKr)}</span></div>
+          <div><small>I år</small><b>${kr(y.kr)}</b><span>bränsle ${kr(y.fuelKr)} · ${nfmt(Math.round(y.liters))} l</span></div>
+          <div><small>Förbrukning i år</small><b>${y.l100?String(y.l100).replace('.',',')+' l/100 km':'–'}</b><span>${y.l100?'från tankningar med km':'behöver tankningar med mätarställning'}</span></div></div></div>
+        <div class="card"><h3>Lägg till kostnad</h3>
+          <div class="row2"><div><label class="f" for="l_kind">Vad</label><select id="l_kind">${Object.entries(LOGK).map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></div>
+            <div><label class="f" for="l_date">Datum</label><input id="l_date" type="date" value="${t}"></div></div>
+          <div class="row2"><div><label class="f" for="l_kr">Belopp (kr)</label><input id="l_kr" type="number" inputmode="decimal"></div>
+            <div id="l_litw"><label class="f" for="l_lit">Liter</label><input id="l_lit" type="number" inputmode="decimal" step="0.01"></div></div>
+          <div class="row2"><div><label class="f" for="l_km">Mätarställning (km)</label><input id="l_km" type="number" inputmode="numeric"></div>
+            <div><label class="f" for="l_ph">Kvitto (bild)</label><input id="l_ph" type="file" accept="image/*"></div></div>
+          <label class="f" for="l_note">Anteckning</label><input id="l_note" placeholder="T.ex. bytt bromsklossar">
+          <div class="btns"><button class="btn" id="l_add">Lägg till</button></div><div id="l_msg"></div></div>
+        <div class="card"><h3>Logg <span class="sub">${log.length} poster</span></h3>
+          ${log.length?`<div class="calls">${log.slice(0,60).map(e=>`<div style="display:flex;gap:8px;align-items:center"><span style="flex:1"><b>${esc(LOGK[e.kind])}</b> · ${esc(fmtDate(e.date))}${e.kr?' · '+kr(e.kr):''}${e.liters?' · '+String(e.liters).replace('.',',')+' l':''}${e.km!=null?' · '+nfmt(e.km)+' km':''}
+            <div class="muted">${esc(e.byCrew?e.by+' (appen)':e.by)}${e.note?' · '+esc(e.note):''}</div></span>
+            ${e.photo?`<a class="btn gray sm" href="${esc(e.photo)}" target="_blank" rel="noopener">Kvitto</a>`:''}${isOwner()?`<button class="btn gray sm" data-dlog="${esc(e.id)}" aria-label="Ta bort">✕</button>`:''}</div>`).join('')}</div>`:'<div class="muted">Inget loggat än. Personalen kan logga tankningar i appen.</div>'}</div>
+      </div></div></main>`;
+    $('#v_back').onclick=()=>{ vehOpen=null; location.hash='fordon'; showTeam(); };
+    const kind=()=>$('#l_kind').value; $('#l_kind').onchange=()=>{ $('#l_litw').style.visibility=kind()==='fuel'?'visible':'hidden'; };
+    $('#v_save').onclick=async()=>{ const due={}; root.querySelectorAll('[data-due]').forEach(x=>due[x.dataset.due]=x.value);
+      try{ await api('/api/admin/fleet?vid='+id,{method:'PATCH',body:JSON.stringify({reg:$('#v_reg').value,km:$('#v_km').value,serviceKm:$('#v_skm').value,serviceEveryKm:$('#v_sev').value,due})}); await reloadFleet(); notify('Sparat ✓'); showVehicle(id); }
+      catch(e){ $('#v_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    root.querySelectorAll('[data-done]').forEach(x=>x.onclick=async()=>{ const k=x.dataset.done;
+      const c=prompt(`${DUEK[k]} klar i dag. Kostnad i kr (lämna tomt om du inte vet):`,''); if(c===null) return;
+      try{ await api('/api/admin/fleet?vid='+id,{method:'POST',body:JSON.stringify({kind:k,kr:c,km:$('#v_km').value||undefined})}); await reloadFleet(); notify(DUEK[k]+' klar ✓ – nästa datum är satt'); showVehicle(id); }catch(e){ alert(e.message); } });
+    $('#l_add').onclick=async()=>{ const b=$('#l_add'); b.disabled=true;
+      try{ const e=await api('/api/admin/fleet?vid='+id,{method:'POST',body:JSON.stringify({kind:kind(),date:$('#l_date').value,kr:$('#l_kr').value,liters:kind()==='fuel'?$('#l_lit').value:undefined,km:$('#l_km').value,note:$('#l_note').value})});
+        const f=$('#l_ph').files[0]; if(f) await upPhoto('/api/admin/fleet?photo=1&log='+e.id,f);
+        await reloadFleet(); notify('Tillagt ✓'); showVehicle(id); }
+      catch(e){ b.disabled=false; $('#l_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    root.querySelectorAll('[data-dlog]').forEach(x=>x.onclick=async()=>{ if(!confirm('Ta bort posten?')) return; try{ await api('/api/admin/fleet?log='+x.dataset.dlog,{method:'DELETE'}); await reloadFleet(); showVehicle(id); }catch(e){ alert(e.message); } });
+  }
+
+  // ---------- damage reports ----------
+  const DST={new:['Ny','no'],handling:['Utreds','wn'],closed:['Avslutad','ok']};
+  const PAID={us:'Vi betalar',insurance:'Försäkringen',customer:'Kunden',none:'Ingen ersättning'};
+  let dmgFilter='open', dmgOpen=null, dmgNew=null;
+  const reloadDmg=async()=>{ dmgAll=(await api('/api/admin/damage')).damages||[]; updateCounts(); };
+  const dmgWho=(d)=>d.kind==='vehicle'?`🚚 ${esc(d.vehicle||'Fordon')}`:`📦 ${d.bookingId?`<a href="#${esc(d.bookingId)}">${esc(d.customer||'Kund')}</a>`:esc(d.customer||'Kund')}`;
+  function showDmgAdmin(){
+    view='team';
+    const list=dmgAll.filter(d=>dmgFilter==='all'||(dmgFilter==='open'?d.status!=='closed':d.status==='closed')).sort((a,b)=>b.createdAt-a.createdAt);
+    const open=dmgAll.filter(d=>d.status!=='closed'), costY=dmgAll.filter(d=>d.date.slice(0,4)===today().slice(0,4)&&d.paidBy==='us').reduce((a,d)=>a+(d.cost||0),0);
+    const jobs=all.filter(b=>['signed','done'].includes(b.status)&&b.date&&b.date>=addDays(today(),-60)&&b.date<=today()).sort((a,b)=>b.date.localeCompare(a.date));
+    const vehs=res.filter(r=>r.kind==='vehicle'&&r.active), n=dmgNew;
+    const form=n?`<div class="card" id="dform"><h3>Ny skada</h3>
+      <div class="seg" id="d_kind"><button data-k="customer" class="${n.kind==='customer'?'on':''}">📦 Kundens saker</button><button data-k="vehicle" class="${n.kind==='vehicle'?'on':''}">🚚 Vårt fordon</button></div>
+      <div class="row2"><div>${n.kind==='customer'?`<label class="f" for="d_bk">Jobb</label><select id="d_bk"><option value="">Välj jobb…</option>${jobs.map(b=>`<option value="${esc(b.id)}"${b.id===n.bookingId?' selected':''}>${esc(fmtDate(b.date))} · ${esc((b.data||{}).name||b.id)}</option>`).join('')}</select>`
+          :`<label class="f" for="d_v">Fordon</label><select id="d_v"><option value="">Välj fordon…</option>${vehs.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select>`}</div>
+        <div><label class="f" for="d_date">Datum</label><input id="d_date" type="date" value="${today()}"></div></div>
+      <label class="f" for="d_desc">Vad hände?</label><textarea id="d_desc" placeholder="${n.kind==='customer'?'T.ex. repa på byrån i sovrummet, kunden har sett den':'T.ex. backade in i en stolpe, buckla bakre stötfångaren'}"></textarea>
+      <label class="f" for="d_ph">Bilder</label><input id="d_ph" type="file" accept="image/*" multiple>
+      <div class="btns"><button class="btn gray" id="d_cancel">Avbryt</button><button class="btn" id="d_save">Spara</button></div><div id="d_msg"></div></div>`:'';
+    const card=(d)=>{ const o=dmgOpen===d.id;
+      return `<div class="card dmg" id="dm_${esc(d.id)}"><div style="display:flex;gap:10px;align-items:flex-start;cursor:pointer" data-dopen="${esc(d.id)}">
+        <div style="flex:1;min-width:0"><b>${esc(d.title)}</b><div class="muted">${dmgWho(d)} · ${esc(fmtDate(d.date))} · rapporterad av ${esc(d.createdBy)}${d.photos.length?` · 📷 ${d.photos.length}`:''}</div></div>
+        <div style="text-align:right">${d.cost!=null?`<b>${kr(d.cost)}</b><br>`:''}<span class="tag ${DST[d.status][1]}">${DST[d.status][0]}</span></div></div>
+        ${o?`<div style="white-space:pre-wrap;margin-top:10px">${esc(d.desc)}</div>
+          ${d.photos.length?`<div class="dph">${d.photos.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="" loading="lazy"></a>`).join('')}</div>`:''}
+          <div class="row2" style="margin-top:10px"><div><label class="f">Status</label><select data-f="status">${Object.entries(DST).map(([k,[l]])=>`<option value="${k}"${d.status===k?' selected':''}>${l}</option>`).join('')}</select></div>
+            <div><label class="f">Kostnad (kr)</label><input data-f="cost" type="number" inputmode="numeric" value="${d.cost??''}"></div></div>
+          <div class="row2"><div><label class="f">Vem betalar?</label><select data-f="paidBy"><option value="">–</option>${Object.entries(PAID).map(([k,l])=>`<option value="${k}"${d.paidBy===k?' selected':''}>${l}</option>`).join('')}</select></div>
+            <div><label class="f">Skadenummer (försäkring)</label><input data-f="claimNo" value="${esc(d.claimNo||'')}"></div></div>
+          <label class="f">Beslut / lösning</label><textarea data-f="outcome" style="min-height:56px" placeholder="T.ex. kunden får 1 500 kr, överens på telefon">${esc(d.outcome||'')}</textarea>
+          <label class="f">Anteckning till loggen</label><input data-f="note" placeholder="T.ex. pratat med kunden">
+          <div class="btns"><label class="btn sec" style="cursor:pointer">+ Bild<input type="file" accept="image/*" data-dph="${esc(d.id)}" hidden></label>${isOwner()?`<button class="btn gray" data-ddel="${esc(d.id)}">Ta bort</button>`:''}<button class="btn" data-dsave="${esc(d.id)}">Spara</button></div>
+          <div class="calls">${d.log.slice().reverse().map(l=>`<div>${esc(fmtTs(l.at))} · <b>${esc(l.by)}</b> · ${esc(l.what)}</div>`).join('')}</div>`:''}</div>`; };
+    root.innerHTML=navBar('team')+`<main>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px">${teamSeg()}<button class="btn sm" id="d_add" style="margin-left:auto">+ Ny skada</button></div>
+      ${form}
+      <div class="vsum" style="margin-bottom:14px"><div><small>Öppna</small><b>${open.length}</b><span>${open.filter(d=>d.status==='new').length} nya</span></div>
+        <div><small>Vi har betalat i år</small><b>${kr(costY)}</b><span>skador där "Vi betalar"</span></div></div>
+      <div class="seg" id="d_f" style="margin-bottom:12px">${[['open','Öppna'],['closed','Avslutade'],['all','Alla']].map(([k,l])=>`<button data-k="${k}" class="${dmgFilter===k?'on':''}">${l}</button>`).join('')}</div>
+      ${list.length?list.map(card).join(''):`<div class="card empty">${dmgFilter==='open'?'Inga öppna skador 👍':'Inga skador.'}</div>`}</main>`;
+    bindTeamSeg();
+    root.querySelectorAll('#d_f button').forEach(x=>x.onclick=()=>{ dmgFilter=x.dataset.k; showDmgAdmin(); });
+    $('#d_add').onclick=()=>{ dmgNew={kind:'customer'}; showDmgAdmin(); };
+    if(n){
+      root.querySelectorAll('#d_kind button').forEach(x=>x.onclick=()=>{ dmgNew={...n,kind:x.dataset.k}; showDmgAdmin(); });
+      $('#d_cancel').onclick=()=>{ dmgNew=null; showDmgAdmin(); };
+      $('#d_save').onclick=async()=>{ const b=$('#d_save'); b.disabled=true;
+        try{ const x=await api('/api/admin/damage',{method:'POST',body:JSON.stringify({kind:n.kind,bookingId:$('#d_bk')?.value,vid:$('#d_v')?.value,date:$('#d_date').value,desc:$('#d_desc').value})});
+          for(const f of [...$('#d_ph').files].slice(0,8)) await upPhoto('/api/admin/damage?photo=1&id='+x.id,f);
+          dmgNew=null; dmgOpen=x.id; dmgFilter='open'; await reloadDmg(); notify('Skadan är sparad ✓'); showDmgAdmin(); }
+        catch(e){ b.disabled=false; $('#d_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+    }
+    root.querySelectorAll('[data-dopen]').forEach(x=>x.onclick=(e)=>{ if(e.target.closest('a')) return; dmgOpen=dmgOpen===x.dataset.dopen?null:x.dataset.dopen; showDmgAdmin(); });
+    root.querySelectorAll('[data-dsave]').forEach(x=>x.onclick=async()=>{ const box=$('#dm_'+x.dataset.dsave), body={};
+      box.querySelectorAll('[data-f]').forEach(i=>body[i.dataset.f]=i.value);
+      try{ await api('/api/admin/damage?id='+x.dataset.dsave,{method:'PATCH',body:JSON.stringify(body)}); await reloadDmg(); notify('Sparat ✓'); showDmgAdmin(); }catch(e){ alert(e.message); } });
+    root.querySelectorAll('[data-dph]').forEach(x=>x.onchange=async()=>{ const f=x.files[0]; if(!f) return;
+      try{ await upPhoto('/api/admin/damage?photo=1&id='+x.dataset.dph,f); await reloadDmg(); showDmgAdmin(); }catch(e){ alert(e.message); } });
+    root.querySelectorAll('[data-ddel]').forEach(x=>x.onclick=async()=>{ if(!confirm('Ta bort skadan helt?')) return;
+      try{ await api('/api/admin/damage?id='+x.dataset.ddel,{method:'DELETE'}); dmgOpen=null; await reloadDmg(); showDmgAdmin(); }catch(e){ alert(e.message); } });
   }
 
   start().catch(e=>{ root.innerHTML=`<main><div class="err">${esc(e.message)}</div></main>`; });
