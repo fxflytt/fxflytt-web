@@ -35,7 +35,7 @@ FÖRETAG
 - Adress: Drottninggatan 1, 736 31 Kungsör.
 - Telefon: 076-300 07 23. E-post: info@fxflytt.se. Webbplats: fxflytt.se
 - F-skatt: ja.
-- Öppettider: mån–fre 07–19, lör 09–17, sön enligt överenskommelse.
+- Öppettider: mån–fre 07–19, lör 09–17, sön 12–16.
 
 ORTER
 - Kungsör (bas), Örebro, Eskilstuna (inkl. Torshälla), Västerås, Katrineholm, samt Karlstad, Södertälje, Åkersberga, Norrtälje, Nyköping, Norrköping, Linköping, Motala, Mjölby, Jönköping, Nässjö, Tranås, Västervik, Vimmerby, Ludvika Samma priser i alla orter. Flyttstäd görs i alla dessa orter. Längre flyttar i hela Sverige efter offert.

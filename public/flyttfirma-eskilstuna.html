@@ -189,14 +189,14 @@ details[open] summary::after{content:"–"}
 details p{color:var(--muted);padding-bottom:18px;font-size:.95rem}
 
 /* Contact */
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:40px}
+.contact-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;margin-top:40px}.contact-grid>*{min-width:0}
 .c-card{background:#fff;border-radius:20px;padding:30px;box-shadow:var(--shadow)}
-.c-line{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}
+.c-line{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}.c-line>div{min-width:0}
 .c-line:last-child{border-bottom:0}
 .c-line b{display:block;color:var(--navy)}
 .c-line a,.c-line span{color:var(--muted);text-decoration:none;word-break:break-word}
 .c-line a:hover{color:var(--accent-d)}
-.hours td{padding:6px 0;color:var(--muted);white-space:nowrap}.hours td:last-child{white-space:normal;padding-left:12px}.hours td:last-child{text-align:right;font-weight:700;color:var(--navy)}
+.hours td{padding:6px 0;color:var(--muted);white-space:nowrap}.hours td:last-child{white-space:normal;padding-left:12px;overflow-wrap:anywhere}.hours td:last-child{text-align:right;font-weight:700;color:var(--navy)}
 .hours{width:100%;border-collapse:collapse}
 .map-card{background:linear-gradient(160deg,var(--navy),#0a2032);color:#fff;border-radius:20px;padding:30px;display:flex;flex-direction:column;justify-content:space-between;gap:20px;min-height:280px;position:relative;overflow:hidden}
 .map-card svg.bgmap{position:absolute;inset:0;width:100%;height:100%;opacity:.18}
@@ -233,7 +233,7 @@ footer .logo{color:#fff}
 @media(max-width:900px){
   section{padding:60px 0}
   .hero{padding:40px 0 60px}
-  .hero-grid,.calc,.contact-grid{grid-template-columns:1fr}
+  .hero-grid,.calc,.contact-grid{grid-template-columns:minmax(0,1fr)}
   .how-grid,.pk-grid,.price-grid{grid-template-columns:1fr}
   .strip-grid{grid-template-columns:1fr 1fr}
   .svc-grid{grid-template-columns:1fr 1fr}
@@ -428,7 +428,7 @@ body.noscroll .mbar{display:none}
 .other a{text-decoration:none}
 @media(max-width:900px){.two{grid-template-columns:1fr}.side{position:static}}
 </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "MovingCompany", "@id": "https://www.fxflytt.se/#foretag", "name": "FX Flytt", "legalName": "FX Flytt AB", "url": "https://www.fxflytt.se/", "telephone": "+46763000723", "email": "info@fxflytt.se", "priceRange": "2 000–14 700 kr", "address": {"@type": "PostalAddress", "streetAddress": "Drottninggatan 1", "postalCode": "736 31", "addressLocality": "Kungsör", "addressCountry": "SE"}, "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "07:00", "closes": "19:00"}, {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "17:00"}], "areaServed": {"@type": "City", "name": "Eskilstuna"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "MovingCompany", "@id": "https://www.fxflytt.se/#foretag", "name": "FX Flytt", "legalName": "FX Flytt AB", "url": "https://www.fxflytt.se/", "telephone": "+46763000723", "email": "info@fxflytt.se", "priceRange": "2 000–14 700 kr", "address": {"@type": "PostalAddress", "streetAddress": "Drottninggatan 1", "postalCode": "736 31", "addressLocality": "Kungsör", "addressCountry": "SE"}, "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "07:00", "closes": "19:00"}, {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "17:00"}, {"@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "12:00", "closes": "16:00"}], "areaServed": {"@type": "City", "name": "Eskilstuna"}}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Flyttar ni även i Torshälla?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, Torshälla och övriga delar av Eskilstuna kommun ingår i vårt område."}}, {"@type": "Question", "name": "Hur snabbt kan ni komma?", "acceptedAnswer": {"@type": "Answer", "text": "Det beror på kalendern. Fyll i formuläret eller ring oss så ser vi vilka dagar som är lediga."}}, {"@type": "Question", "name": "Kan jag boka flyttstäd i Eskilstuna utan flytt?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, flyttstäd kan bokas separat. RUT-avdraget dras direkt på fakturan."}}]}</script>
 <link rel="canonical" href="https://www.fxflytt.se/flyttfirma-eskilstuna">
 <meta property="og:url" content="https://www.fxflytt.se/flyttfirma-eskilstuna">
