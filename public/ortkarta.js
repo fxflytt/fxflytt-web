@@ -14,7 +14,15 @@
     ["mjolby", "Mjölby", 58.326, 15.1312], ["jonkoping", "Jönköping", 57.7826, 14.1618],
     ["nassjo", "Nässjö", 57.6531, 14.6968], ["tranas", "Tranås", 58.0372, 14.9782],
     ["vastervik", "Västervik", 57.7584, 16.6373], ["vimmerby", "Vimmerby", 57.6656, 15.8547],
-    ["ludvika", "Ludvika", 60.1496, 15.1878]
+    ["ludvika", "Ludvika", 60.1496, 15.1878],
+    ["arboga", "Arboga", 59.3939, 15.8389],
+    ["koping", "Köping", 59.514, 15.9926],
+    ["kumla", "Kumla", 59.1277, 15.1434],
+    ["karlskoga", "Karlskoga", 59.3267, 14.5239],
+    ["strangnas", "Strängnäs", 59.3774, 17.0312],
+    ["enkoping", "Enköping", 59.6361, 17.0777],
+    ["uppsala", "Uppsala", 59.8586, 17.6389],
+    ["stockholm", "Stockholm", 59.3293, 18.0686]
   ];
   var TRUCK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h14v11H1zM15 8h4l3 3v4h-7z"/><circle cx="5.5" cy="17.5" r="2"/><circle cx="18.5" cy="17.5" r="2"/></svg>';
 

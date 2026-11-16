@@ -63,4 +63,30 @@ LOCAL = {
  "ludvika": [
   "Ludvika ligger i södra Dalarna, i Bergslagen, med stora industriarbetsgivare och orter som Grängesberg, Fredriksberg och Sunnansjö runt omkring. Många flyttar hit för jobbet, och många flyttar mellan Ludvika och Mälardalen.",
   "Vintrarna i Dalarna kan vara kalla och snörika. Flyttar du under vintern, se till att uppfarten är skottad och sandad, och packa sådant som inte tål kyla – växter, elektronik och flaskor – så att det kan stå varmt. Längre flyttar planerar vi så att samma team kör hela vägen."],
+
+ # ---- Added 2026-11-16
+ "arboga": [
+  "Arboga är grannort till Kungsör, där vårt kontor ligger – du har alltså nära till oss, och många flyttar här är korta. Flyttar du mellan Arboga och Kungsör, Köping eller Götlunda är avståndet ofta så kort att det knappt märks i priset.",
+  "Den gamla stadskärnan har trähus, smala gator och trappor där stora möbler får bäras försiktigt. Berätta om hissen saknas och hur nära porten lastbilen kan stå, så skickar vi rätt antal personer och planerar tiden därefter."],
+ "koping": [
+  "Köping ligger där Mälaren tar slut i väster, med hamn, järnväg och E18. Många flyttar här är korta – inom staden eller till Kungsör, Arboga och Kolsva – och då ingår körsträckan när avståndet mellan adresserna är under 15 km.",
+  "I centrum bor många i lägenhet, medan Kolsva och Munktorp mest har villor och gårdar med uthus och förråd. Gå igenom alla utrymmen innan du begär offert, så räknar vi med rätt bil från början."],
+ "kumla": [
+  "Kumla ligger strax söder om Örebro, och många pendlar mellan orterna. Flyttar du mellan Kumla och Örebro är det en kort sträcka, och priset påverkas bara lite av avståndet – det mesta handlar om boytan och vad som ska med.",
+  "Kumla har mycket villor och radhus, ofta med förråd, garage och trädgård. Det är lätt att glömma utemöbler, verktyg och sådant som står i förrådet när man räknar volymen – använd gärna kubikräknaren innan du begär offert."],
+ "karlskoga": [
+  "Karlskoga är en industristad vid sjön Möckeln, nära gränsen mot Värmland. Många flyttar hit för jobbet, och då är datumet ofta det viktigaste – berätta när du måste vara på plats, så planerar vi flyttdagen efter det.",
+  "Runt staden finns landsbygd och sjönära boende, där vägen fram kan vara smal eller grusad. Flyttar du mellan Karlskoga och Örebro eller Mälardalen räknas körsträckan bara på avståndet mellan dina två adresser."],
+ "strangnas": [
+  "Strängnäs ligger vid Mälaren med tåg mot både Stockholm och Eskilstuna, och många flyttar hit från Stockholmsområdet för att få mer plats. Då är det ofta en längre flytt, och det lönar sig att packa ordentligt och märka kartongerna rum för rum.",
+  "I Mariefred finns många äldre hus med branta trappor, medan Strängnäs och Åkers styckebruk har både lägenheter och nya villaområden. Berätta om trappor, hiss och parkering, så planerar vi rätt."],
+ "enkoping": [
+  "Enköping ligger mitt emellan Västerås, Uppsala och Stockholm, och många pendlar härifrån åt flera håll. Flyttar du hit för jobbet eller för att få mer plats, berätta vilket datum som passar – helger och slutet av månaden är populärast.",
+  "Staden har lägenheter i centrum och många villor och gårdar runt omkring, i orter som Grillby, Örsundsbro och Fjärdhundra. På landsbygden kan tillfarten vara smal, så berätta hur nära huset lastbilen kan köra."],
+ "uppsala": [
+  "Uppsala är en av Sveriges största studentstäder, med Uppsala universitet och SLU. Kring terminsstart i augusti och januari flyttar tusentals studenter samtidigt, särskilt i Flogsta, Rackarberget och Kåbo – vill du ha en viss dag, boka i god tid.",
+  "I centrum och Luthagen finns många äldre hus med liten eller ingen hiss, medan Rosendal och andra nya områden har hiss men ofta trångt att parkera. Berätta om både hiss och parkering, så kommer rätt team med rätt bil."],
+ "stockholm": [
+  "I Stockholms innerstad – Södermalm, Kungsholmen, Vasastan och Östermalm – bor de flesta i flerfamiljshus, ofta sekelskifteshus med liten hiss eller bara trappor. Det är också svårt att parkera nära porten, så berätta hur gatan ser ut och om det finns lastzon.",
+  "Kranskommunerna som Huddinge, Botkyrka, Haninge, Järfälla, Sollentuna, Täby och Nacka har mer höghus, radhus och villor, ofta med förråd och garage. Flyttar du från Stockholm till Mälardalen eller tvärtom är det en längre flytt – då planerar vi lastningen så att allt följer med på samma bil."],
 }

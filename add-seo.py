@@ -8,7 +8,8 @@ def url_for(f):
 PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html", "offert.html"}  # booking system: no SEO, not in sitemap
 pages = sorted(f for f in glob.glob("public/*.html") if os.path.basename(f) not in PRIVATE)
 CITIES = ["Kungsör","Örebro","Eskilstuna","Västerås","Katrineholm","Karlstad","Södertälje","Åkersberga","Norrtälje","Nyköping",
-          "Norrköping","Linköping","Motala","Mjölby","Jönköping","Nässjö","Tranås","Västervik","Vimmerby","Ludvika"]
+          "Norrköping","Linköping","Motala","Mjölby","Jönköping","Nässjö","Tranås","Västervik","Vimmerby","Ludvika",
+          "Arboga","Köping","Kumla","Karlskoga","Strängnäs","Enköping","Uppsala","Stockholm"]
 BUSINESS = {"@context": "https://schema.org", "@type": "MovingCompany", "@id": BASE + "/#foretag", "name": "FX Flytt", "legalName": "FX Flytt AB",
             "telephone": "+46763000723", "email": "info@fxflytt.se", "priceRange": "2 000–14 700 kr",
             "address": {"@type": "PostalAddress", "streetAddress": "Drottninggatan 1", "postalCode": "736 31", "addressLocality": "Kungsör", "addressCountry": "SE"},
