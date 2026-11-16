@@ -911,7 +911,7 @@ offert = offert.replace("</body>", EMBED_JS + "</body>", 1)
 open("offert.html", "w", encoding="utf-8").write(offert); print("wrote offert.html")
 
 # ================================================================ Added 2026-11-17
-# Price guide, four service pages, and English + Arabic pages. Prices come from the price engine
+# Price guide, four service pages and an English page. Prices come from the price engine
 # (site-src/price_guide.mjs) – nothing is typed in by hand.
 import subprocess as _sp
 G = _json.loads(_sp.check_output(["node", "price_guide.mjs"]))
@@ -1067,7 +1067,7 @@ flytthjalp = service_page("flytthjalp.html",
   ("Ingår körsträckan i timpriset?",f"Under {G['freeKm']} km mellan adresserna ingår den. Längre än så tillkommer {G['perKm']} kr/km för hela sträckan."),
   ("Kan jag få hjälp med bara packning eller montering?","Ja, packning och ned-/montering kan bokas per timme, 595 kr/tim för 2 personer efter RUT.")])
 
-# ---------------------------------------------------------------- English and Arabic pages
+# ---------------------------------------------------------------- English page
 def lang_page(file, lang, rtl, title, desc, crumb, h1, lead, body, cta_quote, cta_call):
     s = page(file, title, desc, crumb, h1, lead, body)
     s = s.replace('<html lang="sv">', f'<html lang="{lang}"' + (' dir="rtl"' if rtl else '') + '>', 1)
@@ -1123,52 +1123,11 @@ english = lang_page("en.html", "en", False,
       <a href="index.html#offert" class="btn btn-accent">Get a free quote →</a>
       <a href="mailto:info@fxflytt.se" class="btn btn-ghost">E-mail us</a>
     </div>
-    <p style="margin-top:22px;color:var(--muted)">Trygg-Hansa insured (up to SEK 10 million) · Transport permit from Transportstyrelsen · Moves under Bohag 2010 consumer terms. <a href="ar.html">بالعربية</a> · <a href="index.html">På svenska</a></p>
+    <p style="margin-top:22px;color:var(--muted)">Trygg-Hansa insured (up to SEK 10 million) · Transport permit from Transportstyrelsen · Moves under Bohag 2010 consumer terms. <a href="index.html">På svenska</a></p>
   </div>
 </section>
 """, "Get a free quote", "Call 076-300 07 23")
 
-_ar_rows = "".join(f"<tr><th scope='row'>{({'1 rok':'غرفة واحدة','2 rok':'غرفتان','3 rok':'3 غرف','4 rok':'4 غرف','Villa':'فيلا'})[h['name']]} (حوالي {h['m2']} م²)</th><td><span dir='ltr'>{h['bas']:,}</span> كرونة</td><td><b><span dir='ltr'>{h['premium']:,}</span> كرونة</b></td></tr>".replace(",", " ") for h in H)
-arabic = lang_page("ar.html", "ar", True,
- "شركة نقل أثاث في السويد – FX Flytt (بالعربية)",
- f"نقل أثاث وتنظيف بعد الانتقال بسعر ثابت في ستوكهولم وأوبسالا وفيستيروس وأوريبرو و28 مدينة. شقة غرفتين من {H[1]['bas']:,} كرونة بعد خصم RUT. عرض سعر مجاني.".replace(",", " "),
- "بالعربية", "تنتقل في السويد؟ <span>نحن نسهّل عليك.</span>",
- "FX Flytt شركة نقل أثاث مقرها في Kungsör، نخدم ستوكهولم وأوبسالا ومنطقة Mälardalen و28 مدينة في وسط السويد. أسعار ثابتة، ونقل مؤمَّن، وشخص واحد يتابع معك من عرض السعر حتى آخر كرتونة.",
- f"""
-<section>
-  <div class="wrap" style="max-width:860px">
-    <h2 style="font-size:1.5rem;margin-bottom:10px">خدماتنا</h2>
-    <ul class="ticks" style="display:grid;gap:10px">
-      <li><b>نقل أثاث المنازل</b> – شقق وفلل، داخل المدينة أو إلى مدينة أخرى.</li>
-      <li><b>تنظيف بعد الانتقال</b> (flyttstäd) حسب قائمة المؤجر، مع ضمان 7 أيام.</li>
-      <li><b>تغليف الأغراض، وفك وتركيب الأثاث.</b></li>
-      <li><b>نقل المكاتب، والتخزين، ونقل البيانو، والتخلص من الأغراض.</b></li>
-      <li><b>النقل الدولي</b> من السويد وإليها.</li>
-    </ul>
-
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">أسعار ثابتة</h2>
-    <p style="color:var(--muted);margin-bottom:12px">للنقل لمسافة أقل من {G['freeKm']} كم، شاملة الضريبة، بعد خصم RUT. باقة Premium = نقل + تنظيف مع خصم 10 %.</p>
-    <div class="cmp-scroll"><table class="cmp ex"><thead><tr><th>نوع السكن</th><th>النقل (Bas)</th><th class="hot">نقل + تنظيف (Premium)</th></tr></thead><tbody>{_ar_rows}</tbody></table></div>
-    <p class="cmp-note">للمسافات الأطول: {G['perKm']} كرونة لكل كم للمسافة كاملة إذا كانت المسافة بين العنوانين {G['freeKm']} كم أو أكثر. بالساعة: عاملان + شاحنة {R['2']} كرونة للساعة بعد خصم RUT، بحد أدنى {R['minHours']} ساعات. الطابق والمصعد لا يغيّران السعر.</p>
-
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">ما هو خصم RUT؟</h2>
-    <p style="color:var(--muted)">RUT خصم ضريبي سويدي على الخدمات المنزلية: تدفع نصف تكلفة العمل فقط. نحن نخصمه مباشرة من الفاتورة ونقدّم الطلب لمصلحة الضرائب (Skatteverket) عنك. تحتاج إلى رقم شخصي سويدي (personnummer)، وأن يكون لديك رصيد RUT كافٍ لهذه السنة. إذا لم يكن لك حق في الخصم يكون السعر أعلى، ويظهر ذلك في عرض السعر قبل أن تحجز.</p>
-
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">كيف تحجز</h2>
-    <ul class="ticks" style="display:grid;gap:10px">
-      <li><b>اتصل بنا</b> على <a href="tel:+46763000723" dir="ltr">076-300 07 23</a> – <b>نتكلم العربية</b> – أو راسلنا على <a href="mailto:info@fxflytt.se">info@fxflytt.se</a>.</li>
-      <li><b>أو استخدم نموذج طلب العرض.</b> النموذج بالسويدية، لكن يمكنك أن تكتب رسالتك بالعربية.</li>
-      <li>نرد خلال 24 ساعة، وغالباً في نفس اليوم، بسعر ثابت توافق عليه عبر الإنترنت.</li>
-    </ul>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:24px">
-      <a href="index.html#offert" class="btn btn-accent">اطلب عرض سعر مجاني ←</a>
-      <a href="tel:+46763000723" class="btn btn-ghost">اتصل بنا</a>
-    </div>
-    <p style="margin-top:22px;color:var(--muted)">مؤمَّنون لدى Trygg-Hansa (حتى 10 ملايين كرونة) · ترخيص نقل من Transportstyrelsen · النقل وفق شروط Bohag 2010 للمستهلكين. <a href="en.html">In English</a> · <a href="index.html">På svenska</a></p>
-  </div>
-</section>
-""", "اطلب عرض سعر مجاني", "اتصل 076-300 07 23")
-
 for f, s in [("vad-kostar-flytt.html", prisguide), ("kontorsflytt.html", kontorsflytt), ("magasinering.html", magasinering),
-             ("pianoflytt.html", pianoflytt), ("flytthjalp.html", flytthjalp), ("en.html", english), ("ar.html", arabic)]:
+             ("pianoflytt.html", pianoflytt), ("flytthjalp.html", flytthjalp), ("en.html", english)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)

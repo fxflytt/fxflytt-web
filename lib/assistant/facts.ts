@@ -76,7 +76,7 @@ OFFERT, BOKNING OCH VILLKOR
 - Pris efter RUT förutsätter att kunden har rätt till RUT-avdrag och utrymme kvar för året.
 - 7 dagars städgaranti: är kunden eller hyresvärden inte nöjd med flyttstädningen, kontakta oss inom 7 dagar så åtgärdar vi det utan kostnad.
 - Magasinering (förvaring) erbjuds, kort eller lång tid – pris enligt offert.
-- Sidor att tipsa om: prisguide fxflytt.se/vad-kostar-flytt, kontorsflytt fxflytt.se/kontorsflytt, magasinering fxflytt.se/magasinering, pianoflytt fxflytt.se/pianoflytt, flytthjälp per timme fxflytt.se/flytthjalp, på engelska fxflytt.se/en, på arabiska fxflytt.se/ar.
+- Sidor att tipsa om: prisguide fxflytt.se/vad-kostar-flytt, kontorsflytt fxflytt.se/kontorsflytt, magasinering fxflytt.se/magasinering, pianoflytt fxflytt.se/pianoflytt, flytthjälp per timme fxflytt.se/flytthjalp, på engelska fxflytt.se/en.
 - Tömning av dödsbo: sortering, flytt till anhöriga, bortforsling, magasinering och flyttstäd – fast pris enligt offert. Sida: fxflytt.se/dodsbo
 - Utlandsflytt: flytt till/från alla EU-länder samt Norge och Storbritannien, med egna lastbilar. FX Flytt AB har tillstånd för transporter inom EU – pris enligt offert (beror på avstånd och volym). RUT gäller arbetskostnad inom EU/EES/Schweiz. Sida: fxflytt.se/utlandsflytt
 - RUT 2026: 50 % av arbetskostnaden, RUT+ROT högst 75 000 kr per person och år (ROT högst 50 000). Flyttbil, drivmedel, kartonger och magasinhyra ger inte avdrag. Betalning måste vara elektronisk. Mer: fxflytt.se/rut-avdrag
