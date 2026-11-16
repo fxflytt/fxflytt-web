@@ -212,7 +212,7 @@ from extra_cities import EXTRA
 CITY += [(c["slug"], c["name"], c["lead"].split(". ")[0].rstrip(".") + ".") for c in EXTRA]
 cards = "".join(f'<a class="city-card" href="flyttfirma-{s}.html"><h3><svg><use href="#i-pin"/></svg>Flyttfirma {n}</h3><p>{t}</p><span class="go">Läs mer →</span></a>' for s,n,t in CITY)
 flyttfirma = page("flyttfirma.html",
- "Flyttfirma i Mellansverige – 20 orter | FX Flytt",
+ "Flyttfirma i Mellansverige – 28 orter | FX Flytt",
  "FX Flytt flyttar i Kungsör, Örebro, Eskilstuna, Västerås, Linköping, Norrköping, Jönköping, Karlstad och fler orter – fasta priser efter boyta.",
  "Flyttfirma", "Din flyttfirma i <span>Mellansverige</span>",
  "Vi utgår från Kungsör och flyttar i hela Mellansverige – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
