@@ -5,7 +5,7 @@ BASE = "https://www.fxflytt.se"
 def url_for(f):
     name = os.path.basename(f)[:-5]
     return BASE + "/" if name == "index" else f"{BASE}/{name}"
-PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html", "offert.html"}  # booking system: no SEO, not in sitemap
+PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html", "offert.html", "404.html"}  # booking system: no SEO, not in sitemap
 pages = sorted(f for f in glob.glob("public/*.html") if os.path.basename(f) not in PRIVATE)
 CITIES = ["Kungsör","Örebro","Eskilstuna","Västerås","Katrineholm","Karlstad","Södertälje","Åkersberga","Norrtälje","Nyköping",
           "Norrköping","Linköping","Motala","Mjölby","Jönköping","Nässjö","Tranås","Västervik","Vimmerby","Ludvika",
@@ -34,6 +34,9 @@ for f in pages:
              '<link rel="apple-touch-icon" href="/apple-touch-icon.png">\n<meta name="theme-color" content="#0d2a3f">\n'
              f'<meta property="og:image" content="{BASE}/og-image.png">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n'
              '<meta property="og:image:alt" content="FX Flytt – Flytt Express">\n<meta name="twitter:card" content="summary_large_image">\n')
+    if os.path.basename(f) in ("index.html", "en.html"):   # the Swedish and the English home page point at each other
+        tags += (f'<link rel="alternate" hreflang="sv" href="{BASE}/">\n<link rel="alternate" hreflang="en" href="{BASE}/en">\n'
+                 f'<link rel="alternate" hreflang="x-default" href="{BASE}/">\n')
     if f.endswith("index.html"):
         tags += '<meta name="google-site-verification" content="s8p94rfif3ZzcQMY0-f3TqiQohiwWQq0y-PDJSRbZ4I" />\n'
         ld = BUSINESS | {"url": BASE + "/", "logo": BASE + "/icon-512.png", "image": BASE + "/og-image.png"}

@@ -176,7 +176,7 @@ SERVICES = [
 SVC_LINK = {"Flyttstäd":"flyttstad.html","Tömning av dödsbo":"dodsbo.html","Utlandsflytt":"utlandsflytt.html",
             "Bohagsflytt":"bohagsflytt.html","Packning & uppackning":"packning.html","Bortforsling":"bortforsling.html","Kontorsflytt":"kontorsflytt.html","Piano & tunga lyft":"pianoflytt.html","Magasinering":"magasinering.html"}
 rows = "".join(f'''<div class="svc-row">{ico(i)}<div><h3>{t}</h3><p>{p}</p><ul>{"".join(f'<li class="{"tag-rut" if x=="RUT-avdrag" else ""}">{x}</li>' for x in tags)}</ul></div>
-<a href="{SVC_LINK.get(t,"index.html#offert")}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t in SVC_LINK else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
+<a href="{SVC_LINK.get(t,"index.html#offert")}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{f'Läs mer<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap"> om {t.lower()}</span>' if t in SVC_LINK else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
 tjanster = page("tjanster.html",
  "Tjänster – flytt, packning, flyttstäd & bortforsling | FX Flytt",
  "Bohagsflytt, kontorsflytt, packning, montering, pianoflytt, flyttstäd och bortforsling – fasta priser och RUT-avdrag direkt på fakturan.",
@@ -506,7 +506,7 @@ radgivare = page("radgivare.html",
 
 # ---------------------------------------------------------------- Integritetspolicy
 integritet = page("integritetspolicy.html",
- "Integritetspolicy | FX Flytt",
+ "Integritetspolicy – så hanterar vi dina uppgifter | FX Flytt",
  "Så behandlar FX Flytt AB dina personuppgifter enligt dataskyddsförordningen (GDPR).",
  "Integritetspolicy", "Integritetspolicy",
  "Här beskriver vi vilka personuppgifter vi samlar in, varför, hur länge vi sparar dem och vilka rättigheter du har.",
@@ -1040,7 +1040,7 @@ magasinering = service_page("magasinering.html",
 
 pianoflytt = service_page("pianoflytt.html",
  "Pianoflytt och tunga lyft – piano, kassaskåp | FX Flytt",
- "Pianoflytt och tunga lyft: piano, kassaskåp och andra tunga föremål flyttas säkert med rätt utrustning och tillräckligt många personer. RUT-avdrag. Kostnadsfri offert.",
+ "Pianoflytt och tunga lyft: piano, kassaskåp och andra tunga föremål flyttas säkert med rätt utrustning och tillräckligt många personer. Kostnadsfri offert.",
  "Pianoflytt", "Pianoflytt och <span>tunga lyft</span>",
  "Ett piano eller kassaskåp kräver rätt utrustning, rätt teknik och tillräckligt många personer. Vi planerar lyftet så att både föremålet och huset klarar sig.",
  [("Det här flyttar vi", _ul(["<b>Piano</b> – inom bostaden, till en ny adress eller som en del av hela flytten.",
@@ -1129,7 +1129,7 @@ def _en_chrome(s):
 _en_rows = "".join(f"<tr><th scope='row'>{({'1 rok':'1-room flat','2 rok':'2-room flat','3 rok':'3-room flat','4 rok':'4-room flat','Villa':'House'})[h['name']]} (approx. {h['m2']} m²)</th><td>{h['bas']:,} SEK</td><td><b>{h['premium']:,} SEK</b></td></tr>".replace(",", " ") for h in H)
 english = lang_page("en.html", "en", False,
  "Moving company in central Sweden – FX Flytt (English)",
- f"Removals and move-out cleaning at fixed prices in 28 towns in central Sweden, including Stockholm, Uppsala, Västerås and Örebro. 2-room flat from {H[1]['bas']:,} SEK after RUT. Free quote.".replace(",", " "),
+ f"Removals and move-out cleaning at fixed prices in 28 towns in central Sweden, including Stockholm and Uppsala. 2-room flat from {f"{H[1]['bas']:,}".replace(",", " ")} SEK after RUT.",
  "In English", "Moving in Sweden? <span>We make it simple.</span>",
  "FX Flytt is a moving company based in Kungsör, serving 28 towns in central Sweden – including Stockholm, Uppsala and the Mälaren region. Fixed prices, insured moves and one contact person from quote to the last box.",
  f"""
@@ -1220,3 +1220,25 @@ bortforsling = service_page("bortforsling.html",
 
 for f, s in [("bohagsflytt.html", bohagsflytt), ("packning.html", packning), ("bortforsling.html", bortforsling)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)
+
+# ---------------------------------------------------------------- 404: shown by Next.js (app/not-found.tsx) for unknown addresses
+notfound = page("404.html",
+ "Sidan finns inte | FX Flytt",
+ "Sidan du letade efter finns inte. Här hittar du våra tjänster, priser och orter – eller ring oss på 076-300 07 23.",
+ "Sidan finns inte", "Sidan finns <span>tyvärr inte</span>",
+ "Adressen kan vara fel eller sidan flyttad. Här är några vägar vidare – eller ring oss, så hjälper vi dig direkt.",
+ """
+<section>
+  <div class="wrap" style="max-width:860px">
+    <div class="city-cards" style="margin-top:0">
+      <a class="city-card" href="index.html"><h3>Startsidan</h3><p>Räkna ut ditt pris och begär gratis offert.</p></a>
+      <a class="city-card" href="tjanster.html"><h3>Våra tjänster</h3><p>Flytt, flyttstäd, packning, magasinering och mer.</p></a>
+      <a class="city-card" href="paket.html"><h3>Priser och paket</h3><p>Bas, Premium och Deluxe – fasta priser efter RUT.</p></a>
+      <a class="city-card" href="flyttfirma.html"><h3>Våra orter</h3><p>28 orter i Mellansverige.</p></a>
+      <a class="city-card" href="vad-kostar-flytt.html"><h3>Vad kostar en flytt?</h3><p>Prisexempel för olika bostäder.</p></a>
+      <a class="city-card" href="en.html" lang="en"><h3>In English</h3><p>Information and quotes in English.</p></a>
+    </div>
+  </div>
+</section>
+""").replace("<head>", '<head>\n<meta name="robots" content="noindex">', 1)
+open("404.html", "w", encoding="utf-8").write(notfound); print("wrote 404.html")
