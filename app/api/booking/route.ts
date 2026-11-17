@@ -3,7 +3,7 @@ import { bookingByToken, publicView, saveBooking, offerHash, applyExtras, TERMS_
 import { isAdmin } from "@/lib/booking/auth.ts";
 import { SIZE_LABEL, type PkgId } from "@/lib/booking/packages.ts";
 import { rewardOnSign } from "@/lib/booking/referral.ts";
-import { notifyAll } from "@/lib/booking/push.ts";
+import { notifyAll, recordNote } from "@/lib/booking/push.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { signedCustomerEmail, companyNoticeEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
@@ -21,7 +21,8 @@ export async function GET(req: Request) {
   if (!b || b.status === "cancelled") return Response.json({ error: "not-found" }, { status: 404 });
   // Count the customer's opens (not the admin's own previews).
   if (!isAdmin(req) && (b.status === "sent" || b.status === "declined" || b.status === "new")) {
-    const now = Date.now();
+    const now = Date.now(), quiet = b.lastViewAt && now - b.lastViewAt < 3600_000;
+    if (!quiet) await recordNote({ title: `👁 ${b.data.name} öppnade offerten`, body: (b.views ? `${b.views + 1}:e gången` : "Första gången") + (b.offer ? ` · ${b.offer.total.toLocaleString("sv-SE")} kr` : ""), url: "/admin#" + b.id }).catch(() => {});
     b.views = (b.views || 0) + 1; b.lastViewAt = now;
     if (!b.firstViewAt) b.firstViewAt = now;
     await saveBooking(b, b.views === 1 ? "Kunden öppnade offerten" : undefined).catch(() => {});

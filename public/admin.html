@@ -68,7 +68,7 @@
   #npanel .ndot{position:absolute;left:12px;top:18px;width:9px;height:9px;border-radius:50%;background:var(--accent)}
   #npanel .nhead{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;font-size:13px}#npanel .nhead span{color:var(--muted)}
   #npanel .nhead button{margin-left:auto;border:0;background:none;color:var(--navy);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer;padding:4px 0}
-  #npanel .ev.unread small{font-weight:400}#npanel .ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  #npanel .ev.unread small{font-weight:400}#npanel .ev .nb{display:block;font-weight:400;font-size:13px;color:#47525c;margin-top:1px}#npanel .ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
   #toast{display:flex;align-items:center;gap:12px;position:fixed;left:16px;right:16px;bottom:24px;max-width:440px;margin:0 auto;background:var(--navy);color:#fff;border-radius:14px;padding:13px 16px;z-index:40;box-shadow:var(--sh2);font-weight:600;cursor:pointer}
   @media (max-width:899px){#toast{bottom:calc(84px + env(safe-area-inset-bottom))}}
 
@@ -397,7 +397,8 @@
   // First time: every booking. After that (every 30 s): only bookings changed since the last time.
   let syncedAt=0;
   async function load(){
-    const [j,t,ab,fl_,dm_]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res})),api('/api/admin/absence').catch(()=>({absences:absAll})),api('/api/admin/fleet').catch(()=>fleet),api('/api/admin/damage').catch(()=>({damages:dmgAll}))]);
+    const [j,t,ab,fl_,dm_,nt_]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res})),api('/api/admin/absence').catch(()=>({absences:absAll})),api('/api/admin/fleet').catch(()=>fleet),api('/api/admin/damage').catch(()=>({damages:dmgAll})),api('/api/admin/notes').catch(()=>feed)]);
+    feed=nt_||feed;
     absAll=ab.absences||[]; fleet=fl_; dmgAll=dm_.damages||[];
     if(j.partial){ for(const b of j.bookings||[]){ const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=b; else all.unshift(b); }
       if(j.deleted?.length) all=all.filter(b=>!j.deleted.includes(b.id)); }
@@ -413,31 +414,20 @@
     set('#ctCrew',all.filter(needsCrew).length+absAll.filter(a=>a.status==='pending').length+dmgAll.filter(d=>d.status==='new').length+(fleet.due||[]).filter(x=>x.late).length);
   }
 
-  // ---------- notices (only inside this page) ----------
-  // Built from the bookings themselves: the customer opened, signed or declined the offer.
-  function events(){
-    const ev=[];
-    for(const b of all){ const n=(b.data||{}).name||b.id;
-      if(b.lastViewAt) ev.push({t:b.lastViewAt,id:b.id,ic:'👁',txt:`${n} öppnade offerten`+(b.views>1?` (${b.views}:e gången)`:'')});
-      if(b.signedAt) ev.push({t:b.signedAt,id:b.id,ic:'✅',txt:`${n} signerade – flytten är bokad`});
-      if(b.declinedAt&&b.status==='declined') ev.push({t:b.declinedAt,id:b.id,ic:'❌',txt:`${n} tackade nej`+(b.decline?` – ${WHY[b.decline.reason]||''}`:'')});
-    }
-    return ev.sort((a,b)=>b.t-a.t).slice(0,40);
-  }
-  const seenKey='fx_seen_at';
-  const getSeen=()=>{ try{ return Number(localStorage.getItem(seenKey))||0; }catch(_){ return 0; } };
-  const setSeen=(t)=>{ try{ localStorage.setItem(seenKey,String(t)); }catch(_){} };
+  // ---------- notices: the same as the push notifications, kept on the server (fx:notes) ----------
+  // Read state is per user on the server, so the phone and the computer agree.
+  let feed={notes:[],read:{all:0,ids:[]}};
+  const hashOf=(url)=>{ const u=String(url||''); return u.startsWith('/admin')?(u.split('#')[1]||''):null; };
+  function events(){ return (feed.notes||[]).map(n=>({t:n.at,id:n.id,url:n.url,txt:n.title,body:n.body})); }
   let newestSeenInSession=0;
-  // Each notice stays in the list; it counts as unread until it is opened (or "Markera alla som lästa").
-  const evKey=(e)=>e.id+':'+e.t+':'+e.ic;
-  const getRead=()=>{ try{ return new Set(JSON.parse(localStorage.getItem('fx_read')||'[]')); }catch(_){ return new Set(); } };
-  const setRead=(set)=>{ const keep=new Set(events().map(evKey)); try{ localStorage.setItem('fx_read',JSON.stringify([...set].filter(k=>keep.has(k)))); }catch(_){} };
-  const isUnread=(e,seen,read)=>e.t>seen&&!read.has(evKey(e));
+  const isUnread=(e)=>e.t>(feed.read.all||0)&&!(feed.read.ids||[]).includes(e.id);
+  const markNote=async(body)=>{ try{ feed.read=(await api('/api/admin/notes',{method:'POST',body:JSON.stringify(body)})).read; }catch(_){} updateBell(); };
   function updateBell(){
     const bell=$('#bell'); if(!bell) return;
-    const seen=getSeen(), read=getRead(), n=events().filter(e=>isUnread(e,seen,read)).length, c=$('#bellN');
+    const n=events().filter(isUnread).length, c=$('#bellN');
     c.hidden=!n; c.textContent=n>9?'9+':String(n);
     document.title=(n?`(${n}) `:'')+'Admin – FX Flytt';
+    try{ if(navigator.setAppBadge) n?navigator.setAppBadge(n):navigator.clearAppBadge(); }catch(_){}
   }
   function toast(msg,id){
     const t=$('#toast'); t.textContent=msg; t.hidden=false; t.onclick=()=>{ t.hidden=true; if(id) location.hash=id; };
@@ -447,26 +437,31 @@
     if(startNotices.on) return; startNotices.on=true;
     newestSeenInSession=Math.max(0,...events().map(e=>e.t));
     const drawPanel=()=>{
-      const p=$('#npanel'), seen=getSeen(), read=getRead(), ev=events(), n=ev.filter(e=>isUnread(e,seen,read)).length;
+      const p=$('#npanel'), ev=events(), n=ev.filter(isUnread).length;
       p.innerHTML=ev.length?`<div class="nhead"><b>Notiser</b>${n?`<span>${n} olästa</span><button id="nall">Markera alla som lästa</button>`:'<span>Allt är läst ✓</span>'}</div>`
-        +ev.map(e=>{ const u=isUnread(e,seen,read); return `<button class="ev${u?' unread':' read'}" data-id="${esc(e.id)}" data-k="${esc(evKey(e))}">${u?'<i class="ndot"></i>':''}${e.ic} ${esc(e.txt)}<small>${esc(ago(e.t))}${u?'':' · Öppnad ✓'}</small></button>`; }).join('')
+        +ev.map(e=>{ const u=isUnread(e); return `<button class="ev${u?' unread':' read'}" data-n="${esc(e.id)}">${u?'<i class="ndot"></i>':''}${esc(e.txt)}${e.body?`<span class="nb">${esc(e.body)}</span>`:''}<small>${esc(ago(e.t))}${u?'':' · Öppnad ✓'}</small></button>`; }).join('')
         :'<div class="empty">Inga notiser än.</div>';
-      p.querySelectorAll('.ev').forEach(x=>x.onclick=()=>{ const r=getRead(); r.add(x.dataset.k); setRead(r); updateBell(); p.hidden=true; location.hash=x.dataset.id; });
-      if($('#nall')) $('#nall').onclick=(e)=>{ e.stopPropagation(); setSeen(Date.now()); setRead(new Set()); updateBell(); drawPanel(); };
+      p.querySelectorAll('.ev').forEach(x=>x.onclick=()=>{ const e=ev.find(y=>y.id===x.dataset.n); p.hidden=true; if(isUnread(e)){ feed.read.ids=[...(feed.read.ids||[]),e.id]; updateBell(); markNote({id:e.id}); }
+        const h=hashOf(e.url); if(h!==null) location.hash=h; else if(e.url) location.href=e.url; });
+      if($('#nall')) $('#nall').onclick=async(e)=>{ e.stopPropagation(); feed.read={all:Date.now(),ids:[]}; updateBell(); drawPanel(); await markNote({all:true}); };
     };
     $('#bell').onclick=()=>{
       const p=$('#npanel'); if(!p.hidden){ p.hidden=true; return; }
       drawPanel(); p.hidden=false;
     };
     document.addEventListener('click',(e)=>{ const p=$('#npanel'); if(!p.hidden&&!p.contains(e.target)&&e.target.id!=='bell'&&!$('#bell').contains(e.target)) p.hidden=true; });
-    // Check for news every 30 seconds while the page is open and visible.
-    setInterval(async()=>{
-      if(document.visibilityState!=='visible') return;
+    // Check for news every 30 seconds while the page is open and visible – and at once when the app is opened again.
+    let lastTick=0;
+    const tick=async()=>{
+      if(document.visibilityState!=='visible'||Date.now()-lastTick<5000) return; lastTick=Date.now();
       try{ await load(); }catch(_){ return; }
       const fresh=events().filter(e=>e.t>newestSeenInSession);
-      if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].ic} ${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,fresh[0].id); }
+      if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,hashOf(fresh[0].url)); }
       if(fresh.length||load.changed){ if(view==='list'&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); else if(view==='cal'&&!dragging) showCal(); }
-    },30000);
+      if(!$('#npanel').hidden) drawPanel();
+    };
+    setInterval(tick,30000);
+    document.addEventListener('visibilitychange',tick); window.addEventListener('focus',tick);
   }
   const signedOn=(d)=>all.filter(b=>(b.status==='signed'||b.status==='done')&&b.date===d);
 
