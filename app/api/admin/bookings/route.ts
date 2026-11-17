@@ -1,7 +1,7 @@
-// Admin: list (GET), one booking (GET ?id=), create (POST), update (PATCH ?id=).
+// Admin: list (GET), one booking (GET ?id=), create (POST), update (PATCH ?id=), delete (DELETE ?id=, owner).
 import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
-import { listBookings, bookingsChangedSince, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status } from "@/lib/booking/store.ts";
+import { listBookings, bookingsChangedSince, deletedSince, deleteBooking, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
 import { listPhotos } from "@/lib/booking/work.ts";
@@ -23,7 +23,7 @@ export async function GET(req: Request) {
   }
   // ?since=<ms>: only what changed since then (the admin page asks every 30 s); otherwise everything.
   const now = Date.now(), since = Number(new URL(req.url).searchParams.get("since"));
-  if (since > 0) return Response.json({ bookings: await bookingsChangedSince(since - 5000), now, partial: true });
+  if (since > 0) return Response.json({ bookings: await bookingsChangedSince(since - 5000), deleted: await deletedSince(since - 5000), now, partial: true });
   return Response.json({ bookings: await listBookings(), now });
 }
 
@@ -152,4 +152,13 @@ async function tellCrew(before: { crew: string[]; date?: string; time?: string; 
   await send(added, "Nytt jobb");
   await send(removed, "Du är borttagen från ett jobb");
   if (moved) await send(now.filter((id) => !added.includes(id)), "Jobbet har flyttats");
+}
+
+export async function DELETE(req: Request) {
+  const u = await requireUser(req, "owner"); if (u instanceof Response) return u;
+  if (!kvConfigured()) return noStorage();
+  const b = await deleteBooking(new URL(req.url).searchParams.get("id") || "");
+  if (!b) return Response.json({ error: "Bokningen finns inte." }, { status: 404 });
+  console.log(`booking ${b.id} (${b.data.name}) deleted by ${u.name}`);
+  return Response.json({ ok: true });
 }

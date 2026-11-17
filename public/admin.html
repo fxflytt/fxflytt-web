@@ -213,6 +213,7 @@
   .tcard .next{margin-top:10px;font-size:13px;padding-top:10px;border-top:1px solid var(--line)}
   .tcard .acts{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
   .tcard.off{opacity:.65}
+  .linkdel{display:block;margin:14px auto 0;border:0;background:none;color:var(--red);font:inherit;font-size:13.5px;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px}
   .pw{display:grid;grid-template-columns:150px repeat(7,minmax(118px,1fr));min-width:980px}
   .pw>div{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px;min-height:58px}
   .pw .pw-h{min-height:0;font-weight:800;font-size:12.5px;color:var(--navy);background:#f6f8fa;padding:9px 8px}.pw .pw-h::first-letter{text-transform:uppercase}
@@ -398,8 +399,10 @@
   async function load(){
     const [j,t,ab,fl_,dm_]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res})),api('/api/admin/absence').catch(()=>({absences:absAll})),api('/api/admin/fleet').catch(()=>fleet),api('/api/admin/damage').catch(()=>({damages:dmgAll}))]);
     absAll=ab.absences||[]; fleet=fl_; dmgAll=dm_.damages||[];
-    if(j.partial){ for(const b of j.bookings||[]){ const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=b; else all.unshift(b); } }
+    if(j.partial){ for(const b of j.bookings||[]){ const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=b; else all.unshift(b); }
+      if(j.deleted?.length) all=all.filter(b=>!j.deleted.includes(b.id)); }
     else all=j.bookings||[];
+    load.changed=!!(j.partial&&((j.bookings||[]).length||(j.deleted||[]).length));
     syncedAt=j.now||Date.now(); res=t.resources||[]; updateBell(); updateCounts();
   }
   // Sidebar badges: new requests, and booked jobs in the next 14 days that have nobody assigned.
@@ -461,8 +464,8 @@
       if(document.visibilityState!=='visible') return;
       try{ await load(); }catch(_){ return; }
       const fresh=events().filter(e=>e.t>newestSeenInSession);
-      if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].ic} ${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,fresh[0].id);
-        if(view==='list'&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); else if(view==='cal'&&!dragging) showCal(); }
+      if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].ic} ${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,fresh[0].id); }
+      if(fresh.length||load.changed){ if(view==='list'&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); else if(view==='cal'&&!dragging) showCal(); }
     },30000);
   }
   const signedOn=(d)=>all.filter(b=>(b.status==='signed'||b.status==='done')&&b.date===d);
@@ -1006,7 +1009,7 @@
         ${b.status!=='done'?'<button class="btn gray" data-s="done">Markera klar</button>':''}
         ${b.status!=='cancelled'?'<button class="btn red" data-s="cancelled">Avboka</button>':''}
         ${['done','cancelled','declined'].includes(b.status)?`<button class="btn gray" data-s="${b.signedAt?'signed':(b.sentAt?'sent':'new')}">Återställ</button>`:''}
-      </div></div>
+      </div>${isOwner()?'<button class="linkdel" id="b_del">🗑 Ta bort bokningen helt</button>':''}</div>
       ${b.extrasChosen?.length?`<div class="card"><h3>Kunden valde tillval</h3>${(b.extras||[]).filter(e=>b.extrasChosen.includes(e.id)).map(e=>`<div style="display:flex;justify-content:space-between"><span>${esc(e.label)}</span><b>+${kr(e.price)}</b></div>`).join('')}</div>`:''}
       ${(()=>{ const k=digits(d.phone); const other=k?all.filter(x=>x.id!==b.id&&digits((x.data||{}).phone)===k):[]; return other.length?`<div class="card"><h3>Kundens andra bokningar (${other.length})</h3>${other.map(x=>`<a class="hist" href="#${esc(x.id)}">${esc(fmtDate(x.date))} · ${x.offer?kr(x.offer.total):'Inget pris'} · ${esc(ST[x.status])}</a>`).join('')}</div>`:''; })()}
       <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}${h.by?` <span class="muted">· ${esc(h.by)}</span>`:''}</div>`).join('')}</div>
@@ -1115,6 +1118,12 @@
       const body={date:$('#dt').value,time:$('#tm').value,customerNote:$('#cn').value,adminNote:$('#an').value};
       if($('#tot').value) body.total=Number($('#tot').value);
       if(await patch(body)){ showDetail(b.id); setTimeout(()=>msg('#msg','Sparat ✓',true),50); }
+    };
+    if($('#b_del')) $('#b_del').onclick=async()=>{
+      const real=['signed','done'].includes(b.status)||b.signedAt;
+      if(!confirm(`Ta bort ${(b.data||{}).name||b.id} helt?\n\nBokningen, historiken och länkarna försvinner och kan inte tas fram igen här (bara från en säkerhetskopia).`+(real?'\n\nOBS: kunden har signerat. Vill du bara stoppa flytten – välj Avboka i stället.':''))) return;
+      if(real&&!confirm('Är du säker? Den signerade bokningen tas bort.')) return;
+      try{ await api('/api/admin/bookings?id='+b.id,{method:'DELETE'}); all=all.filter(x=>x.id!==b.id); updateCounts(); notify('Bokningen är borttagen'); location.hash='bokningar'; }catch(e){ alert(e.message); }
     };
     root.querySelectorAll('[data-s]').forEach(x=>x.onclick=async()=>{
       if(x.dataset.s==='cancelled'&&!confirm('Avboka den här bokningen?')) return;
