@@ -6,10 +6,14 @@ self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener("push", (e) => {
   let n = { title: "FX Flytt", body: "", url: "/admin" };
   try { n = { ...n, ...e.data.json() }; } catch (_) { if (e.data) n.body = e.data.text(); }
-  e.waitUntil(self.registration.showNotification(n.title, {
-    body: n.body, tag: n.tag, renotify: !!n.tag, data: { url: n.url },
-    icon: "/icon-192.png", badge: "/icon-192.png",
-  }));
+  e.waitUntil(Promise.all([
+    self.registration.showNotification(n.title, {
+      body: n.body, tag: n.tag, renotify: !!n.tag, data: { url: n.url },
+      icon: "/icon-192.png", badge: "/icon-192.png",
+    }),
+    // A mark on the app icon (where the phone supports it); the page sets the exact number when opened.
+    self.navigator.setAppBadge ? self.navigator.setAppBadge().catch(() => {}) : null,
+  ]));
 });
 
 self.addEventListener("notificationclick", (e) => {

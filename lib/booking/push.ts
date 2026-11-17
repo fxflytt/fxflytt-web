@@ -43,7 +43,35 @@ export async function removeSub(match: (s: Sub) => boolean) {
 export type Note = { title: string; body: string; url: string; tag?: string };
 
 // Sends to every device (or only `only`). Never throws – a failed notification must not break a booking.
+// Everything sent to the office is also kept in a feed (fx:notes, newest first, 150 kept), so the bell in
+// the admin page shows it even if the phone was off. Read state is per user (fx:nread:<uid>), shared by
+// all the user's devices.
+export type FeedItem = Note & { id: string; at: number };
+export type ReadState = { all: number; ids: string[] };
+const FEED = "fx:notes", FEED_MAX = 150;
+export async function recordNote(n: Note): Promise<void> {
+  const it: FeedItem = { id: randomBytes(6).toString("hex"), at: Date.now(), title: n.title, body: n.body, url: n.url };
+  await kv(["LPUSH", FEED, JSON.stringify(it)]); await kv(["LTRIM", FEED, 0, FEED_MAX - 1]);
+}
+export async function listNotes(): Promise<FeedItem[]> {
+  return ((await kv<string[]>(["LRANGE", FEED, 0, FEED_MAX - 1])) || []).map((s) => JSON.parse(s) as FeedItem);
+}
+export async function readState(uid: string): Promise<ReadState> {
+  const s = await kv<string | null>(["GET", "fx:nread:" + uid]);
+  return s ? (JSON.parse(s) as ReadState) : { all: 0, ids: [] };
+}
+export async function markRead(uid: string, id: string | null): Promise<ReadState> {
+  const r = await readState(uid);
+  if (id === null) { r.all = Date.now(); r.ids = []; }
+  else if (/^[0-9a-f]{12}$/.test(id) && !r.ids.includes(id)) r.ids.push(id);
+  const keep = new Set((await listNotes()).map((n) => n.id));
+  r.ids = r.ids.filter((x) => keep.has(x));
+  await kv(["SET", "fx:nread:" + uid, JSON.stringify(r)]);
+  return r;
+}
+
 export async function notifyAll(n: Note, only?: (s: Sub) => boolean): Promise<number> {
+  if (!only) await recordNote(n).catch(() => {});
   try {
     // Default: only admin devices. Crew phones (userId "crew:…") get only what is meant for them.
     const subs = (await listSubs()).filter(only || ((s) => !s.userId.startsWith("crew:")));

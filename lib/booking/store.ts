@@ -148,6 +148,25 @@ export async function listBookings(limit = 0): Promise<Booking[]> {
   return loadMany(await kv<string[]>(["ZREVRANGE", K.idx, 0, limit > 0 ? limit - 1 : -1]));
 }
 
+// Removes a booking for good (owner): the booking, its links, job photos list and referral code.
+// The id is kept in fx:gone for a while so open admin pages drop it on their next refresh.
+// The daily backup still has it if it was removed by mistake.
+export async function deleteBooking(id: string): Promise<Booking | null> {
+  const b = await getBooking(id);
+  if (!b) return null;
+  const now = Date.now();
+  await kvPipe([
+    ["DEL", K.b(id)], ["ZREM", K.idx, id], ["ZREM", K.upd, id], ["DEL", `fx:wp:${id}`],
+    ...(b.token ? [["DEL", K.t(b.token)]] : []), ...(b.workToken ? [["DEL", K.w(b.workToken)]] : []),
+    ...(b.refCode ? [["DEL", "fx:ref:" + b.refCode]] : []),
+    ["ZADD", "fx:gone", now, id], ["ZREMRANGEBYSCORE", "fx:gone", "-inf", now - 30 * 864e5],
+  ]);
+  return b;
+}
+export async function deletedSince(ts: number): Promise<string[]> {
+  return (await kv<string[]>(["ZRANGEBYSCORE", "fx:gone", "(" + Math.floor(ts), "+inf"])) || [];
+}
+
 // Bookings created or changed after `ts` (ms).
 export async function bookingsChangedSince(ts: number): Promise<Booking[]> {
   return loadMany(await kv<string[]>(["ZRANGEBYSCORE", K.upd, "(" + Math.floor(ts), "+inf"]));
