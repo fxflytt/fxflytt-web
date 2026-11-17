@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       }, { lead: "calc" });
       b.history[0].what = "Prisräknaren: fick priset på mejl";
       await saveBooking(b);
-      await notifyAll({ title: "💡 Ny lead från prisräknaren", body: `${name} · ${label} · ${q.totalAfterRut.toLocaleString("sv-SE")} kr${phone ? " · " + phone : ""}`, url: "/admin#" + b.id, tag: b.id });
+      await notifyAll({ cat: "new", title: "💡 Ny lead från prisräknaren", body: `${name} · ${label} · ${q.totalAfterRut.toLocaleString("sv-SE")} kr${phone ? " · " + phone : ""}`, url: "/admin#" + b.id, tag: b.id });
     } catch (e) { console.error("lead save failed", (e as Error).message); }
   }
   if (mailConfigured()) {

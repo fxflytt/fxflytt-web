@@ -5,6 +5,7 @@ import { SIZE_LABEL, type PkgId } from "@/lib/booking/packages.ts";
 import { rewardOnSign } from "@/lib/booking/referral.ts";
 import { notifyAll, recordNote } from "@/lib/booking/push.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
+import { getSettings, trustView } from "@/lib/booking/settings.ts";
 import { signedCustomerEmail, companyNoticeEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
@@ -22,12 +23,13 @@ export async function GET(req: Request) {
   // Count the customer's opens (not the admin's own previews).
   if (!isAdmin(req) && (b.status === "sent" || b.status === "declined" || b.status === "new")) {
     const now = Date.now(), quiet = b.lastViewAt && now - b.lastViewAt < 3600_000;
-    if (!quiet) await recordNote({ title: `👁 ${b.data.name} öppnade offerten`, body: (b.views ? `${b.views + 1}:e gången` : "Första gången") + (b.offer ? ` · ${b.offer.total.toLocaleString("sv-SE")} kr` : ""), url: "/admin#" + b.id }).catch(() => {});
+    if (!quiet) await recordNote({ cat: "view", title: `👁 ${b.data.name} öppnade offerten`, body: (b.views ? `${b.views + 1}:e gången` : "Första gången") + (b.offer ? ` · ${b.offer.total.toLocaleString("sv-SE")} kr` : ""), url: "/admin#" + b.id }).catch(() => {});
     b.views = (b.views || 0) + 1; b.lastViewAt = now;
     if (!b.firstViewAt) b.firstViewAt = now;
     await saveBooking(b, b.views === 1 ? "Kunden öppnade offerten" : undefined).catch(() => {});
   }
-  return Response.json(publicView(b), { headers: { "Cache-Control": "no-store" } });
+  const trust = await getSettings().then(trustView).catch(() => null);
+  return Response.json({ ...publicView(b), trust }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(req: Request) {
@@ -47,7 +49,7 @@ export async function POST(req: Request) {
     b.decline = reason || text ? { reason: reason || "other", ...(text ? { text } : {}) } : undefined;
     await saveBooking(b, "Kunden nekade offerten" + (b.decline ? ` – ${DECLINE_REASONS[b.decline.reason]}${text ? ": " + text : ""}` : ""));
     if (mailConfigured()) await send(COMPANY_TO, companyNoticeEmail(b, "declined", adminUrl)).catch(() => {});
-    await notifyAll({ title: "❌ " + b.data.name + " tackade nej", body: b.decline ? DECLINE_REASONS[b.decline.reason] + (text ? ": " + text : "") : "Ingen anledning angiven", url: "/admin#" + b.id, tag: b.id });
+    await notifyAll({ cat: "declined", title: "❌ " + b.data.name + " tackade nej", body: b.decline ? DECLINE_REASONS[b.decline.reason] + (text ? ": " + text : "") : "Ingen anledning angiven", url: "/admin#" + b.id, tag: b.id });
     return Response.json({ ok: true, view: publicView(b) });
   }
 
@@ -80,8 +82,8 @@ export async function POST(req: Request) {
   await saveBooking(b, `Signerad av ${name}` + pkgNote + (chosen.length ? ` med tillval: ${chosen.map((e) => e.label).join(", ")}` : ""));
   // Crew already planned on the job: it is now booked, tell them.
   if (b.crew?.length) await notifyAll({ title: "Nytt jobb", body: b.date + (b.time ? " kl. " + b.time : ""), url: "/jobb", tag: "job-" + b.id }, (s) => b.crew!.some((id) => s.userId === "crew:" + id));
-  if (referrer) await notifyAll({ title: "🎁 Belöning att ge", body: `${b.data.name} bokade med ${referrer.data.name}s kod`, url: "/admin#" + referrer.id, tag: "ref-" + b.id });
-  await notifyAll({ title: "✅ " + b.data.name + " signerade!", body: `${b.offer.total.toLocaleString("sv-SE")} kr · ${b.date}` + (chosen.length ? " · med tillval" : ""), url: "/admin#" + b.id, tag: b.id });
+  if (referrer) await notifyAll({ cat: "reward", title: "🎁 Belöning att ge", body: `${b.data.name} bokade med ${referrer.data.name}s kod`, url: "/admin#" + referrer.id, tag: "ref-" + b.id });
+  await notifyAll({ cat: "signed", title: "✅ " + b.data.name + " signerade!", body: `${b.offer.total.toLocaleString("sv-SE")} kr · ${b.date}` + (chosen.length ? " · med tillval" : ""), url: "/admin#" + b.id, tag: b.id });
   if (mailConfigured()) {
     await send(COMPANY_TO, companyNoticeEmail(b, "signed", adminUrl), b.data.email || undefined).catch((e) => console.error("notice", e));
     if (b.data.email) await send(b.data.email, signedCustomerEmail(b), COMPANY_TO).catch((e) => console.error("confirm", e));

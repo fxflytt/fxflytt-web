@@ -5,6 +5,7 @@ import { listBookings, issueWorkToken, saveBooking } from "@/lib/booking/store.t
 import { listResources } from "@/lib/booking/team.ts";
 import { schedule } from "@/lib/booking/schedule.ts";
 import { listMsgs, isFor } from "@/lib/booking/messages.ts";
+import { slaTick } from "@/lib/booking/sla.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim
 export async function GET(req: Request) {
   const me = await crewUser(req);
   if (!me) return Response.json({ error: "unauthorized" }, { status: 401 });
+  await slaTick();
   const [all, res] = await Promise.all([listBookings(), listResources()]);
   const byId = new Map(res.map((r) => [r.id, r])), from = day(-14), to = day(90);
   const mine = all.filter((b) => (b.crew || []).includes(me.id) && b.date && b.date >= from && b.date <= to && ["signed", "done", "cancelled"].includes(b.status));

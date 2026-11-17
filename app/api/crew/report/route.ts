@@ -65,7 +65,7 @@ export async function POST(req: Request) {
       }
       const x = await addDamage({ kind: d.kind, desc: d.desc }, me.name, { booking, vehicle: v ? { id: v.id, name: v.name } : undefined, crewId: me.id });
       if (booking) { const b = await getBooking(booking.id); if (b) await saveBooking(b, `Skada rapporterad av ${me.name}: ${x.title}`); }
-      await notifyAll({ title: `⚠️ Skada rapporterad – ${x.kind === "vehicle" ? x.vehicle : x.customer}`, body: `${me.name}: ${x.desc.slice(0, 120)}`, url: "/admin#skador", tag: "dmg-" + x.id });
+      await notifyAll({ cat: "crew", title: `⚠️ Skada rapporterad – ${x.kind === "vehicle" ? x.vehicle : x.customer}`, body: `${me.name}: ${x.desc.slice(0, 120)}`, url: "/admin#skador", tag: "dmg-" + x.id });
       return Response.json({ ok: true, id: x.id });
     }
     return err("Okänd typ.");

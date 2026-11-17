@@ -43,6 +43,9 @@ export type Booking = {
   refCode?: string;           // this customer's "Tipsa en vän" code
   refRewards?: { bookingId: string; name: string; at: number; givenAt?: number; givenBy?: string }[];   // friends who booked
   referral?: { code: string; fromId: string; fromName: string; kr: number; rewardedAt?: number };     // booked with a friend's code
+  slaAlertedAt?: number;
+  noMarketing?: boolean;     // the customer said no to campaign e-mails
+  campaigns?: { at: number; subject: string; by: string }[];     // the office was warned that nobody had answered this request
   lead?: "calc";             // came from "Få priset på mejl" in the website calculator (no request sent yet)
   firstResponseAt?: number;   // first time someone in the office acted on a web request (speed to lead)
   contactedAt?: number;       // the customer has been reached (call answered, or moved to "Kontaktad")

@@ -3,12 +3,15 @@
 import { computePrice, PriceError } from "@/lib/pricing/pricelist.js";
 import { getPrices } from "@/lib/pricing/current.ts";
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
+import { kvConfigured } from "@/lib/booking/kv.ts";
+import { slaTick } from "@/lib/booking/sla.ts";
 
 export const runtime = "nodejs";
 const ALLOWED = new Set(["service", "areaM2", "distanceKm", "pkg", "crew", "hours", "boxes", "volumeM3", "extraCleaning"]);
 
 export async function POST(req: Request) {
   if (rateLimited("price:" + clientIp(req), 60, 60_000)) return Response.json({ error: "För många förfrågningar." }, { status: 429 });
+  if (kvConfigured()) await slaTick();   // website traffic also checks for unanswered requests
   let body: unknown;
   try { body = await req.json(); } catch { return Response.json({ error: "Ogiltig förfrågan" }, { status: 400 }); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return Response.json({ error: "Ogiltig förfrågan" }, { status: 400 });

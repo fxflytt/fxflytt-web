@@ -63,7 +63,7 @@ export async function POST(req: Request) {
       const code = str((d as Record<string, unknown>).refCode, 20);
       if (code) { try { await saveBooking(b, await applyCode(b, code, await getSettings())); } catch (e) { await saveBooking(b, `Rabattkod ${code} gick inte att använda: ${(e as Error).message}`); } }
       const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
-      await notifyAll({ title: "Ny förfrågan: " + data.name, body: [[data.from, data.to].filter(Boolean).map(town).join(" → "), data.size, data.price ? data.price.total.toLocaleString("sv-SE") + " kr" : ""].filter(Boolean).join(" · ") || "Från hemsidan", url: "/admin#" + b.id, tag: b.id });
+      await notifyAll({ cat: "new", title: "Ny förfrågan: " + data.name, body: [[data.from, data.to].filter(Boolean).map(town).join(" → "), data.size, data.price ? data.price.total.toLocaleString("sv-SE") + " kr" : ""].filter(Boolean).join(" · ") || "Från hemsidan", url: "/admin#" + b.id, tag: b.id });
     }
     catch (e) { console.error("booking save failed", (e as Error).message); }
   }

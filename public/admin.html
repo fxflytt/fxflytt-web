@@ -104,6 +104,14 @@
   .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
   .chips button{white-space:nowrap;border:1px solid var(--line2);background:#fff;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer}
   .chips button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+  .chips.ltf{padding-top:0;margin-top:-4px}.chips.ltf button{font-size:12px;padding:5px 10px;border-style:dashed}.chips.ltf button.on{border-style:solid}
+  .tag.lt{background:#eef0fb;color:#3d3fa8}
+  .selbar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+  .item.sel{position:relative;padding-left:44px}.item.sel::before{content:"";position:absolute;left:14px;top:50%;width:20px;height:20px;margin-top:-10px;border:2px solid var(--line2);border-radius:6px;background:#fff}
+  .item.sel.on{border-color:var(--accent);background:#fff8f2}.item.sel.on::before{content:"✓";color:#fff;background:var(--accent);border-color:var(--accent);font-weight:900;font-size:14px;line-height:20px;text-align:center}
+  .bulkbar{position:sticky;bottom:12px;z-index:8;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--navy);color:#fff;border-radius:14px;padding:10px 12px;margin-top:12px;box-shadow:var(--sh2)}
+  .bulkbar b{margin-right:auto}.bulkbar.dim{opacity:.6}
+  @media (max-width:899px){ .bulkbar{bottom:78px} }
   .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:#eef2f5;color:#4a5a67}
   .tag.seen{background:#e8f1fb;color:#1d5fa8}.tag.ok{background:#e6f5ec;color:var(--green)}.tag.no{background:#fdecec;color:var(--red)}.tag.wn{background:#fff4e5;color:#8a4b00}
@@ -213,6 +221,7 @@
   .tcard .next{margin-top:10px;font-size:13px;padding-top:10px;border-top:1px solid var(--line)}
   .tcard .acts{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
   .tcard.off{opacity:.65}
+  .npl{display:grid;gap:6px;margin-top:10px}.npl .tg{display:flex;gap:8px;align-items:center;font-weight:600}
   .linkdel{display:block;margin:14px auto 0;border:0;background:none;color:var(--red);font:inherit;font-size:13.5px;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px}
   .pw{display:grid;grid-template-columns:150px repeat(7,minmax(118px,1fr));min-width:980px}
   .pw>div{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px;min-height:58px}
@@ -330,6 +339,7 @@
 <div id="npanel" hidden></div><div id="toast" hidden></div>
 <script src="/price-calc.js"></script>
 <script src="/fx-schedule.js"></script>
+<script src="/fx-lead.js"></script>
 <script src="/fx-prices.js" defer></script>
 <script>
 (function(){
@@ -417,6 +427,9 @@
   // ---------- notices: the same as the push notifications, kept on the server (fx:notes) ----------
   // Read state is per user on the server, so the phone and the computer agree.
   let feed={notes:[],read:{all:0,ids:[]}};
+  // A short two-tone sound for new notices (only when the user turned it on).
+  function beep(){ try{ const C=window.AudioContext||window.webkitAudioContext; const c=beep.c||(beep.c=new C()); const t=c.currentTime;
+    [[880,0],[1320,0.16]].forEach(([f,d])=>{ const o=c.createOscillator(), g=c.createGain(); o.frequency.value=f; o.type='sine'; g.gain.setValueAtTime(0.0001,t+d); g.gain.exponentialRampToValueAtTime(0.25,t+d+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+d+0.14); o.connect(g).connect(c.destination); o.start(t+d); o.stop(t+d+0.16); }); }catch(_){} }
   const hashOf=(url)=>{ const u=String(url||''); return u.startsWith('/admin')?(u.split('#')[1]||''):null; };
   function events(){ return (feed.notes||[]).map(n=>({t:n.at,id:n.id,url:n.url,txt:n.title,body:n.body})); }
   let newestSeenInSession=0;
@@ -456,6 +469,7 @@
       if(document.visibilityState!=='visible'||Date.now()-lastTick<5000) return; lastTick=Date.now();
       try{ await load(); }catch(_){ return; }
       const fresh=events().filter(e=>e.t>newestSeenInSession);
+      if(fresh.length&&feed.prefs?.sound) beep();
       if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,hashOf(fresh[0].url)); }
       if(fresh.length||load.changed){ if(view==='list'&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); else if(view==='cal'&&!dragging) showCal(); }
       if(!$('#npanel').hidden) drawPanel();
@@ -496,6 +510,25 @@
   // ---------- list ----------
   // An offer that was sent but not answered counts as expired ("förfallen") after 14 days, or when the moving day has come.
   const EXPIRE_DAYS=14;
+  // Chance to win an open offer – a rough guide for whom to call first (not a promise).
+  // Built from what the customer did: opened the offer, how often and how lately, what the last call said.
+  function winChance(b){
+    if(!['new','sent'].includes(b.status)||b.signedAt) return null;
+    if(b.date&&b.date<today()) return 5;
+    const last=(b.calls||[]).slice(-1)[0], day=864e5, now=Date.now();
+    if(last&&last.outcome==='notinterested') return 5;
+    let p=b.status==='sent'?25:15;
+    if(b.views){ p=50; if(b.views>=3) p+=10; if(b.lastViewAt&&now-b.lastViewAt<2*day) p+=10; }
+    else if(b.sentAt&&now-b.sentAt>10*day) p-=10;
+    if(last&&(last.outcome==='answered'||last.outcome==='callback')) p+=10;
+    if(b.referral) p+=10;
+    if(b.lead==='calc'&&b.status==='new') p=Math.max(p,20);
+    const back=all.some(x=>x.id!==b.id&&(x.status==='done'||x.status==='signed')&&digits((x.data||{}).phone)===digits((b.data||{}).phone)&&digits((b.data||{}).phone).length>=6);
+    if(back) p+=10;
+    if(b.sentAt&&now-b.sentAt>21*day&&!(b.lastViewAt&&now-b.lastViewAt<7*day)) p=Math.min(p,15);
+    return Math.max(5,Math.min(90,Math.round(p/5)*5));
+  }
+  const chanceTag=(b)=>{ const c=winChance(b); return c==null?'':`<span class="tag ${c>=60?'ok':c>=30?'wn':''}" title="Chans att vinna – räknas från om kunden öppnat offerten, hur ofta och senaste samtalet">🎯 ${c}%</span>`; };
   const isExpired=(b)=>b.status==='sent'&&((b.sentAt&&Date.now()-b.sentAt>EXPIRE_DAYS*864e5)||(b.date&&b.date<=today()));
   const boxesLeft=(b)=>b.boxes?b.boxes.qty-b.boxes.returned:0;
   const rentsBoxes=(b)=>(b.offer?.lines||[]).some(l=>/kartong.*hyr/i.test(l.label))||(b.extras||[]).some(e=>b.extrasChosen?.includes(e.id)&&/kartong.*hyr/i.test(e.label))||(b.data?.extras||[]).some(x=>/kartong/i.test(x));
@@ -510,12 +543,30 @@
       <div class="price">${o?kr(o.total):'<span class="muted">Inget pris</span>'}</div><span class="st ${b.status}">${ST[b.status]}</span></button>`;
   }
   const WHY={price:'Priset är för högt',other_company:'Valt en annan flyttfirma',date:'Datumet passar inte',no_move:'Flyttar inte längre',other:'Annat'};
+  // What the customer wants, at a glance: from the service, the extras and the message.
+  const LTAG={move:'🚚 Flytt',clean:'✨ Städ',pack:'📦 Pack',storage:'🏬 Magasin',piano:'🎹 Piano/tungt',msg:'💬 Meddelande',flex:'📅 Flexibelt datum'};
+  function leadTags(b){
+    const d=b.data||{}, size=String(d.size||''), ex=(d.extras||[]).map(String), msg=String(d.message||''), t=new Set();
+    const onlyClean=/bara flyttstäd|^städ/i.test(size);
+    if(!onlyClean&&(size||d.from||d.to)) t.add('move');
+    if(onlyClean||/premium|deluxe|städ/i.test(size)||ex.includes('Flyttstäd')||/städ/i.test(msg)) t.add('clean');
+    if(/deluxe|packning/i.test(size)||ex.includes('Packning')||/packhjälp|packning/i.test(msg)) t.add('pack');
+    if(/magasin|förvaring/i.test(msg+' '+ex.join(' '))) t.add('storage');
+    if(ex.includes('Pianoflytt')||/piano|kassaskåp/i.test(msg)) t.add('piano');
+    if(msg.replace(/— Inklistrad lead —[\s\S]*/,'').trim()) t.add('msg');
+    if(/flex/i.test(String(d.dateType||''))||/±|flexib/i.test(msg)) t.add('flex');
+    return [...t];
+  }
+  let tagFilter='';
   function tags(b){
     const t=[];
+    { const lt=leadTags(b).filter(k=>k!=='move'||leadTags(b).length===1); if(lt.length&&['new','sent'].includes(b.status)) t.push(...lt.map(k=>`<span class="tag lt">${LTAG[k]}</span>`)); }
     if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 ${b.views}× · ${esc(ago(b.lastViewAt))}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
     if(b.reminders?.length) t.push(`<span class="tag">🔔 ${b.reminders.length} påminnelse${b.reminders.length>1?'r':''}</span>`);
     if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
     if(b.referral) t.push(`<span class="tag ok">🎁 Kod ${esc(b.referral.code)}</span>`);
+    if(dupsOf(b).length) t.push('<span class="tag no">⚠ Dubblett</span>');
+    { const c=chanceTag(b); if(c) t.push(c); }
     if(b.lead==='calc'&&b.status==='new') t.push('<span class="tag wn">💡 Prisräknaren – fick priset på mejl</span>');
     if(boxesLeft(b)) t.push(`<span class="tag${b.boxes.dueDate<today()?' no':''}">📦 ${boxesLeft(b)} kartonger ute${b.boxes.dueDate<today()?' – försenade':''}</span>`);
     if(b.discount) t.push(`<span class="tag ok">−${b.discount.pct} %</span>`);
@@ -526,30 +577,73 @@
   function showList(){
     if(listMode==='board') return showBoard();
     view='list';
-    root.innerHTML=navBar('list')+`<main>${listToggle()}<div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortBy==='created'?' selected':''}>Senaste</option><option value="date"${sortBy==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortBy==='price'?' selected':''}>Pris</option></select></div>
+    root.innerHTML=navBar('list')+`<main>${listToggle()}<div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortBy==='created'?' selected':''}>Senaste</option><option value="date"${sortBy==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortBy==='price'?' selected':''}>Pris</option><option value="chance"${sortBy==='chance'?' selected':''}>Chans att vinna</option></select></div>
       <div class="chips">${Object.entries(FILTERS).map(([k,v])=>`<button data-f="${k}" class="${k===filter?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
+      <div class="chips ltf">${Object.entries(LTAG).map(([k,l])=>`<button data-lt="${k}" class="${k===tagFilter?'on':''}">${l}</button>`).join('')}</div>
+      <div class="selbar"><button class="btn gray sm" id="selmode">${selMode?'✕ Sluta välja':'☑ Välj flera'}</button>${selMode?'<button class="btn gray sm" id="selall">Välj alla i listan</button><span class="muted" id="selinfo"></span>':''}</div>
       <div id="items"></div>
-      <button class="btn gray sm" id="reload" style="margin-top:6px">Uppdatera</button></main>`;
+      <button class="btn gray sm" id="reload" style="margin-top:6px">Uppdatera</button>
+      ${selMode?`<div class="bulkbar" id="bulkbar"><b id="bulkn">0 valda</b><button class="btn sec sm" data-bulk="remind">🔔 Påminn</button><button class="btn sec sm" data-bulk="campaign">✉ Kampanj</button><button class="btn sec sm" data-bulk="lost">Förlorad</button><button class="btn sec sm" data-bulk="nomarketing" title="Kunden vill inte ha kampanjmejl">Inga utskick</button>${isOwner()?'<button class="btn red sm" data-bulk="delete">Ta bort</button>':''}</div>`:''}</main>`;
     bindNav();
+    let shown=[];
     const fill=()=>{
       const f=FILTERS[filter]||FILTERS.active;
       const words=q.toLowerCase().split(/\s+/).filter(Boolean);
       const hay=(b)=>{const d=b.data||{};return [d.name,d.phone,String(d.phone||'').replace(/\D/g,''),d.email,b.id,d.from,d.to,d.size,b.signature?.name].filter(Boolean).join(' ').toLowerCase();};
       // A search looks through all bookings, whatever filter is chosen.
       let list=words.length?all.filter(b=>{const h=hay(b);return words.every(w=>h.includes(w));}):all.filter(f[1]);
-      const by={created:(a,b)=>(b.createdAt||0)-(a.createdAt||0),date:(a,b)=>(a.date||'9999').localeCompare(b.date||'9999'),price:(a,b)=>(b.offer?.total||0)-(a.offer?.total||0)};
+      if(tagFilter) list=list.filter(b=>leadTags(b).includes(tagFilter));
+      const by={created:(a,b)=>(b.createdAt||0)-(a.createdAt||0),date:(a,b)=>(a.date||'9999').localeCompare(b.date||'9999'),price:(a,b)=>(b.offer?.total||0)-(a.offer?.total||0),chance:(a,b)=>(winChance(b)??-1)-(winChance(a)??-1)||(b.createdAt||0)-(a.createdAt||0)};
       list=list.slice().sort(by[sortBy]||by.created);
-      root.querySelector('.chips').style.opacity=words.length?'.45':'';
+      root.querySelectorAll('.chips').forEach(c=>c.style.opacity=words.length?'.45':'');
       $('#items').innerHTML=(words.length?`<div class="muted" style="margin:0 0 8px">${list.length} träff${list.length===1?'':'ar'} bland alla bokningar</div>`:'')+
-        (list.length?list.map(itemHtml).join(''):`<div class="empty">${words.length?'Ingen bokning matchar sökningen.':'Inga bokningar här ännu.'}</div>`);
-      root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.id; });
+        (list.length?list.map(b=>selMode?itemHtml(b).replace('<button class="item"',`<button class="item sel${sel.has(b.id)?' on':''}"`):itemHtml(b)).join(''):`<div class="empty">${words.length?'Ingen bokning matchar sökningen.':'Inga bokningar här ännu.'}</div>`);
+      shown=list.map(b=>b.id);
+      root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ if(!selMode){ location.hash=b.dataset.id; return; } const id=b.dataset.id; sel.has(id)?sel.delete(id):sel.add(id); b.classList.toggle('on',sel.has(id)); syncSel(); });
+      syncSel();
     };
     fill();
-    root.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{ filter=b.dataset.f; q=''; showList(); });
+    root.querySelectorAll('.chips button[data-f]').forEach(b=>b.onclick=()=>{ filter=b.dataset.f; q=''; showList(); });
+    root.querySelectorAll('.chips button[data-lt]').forEach(b=>b.onclick=()=>{ tagFilter=tagFilter===b.dataset.lt?'':b.dataset.lt; showList(); });
     bindListToggle();
     $('#q').oninput=()=>{ q=$('#q').value; fill(); };
     $('#sort').onchange=()=>{ sortBy=$('#sort').value; fill(); };
     $('#reload').onclick=async()=>{ await load(); showList(); };
+    function syncSel(){ for(const id of [...sel]) if(!all.some(b=>b.id===id)) sel.delete(id); if($('#bulkn')) $('#bulkn').textContent=sel.size+' valda'; if($('#bulkbar')) $('#bulkbar').classList.toggle('dim',!sel.size); }
+    $('#selmode').onclick=()=>{ selMode=!selMode; if(!selMode) sel.clear(); showList(); };
+    if($('#selall')) $('#selall').onclick=()=>{ const allIn=shown.every(id=>sel.has(id)); shown.forEach(id=>allIn?sel.delete(id):sel.add(id)); fill(); };
+    root.querySelectorAll('[data-bulk]').forEach(x=>x.onclick=()=>bulkAction(x.dataset.bulk));
+  }
+  let selMode=false; const sel=new Set();
+  async function bulkAction(action){
+    const ids=[...sel], picked=all.filter(b=>sel.has(b.id));
+    if(!ids.length) return notify('Välj minst en bokning.');
+    const run=async(extra)=>{ try{ const r=await api('/api/admin/bulk',{method:'POST',body:JSON.stringify({ids,action,...(extra||{})})});
+        const sk=Object.entries(r.skipped||{}).map(([w,n])=>`${n} ${w}`).join(', ');
+        alert(`Klart: ${r.done} av ${ids.length}.`+(sk?`\nHoppades över: ${sk}.`:'')); sel.clear(); selMode=false; await load(); showList(); }catch(e){ alert(e.message); } };
+    if(action==='nomarketing'){ if(confirm(`Markera att ${ids.length} kund${ids.length>1?'er':''} inte vill ha kampanjmejl?`)) run(); return; }
+    if(action==='lost'){ if(confirm(`Markera ${ids.length} som förlorade?`)) run(); return; }
+    if(action==='remind'){ const n=picked.filter(b=>b.status==='sent'&&(b.data||{}).email).length; if(!n) return alert('Ingen av de valda har en skickad offert med e-post.'); if(confirm(`Skicka påminnelse till ${n} kund${n>1?'er':''}?`)) run(); return; }
+    if(action==='delete'){ if(confirm(`Ta bort ${ids.length} bokningar helt? Det går inte att ångra här (bara från en säkerhetskopia).`)&&confirm('Är du säker?')) run(); return; }
+    if(action==='campaign'){
+      const ok=picked.filter(b=>!['signed','done'].includes(b.status)&&!b.signedAt&&(b.data||{}).email&&!b.noMarketing);
+      const box=document.createElement('div'); box.className='pinbox';
+      box.innerHTML=`<div class="card" style="max-width:560px;width:100%"><h3>✉ Kampanj till ${ok.length} kund${ok.length===1?'':'er'}</h3>
+        <div class="muted">Går till de valda som inte har bokat och har e-post (${ids.length-ok.length} hoppas över). Skriv <b>{namn}</b> för kundens förnamn. Kunden får en knapp till sin offert om den finns, annars till offertformuläret. Sist i mejlet står hur man säger nej tack.</div>
+        <label class="f">Ämne</label><input id="cm_s" value="Fortfarande dags att flytta, {namn}?">
+        <label class="f">Text</label><textarea id="cm_t" style="min-height:150px">Hej {namn}!
+
+Du frågade nyligen om en flytt hos oss på FX Flytt. Har du bestämt dig än?
+
+Bokar du denna månad bjuder vi på flyttkartongerna. Svara på mejlet eller ring 076-300 07 23 så hjälper vi dig.
+
+Vänliga hälsningar
+FX Flytt</textarea>
+        <div class="btns"><button class="btn gray" id="cm_x">Avbryt</button><button class="btn" id="cm_go"${ok.length?'':' disabled'}>Skicka till ${ok.length}</button></div></div>`;
+      document.body.appendChild(box);
+      box.querySelector('#cm_x').onclick=()=>box.remove();
+      box.querySelector('#cm_go').onclick=()=>{ const subject=box.querySelector('#cm_s').value, text=box.querySelector('#cm_t').value; if(!confirm(`Skicka mejlet till ${ok.length} kunder?`)) return; box.remove(); run({subject,text}); };
+    }
   }
 
   // ---------- statistics ----------
@@ -988,6 +1082,9 @@
           ${ph.some(p=>p.kind==='damage')?'<div class="warn">Personalen har fotograferat en skada.</div>':''}
           ${ph.length?`<div class="phgrid">${ph.map(p=>`<div><a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="" loading="lazy"></a><span class="${p.kind}">${K[p.kind]}</span><button data-delph="${esc(p.url)}" aria-label="Ta bort">✕</button></div>`).join('')}</div>`:''}
           ${w.sign?`<div class="okmsg" style="margin-top:12px">Kunden kvitterade: ${esc(w.sign.name)} · ${esc(fmtTs(w.sign.at))}</div><img src="${esc(w.sign.img)}" alt="Signatur" style="max-width:100%;height:90px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#fff">${w.sign.note?`<div class="warn"><b>Kundens anmärkning:</b> ${esc(w.sign.note)}</div>`:''}`:''}</div>`; })()}
+      ${(()=>{ const du=dupsOf(b); return du.length?`<div class="card" style="border-color:#f3b7b7"><h3>⚠ Samma kund har ${du.length===1?'en till förfrågan':du.length+' till förfrågningar'}</h3>
+        ${du.map(x=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)"><a href="#${esc(x.id)}">${esc(fmtDate(x.date))} · ${x.offer?kr(x.offer.total):'Inget pris'} · ${esc(ST[x.status])}<div class="muted">Kom in ${esc(fmtTs(x.createdAt))}</div></a><button class="btn sec sm" data-merge="${esc(x.id)}">Slå ihop hit</button></div>`).join('')}
+        <div class="muted" style="margin-top:6px">Allt från den andra (uppgifter, historik, samtal) flyttas hit och den andra tas bort.</div></div>`:''; })()}
       ${(()=>{ const ds=dmgAll.filter(d=>d.bookingId===b.id); if(!ds.length&&!['signed','done'].includes(b.status)) return '';
         return `<div class="card"><h3>Skador</h3>${ds.map(d=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)"><a href="#skador" data-dgo="${esc(d.id)}"><b>${esc(d.title)}</b></a><span>${d.cost!=null?kr(d.cost)+' ':''}<span class="tag ${DST[d.status][1]}">${DST[d.status][0]}</span></span></div>`).join('')}
           <button class="btn sec sm" id="dmg_new" style="margin-top:8px">Rapportera skada</button></div>`; })()}
@@ -1019,6 +1116,9 @@
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
     });
     if($('#pkgch')) $('#pkgch').onchange=async()=>{ if(await patch({pkgChoiceOff:!$('#pkgch').checked})) notify($('#pkgch').checked?'Kunden får välja paket när du skickar ✓':'Paketval av'); };
+    // ---- duplicates ----
+    root.querySelectorAll('[data-merge]').forEach(x=>x.onclick=async()=>{ if(!confirm('Slå ihop den andra förfrågan med den här? Den andra tas bort.')) return;
+      await salesAct(b,{merge:x.dataset.merge},'Sammanslagna ✓'); all=all.filter(y=>y.id!==x.dataset.merge); updateCounts(); if(location.hash.slice(1)===b.id) showDetail(b.id); });
     // ---- damage ----
     if($('#dmg_new')) $('#dmg_new').onclick=()=>{ dmgNew={kind:'customer',bookingId:b.id}; teamKind='dmg'; location.hash='skador'; };
     root.querySelectorAll('[data-dgo]').forEach(x=>x.onclick=()=>{ dmgOpen=x.dataset.dgo; dmgFilter='all'; });
@@ -1226,7 +1326,11 @@
   const airKm=(a,b)=>{ const R=6371,r=Math.PI/180,dLa=(b.lat-a.lat)*r,dLo=(b.lon-a.lon)*r; const h=Math.sin(dLa/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
   function showNew(){
     const opt=(l,sel)=>l.map(x=>`<option${x===sel?' selected':''}>${esc(x)}</option>`).join('');
-    root.innerHTML=navBar('new')+`<main style="max-width:820px"><div class="card"><h3>Kund och adresser <span class="sub">t.ex. från telefon</span></h3>
+    root.innerHTML=navBar('new')+`<main style="max-width:820px">
+    <div class="card" id="pastecard"><h3>📋 Klistra in lead <span class="sub">från en lead-sajt, ett mejl eller ett sms</span></h3>
+      <textarea id="n_paste" style="min-height:90px" placeholder="Kopiera hela förfrågan och klistra in den här – namn, telefon, adresser, datum och storlek fylls i nedan."></textarea>
+      <div class="btns" style="margin-top:8px"><button class="btn sec" id="n_fill">Fyll i från texten</button></div><div id="n_pmsg"></div></div>
+    <div class="card"><h3>Kund och adresser <span class="sub">t.ex. från telefon</span></h3>
       <label class="f">Namn *</label><input id="n_name" autocomplete="off" placeholder="Skriv namn eller telefon – tidigare kunder visas">
       <div id="sugg"></div>
       <div class="row2"><div><label class="f">Telefon *</label><input id="n_phone" type="tel" autocomplete="off"></div><div><label class="f">E-post</label><input id="n_email" type="email"></div></div>
@@ -1289,6 +1393,29 @@
       if(fill){ $('#n_km').value=road; run(); }
     };
     setupAc('from'); setupAc('to');
+    // --- "Klistra in lead": read a pasted request and fill the form ---
+    const geo=async(key,q)=>{ try{ const r=await photon(q); if(r&&r[0]){ pts[key]={lat:r[0].lat,lon:r[0].lon}; route(true); } }catch(_){} };
+    const fillLead=(silent)=>{
+      const txt=v('n_paste'); if(!txt.trim()) return;
+      const L=window.FXLead.parse(txt,today()), set=(id,val)=>{ if(val&&!$('#'+id).value) $('#'+id).value=val; };
+      set('n_name',L.name); set('n_phone',L.phone); set('n_email',L.email); set('n_from',L.from); set('n_to',L.to);
+      if(L.date&&!v('n_date')) $('#n_date').value=L.date;
+      if(L.areaM2&&!v('n_m2')) $('#n_m2').value=L.areaM2;
+      if(L.svc) $('#n_svc').value=L.svc;
+      if(L.floorFrom&&FLOORS.includes(L.floorFrom)) $('#n_ff').value=L.floorFrom; if(L.floorTo&&FLOORS.includes(L.floorTo)) $('#n_ft').value=L.floorTo;
+      if(L.liftFrom) $('#n_hf').value=L.liftFrom; if(L.liftTo) $('#n_ht').value=L.liftTo;
+      const note=[L.home,L.flex?'Datum: '+L.flex:'',L.wants.storage?'Vill ha magasinering':'',L.message].filter(Boolean).join('\n');
+      $('#n_msg').value=[note,'— Inklistrad lead —',txt.trim()].filter(Boolean).join('\n').slice(0,3000);
+      if(L.from) geo('from',L.from); if(L.to) geo('to',L.to);
+      showKnown(); run();
+      const NAMES={name:'namn',phone:'telefon',email:'e-post',from:'från',to:'till',date:'datum',areaM2:'storlek',home:'bostadstyp'};
+      const miss=['name','phone','from','to','date','areaM2'].filter(k=>!L.found.includes(k));
+      $('#n_pmsg').innerHTML=L.found.length?`<div class="okmsg">Hittade: ${L.found.map(k=>NAMES[k]).join(', ')}.${miss.length?` <b>Kolla själv:</b> ${miss.map(k=>NAMES[k]).join(', ')}.`:''} Hela texten finns under Övrigt (internt).</div>`
+        :'<div class="err">Hittade inget – fyll i för hand.</div>';
+      if(!silent) $('#n_name').scrollIntoView({block:'center',behavior:'smooth'});
+    };
+    $('#n_fill').onclick=()=>fillLead(false);
+    $('#n_paste').addEventListener('paste',()=>setTimeout(()=>fillLead(false),50));
     // --- price ---
     let calc=null, manual=false;
     const run=()=>{
@@ -1498,7 +1625,7 @@
     return `<div class="bcard" data-drag data-id="${esc(b.id)}"><b>${esc(d.name)}</b>
       <div class="muted">${esc([d.from,d.to].filter(Boolean).map(town).join(' → ')||d.size||'')}</div>
       <div class="bmeta"><span>${b.offer?kr(b.offer.total):''}</span><span class="muted">${esc(fmtDate(b.date))}</span></div>
-      <div class="tags">${b.lead==='calc'&&b.status==='new'?'<span class="tag wn">💡 Prisräknaren</span>':''}${w!=null?`<span class="tag ${w>=60?'no':'wn'}">⏱ obesvarad ${waitTxt(w)}</span>`:''}
+      <div class="tags">${chanceTag(b)}${b.lead==='calc'&&b.status==='new'?'<span class="tag wn">💡 Prisräknaren</span>':''}${w!=null?`<span class="tag ${w>=60?'no':'wn'}">⏱ obesvarad ${waitTxt(w)}</span>`:''}
         ${b.followUp?`<span class="tag ${followDue(b)?'no':''}">📞 ${esc(b.followUp.at.slice(5,10).replace('-','/'))} ${esc(b.followUp.at.slice(11))}</span>`:''}
         ${last&&stageOf(b)!=='won'?`<span class="tag">${esc(OUT[last.outcome])}</span>`:''}${b.views&&b.status==='sent'?`<span class="tag seen">👁 ${b.views}×</span>`:''}</div></div>`;
   }
@@ -1526,6 +1653,10 @@
   }
   const listToggle=()=>`<div class="seg" id="lmode" style="margin-bottom:12px"><button data-m="list" class="${listMode==='list'?'on':''}">Lista</button><button data-m="board" class="${listMode==='board'?'on':''}">Försäljningstavla</button></div>`;
   const bindListToggle=()=>root.querySelectorAll('#lmode button').forEach(x=>x.onclick=()=>{ listMode=x.dataset.m; try{ localStorage.setItem('fx_listmode',listMode); }catch(_){} showList(); });
+  // Same customer (phone or e-mail) with another open request → probably a duplicate.
+  const OPENST=['new','sent','declined'];
+  const dupsOf=(b)=>{ if(!OPENST.includes(b.status)||b.signedAt) return []; const p=digits((b.data||{}).phone), e=((b.data||{}).email||'').toLowerCase();
+    return all.filter(x=>x.id!==b.id&&OPENST.includes(x.status)&&!x.signedAt&&((p.length>=6&&digits((x.data||{}).phone)===p)||(e&&((x.data||{}).email||'').toLowerCase()===e))); };
   async function salesAct(b,body,ok){
     try{ const nb=await api('/api/admin/sales?id='+b.id,{method:'POST',body:JSON.stringify(body)}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; updateCounts(); if(ok) notify(ok); }
     catch(e){ notify(e.message); }
@@ -1607,6 +1738,8 @@
   if(setTab==='users') setTab='push';
   SETTINGS.push=async(el)=>{
     let info; try{ info=await api('/api/admin/push'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    try{ feed=await api('/api/admin/notes'); }catch(_){}
+    let slaMin=10; if(isOwner()) try{ slaMin=(await api('/api/admin/settings')).slaMin; }catch(_){}
     const reg=await swReg().catch(()=>null), cur=reg?await reg.pushManager.getSubscription().catch(()=>null):null;
     const here=cur&&info.mine.some(m=>m.endpoint===cur.endpoint);
     const draw=()=>{
@@ -1617,9 +1750,20 @@
           :here?`<div class="okmsg">Notiser är på för den här enheten ✓</div><div class="btns"><button class="btn sec" id="p_test">Skicka en testnotis</button><button class="btn red" id="p_off">Stäng av här</button></div>`
           :'<button class="btn" id="p_on">🔔 Slå på notiser på den här enheten</button>'}
         <div id="p_msg"></div></div>
+        <div class="card" id="nprefs"><h3>Vilka notiser vill du få?</h3><div class="muted">Gäller dig (${esc(me.name)}) på alla dina enheter. Allt syns ändå i klockan i admin.</div>
+          <div class="npl">${Object.entries(feed.cats||{}).map(([k,l])=>`<label class="tg"><input type="checkbox" data-cat="${k}"${(feed.prefs?.off||[]).includes(k)?'':' checked'}> ${esc(l)}</label>`).join('')}</div>
+          <label class="tg" style="margin-top:10px"><input type="checkbox" id="np_snd"${feed.prefs?.sound?' checked':''}> 🔊 Spela ett ljud i admin när en ny notis kommer</label> <button class="btn gray sm" id="np_try">Testa ljudet</button>
+          ${isOwner()?`<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>Lead-svarstid</b><div class="muted">Varna alla om en förfrågan från hemsidan inte har besvarats inom:</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:6px"><input id="np_sla" type="number" min="0" max="240" value="${esc(String(slaMin))}" style="width:100px"> minuter <span class="muted">(0 = av)</span></div></div>`:''}
+          <div class="btns"><button class="btn" id="np_save">Spara</button></div><div id="np_msg"></div></div>
         <div class="card"><h3>Dina enheter <span class="sub">${info.mine.length}</span></h3>${info.mine.length?info.mine.map(m=>`<div class="todo"><a><b>${esc(m.device)}${cur&&m.endpoint===cur.endpoint?' <span class="tag ok">den här</span>':''}</b><small>sedan ${esc(fmtTs(m.createdAt))}</small></a><button class="btn gray sm" data-rm="${esc(m.endpoint)}">Ta bort</button></div>`).join(''):'<div class="muted">Inga enheter ännu.</div>'}</div>
         <div class="card"><h3>Installera som app</h3><div class="muted">${isIOS?'iPhone: Safari → <b>Dela</b> → <b>Lägg till på hemskärmen</b>.':'Android/dator: i Chrome, öppna menyn ⋮ → <b>Installera app</b> (eller <b>Lägg till på startskärmen</b>).'} Då öppnas admin som en egen app med FX-ikonen.</div></div>`;
       const m=(t,ok)=>{ $('#p_msg').innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
+      $('#np_try').onclick=()=>beep();
+      $('#np_save').onclick=async()=>{ const off=[...el.querySelectorAll('[data-cat]')].filter(x=>!x.checked).map(x=>x.dataset.cat);
+        try{ feed.prefs=(await api('/api/admin/notes',{method:'POST',body:JSON.stringify({prefs:{off,sound:$('#np_snd').checked}})})).prefs;
+          if($('#np_sla')) await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({slaMin:Number($('#np_sla').value)})});
+          $('#np_msg').innerHTML='<div class="okmsg">Sparat ✓</div>'; }catch(e){ $('#np_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
       if($('#p_on')) $('#p_on').onclick=async()=>{
         try{
           if(await Notification.requestPermission()!=='granted') return m('Du behöver tillåta notiser.',false);
@@ -1831,6 +1975,19 @@
   }
 
   // ---- Tipsa en vän (owner) ----
+  // ---- Företaget: what the customer sees in the offer (owner) ----
+  SET_TABS.push(['company','Företaget',true]);
+  SETTINGS.company=async(el)=>{
+    let s; try{ s=await api('/api/admin/settings'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    el.innerHTML=`<div class="card"><h3>Trygg affär i offerten</h3>
+      <div class="muted">Visas för kunden ovanför Signera-knappen när något är ifyllt. Det gör att fler vågar boka.</div>
+      <label class="f" for="co_org">Organisationsnummer</label><input id="co_org" value="${esc(s.orgNr||'')}" placeholder="XXXXXX-XXXX" inputmode="numeric">
+      <label class="tg" style="display:flex;gap:10px;align-items:center;margin-top:12px"><input type="checkbox" id="co_fs" style="width:20px;height:20px"${s.fskatt?' checked':''}> Godkänd för F-skatt</label>
+      <label class="tg" style="display:flex;gap:10px;align-items:center;margin-top:8px"><input type="checkbox" id="co_ins" style="width:20px;height:20px"${s.insured?' checked':''}> Har ansvarsförsäkring</label>
+      <label class="f" for="co_insr">Försäkringsbolag (valfritt)</label><input id="co_insr" value="${esc(s.insurer||'')}" placeholder="T.ex. If Skadeförsäkring">
+      <div class="btns"><button class="btn" id="co_save">Spara</button></div><div id="co_msg"></div></div>`;
+    $('#co_save').onclick=async()=>{ try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({orgNr:$('#co_org').value,fskatt:$('#co_fs').checked,insured:$('#co_ins').checked,insurer:$('#co_insr').value})}); $('#co_msg').innerHTML='<div class="okmsg">Sparat ✓ – syns i offerten.</div>'; }catch(e){ $('#co_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+  };
   SET_TABS.push(['ref','Tipsa en vän',true]);
   SETTINGS.ref=async(el)=>{
     let s; try{ s=await api('/api/admin/settings'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }

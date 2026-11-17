@@ -48,6 +48,7 @@
   label.f{display:block;font-weight:700;margin:12px 0 6px}
   input[type=text]{width:100%;font-size:17px;padding:13px 14px;border:1.5px solid #c9d5df;border-radius:12px}
   .kind{display:flex;gap:18px;margin:14px 0 2px;font-size:15px}.kind label{display:flex;gap:6px;align-items:center}.kind input{width:20px;height:20px}
+  .trust{background:#f1f8f4;border:1px solid #cfe8d9;border-radius:12px;padding:12px 14px;margin:14px 0 4px;font-size:14px}.trust b{color:#1f6b40}.trust ul{margin:6px 0 0;padding-left:18px}.trust li{margin:2px 0}
   .chk{display:flex;gap:10px;align-items:flex-start;margin:14px 0;font-size:15px}
   .chk input{width:22px;height:22px;margin-top:2px;flex:none}
   .btn{display:block;width:100%;border:0;border-radius:999px;padding:16px;font-size:17px;font-weight:800;background:var(--accent);color:#fff}
@@ -117,6 +118,7 @@
         <div class="kind"><label><input type="radio" name="kind" value="private" checked> Privatperson</label><label><input type="radio" name="kind" value="company"> Företag</label></div>
         <label class="f" for="pnr" id="pnrL">Personnummer (för RUT-avdraget)</label>
         <input id="pnr" type="text" inputmode="numeric" autocomplete="off" placeholder="ÅÅÅÅMMDD-XXXX" maxlength="13">
+        ${v.trust?`<div class="trust"><b>🛡 Trygg affär med FX Flytt AB</b><ul>${v.trust.orgNr?`<li>Organisationsnummer ${esc(v.trust.orgNr)}</li>`:''}${v.trust.fskatt?'<li>Godkänd för F-skatt</li>':''}${v.trust.insured?`<li>Ansvarsförsäkring${v.trust.insurer?' hos '+esc(v.trust.insurer):''} – dina saker är försäkrade under flytten</li>`:''}<li>Flytten följer branschens villkor Bohag 2010</li></ul></div>`:''}
         <label class="chk"><input id="ok" type="checkbox"><span>Jag godkänner offerten och FX Flytts <a href="/villkor" target="_blank" rel="noopener">villkor</a> (inklusive Bohag 2010).</span></label>
         <button class="btn" id="sign">Signera och boka</button>
         <div class="err" id="err"></div>
