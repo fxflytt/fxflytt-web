@@ -216,7 +216,7 @@ flyttfirma = page("flyttfirma.html",
  "Flyttfirma i Mellansverige – 28 orter | FX Flytt",
  "FX Flytt flyttar i Kungsör, Örebro, Eskilstuna, Västerås, Linköping, Norrköping, Jönköping, Karlstad och fler orter – fasta priser efter boyta.",
  "Flyttfirma", "Din flyttfirma i <span>Mellansverige</span>",
- "Vi utgår från Kungsör och flyttar i hela Mellansverige – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
+ "Vårt kontor ligger i Kungsör, och vi har flyttbilar på flera orter. Vi flyttar i hela Mellansverige – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
  f"""
 <section style="padding-bottom:0">
   <div class="wrap">

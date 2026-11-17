@@ -196,7 +196,7 @@ EXTRA = [
    ["Köping centrum", "Kolsva", "Munktorp", "Mot Arboga", "Mot Västerås"],
    ["Villa i Kolsva eller Munktorp? Räkna med förråd och garage.", "Kolla med hyresvärden om hissen behöver bokas.", "Boka flyttstäd samtidigt – då får du 10 % rabatt med Premium."],
    [("Flyttar ni i Kolsva?", "Ja, hela Köpings kommun ingår."),
-    ("Hur snabbt kan ni komma?", "Vi utgår från Kungsör, nära Köping. Ring oss så hittar vi en dag som passar."),
+    ("Hur snabbt kan ni komma?", "Vårt kontor ligger i Kungsör, nära Köping. Ring oss så hittar vi en dag som passar."),
     ("Ingår körsträckan?", "Ja, om avståndet mellan dina adresser är under 15 km. Annars 12 kr/km för hela sträckan.")]),
 
  C("kumla", "Kumla", "Örebro län",
