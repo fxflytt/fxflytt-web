@@ -99,10 +99,10 @@ CITIES = [
   intro=["Västerås är en stor stad med många olika boendeformer – från lägenheter i centrum till villor i ytterområdena. Vi frågar om våning, hiss och bärsträcka för att kunna skicka rätt antal flyttare och rätt bil.",
          "Vi hjälper både privatpersoner och företag. Flyttar du kontoret kan vi göra det på tider som stör verksamheten så lite som möjligt – berätta vad som passar er."],
   areas=["Centrum","Vallby","Bäckby","Råby","Hammarby","Pettersberg","Malmaberg","Gideonsberg","Önsta-Gryta","Haga","Bjurhovda","Erikslund","Skultuna","Dingtuna","Irsta"],
-  tips=["Bor du i centrum – tänk på parkering för lastbilen och berätta om avståndet till porten.","Kontorsflytt? Märk alla kartonger med rum och skrivbord så går uppackningen snabbt.","Rensa innan flytten – mindre att bära betyder lägre pris."],
+  tips=["Bor du i centrum – tänk på parkering för lastbilen och berätta om avståndet till porten.","Kontorsflytt? Märk alla kartonger med rum och skrivbord så går uppackningen snabbt.","Rensa innan flytten – mindre att bära gör flyttdagen kortare."],
   faq=[("Gör ni kontorsflytt i Västerås?","Ja, vi flyttar kontor och lokaler. Berätta om tider och omfattning så får ni en offert."),
        ("Flyttar ni till Västerås från andra orter?","Ja, till exempel från Kungsör, Köping, Arboga, Eskilstuna och Örebro."),
-       ("Ingår packmaterial?","Vid packning per timme ingår material. Kartonger kan du köpa (50 st, 2 000 kr) eller hyra (50 st, 750 kr) – leverans ingår.")]),
+       ("Ingår packmaterial?","Nej, packmaterial ingår inte. Kartonger kan du köpa (50 st, 2 000 kr) eller hyra (50 st, 750 kr) – leverans ingår.")]),
  dict(slug="katrineholm", name="Katrineholm", lan="Södermanlands län",
   title="Flyttfirma i Katrineholm – flytt & flyttstäd | FX Flytt",
   desc="Flyttfirma i Katrineholm med omnejd: flytt, packning, montering och flyttstäd till fast pris. Se priset direkt – RUT-avdrag på fakturan.",
@@ -153,8 +153,8 @@ def road_km(a, b):
     (la1, lo1), (la2, lo2) = _POS[a], _POS[b]; r = math.pi / 180
     h = math.sin((la2-la1)*r/2)**2 + math.cos(la1*r)*math.cos(la2*r)*math.sin((lo2-lo1)*r/2)**2
     return max(1, round(2*6371*math.asin(math.sqrt(h))*1.25))
-def drive(km):  # rounded to 10 minutes – it is an estimate
-    m = int(round((km*1.6+5 if km < 20 else km*0.85+10) / 10) * 10)
+def drive(km):  # rough estimate (≈85 km/h plus a few minutes), rounded to 10 minutes
+    m = int(round(max(10, km*0.7+5) / 10) * 10)
     return f"{m} min" if m < 60 else f"{m//60} tim" + (f" {m%60} min" if m % 60 else "")
 def mil(km): return str(round(km/10, 1)).replace(".", ",").replace(",0", "") + " mil"
 

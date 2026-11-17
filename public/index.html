@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flyttfirma Mellansverige – flytt & städ, fast pris | FX Flytt</title>
-<meta name="description" content="Flytt och flyttstäd till fast pris i hela Mellansverige – Stockholm, Uppsala, Örebro, Västerås och 28 orter. Se priset direkt – RUT-avdrag på fakturan.">
+<meta name="description" content="Flytt och flyttstäd till fast pris i 28 orter i Mellansverige – bland annat Stockholm, Uppsala, Örebro och Västerås. Se priset direkt – RUT-avdrag på fakturan.">
 <link rel="preload" as="image" href="/img/hero-768.webp" type="image/webp" media="(max-width: 900px)">
 <link rel="preload" as="image" href="/img/hero-1280.webp" type="image/webp" media="(min-width: 901px)">
 <!--fonts--><link rel="preload" href="/fonts/plus-jakarta-sans-latin-v5.woff2" as="font" type="font/woff2" crossorigin><!--/fonts-->
@@ -776,7 +776,7 @@ body.noscroll .mbar{display:none}
     <div class="svc-grid">
       <div class="svc"><div class="ico"><svg><use href="#i-truck"/></svg></div><h3>Bohagsflytt</h3><p>Lägenhet, villa eller radhus – lokalt och i hela Sverige.</p></div>
       <div class="svc"><div class="ico"><svg><use href="#i-spark"/></svg></div><h3>Flyttstäd</h3><p>Grundlig städning enligt checklista så att du klarar besiktningen.</p></div>
-      <div class="svc"><div class="ico"><svg><use href="#i-box"/></svg></div><h3>Packning & uppackning</h3><p>Vi packar säkert med rätt material – och packar upp om du vill.</p></div>
+      <div class="svc"><div class="ico"><svg><use href="#i-box"/></svg></div><h3>Packning & uppackning</h3><p>Vi packar säkert och märker allt – och packar upp om du vill.</p></div>
       <div class="svc"><div class="ico"><svg><use href="#i-tool"/></svg></div><h3>Ned- & montering</h3><p>Sängar, garderober, bord och hyllor tas isär och sätts ihop igen.</p></div>
       <div class="svc"><div class="ico"><svg><use href="#i-music"/></svg></div><h3>Piano & tunga lyft</h3><p>Piano, kassaskåp och andra tunga föremål med rätt utrustning.</p></div>
       <div class="svc"><div class="ico"><svg><use href="#i-office"/></svg></div><h3>Kontorsflytt</h3><p>Smidig flytt av kontor och lokaler – även kvällar och helger.</p></div>
@@ -1260,7 +1260,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     const box=document.getElementById('route'),txt=document.getElementById('route-txt'),mp=document.getElementById('map');
     if(!(pts.from&&pts.to)){box.classList.remove('show');mp.classList.remove('show');window.fxDistance=null;return;}
     const road=Math.max(1,Math.round(km(pts.from,pts.to)*1.25));
-    const min=Math.round(road<20?road*1.6+5:road*0.85+10);
+    const min=Math.round(Math.max(10,road*0.7+5)); // rough estimate, ≈85 km/h
     const tid=min<60?min+' min':Math.floor(min/60)+' tim '+(min%60?min%60+' min':'');
     txt.textContent='Avstånd ca '+road+' km · körtid ca '+tid;
     window.fxDistance=road; box.classList.add('show'); window.dispatchEvent(new Event('fx-distance'));

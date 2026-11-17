@@ -163,7 +163,7 @@ def ico(i): return f'<div class="ico"><svg><use href="#i-{i}"/></svg></div>'
 SERVICES = [
  ("truck","Bohagsflytt","Flytt av lägenhet, villa eller radhus – inom orten eller till en annan stad. Vi bär, lastar, kör och ställer in möblerna på rätt plats.",["Bärhjälp","Lastbil med förare","Möbelskydd","RUT-avdrag"]),
  ("office","Kontorsflytt","Flytt av kontor och lokaler. Vi planerar flytten efter er verksamhet, så att ni kommer igång snabbt igen på nya adressen.",["Planering","Märkning","Kvällar/helger enligt överenskommelse"]),
- ("box","Packning & uppackning","Vi packar ditt hem med rätt material så att inget går sönder – och packar upp i nya hemmet om du vill.",["Ömtåligt packas extra","Kartonger märks per rum","RUT-avdrag"]),
+ ("box","Packning & uppackning","Vi packar ditt hem noggrant så att inget går sönder – och packar upp i nya hemmet om du vill.",["Ömtåligt packas extra","Kartonger märks per rum","RUT-avdrag"]),
  ("tool","Ned- & montering","Sängar, garderober, bord och hyllor tas isär före flytten och sätts ihop igen på plats.",["Verktyg ingår","Skruvar märks","RUT-avdrag"]),
  ("music","Piano & tunga lyft","Piano, kassaskåp och andra tunga eller otympliga föremål flyttas med rätt utrustning och tillräckligt många personer.",["Rätt utrustning","Pris enligt offert"]),
  ("spark","Flyttstäd","Grundlig städning av bostaden du lämnar, enligt checklista, så att du är redo för besiktningen.",["Kök & badrum","Fönster och balkong ingår","RUT-avdrag"]),
@@ -312,7 +312,7 @@ paket = page("paket.html",
     <div class="pl-grid" style="margin-top:28px">
       <div><h3>Per timme</h3><table class="cmp"><tbody>
         <tr><td>2 personer + 1 bil</td><td>595 kr/tim</td></tr><tr><td>3 personer + 1 bil</td><td>849 kr/tim</td></tr><tr><td>4 personer + 2 bilar</td><td>1 199 kr/tim</td></tr></tbody></table>
-        <p class="small">Minst 3 timmar, påbörjad timme räknas som hel. Samma pris för packning och uppackning – material ingår.</p></div>
+        <p class="small">Minst 3 timmar, påbörjad timme räknas som hel. Samma pris för packning och uppackning. Packmaterial ingår inte – kartonger kan köpas eller hyras.</p></div>
       <div><h3>Flyttkartonger</h3><table class="cmp"><tbody>
         <tr><td>Köpa 50 st</td><td>2 000 kr</td></tr><tr><td>Hyra 50 st</td><td>750 kr</td></tr></tbody></table>
         <p class="small">Leverans ingår.</p></div>
@@ -513,7 +513,7 @@ integritet = page("integritetspolicy.html",
  """
 <section>
   <div class="wrap legal">
-    <p class="upd">Senast uppdaterad: 2026-11-12</p>
+    <p class="upd">Senast uppdaterad: 2026-11-16</p>
 
     <h2>1. Personuppgiftsansvarig</h2>
     <p>FX Flytt AB, Drottninggatan 1, Kungsör, är personuppgiftsansvarig för behandlingen av dina personuppgifter. Kontakt: info@fxflytt.se, telefon 076-300 07 23.</p>
@@ -916,6 +916,8 @@ open("offert.html", "w", encoding="utf-8").write(offert); print("wrote offert.ht
 import subprocess as _sp
 G = _json.loads(_sp.check_output(["node", "price_guide.mjs"]))
 def _kr(n): return f"{n:,}".replace(",", " ") + " kr"
+def _n(n): return f"{n:,}".replace(",", " ")
+CARS = {2: "1 bil", 3: "1 bil", 4: "2 bilar"}  # same as the price list on Våra paket
 def _faq(items):
     h = "".join(f"<details{' open' if i==0 else ''}><summary>{html.escape(q)}</summary><p>{html.escape(a)}</p></details>" for i,(q,a) in enumerate(items))
     ld = '<script type="application/ld+json">' + _json.dumps({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}} for q,a in items]}, ensure_ascii=False) + '</script>'
@@ -931,7 +933,7 @@ H = G["homes"]; R = G["rates"]
 # ---------------------------------------------------------------- Vad kostar en flytt?
 _home_rows = "".join(f"<tr><th scope='row'>{h['name']} (ca {h['m2']} m²)</th><td>{_kr(h['bas'])}</td><td>{_kr(h['stad'])}</td><td><b>{_kr(h['premium'])}</b></td></tr>" for h in H)
 _km_rows = "".join(f"<tr><th scope='row'>{k['km']} km</th><td>{_kr(k['bas'])}</td><td>{'ingår' if k['km'] < G['freeKm'] else str(k['km'])+' km × '+str(G['perKm'])+' kr = '+_kr(k['km']*G['perKm'])}</td></tr>" for k in G["km"])
-_h_rows = "".join(f"<tr><th scope='row'>{x['crew']} flyttare + bil, {x['hours']} tim</th><td><b>{_kr(x['total'])}</b></td></tr>" for x in G["hourly"])
+_h_rows = "".join(f"<tr><th scope='row'>{x['crew']} flyttare + {CARS[x['crew']]}, {x['hours']} tim</th><td><b>{_kr(x['total'])}</b></td></tr>" for x in G["hourly"])
 _pg_faq = [
  ("Vad kostar en flyttfirma för en tvåa?", f"En vanlig tvåa på cirka 60 m² kostar {_kr(H[1]['bas'])} för flytten med oss, om du flyttar kortare än {G['freeKm']} km. Med flyttstäd (Premium) blir det {_kr(H[1]['premium'])}. Alla priser är efter RUT-avdrag."),
  ("Är det billigare att betala per timme?", f"För små flyttar kan det vara det. Per timme kostar 2 flyttare och bil {R['2']} kr/tim efter RUT, minst {R['minHours']} timmar. Ett fast pris efter boyta gör att du vet totalen i förväg, även om flytten tar längre tid än tänkt."),
@@ -965,7 +967,7 @@ prisguide = page("vad-kostar-flytt.html",
     <div class="cmp-scroll"><table class="cmp ex"><thead><tr><th>Avstånd mellan adresserna</th><th>Totalt (Bas)</th><th>Varav körsträcka</th></tr></thead><tbody>{_km_rows}</tbody></table></div>
 
     <h2 style="font-size:1.5rem;margin:34px 0 6px">Fast pris eller per timme?</h2>
-    <p style="color:var(--muted)">Per timme betalar du för den tid flytten faktiskt tar, minst {R['minHours']} timmar: 2 flyttare + bil {R['2']} kr/tim, 3 flyttare {R['3']} kr/tim och 4 flyttare {R['4']} kr/tim efter RUT. Det passar små flyttar och när du bara behöver hjälp med en del. Fast pris passar när du vill veta totalen i förväg.</p>
+    <p style="color:var(--muted)">Per timme betalar du för den tid flytten faktiskt tar, minst {R['minHours']} timmar: 2 flyttare + 1 bil {_n(R['2'])} kr/tim, 3 flyttare + 1 bil {_n(R['3'])} kr/tim och 4 flyttare + 2 bilar {_n(R['4'])} kr/tim efter RUT. Det passar små flyttar och när du bara behöver hjälp med en del. Fast pris passar när du vill veta totalen i förväg.</p>
     <div class="cmp-scroll" style="margin-top:12px"><table class="cmp ex"><thead><tr><th>Per timme – exempel</th><th>Pris efter RUT</th></tr></thead><tbody>{_h_rows}</tbody></table></div>
 
     <h2 style="font-size:1.5rem;margin:34px 0 6px">RUT-avdraget</h2>
@@ -1058,7 +1060,7 @@ flytthjalp = service_page("flytthjalp.html",
  f"Flytthjälp med flyttare och lastbil: {R['2']} kr/tim för 2 flyttare + bil efter RUT, minst {R['minHours']} timmar. Eller fast pris efter boyta. Bärhjälp, lastning och möbelskydd.",
  "Flytthjälp", "Flytthjälp – <span>per timme eller fast pris</span>",
  "Behöver du hjälp att bära, lasta och köra? Välj per timme för en mindre flytt, eller fast pris efter boyta när du vill veta totalen i förväg.",
- [("Per timme", f'<p style="color:var(--muted)">Flyttare och lastbil, efter RUT-avdrag. Du betalar för den tid flytten faktiskt tar, minst {R["minHours"]} timmar.</p><div class="cmp-scroll" style="margin-top:12px"><table class="cmp ex"><thead><tr><th>Bemanning</th><th>Pris per timme</th></tr></thead><tbody><tr><th scope="row">2 flyttare + bil</th><td><b>{R["2"]} kr</b></td></tr><tr><th scope="row">3 flyttare + bil</th><td><b>{R["3"]} kr</b></td></tr><tr><th scope="row">4 flyttare + bil</th><td><b>{R["4"]} kr</b></td></tr></tbody></table></div>'),
+ [("Per timme", f'<p style="color:var(--muted)">Flyttare och lastbil, efter RUT-avdrag. Du betalar för den tid flytten faktiskt tar, minst {R["minHours"]} timmar.</p><div class="cmp-scroll" style="margin-top:12px"><table class="cmp ex"><thead><tr><th>Bemanning</th><th>Pris per timme</th></tr></thead><tbody><tr><th scope="row">2 flyttare + 1 bil</th><td><b>{_n(R["2"])} kr</b></td></tr><tr><th scope="row">3 flyttare + 1 bil</th><td><b>{_n(R["3"])} kr</b></td></tr><tr><th scope="row">4 flyttare + 2 bilar</th><td><b>{_n(R["4"])} kr</b></td></tr></tbody></table></div>'),
   ("Fast pris", f'<p style="color:var(--muted)">Vill du veta totalen i förväg? Då räknar vi efter boytan – till exempel {_kr(H[1]["bas"])} för en tvåa på 60 m² under {G["freeKm"]} km. <a href="vad-kostar-flytt.html">Se fler prisexempel</a>.</p>'),
   ("Det här ingår", _ul(["Lastbil med förare", "Bärhjälp, lastning och lossning", "Filtar och möbelskydd", "RUT-avdrag direkt på fakturan"])),
   ("Passar per timme för dig?", _ul(["<b>Ja</b> – om du flyttar från en liten lägenhet, bara några möbler eller redan har packat allt.",
@@ -1087,12 +1089,12 @@ def lang_page(file, lang, rtl, title, desc, crumb, h1, lead, body, cta_quote, ct
     s = s[:i] + bar + s[j:]
     return s
 
-_en_rows = "".join(f"<tr><th scope='row'>{h['name'].replace('rok','room').replace('Villa','House')} (approx. {h['m2']} m²)</th><td>{h['bas']:,} SEK</td><td><b>{h['premium']:,} SEK</b></td></tr>".replace(",", " ") for h in H)
+_en_rows = "".join(f"<tr><th scope='row'>{({'1 rok':'1-room flat','2 rok':'2-room flat','3 rok':'3-room flat','4 rok':'4-room flat','Villa':'House'})[h['name']]} (approx. {h['m2']} m²)</th><td>{h['bas']:,} SEK</td><td><b>{h['premium']:,} SEK</b></td></tr>".replace(",", " ") for h in H)
 english = lang_page("en.html", "en", False,
  "Moving company in central Sweden – FX Flytt (English)",
- f"Removals and move-out cleaning at fixed prices in Stockholm, Uppsala, Västerås, Örebro and 28 towns. 2-room flat from {H[1]['bas']:,} SEK after RUT. Free quote.".replace(",", " "),
+ f"Removals and move-out cleaning at fixed prices in 28 towns in central Sweden, including Stockholm, Uppsala, Västerås and Örebro. 2-room flat from {H[1]['bas']:,} SEK after RUT. Free quote.".replace(",", " "),
  "In English", "Moving in Sweden? <span>We make it simple.</span>",
- "FX Flytt is a moving company based in Kungsör, serving Stockholm, Uppsala, Mälardalen and 28 towns in central Sweden. Fixed prices, insured moves and one contact person from quote to the last box.",
+ "FX Flytt is a moving company based in Kungsör, serving 28 towns in central Sweden – including Stockholm, Uppsala and the Mälaren region. Fixed prices, insured moves and one contact person from quote to the last box.",
  f"""
 <section>
   <div class="wrap" style="max-width:860px">

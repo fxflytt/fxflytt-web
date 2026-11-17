@@ -22,46 +22,46 @@ LOCAL = {
   "Karlstad är Värmlands residensstad och universitetsstad, vid Klarälvens utlopp i Vänern. Kring terminsstart i augusti och januari flyttar många studenter, framför allt i Kronoparken och runt universitetet – då är det klokt att boka tidigt.",
   "Flyttar du mellan Karlstad och Mälardalen eller Örebro handlar det om många mil, så packningen behöver vara stabil för en längre transport. Vi lastar så att inget glider under resan och kör hela vägen med samma team, så att samma personer lastar ur som lastade."],
  "sodertalje": [
-  "Södertälje är en industristad med stora arbetsgivare och pendeltåg till Stockholm, och många flyttar hit för jobbet. Ronna, Hovsjö, Geneta och Brunnsäng har många höghus, medan Pershagen, Järna och Mölnbo mest har villor och landsbygd.",
+  "Södertälje är en industristad med stora arbetsgivare och pendeltåg till Stockholm, och många flyttar hit för jobbet – berätta vilket datum du måste vara på plats, så planerar vi flyttdagen efter det.",
   "I höghusen är hissen ofta det som styr flyttdagen – kolla med hyresvärden om den behöver bokas och hur stor den är. På villagator kan parkeringen vara smal; berätta om det, så kan lastbilen stå så nära som möjligt utan att blockera grannarna."],
  "akersberga": [
-  "Åkersberga är centralort i Österåkers kommun, med Roslagsbanan in till Stockholm och mycket villor, radhus och kustnära boende. Många hus här har förråd, garage, vind och båtprylar – det är lätt att glömma när man räknar volymen.",
+  "Åkersberga är centralort i Österåkers kommun, med Roslagsbanan in till Stockholm. Båtprylar, trädgårdsmöbler och det som står i sjöboden eller på vinden är lätt att glömma när man räknar volymen – gå igenom alla utrymmen innan du begär offert.",
   "Flyttar du till eller från ett fritidshus nära vattnet, kolla om lastbilen kan köra ända fram eller om vi behöver bära en bit. På sommaren är det fler som flyttar till och från sina sommarhus, så boka gärna i god tid."],
  "norrtalje": [
-  "Norrtälje är Roslagens största ort, och kommunen är stor till ytan – från stadskärnan till Rimbo, Hallstavik och fritidshus nära skärgården. Avstånden inom kommunen kan vara långa, så det är viktigt att båda adresserna står rätt i offerten.",
-  "På sommaren ökar trafiken och antalet flyttar till och från sommarhus. Bor du på landet, berätta om vägen fram – grusväg, smal infart eller vinterväg påverkar vilken bil vi skickar. Långa sträckor inom kommunen syns direkt i prisräknaren."],
+  "Norrtälje är Roslagens största ort, och avstånden inom kommunen kan vara långa. Skriv båda adresserna så exakt som möjligt i förfrågan, så att körsträckan och tiden blir rätt från början.",
+  "På sommaren ökar trafiken och antalet flyttar till och från sommarhus. Bor du på landet, berätta om vägen fram – grusväg, smal infart eller vinterväg påverkar vilken bil vi skickar."],
  "nykoping": [
-  "Nyköping är residensstad i Södermanland, vid kusten och med Skavsta flygplats strax utanför. Stadskärnan är kompakt, och i områden som Brandholmen och Oppeby bor många i lägenhet, medan Arnö, Harg och Stigtomta har mer villor.",
+  "Nyköping är residensstad i Södermanland, vid kusten och med Skavsta flygplats strax utanför. I villaområden som Arnö, Harg och Stigtomta finns ofta förråd, garage och trädgård som också ska med – räkna med dem när du uppskattar volymen.",
   "Flyttar du mellan Nyköping och Katrineholm, Eskilstuna eller Norrköping är det några mil – körsträckan räknas bara på avståndet mellan dina två adresser. Kustnära hus kan ha smala vägar fram; berätta om det i förfrågan."],
  "norrkoping": [
   "Norrköping är en gammal industristad, och i centrum finns många äldre stenhus där hiss saknas eller är mycket liten. Flyttar du från fjärde våningen utan hiss tar det längre tid – därför frågar vi alltid om våning och hiss innan vi ger ett pris.",
   "Linköpings universitet har campus mitt i Norrköping, så studentflyttarna är många kring terminsstart. Lindö, Vilbergen och Åby har mer villor och radhus, ofta med förråd och garage som också ska med."],
  "linkoping": [
-  "Linköping är en universitetsstad med många studenter i Ryd, Lambohov och runt Campus Valla. I augusti och januari är det därför extra många flyttar – vill du ha en viss dag, boka tidigt. Studentlägenheter går ofta snabbt med två flyttare.",
-  "Samtidigt växer staden med nya områden som Vallastaden, där husen har hiss men där det kan vara svårt att parkera nära porten. Villaområden som Hjulsbro och Malmslätt har mer saker i förråd och garage. Berätta om parkeringen, så planerar vi rätt."],
+  "Med många studenter i Ryd, Lambohov och runt Campus Valla är augusti och januari extra intensiva flyttmånader – vill du ha en viss dag, boka tidigt.",
+  "I nya områden som Vallastaden har husen hiss, men det kan vara svårt att parkera nära porten. Villaområden som Hjulsbro och Malmslätt har mer saker i förråd och garage. Berätta om parkeringen, så planerar vi rätt."],
  "motala": [
-  "Motala ligger vid Vätterns norra strand och vid Göta kanal. Här finns allt från lägenheter i centrum till villor vid vattnet och gårdar mot Borensberg och Fornåsa.",
+  "Göta kanal går genom Motala, och här finns allt från lägenheter i centrum till villor vid vattnet och gårdar mot Borensberg och Fornåsa.",
   "Hus nära sjön och kanalen har ibland smala vägar och begränsad parkering, och på sommaren är det mer trafik i centrum. Berätta hur nära lastbilen kan stå. Flyttar du mellan Motala och Linköping, Mjölby eller Örebro räknas körsträckan bara på avståndet mellan dina två adresser."],
  "mjolby": [
-  "Mjölby ligger vid E4:an mellan Linköping och Tranås, och många pendlar härifrån. Kommunen har både tätorten och mindre orter som Skänninge, Mantorp och Väderstad, där de flesta bor i villa eller radhus.",
+  "Mjölby ligger vid E4:an mellan Linköping och Tranås, och många pendlar härifrån – flyttar du för ett nytt jobb, berätta vilket datum du måste vara på plats.",
   "Villaflytt betyder ofta mer än det man först tänker på: förrådet, garaget, trädgårdsmöblerna och kanske en frys i källaren. Gå igenom alla utrymmen innan du begär offert – eller använd kubikräknaren, så blir priset rätt från början."],
  "jonkoping": [
   "Jönköping ligger vid Vätterns södra spets, och staden är känd för sina backar. Branta gator och långa trappor upp till husen gör bärsträckan viktig – berätta om den, så skickar vi rätt antal personer.",
   "Jönköping University gör att många studenter flyttar kring terminsstart, och i centrum och på Öster finns många äldre hus utan hiss. Runt staden ligger Huskvarna, Bankeryd och Gränna med mer villor och gårdar. Längre flyttar mot Mellansverige planerar vi så att samma team kör hela vägen."],
  "nassjo": [
-  "Nässjö är en järnvägsknut på Höglandet i Småland, och kommunen har förutom tätorten flera mindre orter som Bodafors, Forserum, Anneberg och Malmbäck. De flesta bor i villa eller radhus.",
+  "I villor och radhus finns ofta förråd, garage och vind som också ska tömmas. Gå igenom alla utrymmen innan du begär offert, så räknar vi med rätt bil från början.",
   "På Höglandet kan vintrarna vara snörika, och då är det bra att tänka på tillfarten: är uppfarten plogad och går det att vända med lastbil? Flyttar du mellan Nässjö och Jönköping eller Tranås är det korta sträckor – och längre flyttar planerar vi så att allt följer med på samma bil."],
  "tranas": [
-  "Tranås ligger vid sjön Sommen, mitt emellan Jönköping och Linköping. Staden har en stadskärna med lägenheter, villaområden runt omkring och många hus på landsbygden och vid sjön.",
-  "Hus på landet och vid vattnet har ofta längre bärsträcka och ibland grusväg fram – det påverkar hur lång tid flytten tar. Berätta om tillfarten och om förråd och uthus. Flyttar du mellan Tranås och Mjölby, Nässjö eller Linköping räknas körsträckan bara på avståndet mellan dina adresser."],
+  "Hus vid sjön och på landet har ofta uthus, båtprylar och trädgårdsmöbler som också ska med. Räkna med dem när du uppskattar volymen – kubikräknaren hjälper dig.",
+  "Sådana hus har ofta längre bärsträcka och ibland grusväg fram, och det påverkar hur lång tid flytten tar. Berätta om tillfarten. Flyttar du mellan Tranås och Mjölby, Nässjö eller Linköping räknas körsträckan bara på avståndet mellan dina adresser."],
  "vastervik": [
-  "Västervik är en kuststad med skärgård, och på sommaren fylls staden av besökare. Det betyder mer trafik och svårare parkering i centrum under juli – flyttar du då, boka i god tid och berätta hur nära porten lastbilen kan stå.",
-  "Många flyttar till eller från Västervik är långa, till exempel från Mälardalen eller Stockholmsområdet. Då är packningen extra viktig: kartonger som tål staplingen och möbler som skyddas för en längre resa. Med Deluxe packar vi åt dig."],
+  "På sommaren fylls Västervik av besökare. Det betyder mer trafik och svårare parkering i centrum under juli – flyttar du då, boka i god tid och berätta hur nära porten lastbilen kan stå.",
+  "Flyttar du hit från Mälardalen eller Stockholmsområdet är packningen extra viktig: kartonger som tål staplingen och möbler som skyddas för en längre resa. Med Deluxe packar vi åt dig."],
  "vimmerby": [
-  "Vimmerby är en småstad i norra Kalmar län, känd för Astrid Lindgrens Värld. Under sommaren är det mycket trafik i och runt staden, så flyttar du i juli lönar det sig att välja en vardag och boka tidigt.",
-  "Runt Vimmerby ligger orter som Södra Vi, Storebro och Gullringen, och många bor i villa eller på gård. Där kan uthus, verkstäder och lador innehålla mer än man tror – gå igenom allt innan du begär offert, så att vi skickar en bil som räcker."],
+  "Vimmerby är känt för Astrid Lindgrens Värld, och under sommaren är det mycket trafik i och runt staden – flyttar du i juli lönar det sig att välja en vardag och boka tidigt.",
+  "På gårdarna runt staden kan uthus, verkstäder och lador innehålla mer än man tror. Gå igenom allt innan du begär offert, så att vi skickar en bil som räcker."],
  "ludvika": [
-  "Ludvika ligger i södra Dalarna, i Bergslagen, med stora industriarbetsgivare och orter som Grängesberg, Fredriksberg och Sunnansjö runt omkring. Många flyttar hit för jobbet, och många flyttar mellan Ludvika och Mälardalen.",
+  "Stora industriarbetsgivare gör att många flyttar till Ludvika för jobbet – berätta vilket datum du måste vara på plats, så planerar vi flyttdagen efter det.",
   "Vintrarna i Dalarna kan vara kalla och snörika. Flyttar du under vintern, se till att uppfarten är skottad och sandad, och packa sådant som inte tål kyla – växter, elektronik och flaskor – så att det kan stå varmt. Längre flyttar planerar vi så att samma team kör hela vägen."],
 
  # ---- Added 2026-11-16
@@ -69,20 +69,20 @@ LOCAL = {
   "Arboga är grannort till Kungsör, där vårt kontor ligger – du har alltså nära till oss, och många flyttar här är korta. Flyttar du mellan Arboga och Kungsör, Köping eller Götlunda är avståndet ofta så kort att det knappt märks i priset.",
   "Den gamla stadskärnan har trähus, smala gator och trappor där stora möbler får bäras försiktigt. Berätta om hissen saknas och hur nära porten lastbilen kan stå, så skickar vi rätt antal personer och planerar tiden därefter."],
  "koping": [
-  "Köping ligger där Mälaren tar slut i väster, med hamn, järnväg och E18. Många flyttar här är korta – inom staden eller till Kungsör, Arboga och Kolsva – och då ingår körsträckan när avståndet mellan adresserna är under 15 km.",
-  "I centrum bor många i lägenhet, medan Kolsva och Munktorp mest har villor och gårdar med uthus och förråd. Gå igenom alla utrymmen innan du begär offert, så räknar vi med rätt bil från början."],
+  "Många flyttar i Köping är korta – inom staden eller till Kungsör, Arboga och Kolsva – och då ingår körsträckan när avståndet mellan adresserna är under 15 km.",
+  "Har du villa eller gård, gå igenom uthus, förråd och garage innan du begär offert, så räknar vi med rätt bil från början."],
  "kumla": [
-  "Kumla ligger strax söder om Örebro, och många pendlar mellan orterna. Flyttar du mellan Kumla och Örebro är det en kort sträcka, och priset påverkas bara lite av avståndet – det mesta handlar om boytan och vad som ska med.",
+  "Flyttar du mellan Kumla och Örebro är det en kort sträcka, och priset påverkas bara lite av avståndet – det mesta handlar om boytan och vad som ska med.",
   "Kumla har mycket villor och radhus, ofta med förråd, garage och trädgård. Det är lätt att glömma utemöbler, verktyg och sådant som står i förrådet när man räknar volymen – använd gärna kubikräknaren innan du begär offert."],
  "karlskoga": [
-  "Karlskoga är en industristad vid sjön Möckeln, nära gränsen mot Värmland. Många flyttar hit för jobbet, och då är datumet ofta det viktigaste – berätta när du måste vara på plats, så planerar vi flyttdagen efter det.",
+  "Många flyttar till Karlskoga för jobbet, och då är datumet ofta det viktigaste – berätta när du måste vara på plats, så planerar vi flyttdagen efter det.",
   "Runt staden finns landsbygd och sjönära boende, där vägen fram kan vara smal eller grusad. Flyttar du mellan Karlskoga och Örebro eller Mälardalen räknas körsträckan bara på avståndet mellan dina två adresser."],
  "strangnas": [
-  "Strängnäs ligger vid Mälaren med tåg mot både Stockholm och Eskilstuna, och många flyttar hit från Stockholmsområdet för att få mer plats. Då är det ofta en längre flytt, och det lönar sig att packa ordentligt och märka kartongerna rum för rum.",
+  "Flyttar du hit från Stockholmsområdet är det ofta en längre flytt, och då lönar det sig att packa ordentligt och märka kartongerna rum för rum – så går både lastning och uppackning snabbare.",
   "I Mariefred finns många äldre hus med branta trappor, medan Strängnäs och Åkers styckebruk har både lägenheter och nya villaområden. Berätta om trappor, hiss och parkering, så planerar vi rätt."],
  "enkoping": [
-  "Enköping ligger mitt emellan Västerås, Uppsala och Stockholm, och många pendlar härifrån åt flera håll. Flyttar du hit för jobbet eller för att få mer plats, berätta vilket datum som passar – helger och slutet av månaden är populärast.",
-  "Staden har lägenheter i centrum och många villor och gårdar runt omkring, i orter som Grillby, Örsundsbro och Fjärdhundra. På landsbygden kan tillfarten vara smal, så berätta hur nära huset lastbilen kan köra."],
+  "Flyttar du till Enköping för jobbet eller för att få mer plats, berätta vilket datum som passar – helger och slutet av månaden är populärast, så boka i god tid.",
+  "På landsbygden runt staden kan tillfarten till villor och gårdar vara smal eller grusad, så berätta hur nära huset lastbilen kan köra."],
  "uppsala": [
   "Uppsala är en av Sveriges största studentstäder, med Uppsala universitet och SLU. Kring terminsstart i augusti och januari flyttar tusentals studenter samtidigt, särskilt i Flogsta, Rackarberget och Kåbo – vill du ha en viss dag, boka i god tid.",
   "I centrum och Luthagen finns många äldre hus med liten eller ingen hiss, medan Rosendal och andra nya områden har hiss men ofta trångt att parkera. Berätta om både hiss och parkering, så kommer rätt team med rätt bil."],
