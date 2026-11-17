@@ -198,8 +198,8 @@ def city_page(c):
       "url":"https://www.fxflytt.se/","telephone":"+46763000723","email":"info@fxflytt.se","priceRange":"2 000–14 700 kr",
       "address":{"@type":"PostalAddress","streetAddress":"Drottninggatan 1","postalCode":"736 31","addressLocality":"Kungsör","addressCountry":"SE"},
       "openingHoursSpecification":[
-        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"07:00","closes":"19:00"},
-        {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"09:00","closes":"17:00"},
+        {"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"07:00","closes":"17:00"},
+        {"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":"12:00","closes":"16:00"},
         {"@type":"OpeningHoursSpecification","dayOfWeek":"Sunday","opens":"12:00","closes":"16:00"}],
       "areaServed":{"@type":"City","name":c["name"]},
     }
