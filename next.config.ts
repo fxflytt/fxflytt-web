@@ -7,7 +7,7 @@ import type { NextConfig } from "next";
 const pages = [
   "tjanster", "flyttfirma", "paket", "om-oss", "radgivare", "integritetspolicy", "villkor",
   "flyttfirma-kungsor", "flyttfirma-orebro", "flyttfirma-eskilstuna", "flyttfirma-vasteras", "flyttfirma-katrineholm",
-  "flyttfirma-karlstad", "flyttfirma-sodertalje", "flyttfirma-akersberga", "flyttfirma-norrtalje", "flyttfirma-nykoping", "flyttfirma-norrkoping", "flyttfirma-linkoping", "flyttfirma-motala", "flyttfirma-mjolby", "flyttfirma-jonkoping", "flyttfirma-nassjo", "flyttfirma-tranas", "flyttfirma-vastervik", "flyttfirma-vimmerby", "flyttfirma-ludvika", "flyttfirma-arboga", "flyttfirma-koping", "flyttfirma-kumla", "flyttfirma-karlskoga", "flyttfirma-strangnas", "flyttfirma-enkoping", "flyttfirma-uppsala", "flyttfirma-stockholm", "flyttstad", "kubikraknare", "rut-avdrag", "dodsbo", "utlandsflytt", "admin", "signera", "arbetsorder", "jobb", "offert",
+  "flyttfirma-karlstad", "flyttfirma-sodertalje", "flyttfirma-akersberga", "flyttfirma-norrtalje", "flyttfirma-nykoping", "flyttfirma-norrkoping", "flyttfirma-linkoping", "flyttfirma-motala", "flyttfirma-mjolby", "flyttfirma-jonkoping", "flyttfirma-nassjo", "flyttfirma-tranas", "flyttfirma-vastervik", "flyttfirma-vimmerby", "flyttfirma-ludvika", "flyttfirma-arboga", "flyttfirma-koping", "flyttfirma-kumla", "flyttfirma-karlskoga", "flyttfirma-strangnas", "flyttfirma-enkoping", "flyttfirma-uppsala", "flyttfirma-stockholm", "flyttstad", "kubikraknare", "rut-avdrag", "dodsbo", "utlandsflytt", "vad-kostar-flytt", "kontorsflytt", "magasinering", "pianoflytt", "flytthjalp", "en", "admin", "signera", "arbetsorder", "jobb", "offert",
 ];
 
 const securityHeaders = [

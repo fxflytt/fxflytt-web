@@ -153,9 +153,6 @@ def road_km(a, b):
     (la1, lo1), (la2, lo2) = _POS[a], _POS[b]; r = math.pi / 180
     h = math.sin((la2-la1)*r/2)**2 + math.cos(la1*r)*math.cos(la2*r)*math.sin((lo2-lo1)*r/2)**2
     return max(1, round(2*6371*math.asin(math.sqrt(h))*1.25))
-def drive(km):  # rounded to 10 minutes – it is an estimate
-    m = int(round((km*1.6+5 if km < 20 else km*0.85+10) / 10) * 10)
-    return f"{m} min" if m < 60 else f"{m//60} tim" + (f" {m%60} min" if m % 60 else "")
 def mil(km): return str(round(km/10, 1)).replace(".", ",").replace(",0", "") + " mil"
 
 def route_section(c):
@@ -169,10 +166,8 @@ def route_section(c):
         office = (f"<p style='color:var(--muted);margin-bottom:14px'>Vårt kontor ligger på Drottninggatan i Kungsör – nära till dig när du flyttar inom kommunen. "
                   f"Flyttar du härifrån är {near[0]['name']} ({mil(kms[0])}) och {near[1]['name']} ({mil(kms[1])}) de närmaste av våra orter.</p>")
     else:
-        k = road_km("Kungsör", name)
-        office = (f"<p style='color:var(--muted);margin-bottom:14px'>Vi utgår från vårt kontor i Kungsör, ca {mil(k)} (ungefär {drive(k)} med bil) från {name}. "
-                  f"<b>Den resan betalar du inte för</b> – priset räknas bara på boytan och avståndet mellan din gamla och nya adress. "
-                  f"Flyttar du inom {name} (under 15 km) ingår körsträckan.</p>")
+        office = (f"<p style='color:var(--muted);margin-bottom:14px'>Vi har flyttbilar på flera orter, och <b>vår resa till dig betalar du aldrig för</b> – "
+                  f"priset räknas bara på boytan och avståndet mellan din gamla och nya adress. Flyttar du inom {name} (under 15 km) ingår körsträckan.</p>")
     return f"""
 <section style="padding-top:0">
   <div class="wrap">

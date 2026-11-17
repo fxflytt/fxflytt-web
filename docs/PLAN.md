@@ -25,6 +25,8 @@ five city pages. The site has since grown past that scope; this document describ
 - SEO: unique titles/descriptions, canonical clean addresses (308 from `.html`), Open Graph image, MovingCompany +
   BreadcrumbList structured data, `sitemap.xml` (33 pages), `robots.txt`, Search Console verification.
 - Chat assistant (Claude) answering only from `lib/assistant/facts.ts`; works with built-in answers without an API key.
+- Price guide `/vad-kostar-flytt` and service pages `/kontorsflytt`, `/magasinering`, `/pianoflytt`, `/flytthjalp`
+  (prices from the engine via `site-src/price_guide.mjs`), plus `/en` (English).
 - "Få offert" on every page opens the quote form in a pop-up (`site-src/fx-offert.js` + `/offert`, the home page's own form
   alone). City pages pre-fill their town, Flyttstäd pre-selects flyttstäd. The visitor never leaves the page.
 - Cookie banner + Google Analytics 4 (`site-src/fx-consent.js`). Measurement ID G-EPPXSBN284.
