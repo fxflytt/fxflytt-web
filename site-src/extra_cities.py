@@ -244,7 +244,7 @@ EXTRA = [
     ("Kan jag boka flyttstäd i Enköping?", "Ja, från 2 000 kr efter RUT. Med Premium får du 10 % rabatt.")]),
 
  C("uppsala", "Uppsala", "Uppsala län",
-   "Flyttfirma i Uppsala. FX Flytt hjälper dig med bohagsflytt, studentflytt, packning, montering och flyttstäd till fast pris. Se priset direkt – RUT-avdrag på fakturan.",
+   "Flyttfirma i Uppsala. FX Flytt hjälper dig med bohagsflytt, studentflytt, packning och flyttstäd till fast pris – RUT-avdrag direkt på fakturan.",
    "Från studentkorridoren i Flogsta till villan i Sunnersta – vi hjälper dig att flytta i Uppsala med tydligt pris från början.",
    ["Uppsala är Sveriges fjärde största stad och en stor universitetsstad, med allt från studentbostäder och äldre lägenheter i centrum till nya områden och villor i ytterområdena. Vi frågar alltid om våning, hiss och bärsträcka så att rätt team kommer.",
     "Vi flyttar inom Uppsala och mellan Uppsala och Stockholm, Enköping, Västerås och resten av Mellansverige."],
