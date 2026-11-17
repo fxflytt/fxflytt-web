@@ -1004,11 +1004,15 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   }
   function buildText(){
     const lines = ['Offertförfrågan – FX Flytt',''];
+    if(window.FX_LANG==='en') lines.push('Kunden använde engelska formuläret – svara på engelska','');
     const seen = {};
     form.querySelectorAll('input,select,textarea').forEach(el=>{
       if(!el.name) return;
       if(el.type==='checkbox'){ if(el.checked){(seen[el.name]=seen[el.name]||[]).push(el.value);} return; }
-      if(el.value.trim()) lines.push(el.name+': '+el.value.trim());
+      // Lists: the option's own text (e.g. "Bara flytt – Bas"), not its code ("move|bas"); in Swedish also on the English form.
+      const o = el.tagName==='SELECT' ? el.selectedOptions[0] : null;
+      const val = o ? (o.dataset.sv || o.text).trim() : el.value.trim();
+      if(el.value.trim() && val) lines.push(el.name+': '+val);
     });
     Object.keys(seen).forEach(k=>lines.push(k+': '+seen[k].join(', ')));
     if(window.fxDistance) lines.push('Avstånd: ca '+window.fxDistance+' km');
