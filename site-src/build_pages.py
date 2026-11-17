@@ -174,7 +174,7 @@ SERVICES = [
  ("box","Magasinering","Behöver du förvara möbler och kartonger mellan två boenden, vid renovering eller längre? Vi hämtar, förvarar och kör ut när du behöver.",["Kort eller lång tid","Pris enligt offert"]),
 ]
 SVC_LINK = {"Flyttstäd":"flyttstad.html","Tömning av dödsbo":"dodsbo.html","Utlandsflytt":"utlandsflytt.html",
-            "Bohagsflytt":"flytthjalp.html","Kontorsflytt":"kontorsflytt.html","Piano & tunga lyft":"pianoflytt.html","Magasinering":"magasinering.html"}
+            "Bohagsflytt":"bohagsflytt.html","Packning & uppackning":"packning.html","Bortforsling":"bortforsling.html","Kontorsflytt":"kontorsflytt.html","Piano & tunga lyft":"pianoflytt.html","Magasinering":"magasinering.html"}
 rows = "".join(f'''<div class="svc-row">{ico(i)}<div><h3>{t}</h3><p>{p}</p><ul>{"".join(f'<li class="{"tag-rut" if x=="RUT-avdrag" else ""}">{x}</li>' for x in tags)}</ul></div>
 <a href="{SVC_LINK.get(t,"index.html#offert")}" class="btn btn-ghost" style="padding:10px 18px;font-size:.9rem">{"Läs mer" if t in SVC_LINK else "Boka"}</a></div>''' for i,t,p,tags in SERVICES)
 tjanster = page("tjanster.html",
@@ -906,7 +906,7 @@ offert = SRC.replace('<html lang="sv">', '<html lang="sv" class="embed">', 1)
 assert 'class="embed"' in offert, "html tag not found"
 offert = re.sub(r'<link rel="preload" as="image"[^>]*>\n', "", offert)
 offert = re.sub(r"<title>.*?</title>", "<title>Begär offert | FX Flytt</title>", offert, count=1, flags=re.S)
-offert = offert.replace("</head>", '<meta name="robots" content="noindex">\n' + EMBED_CSS + "</head>", 1)
+offert = offert.replace("</head>", '<meta name="robots" content="noindex">\n' + EMBED_CSS + '<script src="/offert-en.js" defer></script>\n' + "</head>", 1)
 offert = offert.replace("</body>", EMBED_JS + "</body>", 1)
 open("offert.html", "w", encoding="utf-8").write(offert); print("wrote offert.html")
 
@@ -1087,7 +1087,44 @@ def lang_page(file, lang, rtl, title, desc, crumb, h1, lead, body, cta_quote, ct
     i = s.index('<div class="mbar">'); j = s.index('</div>', i)
     bar = s[i:j].replace('Ring oss</a>', ('اتصل بنا' if lang == 'ar' else 'Call us') + '</a>').replace('>Få offert</a>', '>' + ('عرض سعر' if lang == 'ar' else 'Get a quote') + '</a>')
     s = s[:i] + bar + s[j:]
+    if lang == "en":
+        s = _en_chrome(s)
     return s
+
+def _en_chrome(s):
+    # English menu, drawer and footer for /en. The menu points to the sections of this page; the footer
+    # keeps its links to the Swedish pages but with English labels.
+    menu = ('<li><a href="#services">What we do</a></li>\n      <li><a href="#prices">Prices</a></li>\n      '
+            '<li><a href="#rut">RUT deduction</a></li>\n      <li><a href="#book">How to book</a></li>\n      '
+            '<li><a href="index.html" lang="sv">Svenska</a></li>')
+    s, n = re.subn(r'(<ul class="menu">\s*).*?(\s*</ul>)', lambda m: m.group(1) + menu + m.group(2), s, count=1, flags=re.S); assert n
+    items = "".join(f'  <a class="item" href="{h}"{a}>{t}</a>\n' for h, t, a in
+                    [("#services", "What we do", ""), ("#prices", "Prices", ""), ("#rut", "RUT deduction", ""), ("#book", "How to book", ""), ("index.html", "Svenska", ' lang="sv"')])
+    s, n = re.subn(r'(<nav class="drawer" id="drawer" aria-label=")Meny(">\n).*?(  <div class="d-cta">)', lambda m: m.group(1) + "Menu" + m.group(2) + items + m.group(3), s, count=1, flags=re.S); assert n
+    i = s.index("<header"); j = s.index("</footer>")
+    part = s[i:j]
+    for a, b in [('aria-label="Meny"', 'aria-label="Menu"'), ('aria-label="FX Flytt – till startsidan"', 'aria-label="FX Flytt – home page (Swedish)"'),
+                 ('aria-label="Ring FX Flytt: 076-300 07 23"', 'aria-label="Call FX Flytt: 076-300 07 23"'),
+                 ('class="btn btn-accent nav-cta">Få offert</a>', 'class="btn btn-accent nav-cta">Get a quote</a>'),
+                 ('class="btn btn-accent">Få gratis offert</a>', 'class="btn btn-accent">Get a free quote</a>'),
+                 ('class="btn btn-ghost">Ring 076-300 07 23</a>', 'class="btn btn-ghost">Call 076-300 07 23</a>'),
+                 ("Flytt, flyttstäd och bortforsling i Mellansverige – från Kungsör till 28 orter.", "Removals, move-out cleaning and waste removal in central Sweden – from Kungsör to 28 towns."),
+                 ('<h2 class="fh">Tjänster</h2>', '<h2 class="fh">Services <small style="font-weight:400">(in Swedish)</small></h2>'),
+                 ('<h2 class="fh">Orter</h2>', '<h2 class="fh">Towns <small style="font-weight:400">(in Swedish)</small></h2>'),
+                 ('<h2 class="fh">Kontakt</h2>', '<h2 class="fh">Contact</h2>'),
+                 (">Bohagsflytt<", ">Home removals<"), (">Vad kostar en flytt?<", ">What does a move cost?<"), (">Flytthjälp per timme<", ">Moving help by the hour<"),
+                 (">Flyttstäd<", ">Move-out cleaning<"), (">Kubikräknare<", ">Volume calculator<"), (">Dödsbo<", ">Estate clearance<"),
+                 (">Utlandsflytt<", ">International moves<"), (">RUT-avdrag<", ">RUT deduction<"), (">Magasinering<", ">Storage<"),
+                 (">Pianoflytt<", ">Piano moves<"), (">Bli uppringd<", ">Call me back<"), (">Packning<", ">Packing<"),
+                 (">Kontorsflytt<", ">Office moves<"), (">Bortforsling<", ">Waste removal<"),
+                 (">Flyttfirma Kungsör<", ">Kungsör<"), (">Flyttfirma Örebro<", ">Örebro<"), (">Flyttfirma Eskilstuna<", ">Eskilstuna<"),
+                 (">Flyttfirma Västerås<", ">Västerås<"), (">Flyttfirma Katrineholm<", ">Katrineholm<"), (">Alla orter →<", ">All towns →<"),
+                 (">Om oss<", ">About us<"), ("Alla rättigheter förbehållna. · Godkänd för F-skatt · Flytt enligt", "All rights reserved. · Approved for F-tax · Moves under"),
+                 (">Integritetspolicy<", ">Privacy policy<"), (">Villkor<", ">Terms<"), (">Flyttguider<", ">Moving guides<"),
+                 ('<a href="en.html" lang="en">In English</a>', '<a href="index.html" lang="sv">På svenska</a>')]:
+        assert a in part, a
+        part = part.replace(a, b)
+    return s[:i] + part + s[j:]
 
 _en_rows = "".join(f"<tr><th scope='row'>{({'1 rok':'1-room flat','2 rok':'2-room flat','3 rok':'3-room flat','4 rok':'4-room flat','Villa':'House'})[h['name']]} (approx. {h['m2']} m²)</th><td>{h['bas']:,} SEK</td><td><b>{h['premium']:,} SEK</b></td></tr>".replace(",", " ") for h in H)
 english = lang_page("en.html", "en", False,
@@ -1098,7 +1135,7 @@ english = lang_page("en.html", "en", False,
  f"""
 <section>
   <div class="wrap" style="max-width:860px">
-    <h2 style="font-size:1.5rem;margin-bottom:10px">What we do</h2>
+    <h2 id="services" style="font-size:1.5rem;margin-bottom:10px">What we do</h2>
     <ul class="ticks" style="display:grid;gap:10px">
       <li><b>Home removals</b> – flats, houses and terraced houses, locally or to another town.</li>
       <li><b>Move-out cleaning</b> (flyttstäd) to the landlord's checklist, with a 7-day cleaning guarantee.</li>
@@ -1107,18 +1144,18 @@ english = lang_page("en.html", "en", False,
       <li><b>International moves</b> to and from Sweden.</li>
     </ul>
 
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">Fixed prices</h2>
+    <h2 id="prices" style="font-size:1.5rem;margin:34px 0 6px">Fixed prices</h2>
     <p style="color:var(--muted);margin-bottom:12px">Moves under {G['freeKm']} km, including VAT, after the RUT tax deduction. Premium = move + move-out cleaning with 10 % off.</p>
     <div class="cmp-scroll"><table class="cmp ex"><thead><tr><th>Home</th><th>Move (Bas)</th><th class="hot">Move + cleaning (Premium)</th></tr></thead><tbody>{_en_rows}</tbody></table></div>
     <p class="cmp-note">Longer moves: {G['perKm']} SEK/km for the whole distance when the addresses are {G['freeKm']} km or more apart. Hourly help: 2 movers + truck {R['2']} SEK/hour after RUT, minimum {R['minHours']} hours. Floor and lift do not change the price.</p>
 
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">What is RUT?</h2>
+    <h2 id="rut" style="font-size:1.5rem;margin:34px 0 6px">What is RUT?</h2>
     <p style="color:var(--muted)">RUT is a Swedish tax deduction for household services: you pay only half of the labour cost. We deduct it directly on the invoice and apply to Skatteverket (the Swedish Tax Agency) for you. You need a Swedish personal identity number (personnummer) and enough RUT allowance left for the year. If you are not entitled to RUT, the price is higher – the quote shows it before you book.</p>
 
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">How to book</h2>
+    <h2 id="book" style="font-size:1.5rem;margin:34px 0 6px">How to book</h2>
     <ul class="ticks" style="display:grid;gap:10px">
       <li><b>Call us</b> on <a href="tel:+46763000723">076-300 07 23</a> or e-mail <a href="mailto:info@fxflytt.se">info@fxflytt.se</a> – you are welcome to write in English.</li>
-      <li><b>Or use our quote form.</b> It is in Swedish, but you can write your message in English.</li>
+      <li><b>Or use our quote form</b> – it takes about two minutes, and you get a reply in English.</li>
       <li>We reply within 24 hours, usually the same day, with a fixed price you can approve online.</li>
     </ul>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:24px">
@@ -1132,4 +1169,54 @@ english = lang_page("en.html", "en", False,
 
 for f, s in [("vad-kostar-flytt.html", prisguide), ("kontorsflytt.html", kontorsflytt), ("magasinering.html", magasinering),
              ("pianoflytt.html", pianoflytt), ("flytthjalp.html", flytthjalp), ("en.html", english)]:
+    open(f, "w", encoding="utf-8").write(s); print("wrote", f)
+
+# ---------------------------------------------------------------- Added 2026-11-17: Bohagsflytt, Packning, Bortforsling
+_b_rows = "".join(f"<tr><th scope='row'>{h['name']} (ca {h['m2']} m²)</th><td>{_kr(h['bas'])}</td><td><b>{_kr(h['premium'])}</b></td></tr>" for h in H)
+bohagsflytt = service_page("bohagsflytt.html",
+ "Bohagsflytt till fast pris – lägenhet, villa, radhus | FX Flytt",
+ f"Bohagsflytt till fast pris efter boyta: lastbil med förare, bärhjälp, lastning, lossning och möbelskydd. Tvåa från {_kr(H[1]['bas'])} efter RUT. Kostnadsfri offert.",
+ "Bohagsflytt", "Bohagsflytt – <span>fast pris efter boyta</span>",
+ "Flyttar du från lägenhet, villa eller radhus? Vi bär, lastar, kör och ställer in möblerna på rätt plats – till ett fast pris som du vet i förväg.",
+ [("Det här ingår", _ul(["<b>Lastbil med förare</b> och rätt antal flyttare för din bostad.", "<b>Bärhjälp, lastning och lossning</b> – vi ställer in möblerna i rätt rum.",
+    "<b>Filtar och möbelskydd</b> så att möbler, golv och trapphus klarar sig.", "<b>En personlig kontaktperson</b> från offert till flyttdag."])),
+  ("Pris", f'<p style="color:var(--muted);margin-bottom:12px">Fast pris efter boyta för en flytt under {G["freeKm"]} km, inkl. moms efter RUT-avdrag. Premium = flytt + flyttstäd med 10 % rabatt.</p>'
+     f'<div class="cmp-scroll"><table class="cmp ex"><thead><tr><th>Bostad</th><th>Flytt (Bas)</th><th class="hot">Flytt + städ (Premium)</th></tr></thead><tbody>{_b_rows}</tbody></table></div>'
+     f'<p class="cmp-note">Längre flytt: {G["perKm"]} kr/km för hela sträckan när avståndet mellan adresserna är {G["freeKm"]} km eller mer. Våning och hiss påverkar inte priset. <a href="vad-kostar-flytt.html">Fler prisexempel</a> · <a href="paket.html">Jämför paketen</a></p>'),
+  ("Så går det till", _how([("Begär offert", "Fyll i formuläret eller ring oss – berätta adresser, boyta och datum."), ("Fast pris", "Du får ett tydligt pris och väljer Bas, Premium eller Deluxe."), ("Flyttdagen", "Vi bär, lastar, kör och ställer in allt på plats.")])),
+  ("Bra att veta", _ul(["Har du betydligt mer saker än boytan brukar rymma – till exempel ett fullt förråd eller garage – berätta det, så blir priset rätt från början. Använd gärna <a href=\"kubikraknare.html\">kubikräknaren</a>.",
+    "Vill du ha hjälp med packning, montering eller flyttstäd? Välj Premium eller Deluxe, eller lägg till det i offerten.",
+    "Värdesaker, kontanter och viktiga dokument tar du med själv."]))],
+ [("Vad ingår i en bohagsflytt?", "Lastbil med förare, bärhjälp, lastning och lossning, filtar och möbelskydd samt en personlig kontaktperson. Packning och flyttstäd kan läggas till."),
+  ("Vad kostar en bohagsflytt?", f"Fast pris efter boyta – till exempel {_kr(H[1]['bas'])} för en tvåa på cirka 60 m² under {G['freeKm']} km, efter RUT-avdrag."),
+  ("Kan ni flytta till en annan stad?", f"Ja, i hela Sverige. Från {G['freeKm']} km mellan adresserna tillkommer {G['perKm']} kr/km för hela sträckan.")])
+
+packning = service_page("packning.html",
+ f"Packhjälp – vi packar och packar upp, {_n(R['2'])} kr/tim | FX Flytt",
+ f"Packning och uppackning per timme: 2 personer {_n(R['2'])} kr/tim efter RUT, minst {R['minHours']} timmar, material ingår. Ingår i Deluxe-paketet.",
+ "Packning", "Packning – <span>vi packar, du slipper</span>",
+ "Vi packar ditt hem säkert med rätt material, märker kartongerna rum för rum – och packar upp i nya hemmet om du vill.",
+ [("Pris per timme", f'<p style="color:var(--muted)">Samma pris för packning och uppackning, efter RUT-avdrag. Minst {R["minHours"]} timmar. Material ingår.</p><div class="cmp-scroll" style="margin-top:12px"><table class="cmp ex"><thead><tr><th>Bemanning</th><th>Pris per timme</th></tr></thead><tbody><tr><th scope="row">2 personer</th><td><b>{_n(R["2"])} kr</b></td></tr><tr><th scope="row">3 personer</th><td><b>{_n(R["3"])} kr</b></td></tr><tr><th scope="row">4 personer</th><td><b>{_n(R["4"])} kr</b></td></tr></tbody></table></div>'
+     '<p class="cmp-note">Med <a href="paket.html">Deluxe</a> ingår packning, ned- och montering – du väljer antal timmar, och flytt och flyttstäd får 20 % rabatt.</p>'),
+  ("Det här gör vi", _ul(["<b>Ömtåligt packas extra</b> – glas, porslin och tavlor skyddas var för sig.", "<b>Kartongerna märks per rum</b>, så att allt hamnar rätt i nya hemmet.",
+    "<b>Uppackning</b> i nya hemmet om du vill.", "<b>Ned- och montering</b> av sängar, garderober och hyllor kan bokas samtidigt."])),
+  ("Flyttkartonger", f'<p style="color:var(--muted)">Behöver du kartonger kan du köpa {G["boxes"]["qty"]} st för {_kr(G["boxes"]["buy"])} eller hyra dem för {_kr(G["boxes"]["rent"])} – leverans ingår.</p>')],
+ [("Ingår material?", f"Ja, material ingår vid packning per timme. Flyttkartonger kan du köpa ({G['boxes']['qty']} st, {_kr(G['boxes']['buy'])}) eller hyra ({_kr(G['boxes']['rent'])})."),
+  ("Hur många timmar behöver jag?", f"Det beror på hur mycket som ska packas. Minst {R['minHours']} timmar – är du osäker, välj {R['minHours']} så går vi igenom det med dig."),
+  ("Får jag RUT-avdrag för packning?", "Ja, packning och uppackning ger RUT-avdrag. Priserna ovan är redan efter avdraget.")])
+
+bortforsling = service_page("bortforsling.html",
+ "Bortforsling av möbler och saker – till återvinning | FX Flytt",
+ "Bortforsling: vi bär ut, sorterar och kör bort möbler och saker till återvinning, second hand eller tipp – vid flytt, dödsbo eller renovering. Kostnadsfri offert.",
+ "Bortforsling", "Bortforsling – <span>vi kör bort det du inte vill ha</span>",
+ "Gamla möbler, fullt förråd eller saker som inte ska med till nya hemmet? Vi bär ut, sorterar och kör bort – samma dag som flytten eller separat.",
+ [("Det här tar vi hand om", _ul(["<b>Möbler och vitvaror</b> som inte ska med.", "<b>Förråd, källare, vind och garage</b> som ska tömmas.",
+    "<b>Saker från dödsbo</b> – se också <a href=\"dodsbo.html\">tömning av dödsbo</a>.", "<b>Sortering</b> – det som går körs till återvinning eller second hand, resten till tipp."])),
+  ("Så går det till", _how([("Berätta vad som ska bort", "Ungefär vad och hur mycket – bilder hjälper."), ("Fast pris", "Du får ett pris i offerten innan vi börjar."), ("Vi bär och kör", "Vi bär ut, sorterar och kör bort – du behöver inte lyfta något.")])),
+  ("Pris", '<p style="color:var(--muted)">Bortforsling prissätts efter mängd och vad som ska bort, så du får ett fast pris i offerten. Boka den gärna samtidigt som flytten – då sparar du en extra tur.</p>')],
+ [("Kan ni ta bortforsling samma dag som flytten?", "Ja, det går bra att boka i samma flytt – berätta vad som ska bort när du begär offert."),
+  ("Vad händer med sakerna?", "Vi sorterar dem och kör till återvinning eller second hand när det går – resten till tipp."),
+  ("Kan ni tömma ett förråd eller garage?", "Ja, vi bär ut och kör bort från förråd, källare, vind och garage.")])
+
+for f, s in [("bohagsflytt.html", bohagsflytt), ("packning.html", packning), ("bortforsling.html", bortforsling)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)

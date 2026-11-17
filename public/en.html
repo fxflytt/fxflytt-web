@@ -510,31 +510,31 @@ body.noscroll .mbar{display:none}
 
 <header>
   <div class="wrap nav">
-    <button class="burger" id="burger" aria-label="Meny" aria-expanded="false"><span></span><span></span><span></span></button>
-    <a href="/" class="logo" aria-label="FX Flytt – till startsidan">
+    <button class="burger" id="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <a href="/" class="logo" aria-label="FX Flytt – home page (Swedish)">
       <div class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="28" fill="#0d2a3f"/><rect x="12" y="43" width="24" height="8" rx="4" fill="#ff7a1a"/><rect x="6" y="57" width="32" height="8" rx="4" fill="#ff7a1a"/><rect x="16" y="71" width="20" height="8" rx="4" fill="#ff7a1a"/><path transform="translate(40 78)" d="M2.60546875 0.0H10.5341796875L13.09068359375 -12.173828125H26.45494140625L27.785078125 -18.5078125H14.4208203125L16.20376953125 -26.998046875H31.02798828125L32.38642578125 -33.466796875H9.63349609375ZM27.03125 0.0H36.2177734375L41.897021484375 -6.4013671875C43.93265625 -8.71484375 44.758320312500004 -9.97265625 45.828583984375 -11.4326171875C46.285664062500004 -9.97265625 46.6055078125 -8.71484375 47.602099609375 -6.4013671875L50.435546875 0.0H59.8466796875L51.67359375 -17.33984375L65.72919921875 -33.466796875H56.78974609375L52.481064453125 -28.4580078125C50.626240234375004 -26.2568359375 49.462763671874995 -24.4599609375 48.318154296875 -22.7529296875C47.890498046874995 -24.4599609375 47.504169921875004 -26.2568359375 46.573837890625 -28.4580078125L44.43623046875 -33.466796875H35.24970703125L42.66451171875 -17.115234375Z" fill="#ffffff"/></svg></div>
       <div>FX Flytt<small aria-hidden="true" data-t="Flytt Express"></small></div>
     </a>
     <ul class="menu">
-      <li><a href="/tjanster">Vår tjänst</a></li>
-      <li><a href="/flyttfirma">Flyttfirma</a></li>
-      <li><a href="/paket">Våra paket</a></li>
-      <li><a href="/om-oss">Om oss</a></li>
-      <li><a href="/radgivare">Rådgivare</a></li>
+      <li><a href="#services">What we do</a></li>
+      <li><a href="#prices">Prices</a></li>
+      <li><a href="#rut">RUT deduction</a></li>
+      <li><a href="#book">How to book</a></li>
+      <li><a href="/" lang="sv">Svenska</a></li>
     </ul>
-    <a href="tel:+46763000723" class="btn btn-phone" aria-label="Ring FX Flytt: 076-300 07 23"><svg width="18" height="18" aria-hidden="true"><use href="#i-phone"/></svg><span class="txt">076-300 07 23</span></a>
-    <a href="/#offert" class="btn btn-accent nav-cta">Få offert</a>
+    <a href="tel:+46763000723" class="btn btn-phone" aria-label="Call FX Flytt: 076-300 07 23"><svg width="18" height="18" aria-hidden="true"><use href="#i-phone"/></svg><span class="txt">076-300 07 23</span></a>
+    <a href="/#offert" class="btn btn-accent nav-cta">Get a quote</a>
   </div>
 </header>
-<nav class="drawer" id="drawer" aria-label="Meny">
-  <a class="item" href="/tjanster">Vår tjänst</a>
-  <a class="item" href="/flyttfirma">Flyttfirma</a>
-  <a class="item" href="/paket">Våra paket</a>
-  <a class="item" href="/om-oss">Om oss</a>
-  <a class="item" href="/radgivare">Rådgivare</a>
+<nav class="drawer" id="drawer" aria-label="Menu">
+  <a class="item" href="#services">What we do</a>
+  <a class="item" href="#prices">Prices</a>
+  <a class="item" href="#rut">RUT deduction</a>
+  <a class="item" href="#book">How to book</a>
+  <a class="item" href="/" lang="sv">Svenska</a>
   <div class="d-cta">
-    <a href="/#offert" class="btn btn-accent">Få gratis offert</a>
-    <a href="tel:+46763000723" class="btn btn-ghost">Ring 076-300 07 23</a>
+    <a href="/#offert" class="btn btn-accent">Get a free quote</a>
+    <a href="tel:+46763000723" class="btn btn-ghost">Call 076-300 07 23</a>
   </div>
 </nav>
 <section class="p-hero">
@@ -551,7 +551,7 @@ body.noscroll .mbar{display:none}
 
 <section>
   <div class="wrap" style="max-width:860px">
-    <h2 style="font-size:1.5rem;margin-bottom:10px">What we do</h2>
+    <h2 id="services" style="font-size:1.5rem;margin-bottom:10px">What we do</h2>
     <ul class="ticks" style="display:grid;gap:10px">
       <li><b>Home removals</b> – flats, houses and terraced houses, locally or to another town.</li>
       <li><b>Move-out cleaning</b> (flyttstäd) to the landlord's checklist, with a 7-day cleaning guarantee.</li>
@@ -560,18 +560,18 @@ body.noscroll .mbar{display:none}
       <li><b>International moves</b> to and from Sweden.</li>
     </ul>
 
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">Fixed prices</h2>
+    <h2 id="prices" style="font-size:1.5rem;margin:34px 0 6px">Fixed prices</h2>
     <p style="color:var(--muted);margin-bottom:12px">Moves under <span data-fxp="kmfree">15</span> km, including VAT, after the RUT tax deduction. Premium = move + move-out cleaning with 10 % off.</p>
     <div class="cmp-scroll"><table class="cmp ex"><thead><tr><th>Home</th><th>Move (Bas)</th><th class="hot">Move + cleaning (Premium)</th></tr></thead><tbody><tr><th scope='row'>1-room flat (approx. 35 m²)</th><td>3 000 SEK</td><td><b>5 040 SEK</b></td></tr><tr><th scope='row'>2-room flat (approx. 60 m²)</th><td>3 950 SEK</td><td><b>6 345 SEK</b></td></tr><tr><th scope='row'>3-room flat (approx. 80 m²)</th><td>5 000 SEK</td><td><b>7 785 SEK</b></td></tr><tr><th scope='row'>4-room flat (approx. 100 m²)</th><td>6 250 SEK</td><td><b>9 225 SEK</b></td></tr><tr><th scope='row'>House (approx. 140 m²)</th><td>8 750 SEK</td><td><b>12 195 SEK</b></td></tr></tbody></table></div>
     <p class="cmp-note">Longer moves: 12 SEK/km for the whole distance when the addresses are 15 km or more apart. Hourly help: 2 movers + truck 595 SEK/hour after RUT, minimum 3 hours. Floor and lift do not change the price.</p>
 
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">What is RUT?</h2>
+    <h2 id="rut" style="font-size:1.5rem;margin:34px 0 6px">What is RUT?</h2>
     <p style="color:var(--muted)">RUT is a Swedish tax deduction for household services: you pay only half of the labour cost. We deduct it directly on the invoice and apply to Skatteverket (the Swedish Tax Agency) for you. You need a Swedish personal identity number (personnummer) and enough RUT allowance left for the year. If you are not entitled to RUT, the price is higher – the quote shows it before you book.</p>
 
-    <h2 style="font-size:1.5rem;margin:34px 0 6px">How to book</h2>
+    <h2 id="book" style="font-size:1.5rem;margin:34px 0 6px">How to book</h2>
     <ul class="ticks" style="display:grid;gap:10px">
       <li><b>Call us</b> on <a href="tel:+46763000723">076-300 07 23</a> or e-mail <a href="mailto:info@fxflytt.se">info@fxflytt.se</a> – you are welcome to write in English.</li>
-      <li><b>Or use our quote form.</b> It is in Swedish, but you can write your message in English.</li>
+      <li><b>Or use our quote form</b> – it takes about two minutes, and you get a reply in English.</li>
       <li>We reply within 24 hours, usually the same day, with a fixed price you can approve online.</li>
     </ul>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:24px">
@@ -596,15 +596,15 @@ body.noscroll .mbar{display:none}
     <div class="f-grid">
       <div>
         <a href="/" class="logo" aria-label="FX Flytt"><div class="logo-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><rect width="120" height="120" rx="28" fill="#ffffff"/><rect x="12" y="43" width="24" height="8" rx="4" fill="#ff7a1a"/><rect x="6" y="57" width="32" height="8" rx="4" fill="#ff7a1a"/><rect x="16" y="71" width="20" height="8" rx="4" fill="#ff7a1a"/><path transform="translate(40 78)" d="M2.60546875 0.0H10.5341796875L13.09068359375 -12.173828125H26.45494140625L27.785078125 -18.5078125H14.4208203125L16.20376953125 -26.998046875H31.02798828125L32.38642578125 -33.466796875H9.63349609375ZM27.03125 0.0H36.2177734375L41.897021484375 -6.4013671875C43.93265625 -8.71484375 44.758320312500004 -9.97265625 45.828583984375 -11.4326171875C46.285664062500004 -9.97265625 46.6055078125 -8.71484375 47.602099609375 -6.4013671875L50.435546875 0.0H59.8466796875L51.67359375 -17.33984375L65.72919921875 -33.466796875H56.78974609375L52.481064453125 -28.4580078125C50.626240234375004 -26.2568359375 49.462763671874995 -24.4599609375 48.318154296875 -22.7529296875C47.890498046874995 -24.4599609375 47.504169921875004 -26.2568359375 46.573837890625 -28.4580078125L44.43623046875 -33.466796875H35.24970703125L42.66451171875 -17.115234375Z" fill="#0d2a3f"/></svg></div><div>FX Flytt<small aria-hidden="true" data-t="Flytt Express" style="color:#9fb3c4"></small></div></a>
-        <p style="margin-top:14px;max-width:300px">Flytt, flyttstäd och bortforsling i Mellansverige – från Kungsör till 28 orter.</p>
+        <p style="margin-top:14px;max-width:300px">Removals, move-out cleaning and waste removal in central Sweden – from Kungsör to 28 towns.</p>
       </div>
-      <div><h2 class="fh">Tjänster</h2><ul><li><a href="/tjanster">Bohagsflytt</a></li><li><a href="/vad-kostar-flytt">Vad kostar en flytt?</a></li><li><a href="/flytthjalp">Flytthjälp per timme</a></li><li><a href="/flyttstad">Flyttstäd</a></li><li><a href="/kubikraknare">Kubikräknare</a></li><li><a href="/dodsbo">Dödsbo</a></li><li><a href="/utlandsflytt">Utlandsflytt</a></li><li><a href="/rut-avdrag">RUT-avdrag</a></li><li><a href="/magasinering">Magasinering</a></li><li><a href="/pianoflytt">Pianoflytt</a></li><li><a href="/#ring-mig" data-callback>Bli uppringd</a></li><li><a href="/tjanster">Packning</a></li><li><a href="/kontorsflytt">Kontorsflytt</a></li><li><a href="/tjanster">Bortforsling</a></li></ul></div>
-      <div><h2 class="fh">Orter</h2><ul><li><a href="/flyttfirma-kungsor">Flyttfirma Kungsör</a></li><li><a href="/flyttfirma-orebro">Flyttfirma Örebro</a></li><li><a href="/flyttfirma-eskilstuna">Flyttfirma Eskilstuna</a></li><li><a href="/flyttfirma-vasteras">Flyttfirma Västerås</a></li><li><a href="/flyttfirma-katrineholm">Flyttfirma Katrineholm</a></li><li><a href="/flyttfirma">Alla orter →</a></li></ul></div>
-      <div><h2 class="fh">Kontakt</h2><ul><li><a href="/om-oss">Om oss</a></li><li><a href="tel:+46763000723">076-300 07 23</a></li><li><a href="mailto:info@fxflytt.se">info@fxflytt.se</a></li><li>Drottninggatan 1, 736 31 Kungsör</li></ul></div>
+      <div><h2 class="fh">Services <small style="font-weight:400">(in Swedish)</small></h2><ul><li><a href="/bohagsflytt">Home removals</a></li><li><a href="/vad-kostar-flytt">What does a move cost?</a></li><li><a href="/flytthjalp">Moving help by the hour</a></li><li><a href="/flyttstad">Move-out cleaning</a></li><li><a href="/kubikraknare">Volume calculator</a></li><li><a href="/dodsbo">Estate clearance</a></li><li><a href="/utlandsflytt">International moves</a></li><li><a href="/rut-avdrag">RUT deduction</a></li><li><a href="/magasinering">Storage</a></li><li><a href="/pianoflytt">Piano moves</a></li><li><a href="/#ring-mig" data-callback>Call me back</a></li><li><a href="/packning">Packing</a></li><li><a href="/kontorsflytt">Office moves</a></li><li><a href="/bortforsling">Waste removal</a></li></ul></div>
+      <div><h2 class="fh">Towns <small style="font-weight:400">(in Swedish)</small></h2><ul><li><a href="/flyttfirma-kungsor">Kungsör</a></li><li><a href="/flyttfirma-orebro">Örebro</a></li><li><a href="/flyttfirma-eskilstuna">Eskilstuna</a></li><li><a href="/flyttfirma-vasteras">Västerås</a></li><li><a href="/flyttfirma-katrineholm">Katrineholm</a></li><li><a href="/flyttfirma">All towns →</a></li></ul></div>
+      <div><h2 class="fh">Contact</h2><ul><li><a href="/om-oss">About us</a></li><li><a href="tel:+46763000723">076-300 07 23</a></li><li><a href="mailto:info@fxflytt.se">info@fxflytt.se</a></li><li>Drottninggatan 1, 736 31 Kungsör</li></ul></div>
     </div>
     <div class="f-bottom">
-      <span>© <span id="yr"></span> FX Flytt AB. Alla rättigheter förbehållna. · Godkänd för F-skatt · Flytt enligt <a href="/villkor">Bohag 2010</a></span>
-      <span><a href="/integritetspolicy">Integritetspolicy</a> · <a href="/villkor">Villkor</a> · <a href="/radgivare">Flyttguider</a> · <a href="/en" lang="en">In English</a></span>
+      <span>© <span id="yr"></span> FX Flytt AB. All rights reserved. · Approved for F-tax · Moves under <a href="/villkor">Bohag 2010</a></span>
+      <span><a href="/integritetspolicy">Privacy policy</a> · <a href="/villkor">Terms</a> · <a href="/radgivare">Moving guides</a> · <a href="/" lang="sv">På svenska</a></span>
     </div>
   </div>
 <script src="/kontakt.js" defer></script>
@@ -626,6 +626,6 @@ window.addEventListener('resize',()=>{if(innerWidth>900)set(false);});})();
 <script src="/fx-prices.js" defer></script>
 <script src="/chat-widget.js" defer></script>
 <script src="/fx-consent.js" defer></script>
-<script src="/fx-offert.js" defer></script>
+<script src="/fx-offert.js" data-lang="en" defer></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # FX Flytt AB – status, decisions and next steps
 
-Updated 2026-11-15. (The first version of this plan, from 2026-11-10, described a Supabase-based first release with
+Updated 2026-11-17. (The first version of this plan, from 2026-11-10, described a Supabase-based first release with
 five city pages. The site has since grown past that scope; this document describes what actually runs today.)
 
 ## 1. Decisions taken by FX Flytt AB
@@ -27,6 +27,12 @@ five city pages. The site has since grown past that scope; this document describ
 - Chat assistant (Claude) answering only from `lib/assistant/facts.ts`; works with built-in answers without an API key.
 - Price guide `/vad-kostar-flytt` and service pages `/kontorsflytt`, `/magasinering`, `/pianoflytt`, `/flytthjalp`
   (prices from the engine via `site-src/price_guide.mjs`), plus `/en` (English).
+- Service pages `/bohagsflytt`, `/packning`, `/bortforsling` (2026-11-17).
+- `/en` has an English menu, footer and cookie banner, and its "Get a quote" opens the quote form in English
+  (`site-src/offert-en.js`, `/offert?lang=en`). What is sent to the office stays in Swedish, with a note that the
+  customer used the English form. The confirmation e-mail and the chat bubble are still Swedish.
+- The chat assistant can work out distance and an approximate price between two towns (tool `rakna_flytt`,
+  `lib/assistant/distance.ts`; town list `lib/assistant/towns.json`, exported from the home page by the build).
 - "Få offert" on every page opens the quote form in a pop-up (`site-src/fx-offert.js` + `/offert`, the home page's own form
   alone). City pages pre-fill their town, Flyttstäd pre-selects flyttstäd. The visitor never leaves the page.
 - Cookie banner + Google Analytics 4 (`site-src/fx-consent.js`). Measurement ID G-EPPXSBN284.
@@ -46,7 +52,7 @@ five city pages. The site has since grown past that scope; this document describ
 - Vercel Blob for photos, SMTP for email, Vercel cron for daily reminders.
 
 **Quality**
-- `npm test` – 70 tests (pricing, RUT, bookings, schedule, staff, clock, fleet, referral, backup, chat, SMTP).
+- `npm test` – 83 tests (pricing, RUT, bookings, schedule, staff, clock, fleet, referral, backup, chat, SMTP).
 - Dependency versions are pinned exactly in `package.json`.
 - Lighthouse (local production build, 2026-11-15, after self-hosting the font): performance, accessibility,
   best practices and SEO 100 on mobile and desktop; LCP on mobile 1.4–1.5 s. The font (Plus Jakarta Sans, OFL)

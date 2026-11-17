@@ -64,13 +64,19 @@
     var box = document.createElement("div");
     box.id = "fx-consent";
     box.setAttribute("role", "dialog");
-    box.setAttribute("aria-label", "Cookie-inställningar");
+    var en = document.documentElement.lang === "en";
+    var L = en
+      ? ["Cookie settings", "May we measure visits?", "We would like to use Google Analytics to see how the site is used and make it better. No cookies are set until you accept. ",
+         "May we measure visits with Google Analytics? ", "More about cookies (Swedish)", "No thanks", "Accept"]
+      : ["Cookie-inställningar", "Får vi mäta besöken?", "Vi vill använda Google Analytics för att se hur sidan används och göra den bättre. Inga kakor sätts förrän du godkänner. ",
+         "Får vi mäta besöken med Google Analytics? ", "Läs mer om kakor", "Nej tack", "Godkänn"];
+    box.setAttribute("aria-label", L[0]);
     box.innerHTML =
-      "<b>Får vi mäta besöken?</b>" +
-      "<p><span class=\"l\">Vi vill använda Google Analytics för att se hur sidan används och göra den bättre. Inga kakor sätts förrän du godkänner. </span>" +
-      "<span class=\"s\">Får vi mäta besöken med Google Analytics? </span>" +
-      "<a href=\"/integritetspolicy#kakor\">Läs mer om kakor</a></p>" +
-      "<div class=\"r\"><button type=\"button\" class=\"n\">Nej tack</button><button type=\"button\" class=\"y\">Godkänn</button></div>";
+      "<b>" + L[1] + "</b>" +
+      "<p><span class=\"l\">" + L[2] + "</span>" +
+      "<span class=\"s\">" + L[3] + "</span>" +
+      "<a href=\"/integritetspolicy#kakor\">" + L[4] + "</a></p>" +
+      "<div class=\"r\"><button type=\"button\" class=\"n\">" + L[5] + "</button><button type=\"button\" class=\"y\">" + L[6] + "</button></div>";
     document.head.appendChild(css);
     document.body.appendChild(box);
     box.querySelector(".y").onclick = function () { set("granted"); box.remove(); loadGA(); };
