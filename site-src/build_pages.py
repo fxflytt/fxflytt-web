@@ -421,6 +421,7 @@ radgivare = page("radgivare.html",
       <div class="guide-nav">
         <a href="#guide-kok">Flytta köket</a><a href="#guide-barn">Flytta med barn</a>
         <a href="#guide-lada">Vilken låda först?</a><a href="#guide-kartonger">Hur många kartonger?</a><a href="#guide-dricks">Dricks</a>
+        <a href="checklista-flyttstad.html">Checklista för flyttstäd</a><a href="flytta-med-husdjur.html">Flytta med husdjur</a>
       </div>
     </div>
 
@@ -1242,3 +1243,89 @@ notfound = page("404.html",
 </section>
 """).replace("<head>", '<head>\n<meta name="robots" content="noindex">', 1)
 open("404.html", "w", encoding="utf-8").write(notfound); print("wrote 404.html")
+
+# ---------------------------------------------------------------- Added 2026-11-18: guides Checklista för flyttstäd, Flytta med husdjur
+_PRINT = """<style>@media print{header,.drawer,footer,.mbar,.p-hero .btn,.no-print,#fx-consent,#fx-offert,[class*=fxc]{display:none!important}
+.p-hero{padding:10px 0!important;background:#fff!important;color:#000!important}.p-hero h1,.p-hero h1 span,.p-hero p{color:#000!important}
+.tips{grid-template-columns:1fr 1fr!important}.tip{break-inside:avoid;box-shadow:none!important;border:1px solid #ccc}
+.faq{display:none}}</style>"""
+_CL = [
+ ("Kök", ["Spis och ugn in- och utvändigt, även plåtar och galler", "Bakom och under spisen, om den går att dra fram",
+          "Kylskåp och frys avfrostade, urtorkade och med dörrarna på glänt", "Fläkt och fläktfilter avfettade",
+          "Skåp och lådor urtorkade – även ovanpå skåpen", "Diskbänk, blandare och kakel", "Diskmaskinens filter och dörrkanter"]),
+ ("Badrum", ["Toalett – även bakom och runt foten", "Handfat, blandare, dusch och badkar", "Kakel och fogar avkalkade",
+             "Golvbrunnen rensad", "Spegel, badrumsskåp och belysning", "Tvättmaskinens och torktumlarens filter och utsida"]),
+ ("Alla rum", ["Golv dammsugna och våttorkade", "Golvlister, dörrar, karmar och handtag", "Eluttag, strömbrytare och lampor",
+               "Garderober och skåp in- och utvändigt", "Element – även bakom och mellan flänsarna", "Fönsterbänkar och ventiler"]),
+ ("Fönster, balkong & förråd", ["Fönster putsade in- och utvändigt samt mellan glasen", "Fönsterkarmar och bågar torkade",
+                                "Balkong eller uteplats sopad och torkad", "Förråd, källare och vind tömda och sopade"]),
+]
+_cl_faq = [
+ ("Vad ska ingå i en flyttstädning?", "Kök, badrum, alla rum, fönster och balkong – som i listan ovan. Har hyresvärden eller mäklaren en egen checklista gäller den i första hand."),
+ ("Måste jag frosta av kylen och frysen?", "Ja, kylskåp och frys ska vara avfrostade innan städningen. Stäng av dem i god tid och låt dörrarna stå på glänt."),
+ ("Vad händer om städningen inte blir godkänd?", "Bokar du flyttstäd hos oss har du 7 dagars städgaranti: hör av dig inom 7 dagar så kommer vi tillbaka och åtgärdar det utan kostnad."),
+ ("Får jag RUT-avdrag för flyttstäd?", "Ja, flyttstäd ger RUT-avdrag på arbetskostnaden. Våra priser visas redan efter avdraget."),
+]
+_clh, _clld = _faq(_cl_faq)
+checklista = page("checklista-flyttstad.html",
+ "Checklista för flyttstäd – rum för rum | FX Flytt",
+ "Checklista för flyttstäd rum för rum: kök, badrum, alla rum, fönster och balkong. Skriv ut listan – eller låt oss städa med 7 dagars städgaranti.",
+ "Checklista för flyttstäd", "Checklista för flyttstäd – <span>rum för rum</span>",
+ "Bostaden ska lämnas väl städad när du flyttar. Använd listan när du städar själv – eller för att kontrollera städningen inför besiktningen.",
+ f"""
+<section>
+  <div class="wrap">
+    <div class="center"><span class="eyebrow">Checklista</span><h2>Gå igenom bostaden rum för rum</h2></div>
+    <div class="tips" style="margin-top:24px">{"".join(tip("Checklista", t, items) for t, items in _CL)}</div>
+    <p class="no-print" style="text-align:center;margin-top:22px"><button type="button" class="btn btn-ghost" onclick="window.print()">Skriv ut checklistan</button></p>
+  </div>
+</section>
+<section style="background:#fff">
+  <div class="wrap" style="max-width:860px">
+    <h2 style="font-size:1.5rem;margin:0 0 10px">Det här glöms ofta</h2>
+    {_ul(["Bakom spisen, kylskåpet och tvättmaskinen.", "Ovanpå köksskåp, garderober och dörrkarmar.", "Fläktfiltret i köket och filtret i diskmaskinen.",
+          "Golvbrunnen i badrummet.", "Ventilerna i taket och väggarna.", "Förrådet, källaren eller vinden som hör till bostaden."])}
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Bra att veta</h2>
+    {_ul(["Fråga hyresvärden eller mäklaren om de har en egen checklista – den gäller i första hand.",
+          "Börja uppifrån och ner, och ta golvet sist.", "Frosta av kylen och frysen dagen innan, så hinner de torka."])}
+    <h2 style="font-size:1.5rem;margin:34px 0 10px">Vill du slippa städa själv?</h2>
+    <p style="color:var(--muted)">Vi gör flyttstädningen enligt checklista – fönster och balkong ingår – till fast pris efter boyta, från 2 000 kr efter RUT-avdrag. Med 7 dagars städgaranti. Bokar du flytt och städ tillsammans får du 10 % rabatt (Premium). <a href="flyttstad.html">Läs mer om flyttstäd</a></p>
+    <div class="no-print">{_CTA}</div>
+  </div>
+</section>
+{_faq_section(_clh)}
+""", extra_head=_clld + _PRINT)
+
+_pet_faq = [
+ ("Kan husdjuret åka med i flyttbilen?", "Husdjur åker aldrig i flyttbilens lastutrymme. Planera hur djuret tar sig till nya hemmet – har du frågor, ring oss så hjälper vi dig att lösa det."),
+ ("Flyttar ni akvarier?", "Ja. Akvariet ska vara helt tömt – på vatten, sand, stenar och växter. Fiskarna transporterar du själv."),
+ ("Hur länge ska katten vara inne efter flytten?", "Ofta rekommenderas några veckor, så att katten hinner känna sig hemma. Fråga din veterinär om du är osäker."),
+]
+husdjur = service_page("flytta-med-husdjur.html",
+ "Flytta med husdjur – tips för hund, katt och fiskar | FX Flytt",
+ "Flytta med hund, katt eller fiskar? Tips inför flytten, på flyttdagen och de första dagarna i nya hemmet – så blir flytten lugnare för djuret.",
+ "Flytta med husdjur", "Flytta med husdjur – <span>lugnt för både dig och djuret</span>",
+ "En flytt är stor för ett djur: nya lukter, främmande människor och öppna dörrar. Med lite planering blir dagen lugnare för alla.",
+ [("Före flytten", _ul([
+    "<b>Låt djuret vänja sig vid kartongerna.</b> Börja packa i god tid, så kommer förändringen gradvis.",
+    "<b>Packa djurets saker sist</b> – mat, vattenskål, bädd och leksaker – och packa upp dem först.",
+    "<b>Bestäm vem som tar hand om djuret</b> på flyttdagen, eller låt det vara hos en vän eller på ett djurpensionat.",
+    "<b>Ska djuret resa långt?</b> Vänj det vid transportburen i förväg och planera in pauser.",
+    "<b>Uppdatera adressen</b> hos veterinären, försäkringsbolaget och i registret där djuret är id-märkt (för hundar Jordbruksverkets hundregister)."])),
+  ("På flyttdagen", _ul([
+    "<b>Stäng in djuret</b> i ett tomt rum med en lapp på dörren, eller låt någon passa det – dörrarna står ofta öppna när vi bär.",
+    "<b>Ha mat, vatten och koppel nära till hands</b>, inte nedpackat i flyttbilen.",
+    "<b>Husdjur åker aldrig i flyttbilens lastutrymme.</b> Planera hur djuret tar sig till nya hemmet – har du frågor, ring oss så hjälper vi dig att lösa det."])),
+  ("I nya hemmet", _ul([
+    "<b>Börja med ett rum</b> där djurets egna saker står, och låt det upptäcka resten i lugn takt.",
+    "<b>Katter:</b> håll katten inne de första veckorna, så att den hinner känna sig hemma.",
+    "<b>Hundar:</b> gå samma promenad några dagar i rad, och kontrollera att staket och grindar är hela.",
+    "<b>Kontrollera att fönster, balkong och trädgård är säkra</b> innan djuret får röra sig fritt."])),
+  ("Akvarium, burar och terrarier", _ul([
+    "<b>Vi flyttar akvariet</b> – men det ska vara helt tömt: vatten, sand, stenar och växter.",
+    "<b>Fiskarna transporterar du själv</b>, i påsar eller en hink med vatten från akvariet.",
+    "<b>Burar och terrarier</b> kan följa med i flytten när de är tomma – djuren flyttar du själv."])),
+ ], _pet_faq)
+
+for f, s in [("checklista-flyttstad.html", checklista), ("flytta-med-husdjur.html", husdjur)]:
+    open(f, "w", encoding="utf-8").write(s); print("wrote", f)
