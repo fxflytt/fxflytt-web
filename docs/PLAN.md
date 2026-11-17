@@ -32,6 +32,7 @@ five city pages. The site has since grown past that scope; this document describ
   (`site-src/offert-en.js`, `/offert?lang=en`). What is sent to the office stays in Swedish, with a note that the
   customer used the English form. The confirmation e-mail and the chat bubble are still Swedish.
 - Own "Sidan finns inte" page for unknown addresses (`site-src/404.html`, shown by `app/not-found.tsx`); hreflang links between `/` and `/en`.
+- Guides `/checklista-flyttstad` (printable) and `/flytta-med-husdjur` (2026-11-18), linked from Rådgivare.
 - The chat assistant can work out distance and an approximate price between two towns (tool `rakna_flytt`,
   `lib/assistant/distance.ts`; town list `lib/assistant/towns.json`, exported from the home page by the build).
 - "Få offert" on every page opens the quote form in a pop-up (`site-src/fx-offert.js` + `/offert`, the home page's own form
