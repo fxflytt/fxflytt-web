@@ -163,7 +163,7 @@ def ico(i): return f'<div class="ico"><svg><use href="#i-{i}"/></svg></div>'
 SERVICES = [
  ("truck","Bohagsflytt","Flytt av lägenhet, villa eller radhus – inom orten eller till en annan stad. Vi bär, lastar, kör och ställer in möblerna på rätt plats.",["Bärhjälp","Lastbil med förare","Möbelskydd","RUT-avdrag"]),
  ("office","Kontorsflytt","Flytt av kontor och lokaler. Vi planerar flytten efter er verksamhet, så att ni kommer igång snabbt igen på nya adressen.",["Planering","Märkning","Kvällar/helger enligt överenskommelse"]),
- ("box","Packning & uppackning","Vi packar ditt hem noggrant så att inget går sönder – och packar upp i nya hemmet om du vill.",["Ömtåligt packas extra","Kartonger märks per rum","RUT-avdrag"]),
+ ("box","Packning & uppackning","Vi packar ditt hem med rätt material så att inget går sönder – och packar upp i nya hemmet om du vill.",["Ömtåligt packas extra","Kartonger märks per rum","RUT-avdrag"]),
  ("tool","Ned- & montering","Sängar, garderober, bord och hyllor tas isär före flytten och sätts ihop igen på plats.",["Verktyg ingår","Skruvar märks","RUT-avdrag"]),
  ("music","Piano & tunga lyft","Piano, kassaskåp och andra tunga eller otympliga föremål flyttas med rätt utrustning och tillräckligt många personer.",["Rätt utrustning","Pris enligt offert"]),
  ("spark","Flyttstäd","Grundlig städning av bostaden du lämnar, enligt checklista, så att du är redo för besiktningen.",["Kök & badrum","Fönster och balkong ingår","RUT-avdrag"]),
@@ -312,7 +312,7 @@ paket = page("paket.html",
     <div class="pl-grid" style="margin-top:28px">
       <div><h3>Per timme</h3><table class="cmp"><tbody>
         <tr><td>2 personer + 1 bil</td><td>595 kr/tim</td></tr><tr><td>3 personer + 1 bil</td><td>849 kr/tim</td></tr><tr><td>4 personer + 2 bilar</td><td>1 199 kr/tim</td></tr></tbody></table>
-        <p class="small">Minst 3 timmar, påbörjad timme räknas som hel. Samma pris för packning och uppackning. Packmaterial ingår inte – kartonger kan köpas eller hyras.</p></div>
+        <p class="small">Minst 3 timmar, påbörjad timme räknas som hel. Samma pris för packning och uppackning – material ingår.</p></div>
       <div><h3>Flyttkartonger</h3><table class="cmp"><tbody>
         <tr><td>Köpa 50 st</td><td>2 000 kr</td></tr><tr><td>Hyra 50 st</td><td>750 kr</td></tr></tbody></table>
         <p class="small">Leverans ingår.</p></div>
