@@ -162,7 +162,7 @@ def ico(i): return f'<div class="ico"><svg><use href="#i-{i}"/></svg></div>'
 # ---------------------------------------------------------------- Vår tjänst
 SERVICES = [
  ("truck","Bohagsflytt","Flytt av lägenhet, villa eller radhus – inom orten eller till en annan stad. Vi bär, lastar, kör och ställer in möblerna på rätt plats.",["Bärhjälp","Lastbil med förare","Möbelskydd","RUT-avdrag"]),
- ("office","Kontorsflytt","Flytt av kontor och lokaler. Vi planerar flytten efter er verksamhet, så att ni kommer igång snabbt igen på nya adressen.",["Planering","Märkning","Kvällar/helger enligt överenskommelse"]),
+ ("office","Kontorsflytt","Kontorsflytt och företagsflytt – kontor, butiker och lokaler. Vi planerar flytten efter er verksamhet, så att ni kommer igång snabbt igen på nya adressen.",["Planering","Märkning","Kvällar/helger enligt överenskommelse"]),
  ("box","Packning & uppackning","Vi packar ditt hem med rätt material så att inget går sönder – och packar upp i nya hemmet om du vill.",["Ömtåligt packas extra","Kartonger märks per rum","RUT-avdrag"]),
  ("tool","Ned- & montering","Sängar, garderober, bord och hyllor tas isär före flytten och sätts ihop igen på plats.",["Verktyg ingår","Skruvar märks","RUT-avdrag"]),
  ("music","Piano & tunga lyft","Piano, kassaskåp och andra tunga eller otympliga föremål flyttas med rätt utrustning och tillräckligt många personer.",["Rätt utrustning","Pris enligt offert"]),
@@ -755,11 +755,18 @@ rutpage = page("rut-avdrag.html",
 """)
 
 # ---------------------------------------------------------------- Kubikräknare
+_KUBIK_FAQ = [
+ ("Hur många m³ behöver jag?", "Det beror på hur mycket du har. Ett normalmöblerat hem tar ca 0,33 m³ per m² boyta – en tvåa på 60 m² ungefär 20 m³, alltså en flyttbil. Har du mer saker än boytan brukar rymma, räkna gärna med kubikräknaren – den ger en mer exakt volym rum för rum."),
+ ("Hur många flyttbilar behövs?", "En flyttbil rymmer ca 20 m³. Kubikräknaren visar hur många bilar din volym behöver."),
+ ("Kostar kubikräknaren något?", "Nej, den är gratis. Listan följer med automatiskt när du begär offert, så kan vi ge ett rätt pris från början."),
+]
+_KUBIK_FAQ_HTML = '<section style="background:#fff"><div class="wrap"><div class="center"><span class="eyebrow">Frågor</span><h2>Vanliga frågor om volym</h2></div><div class="faq">' + "".join(f"<details{' open' if i==0 else ''}><summary>{html.escape(q)}</summary><p>{html.escape(a)}</p></details>" for i,(q,a) in enumerate(_KUBIK_FAQ)) + "</div></div></section>"
+_KUBIK_FAQ_LD = '<script type="application/ld+json">' + json.dumps({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}} for q,a in _KUBIK_FAQ]}, ensure_ascii=False) + '</script>'
 kubik = page("kubikraknare.html",
- "Kubikräknare för flytt – räkna ut volymen i m³ | FX Flytt",
- "Räkna ut hur många kubikmeter ditt bohag tar, rum för rum. Se hur stor flyttbil du behöver och skicka listan direkt med din offertförfrågan.",
+ "Kubikräknare & volymkalkylator för flytt – räkna m³ | FX Flytt",
+ "Gratis kubikräknare (volymkalkylator) för flytt: räkna ut hur många m³ ditt bohag tar, rum för rum, och hur många flyttbilar du behöver.",
  "Kubikräknare", "Kubikräknare – <span>hur mycket ska flyttas?</span>",
- "Lägg till dina möbler rum för rum, eller börja med en typisk bostad och justera. Du ser volymen i m³ direkt – och listan följer med när du begär offert.",
+ "Vår volymkalkylator är gratis: lägg till dina möbler rum för rum, eller börja med en typisk bostad och justera. Du ser volymen i m³ direkt – och listan följer med när du begär offert.",
  """
 <section>
   <div class="wrap" style="max-width:860px">
@@ -770,7 +777,7 @@ kubik = page("kubikraknare.html",
     </div>
     <p style="color:var(--muted);font-size:.88rem;margin-top:14px">Listan sparas i din webbläsare, så du kan fortsätta senare. Den skickas med automatiskt när du fyller i offertformuläret.</p>
 
-    <h2 style="font-size:1.4rem;margin:40px 0 10px">Så mycket brukar en flytt ta</h2>
+    <h2 style="font-size:1.4rem;margin:40px 0 10px">Hur många m³ behöver jag?</h2>
     <div class="cmp-scroll"><table class="cmp ex">
       <thead><tr><th>Bostad</th><th>Boyta</th><th>Ungefärlig volym</th><th>Flyttbilar</th></tr></thead>
       <tbody>
@@ -781,7 +788,7 @@ kubik = page("kubikraknare.html",
         <tr><th scope="row">Villa</th><td>100 m² +</td><td>35 m³ +</td><td>2–3</td></tr>
       </tbody>
     </table></div>
-    <p class="cmp-note">Tumregel: ett normalmöblerat hem tar ca 0,35–0,5 m³ per m² boyta. En flyttkartong är ca 0,06 m³. Fullt förråd, många bokhyllor eller hobbysaker ger mer.</p>
+    <p class="cmp-note">Tumregel: ett normalmöblerat hem tar ca 0,33 m³ per m² boyta – 60 m² blir ungefär 20 m³. En flyttkartong är ca 0,06 m³. Fullt förråd, många bokhyllor eller hobbysaker ger mer.</p>
 
     <h2 style="font-size:1.4rem;margin:36px 0 10px">Tips för en rätt beräkning</h2>
     <ul class="ticks" style="display:grid;gap:8px">
@@ -794,7 +801,7 @@ kubik = page("kubikraknare.html",
 </section>
 <script src="/kubik.js"></script>
 <script>FXKubik.mount(document.getElementById('kubik-full'),{full:true});</script>
-""")
+""" + _KUBIK_FAQ_HTML, extra_head=_KUBIK_FAQ_LD)
 
 # ---------------------------------------------------------------- Flyttstäd (one page for all cities)
 ALLC = [("kungsor","Kungsör"),("orebro","Örebro"),("eskilstuna","Eskilstuna"),("vasteras","Västerås"),("katrineholm","Katrineholm")] + [(c["slug"],c["name"]) for c in EXTRA]
@@ -1005,10 +1012,10 @@ def _ul(items): return '<ul class="ticks" style="display:grid;gap:10px">' + "".j
 def _how(steps): return '<div class="how-grid">' + "".join(f'<div class="how"><div class="num">{i+1}</div><h3>{t}</h3><p>{p}</p></div>' for i,(t,p) in enumerate(steps)) + "</div>"
 
 kontorsflytt = service_page("kontorsflytt.html",
- "Kontorsflytt – flytt av kontor och lokaler | FX Flytt",
- "Kontorsflytt i Mellansverige: planering, packning, märkning, ned- och montering av möbler och flytt på tider som passar er verksamhet. Kostnadsfri offert.",
+ "Kontorsflytt & företagsflytt – kontor och lokaler | FX Flytt",
+ "Kontorsflytt och företagsflytt i Mellansverige: planering, packning, märkning, ned- och montering och flytt på tider som passar er. Kostnadsfri offert.",
  "Kontorsflytt", "Kontorsflytt – <span>så att ni snabbt är igång igen</span>",
- "Vi flyttar kontor, butiker och lokaler – planerat efter er verksamhet, så att ni förlorar så lite arbetstid som möjligt.",
+ "Kontorsflytt och företagsflytt för kontor, butiker och lokaler – planerat efter er verksamhet, så att ni förlorar så lite arbetstid som möjligt.",
  [("Det här hjälper vi till med", _ul([
     "<b>Planering.</b> Vi går igenom lokalerna, volymen och tidplanen med er och ger ett fast pris i offerten.",
     "<b>Packning och märkning.</b> Kartonger märks per rum eller avdelning, så att allt hamnar rätt på nya adressen.",
@@ -1175,10 +1182,10 @@ for f, s in [("vad-kostar-flytt.html", prisguide), ("kontorsflytt.html", kontors
 # ---------------------------------------------------------------- Added 2026-11-17: Bohagsflytt, Packning, Bortforsling
 _b_rows = "".join(f"<tr><th scope='row'>{h['name']} (ca {h['m2']} m²)</th><td>{_kr(h['bas'])}</td><td><b>{_kr(h['premium'])}</b></td></tr>" for h in H)
 bohagsflytt = service_page("bohagsflytt.html",
- "Bohagsflytt till fast pris – lägenhet, villa, radhus | FX Flytt",
+ "Bohagsflytt & privatflytt till fast pris | FX Flytt",
  f"Bohagsflytt till fast pris efter boyta: lastbil med förare, bärhjälp, lastning, lossning och möbelskydd. Tvåa från {_kr(H[1]['bas'])} efter RUT. Kostnadsfri offert.",
  "Bohagsflytt", "Bohagsflytt – <span>fast pris efter boyta</span>",
- "Flyttar du från lägenhet, villa eller radhus? Vi bär, lastar, kör och ställer in möblerna på rätt plats – till ett fast pris som du vet i förväg.",
+ "Bohagsflytt – eller privatflytt – från lägenhet, villa eller radhus. Vi bär, lastar, kör och ställer in möblerna på rätt plats, till ett fast pris som du vet i förväg.",
  [("Det här ingår", _ul(["<b>Lastbil med förare</b> och rätt antal flyttare för din bostad.", "<b>Bärhjälp, lastning och lossning</b> – vi ställer in möblerna i rätt rum.",
     "<b>Filtar och möbelskydd</b> så att möbler, golv och trapphus klarar sig.", "<b>En personlig kontaktperson</b> från offert till flyttdag."])),
   ("Pris", f'<p style="color:var(--muted);margin-bottom:12px">Fast pris efter boyta för en flytt under {G["freeKm"]} km, inkl. moms efter RUT-avdrag. Premium = flytt + flyttstäd med 10 % rabatt.</p>'

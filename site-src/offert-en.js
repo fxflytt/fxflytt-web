@@ -72,7 +72,7 @@
     // volume calculator
     "Rensa": "Clear", "Snabbstart – fyll i en typisk bostad och justera:": "Quick start – fill in a typical home and adjust:",
     "föremål ·": "items ·", "kartonger ·": "boxes ·", "Lägg till egen sak (mått)": "Add your own item (size)", "Lägg till": "Add",
-    "Tumregel: ett normalmöblerat hem tar ca 0,35–0,5 m³ per m² boyta.": "Rule of thumb: a normally furnished home takes about 0.35–0.5 m³ per m² of floor area.",
+    "Tumregel: ett normalmöblerat hem tar ca 0,33 m³ per m² boyta.": "Rule of thumb: a normally furnished home takes about 0.33 m³ per m² of floor area.",
     "Vardagsrum": "Living room", "Soffa 3-sits": "3-seat sofa", "Soffa 2-sits": "2-seat sofa", "Hörnsoffa / divansoffa": "Corner sofa / chaise sofa",
     "Fåtölj": "Armchair", "Fotpall / puff": "Footstool / pouffe", "Soffbord": "Coffee table", "TV-bänk": "TV bench", "Bokhylla": "Bookcase",
     "Vägghylla": "Wall shelf", "Vitrinskåp / skänk": "Display cabinet / sideboard", "Golvlampa": "Floor lamp", "Matta": "Rug",
@@ -124,7 +124,7 @@
     [/^Välj Premium \(flytt \+ flyttstäd\) så sparar du (.+) kr\.$/, "Choose Premium (move + cleaning) and save $1 SEK."],
     [/^Minska (.+)$/, function (m, x) { return "Decrease " + (T[x] || x); }],
     [/^Öka (.+)$/, function (m, x) { return "Increase " + (T[x] || x); }],
-    [/^Tumregel för (\d+) m²: ca ([\d,]+)–([\d,]+) m³ för ett normalmöblerat hem\.$/, "Rule of thumb for $1 m²: approx. $2–$3 m³ for a normally furnished home."],
+    [/^Tumregel för (\d+) m²: ca (\d+) m³ för ett normalmöblerat hem\.$/, "Rule of thumb for $1 m²: approx. $2 m³ for a normally furnished home."],
     [/^Köpa – (.+) kr$/, "Buy – $1 SEK"], [/^Hyra – (.+) kr$/, "Rent – $1 SEK"],
     [/^1 flyttbil$/, "1 moving truck"], [/^(\d+) flyttbilar$/, "$1 moving trucks"],
     [/^Kopierat!$/, "Copied!"], [/^Markera texten ovan och kopiera$/, "Select the text above and copy it"],

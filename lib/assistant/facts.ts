@@ -23,7 +23,7 @@ export function priceFacts(P: PriceList) {
     cleaning: `- Flyttstäd, fast pris efter boyta: ${cl.map((r, i) => (i === 0 ? `upp till ${r[0]} m² ${n(r[1])} kr` : `${cl[i - 1][0] + 1}–${r[0]} ${n(r[1])}`)).join(", ")}. Fönster och balkong ingår. Över ${lastCl} m²: offert.`,
     boxes: `- Flyttkartonger ${bx.qty} st: köpa ${n(bx.buy)} kr, hyra ${n(bx.rent)} kr, leverans ingår.`,
     premium: `- Premium: flytt + flyttstäd, ${pr} % rabatt på flytt + städ + körsträcka (inte kartonger/packningstimmar).` + (m60 && c60 ? ` Exempel 60 m², 66 km: (${n(m60)} + ${n(c60)} + ${n(k66)}) × ${String(1 - pr / 100).replace(".", ",")} = ${n((m60 + c60 + k66) * (1 - pr / 100))} kr.` : ""),
-    volume: `- Volym: en flyttbil rymmer ${P.truckM3} m³. Ett normalt hem på 60 m² är ca 18 m³. Har kunden mer saker än vad boytan ger antal bilar för (t.ex. 60 m² men 25 m³ = 2 bilar), gäller det billigaste priset i prislistan för det antalet bilar (${cars.map(([c, p]) => `${c} bilar = ${n(p as number)} kr`).join(", ")}). Mer än 80 m³ = offert. Kubikräknare: fxflytt.se/kubikraknare.`,
+    volume: `- Volym: en flyttbil rymmer ${P.truckM3} m³. Tumregel: ca 0,33 m³ per m² boyta – ett normalt hem på 60 m² är ca 20 m³ (en flyttbil). Har kunden mer saker än vad boytan ger antal bilar för (t.ex. 60 m² men 25 m³ = 2 bilar), gäller det billigaste priset i prislistan för det antalet bilar (${cars.map(([c, p]) => `${c} bilar = ${n(p as number)} kr`).join(", ")}). Mer än 80 m³ = offert. Kubikräknare: fxflytt.se/kubikraknare.`,
   };
 }
 
