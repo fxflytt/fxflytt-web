@@ -171,3 +171,17 @@ export function calcPriceEmail(name: string, label: string, price: { total: numb
   const text = `Hej ${first}!\n\nDitt pris från FX Flytt (${label}):\n${price.lines.map((l) => `- ${l.label}: ${kr(l.amount)}`).join("\n")}\nTotalt efter RUT: ${kr(price.total)}\n\nBoka: ${bookUrl}\nFrågor? Ring 076-300 07 23.\nFX Flytt AB`;
   return { subject, html, text };
 }
+
+// A campaign e-mail to a customer who has not booked (written by the office). {namn} = the first name.
+// Always ends with how to say no to more e-mails (marketing law).
+export function campaignEmail(b: Booking, subject: string, body: string, offerUrl?: string) {
+  const first = b.data.name.split(" ")[0] || "";
+  const fill = (s: string) => s.replace(/\{namn\}/gi, first);
+  const paras = fill(body).split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
+  const html = shell(fill(subject), { text: "FX FLYTT", bg: "#fff1e6", fg: "#c2560a" },
+    paras.map((x) => p(esc(x).replace(/\n/g, "<br>"))).join("") +
+    (offerUrl ? button(offerUrl, "Se din offert") : button("https://www.fxflytt.se/#offert", "Få en offert")) +
+    p(`<span style="color:${MUTED};font-size:12px">Vill du inte få fler erbjudanden från oss? Svara "Nej tack" på det här mejlet så tar vi bort dig.</span>`));
+  const text = `${paras.join("\n\n")}\n\n${offerUrl ? "Se din offert: " + offerUrl : "Få en offert: https://www.fxflytt.se/#offert"}\n\nVill du inte få fler erbjudanden? Svara "Nej tack" på mejlet.\nFX Flytt AB · 076-300 07 23`;
+  return { subject: fill(subject), html, text };
+}

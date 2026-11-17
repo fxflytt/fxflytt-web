@@ -3,11 +3,13 @@
 //   {followUp: {at: "YYYY-MM-DDTHH:MM", note}} | {followUp: null}   next time to call
 //   {stage: "contacted"}                     moved on the sales board
 //   {stage: "lost", reason, text}            the customer said no (on the phone)
+//   {merge: otherId}                       merge a duplicate request into this one (the other is removed)
 //   {refCode} a friend's code (Tipsa en vän) · {issueCode: true} make this customer's code · {rewardGiven: friendId}
 import { requireUser } from "@/lib/booking/auth.ts";
 import { applyCode, issueCode, markGiven } from "@/lib/booking/referral.ts";
 import { getSettings } from "@/lib/booking/settings.ts";
-import { getBooking, saveBooking, CALL_OUTCOMES, DECLINE_REASONS, type CallOutcome, type DeclineReason } from "@/lib/booking/store.ts";
+import { mergeInto, sameCustomer } from "@/lib/booking/merge.ts";
+import { getBooking, saveBooking, deleteBooking, CALL_OUTCOMES, DECLINE_REASONS, type CallOutcome, type DeclineReason } from "@/lib/booking/store.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,6 +58,13 @@ export async function POST(req: Request) {
     const had = !!b.refCode; const code = await issueCode(b); if (!had) await saveBooking(b, `Kod för Tipsa en vän: ${code}`, u.name);
   } else if (typeof d.rewardGiven === "string") {
     try { await markGiven(b, d.rewardGiven, u.name); } catch (e) { return err((e as Error).message); }
+  } else if (typeof d.merge === "string") {
+    const o = await getBooking(d.merge);
+    if (!o) return err("Hittar inte den andra bokningen.");
+    if (!sameCustomer(b, o)) return err("Bokningarna har inte samma telefon eller e-post.");
+    try { mergeInto(b, o); } catch (e) { return err((e as Error).message); }
+    await saveBooking(b, `Sammanslagen med ${o.id} (dubblett)`, u.name);
+    await deleteBooking(o.id);
   } else return err("Okänd åtgärd.");
   return Response.json(b);
 }

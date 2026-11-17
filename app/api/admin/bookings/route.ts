@@ -4,6 +4,7 @@ import { kvConfigured } from "@/lib/booking/kv.ts";
 import { listBookings, bookingsChangedSince, deletedSince, deleteBooking, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
+import { slaTick } from "@/lib/booking/sla.ts";
 import { listPhotos } from "@/lib/booking/work.ts";
 
 export const runtime = "nodejs";
@@ -23,6 +24,7 @@ export async function GET(req: Request) {
   }
   // ?since=<ms>: only what changed since then (the admin page asks every 30 s); otherwise everything.
   const now = Date.now(), since = Number(new URL(req.url).searchParams.get("since"));
+  if (since > 0) await slaTick();
   if (since > 0) return Response.json({ bookings: await bookingsChangedSince(since - 5000), deleted: await deletedSince(since - 5000), now, partial: true });
   return Response.json({ bookings: await listBookings(), now });
 }

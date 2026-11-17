@@ -43,13 +43,13 @@ export async function GET(req: Request) {
   const all = await listBookings();
   const calls = all.filter((b) => b.followUp && b.followUp.at.slice(0, 10) <= today && !["signed", "done", "cancelled", "declined"].includes(b.status)).length;
   const unanswered = all.filter((b) => b.status === "new" && b.source === "web" && !b.firstResponseAt).length;
-  if (calls || unanswered) await notifyAll({ title: "God morgon! Försäljning i dag", body: [calls ? `${calls} samtal att ringa` : "", unanswered ? `${unanswered} obesvarade förfrågningar` : ""].filter(Boolean).join(" · "), url: "/admin", tag: "morning" });
+  if (calls || unanswered) await notifyAll({ cat: "morning", title: "God morgon! Försäljning i dag", body: [calls ? `${calls} samtal att ringa` : "", unanswered ? `${unanswered} obesvarade förfrågningar` : ""].filter(Boolean).join(" · "), url: "/admin", tag: "morning" });
   // Vehicles: a note 30, 14, 7 and 1 days before, on the day, and every Monday while it is late.
   try {
     const monday = new Date(today + "T12:00:00Z").getUTCDay() === 1;
     const due = dueSoon(await getFleet(), await listResources(), today)
       .filter((d) => d.days !== undefined ? [30, 14, 7, 1, 0].includes(d.days) || (d.late && monday) : d.late ? monday : d.kmLeft !== undefined && d.kmLeft <= 500 && monday);
-    if (due.length) await notifyAll({
+    if (due.length) await notifyAll({ cat: "morning",
       title: due.some((d) => d.late) ? "🚚 Fordon: något är försenat" : "🚚 Fordon: snart dags",
       body: due.slice(0, 4).map((d) => `${d.name}: ${d.label.toLowerCase()} ${d.late ? "försenad" : d.days === 0 ? "i dag" : d.days !== undefined ? `om ${d.days} dagar` : `om ${d.kmLeft} km`}`).join(" · "),
       url: "/admin#fordon", tag: "fleet",

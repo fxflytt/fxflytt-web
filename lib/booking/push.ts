@@ -40,7 +40,26 @@ export async function removeSub(match: (s: Sub) => boolean) {
   return list.length - keep.length;
 }
 
-export type Note = { title: string; body: string; url: string; tag?: string };
+// cat: which kind of notice it is – each office user can turn kinds off (Inställningar → Notiser).
+export type NoteCat = "new" | "view" | "signed" | "declined" | "sla" | "crew" | "reward" | "morning";
+export const NOTE_CATS: Record<NoteCat, string> = {
+  new: "Ny förfrågan och nya leads", sla: "Förfrågan som ingen har svarat på", view: "Kunden öppnade offerten", signed: "Kunden signerade",
+  declined: "Kunden tackade nej", crew: "Personalen: sjuk, ledighet, tog ett jobb, skada", reward: "Tipsa en vän: belöning att ge", morning: "Morgonnotis: samtal, fordon",
+};
+export type Note = { title: string; body: string; url: string; tag?: string; cat?: NoteCat };
+export type NotePrefs = { off: NoteCat[]; sound: boolean };
+export async function getPrefs(uid: string): Promise<NotePrefs> {
+  const s = await kv<string | null>(["GET", "fx:nprefs:" + uid]);
+  const p = s ? (JSON.parse(s) as Partial<NotePrefs>) : {};
+  return { off: (p.off || []).filter((c) => c in NOTE_CATS), sound: p.sound === true };
+}
+export async function setPrefs(uid: string, d: { off?: unknown; sound?: unknown }): Promise<NotePrefs> {
+  const cur = await getPrefs(uid);
+  if (Array.isArray(d.off)) cur.off = [...new Set(d.off.filter((c): c is NoteCat => typeof c === "string" && c in NOTE_CATS))];
+  if ("sound" in d) cur.sound = d.sound === true;
+  await kv(["SET", "fx:nprefs:" + uid, JSON.stringify(cur)]);
+  return cur;
+}
 
 // Sends to every device (or only `only`). Never throws – a failed notification must not break a booking.
 // Everything sent to the office is also kept in a feed (fx:notes, newest first, 150 kept), so the bell in
@@ -50,7 +69,7 @@ export type FeedItem = Note & { id: string; at: number };
 export type ReadState = { all: number; ids: string[] };
 const FEED = "fx:notes", FEED_MAX = 150;
 export async function recordNote(n: Note): Promise<void> {
-  const it: FeedItem = { id: randomBytes(6).toString("hex"), at: Date.now(), title: n.title, body: n.body, url: n.url };
+  const it: FeedItem = { id: randomBytes(6).toString("hex"), at: Date.now(), title: n.title, body: n.body, url: n.url, ...(n.cat ? { cat: n.cat } : {}) };
   await kv(["LPUSH", FEED, JSON.stringify(it)]); await kv(["LTRIM", FEED, 0, FEED_MAX - 1]);
 }
 export async function listNotes(): Promise<FeedItem[]> {
@@ -74,7 +93,13 @@ export async function notifyAll(n: Note, only?: (s: Sub) => boolean): Promise<nu
   if (!only) await recordNote(n).catch(() => {});
   try {
     // Default: only admin devices. Crew phones (userId "crew:…") get only what is meant for them.
-    const subs = (await listSubs()).filter(only || ((s) => !s.userId.startsWith("crew:")));
+    let subs = (await listSubs()).filter(only || ((s) => !s.userId.startsWith("crew:")));
+    // Office users who turned this kind of notice off don't get it on their devices.
+    if (n.cat && !only) {
+      const users = [...new Set(subs.map((s) => s.userId))], offFor = new Set<string>();
+      await Promise.all(users.map(async (u) => { if ((await getPrefs(u)).off.includes(n.cat!)) offFor.add(u); }));
+      subs = subs.filter((s) => !offFor.has(s.userId));
+    }
     if (!subs.length) return 0;
     const v = await vapid();
     webpush.setVapidDetails("mailto:" + (process.env.OFFER_TO || "info@fxflytt.se"), v.publicKey, v.privateKey);

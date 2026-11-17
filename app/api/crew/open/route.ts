@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const d = (await req.json().catch(() => ({}))) as { id?: unknown; answer?: unknown };
   try {
     const r = await answer(String(d.id || ""), me, d.answer === "yes", await listResources(), () => listBookings(), await listAbsences());
-    if (r.took) await notifyAll({ title: `✋ ${me.name} tog jobbet`, body: `${r.b.data.name} · ${r.b.date}${r.b.time ? " kl. " + r.b.time : ""}` + (r.full ? " · alla platser tillsatta" : ""), url: "/admin#" + r.b.id, tag: "oc-" + r.b.id });
+    if (r.took) await notifyAll({ cat: "crew", title: `✋ ${me.name} tog jobbet`, body: `${r.b.data.name} · ${r.b.date}${r.b.time ? " kl. " + r.b.time : ""}` + (r.full ? " · alla platser tillsatta" : ""), url: "/admin#" + r.b.id, tag: "oc-" + r.b.id });
     return Response.json({ ok: true, took: r.took });
   } catch (e) { return Response.json({ error: (e as Error).message }, { status: 409 }); }
 }

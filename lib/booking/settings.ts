@@ -18,8 +18,13 @@ export type Settings = {
   // Tidrapporter: an unpaid break is deducted when a working day is longer than breakAfterH hours.
   breakAfterH: number;
   breakMin: number;
+  slaMin: number;           // warn when a web request is unanswered this many minutes (0 = off)
+  // "Trygg affär" in the offer the customer opens: shown when filled in.
+  orgNr: string; fskatt: boolean; insured: boolean; insurer: string;
 };
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30 };
+// What the customer sees about the company in the offer.
+export const trustView = (s: Settings) => (s.orgNr || s.fskatt || s.insured ? { orgNr: s.orgNr, fskatt: s.fskatt, insured: s.insured, insurer: s.insurer } : null);
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "" };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
@@ -49,6 +54,11 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
   if ("clockRadiusM" in d) { const n = Math.round(Number(d.clockRadiusM)); if (!(n >= 100 && n <= 5000)) throw new Error("Avstånd: 100–5 000 m."); cur.clockRadiusM = n; }
   if ("clockOn" in d) cur.clockOn = d.clockOn === true;
   if ("breakAfterH" in d) { const n = Number(d.breakAfterH); if (!(n >= 0 && n <= 12)) throw new Error("Rast efter: 0–12 timmar."); cur.breakAfterH = Math.round(n * 2) / 2; }
+  if ("orgNr" in d) { const o = String(d.orgNr || "").replace(/[^\d-]/g, "").slice(0, 13); if (o && !/^\d{6}-?\d{4}$/.test(o)) throw new Error("Organisationsnummer: XXXXXX-XXXX."); cur.orgNr = o && !o.includes("-") ? o.slice(0, 6) + "-" + o.slice(6) : o; }
+  if ("fskatt" in d) cur.fskatt = d.fskatt === true;
+  if ("insured" in d) cur.insured = d.insured === true;
+  if ("insurer" in d) cur.insurer = String(d.insurer || "").trim().slice(0, 80);
+  if ("slaMin" in d) { const n = Math.round(Number(d.slaMin)); if (!(n >= 0 && n <= 240)) throw new Error("Svarstid: 0–240 minuter."); cur.slaMin = n; }
   if ("breakMin" in d) { const n = Math.round(Number(d.breakMin)); if (!(n >= 0 && n <= 120)) throw new Error("Rast: 0–120 minuter."); cur.breakMin = n; }
   if ("refOn" in d) cur.refOn = d.refOn === true;
   if ("refFriendKr" in d) { const n = Math.round(Number(d.refFriendKr)); if (!(n >= 0 && n <= 10000)) throw new Error("Rabatt: 0–10 000 kr."); cur.refFriendKr = n; }
