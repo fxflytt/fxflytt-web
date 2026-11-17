@@ -139,8 +139,8 @@
       var area = +(document.getElementById("kvm") || {}).value || 0;
       var norm = root.querySelector('[data-k="norm"]');
       norm.textContent = area > 0
-        ? "Tumregel för " + area + " m²: ca " + fmt(area * 0.35) + "–" + fmt(area * 0.5) + " m³ för ett normalmöblerat hem."
-        : "Tumregel: ett normalmöblerat hem tar ca 0,35–0,5 m³ per m² boyta.";
+        ? "Tumregel för " + area + " m²: ca " + Math.round(area * 0.33) + " m³ för ett normalmöblerat hem."
+        : "Tumregel: ett normalmöblerat hem tar ca 0,33 m³ per m² boyta.";
     }
     listeners.push(render);
 

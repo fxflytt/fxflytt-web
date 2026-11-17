@@ -756,7 +756,7 @@ rutpage = page("rut-avdrag.html",
 
 # ---------------------------------------------------------------- Kubikräknare
 _KUBIK_FAQ = [
- ("Hur många m³ behöver jag?", "Det beror på hur mycket du har. Ett normalmöblerat hem tar ofta 0,35–0,5 m³ per m² boyta, men räkna gärna med kubikräknaren – den ger en mer exakt volym rum för rum."),
+ ("Hur många m³ behöver jag?", "Det beror på hur mycket du har. Ett normalmöblerat hem tar ca 0,33 m³ per m² boyta – en tvåa på 60 m² ungefär 20 m³, alltså en flyttbil. Har du mer saker än boytan brukar rymma, räkna gärna med kubikräknaren – den ger en mer exakt volym rum för rum."),
  ("Hur många flyttbilar behövs?", "En flyttbil rymmer ca 20 m³. Kubikräknaren visar hur många bilar din volym behöver."),
  ("Kostar kubikräknaren något?", "Nej, den är gratis. Listan följer med automatiskt när du begär offert, så kan vi ge ett rätt pris från början."),
 ]
@@ -788,7 +788,7 @@ kubik = page("kubikraknare.html",
         <tr><th scope="row">Villa</th><td>100 m² +</td><td>35 m³ +</td><td>2–3</td></tr>
       </tbody>
     </table></div>
-    <p class="cmp-note">Tumregel: ett normalmöblerat hem tar ca 0,35–0,5 m³ per m² boyta. En flyttkartong är ca 0,06 m³. Fullt förråd, många bokhyllor eller hobbysaker ger mer.</p>
+    <p class="cmp-note">Tumregel: ett normalmöblerat hem tar ca 0,33 m³ per m² boyta – 60 m² blir ungefär 20 m³. En flyttkartong är ca 0,06 m³. Fullt förråd, många bokhyllor eller hobbysaker ger mer.</p>
 
     <h2 style="font-size:1.4rem;margin:36px 0 10px">Tips för en rätt beräkning</h2>
     <ul class="ticks" style="display:grid;gap:8px">
