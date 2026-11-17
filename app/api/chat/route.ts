@@ -3,6 +3,7 @@ import { askClaude, cleanMessages, ChatInputError } from "@/lib/assistant/chat.t
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 import { systemPrompt } from "@/lib/assistant/facts.ts";
 import { getPrices } from "@/lib/pricing/current.ts";
+import { quoteRoute, RAKNA_FLYTT_TOOL } from "@/lib/assistant/distance.ts";
 
 export const runtime = "nodejs";
 
@@ -23,7 +24,10 @@ export async function POST(req: Request) {
   try { body = await req.json(); } catch { return Response.json({ error: "Ogiltig förfrågan" }, { status: 400 }); }
   try {
     const messages = cleanMessages((body as { messages?: unknown })?.messages);
-    const reply = await askClaude(messages, apiKey, fetch, systemPrompt(await getPrices()));
+    const prices = await getPrices();
+    // The assistant can count distance and price between two towns, exactly like the price calculator.
+    const tools = [{ def: RAKNA_FLYTT_TOOL, run: (input: Record<string, unknown>) => quoteRoute(input, prices) }];
+    const reply = await askClaude(messages, apiKey, fetch, systemPrompt(prices), tools);
     return Response.json({ reply });
   } catch (e) {
     if (e instanceof ChatInputError) return Response.json({ error: "Ogiltig förfrågan" }, { status: 400 });

@@ -6,6 +6,9 @@
   var me = document.currentScript || document.querySelector('script[src*="fx-offert.js"]');
   var FROM = (me && me.getAttribute("data-from")) || "";
   var SVC = (me && me.getAttribute("data-svc")) || "";
+  var EN = (me && me.getAttribute("data-lang")) === "en";
+  var L = EN ? { t: "Get a free quote", x: "Close", f: "Quote form", ok: "Thank you for your request!" }
+             : { t: "Begär gratis offert", x: "Stäng", f: "Offertformulär", ok: "Tack för din förfrågan!" };
   var box, frame, lastFocus, open = false;
 
   function isOffertLink(a) {
@@ -29,14 +32,15 @@
     box.id = "fx-offert";
     box.setAttribute("role", "dialog");
     box.setAttribute("aria-modal", "true");
-    box.setAttribute("aria-label", "Begär gratis offert");
-    box.innerHTML = '<div class="fo-box"><div class="fo-top"><span>Begär gratis offert</span>' +
-      '<button type="button" class="fo-x" aria-label="Stäng">×</button></div></div>';
+    box.setAttribute("aria-label", L.t);
+    box.innerHTML = '<div class="fo-box"><div class="fo-top"><span>' + L.t + '</span>' +
+      '<button type="button" class="fo-x" aria-label="' + L.x + '">×</button></div></div>';
     frame = document.createElement("iframe");
-    frame.title = "Offertformulär";
+    frame.title = L.f;
     var q = [];
     if (FROM) q.push("from=" + encodeURIComponent(FROM));
     if (SVC) q.push("svc=" + encodeURIComponent(SVC));
+    if (EN) q.push("lang=en");
     frame.src = "/offert" + (q.length ? "?" + q.join("&") : "");
     box.firstChild.appendChild(frame);
     document.body.appendChild(box);
@@ -44,7 +48,7 @@
     box.addEventListener("click", function (e) { if (e.target === box) close(true); });
     document.addEventListener("keydown", function (e) { if (open && e.key === "Escape") close(true); });
     window.addEventListener("message", function (e) {
-      if (e.origin === location.origin && e.data && e.data.fxOffert === "done") box.querySelector(".fo-top span").textContent = "Tack för din förfrågan!";
+      if (e.origin === location.origin && e.data && e.data.fxOffert === "done") box.querySelector(".fo-top span").textContent = L.ok;
       // Lead events from the form in the pop-up are sent from this page (only if the visitor accepted cookies).
       if (e.origin === location.origin && e.data && Array.isArray(e.data.fxGtag) && e.data.fxGtag[0] === "event" && window.gtag) {
         try { window.gtag.apply(window, e.data.fxGtag); } catch (x) {}
