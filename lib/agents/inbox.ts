@@ -20,7 +20,7 @@ export const M_CATS: Record<MCat, string> = {
   jobb: "Söker jobb", leverantor: "Leverantör / reklam", spam: "Skräppost", ovrigt: "Övrigt",
 };
 export type MStatus = "new" | "answered" | "done";
-export type Extracted = { name: string; phone: string; from: string; to: string; date: string; size: string };
+export type Extracted = { name: string; phone: string; from: string; to: string; date: string; size: string; areaM2?: number };
 export type InMail = {
   id: string; uid: number; messageId: string; inReplyTo: string; references: string[];
   from: string; fromName: string; subject: string; date: number; text: string; attachments: string[];
@@ -83,12 +83,13 @@ const TRIAGE_SCHEMA: JsonSchema = {
     autoSafe: { type: "boolean", description: "true BARA om svaret kan skickas utan att en människa läser det: kunden ställer en enkel fråga som besvaras helt med fakta i <foretaget>, eller vill ha offert och svaret bara tackar och ber om saknade uppgifter. false vid klagomål, pengar, faktura, ändring eller avbokning av en bokning, datum som måste bekräftas, arg kund, eller om du är minsta osäker." },
     draft: { type: "string", description: "Utkast till svar till avsändaren, eller tom sträng om inget svar behövs. Högst 90 ord. Vid offertförfrågan: tacka kort, bekräfta flytten i en mening och be om det som saknas för en offert (högst 3 saker, t.ex. adresserna, våning/hiss, telefonnummer). Hitta aldrig på pris." },
     extracted: {
-      type: "object", additionalProperties: false, required: ["name", "phone", "from", "to", "date", "size"],
+      type: "object", additionalProperties: false, required: ["name", "phone", "from", "to", "date", "size", "areaM2"],
       description: "Uppgifter för en flyttförfrågan, tom sträng när de inte står i mejlet.",
       properties: {
         name: { type: "string" }, phone: { type: "string" }, from: { type: "string", description: "Adress eller ort man flyttar från" },
         to: { type: "string", description: "Adress eller ort man flyttar till" }, date: { type: "string", description: "Flyttdatum som YYYY-MM-DD om det går att avgöra, annars tomt" },
         size: { type: "string", description: "T.ex. '2 rok, 60 m²'" },
+        areaM2: { type: "number", description: "Boytan i m² som ett tal (t.ex. 60), eller 0 om den inte står i mejlet. Gissa inte." },
       },
     },
   },
@@ -115,6 +116,7 @@ export function cleanTriage(t: Partial<Triage>): Triage {
     extracted: {
       name: str(e.name, 120), phone: str(e.phone, 40), from: str(e.from, 200), to: str(e.to, 200),
       date: /^\d{4}-\d{2}-\d{2}$/.test(e.date || "") ? e.date! : "", size: str(e.size, 80),
+      ...(Number(e.areaM2) >= 10 && Number(e.areaM2) <= 400 ? { areaM2: Math.round(Number(e.areaM2)) } : {}),
     },
   };
 }
