@@ -58,14 +58,29 @@
     "Villa": { sofacorner: 1, sofa2: 1, armchair: 2, coffeetable: 1, tvbench: 1, tv: 2, bookshelf: 3, bed2: 1, bed1: 2, wardrobe2: 4, dresser: 3, nightstand: 4, diningtablebig: 1, chair: 8, sideboard: 1, desk: 2, officechair: 2, washer: 1, dryer: 1, fridgebig: 1, bike: 4, mower: 1, workbench: 1, storageshelf: 2, grill: 1, outdoortable: 1, outdoorchair: 6, outdoorsofa: 1, box: 90 }
   };
   var KEY = "fx-kubik-v1";
+  var KEEP_MS = 3 * 60 * 60 * 1000;   // see load() below
   var state = load();
   var listeners = [];
 
+  // The list is kept in the browser so the full-screen calculator (new tab) and the quote form share it,
+  // but only for 3 hours after the last change: a visitor who comes back later starts with an empty list.
+  // Lists saved before this rule (no time stamp) count as old.
   function load() {
-    try { var s = JSON.parse(localStorage.getItem(KEY) || "{}"); return { q: s.q || {}, custom: s.custom || [] }; }
-    catch (e) { return { q: {}, custom: [] }; }
+    try {
+      var s = JSON.parse(localStorage.getItem(KEY) || "{}");
+      if (!s.t || Date.now() - s.t > KEEP_MS) { localStorage.removeItem(KEY); return { q: {}, custom: [] }; }
+      return { q: s.q || {}, custom: s.custom || [] };
+    } catch (e) { return { q: {}, custom: [] }; }
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage blocked – ignore */ } }
+  function save() {
+    try {
+      var old = JSON.parse(localStorage.getItem(KEY) || "{}");
+      var same = JSON.stringify(old.q || {}) === JSON.stringify(state.q) && JSON.stringify(old.custom || []) === JSON.stringify(state.custom);
+      if (same && old.t) return;                       // only a real change restarts the 3 hours
+      if (!Object.keys(state.q).length && !state.custom.length) { localStorage.removeItem(KEY); return; }
+      localStorage.setItem(KEY, JSON.stringify({ q: state.q, custom: state.custom, t: Date.now() }));
+    } catch (e) { /* storage blocked – ignore */ }
+  }
   function fmt(n) { return String(Math.round(n * 10) / 10).replace(".", ","); }
 
   function totals() {
