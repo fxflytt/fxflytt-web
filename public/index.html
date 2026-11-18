@@ -160,7 +160,7 @@ textarea{min-height:80px;resize:vertical}
 .c-mail{margin-top:14px;display:grid;gap:8px;position:relative}
 .c-mail-t{font-size:.9rem;color:#c9d7e2}
 .c-mail input:not([type=checkbox]){width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:0}
-.c-mail-ok{display:flex;gap:8px;align-items:flex-start;font-size:.8rem;color:#c9d7e2;line-height:1.35}.c-mail-ok input{margin-top:3px}
+.c-mail-ok{display:flex;gap:8px;align-items:flex-start;font-size:.8rem;color:#c9d7e2;line-height:1.35}.c-mail-ok input{flex:none;width:auto;margin:3px 0 0}.c-mail-ok span{flex:1;min-width:0}
 .c-mail .btn{margin-top:4px}.c-mail-msg{font-size:.9rem;font-weight:700}
 
 
@@ -757,7 +757,7 @@ body.noscroll .mbar{display:none}
           <input id="cm-email" type="email" autocomplete="email" placeholder="Din e-post" required>
           <input id="cm-phone" type="tel" autocomplete="tel" placeholder="Telefon (frivilligt – så kan vi svara på frågor)">
           <input id="cm-web" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
-          <label class="c-mail-ok"><input type="checkbox" id="cm-ok"> Jag godkänner att FX Flytt sparar uppgifterna och kontaktar mig om priset (<a href="/integritetspolicy" style="color:#ffb37a">integritetspolicy</a>).</label>
+          <label class="c-mail-ok"><input type="checkbox" id="cm-ok"><span>Jag godkänner att FX Flytt sparar uppgifterna och kontaktar mig om priset (<a href="/integritetspolicy" style="color:#ffb37a">integritetspolicy</a>).</span></label>
           <button class="btn btn-accent" id="cm-send" type="submit">Skicka priset till mig</button>
           <div class="c-mail-msg" id="cm-msg" role="status"></div>
         </form>
