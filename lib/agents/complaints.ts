@@ -57,7 +57,7 @@ const SCHEMA: JsonSchema = {
     severity: { type: "string", enum: Object.keys(K_SEV), description: "high = skada, stöld, hot om att gå vidare (ARN, advokat, polis, media, recension), mycket arg kund eller krav på pengar. low = liten synpunkt." },
     summary: { type: "string", description: "1–2 meningar på svenska till kontoret: vad kunden klagar på och vad kunden vill." },
     nextStep: { type: "string", description: "Konkret nästa steg för kontoret på svenska, t.ex. 'Ring kunden i dag, be om bilder på skadan, lägg in skaderapport'." },
-    draft: { type: "string", description: "Svar till kunden. Tacka, visa förståelse, säg vad som händer nu och när kunden hör av oss. Ingen skuld, inga löften om ersättning." },
+    draft: { type: "string", description: "Svar till kunden, högst 110 ord. Tacka, visa förståelse, säg vad som händer nu och när kunden hör av oss. Ingen skuld, inga löften om ersättning." },
   },
 };
 export function bookingContext(b: Booking | null): string {

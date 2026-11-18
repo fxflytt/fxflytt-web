@@ -81,7 +81,7 @@ const TRIAGE_SCHEMA: JsonSchema = {
     summary: { type: "string", description: "En mening på svenska till kontoret: vem, vad de vill." },
     needsReply: { type: "boolean", description: "false för skräppost, reklam, nyhetsbrev, automatiska kvitton och mejl som bara säger tack." },
     autoSafe: { type: "boolean", description: "true BARA om svaret kan skickas utan att en människa läser det: kunden ställer en enkel fråga som besvaras helt med fakta i <foretaget>, eller vill ha offert och svaret bara tackar och ber om saknade uppgifter. false vid klagomål, pengar, faktura, ändring eller avbokning av en bokning, datum som måste bekräftas, arg kund, eller om du är minsta osäker." },
-    draft: { type: "string", description: "Utkast till svar till avsändaren, eller tom sträng om inget svar behövs. Vid offertförfrågan: tacka, bekräfta det kunden skrivit och be om det som saknas för en offert (från- och tilladress, datum, bostadens storlek, våningar/hiss, telefonnummer). Hitta aldrig på pris." },
+    draft: { type: "string", description: "Utkast till svar till avsändaren, eller tom sträng om inget svar behövs. Högst 90 ord. Vid offertförfrågan: tacka kort, bekräfta flytten i en mening och be om det som saknas för en offert (högst 3 saker, t.ex. adresserna, våning/hiss, telefonnummer). Hitta aldrig på pris." },
     extracted: {
       type: "object", additionalProperties: false, required: ["name", "phone", "from", "to", "date", "size"],
       description: "Uppgifter för en flyttförfrågan, tom sträng när de inte står i mejlet.",

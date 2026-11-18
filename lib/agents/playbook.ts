@@ -16,7 +16,7 @@ GRUNDEN
    Svara på den oro som passar kunden – innan kunden behöver fråga.
 2. Visa att du har läst. Nämn kundens egen flytt: orterna, datumet, bostaden, det kunden skrev i sitt meddelande. Ett mejl som kan skickas till vem som helst säljer inte.
 3. Ett mejl = ett mål. Ett enda tydligt nästa steg (signera offerten / svara med datum / ring). Gör steget litet: "det tar en minut i mobilen".
-4. Kort. 3–4 korta stycken. Första meningen ska handla om kunden, inte om oss. Inga långa listor, inga versaler, inga utropstecken i rad.
+4. Kort. Högst 110 ord och 3–4 korta stycken – kunden läser i mobilen. Hellre en sak för lite än en för mycket. Första meningen ska handla om kunden, inte om oss. Inga långa listor, inga versaler, inga utropstecken i rad.
 5. Avsluta med en enkel fråga som är lätt att svara på ("Passar den 12 december fortfarande?") – frågor får svar, påståenden gör det inte.
 6. Ett P.S. läses av nästan alla. Använd det för den starkaste trygghetspunkten eller en personlig detalj – högst en mening.
 

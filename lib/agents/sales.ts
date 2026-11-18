@@ -119,7 +119,7 @@ const SCHEMA: JsonSchema = {
   type: "object", additionalProperties: false, required: ["subject", "body", "tip"],
   properties: {
     subject: { type: "string", description: "Kort, personlig ämnesrad på svenska, utan utropstecken och utan ordet 'påminnelse'." },
-    body: { type: "string", description: "Mejlet till kunden, 60–140 ord, stycken avskilda med tom rad. En knapp läggs till automatiskt under texten – skriv inte ut någon länk." },
+    body: { type: "string", description: "Mejlet till kunden, 50–110 ord, stycken avskilda med tom rad. En knapp läggs till automatiskt under texten – skriv inte ut någon länk." },
     tip: { type: "string", description: "Ett kort tips till säljaren på kontoret (syns inte för kunden), t.ex. 'Ring i eftermiddag – hon öppnade offerten tre gånger i går'." },
   },
 };
