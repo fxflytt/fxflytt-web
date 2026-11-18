@@ -34,7 +34,7 @@ function fakeClaude(body: Record<string, unknown>) {
     const complaint = /trasig|klaga/i.test(user);
     out = { category: complaint ? "klagomal" : /offert|flytta/i.test(user) ? "offert" : "leverantor", priority: complaint ? "high" : "normal",
       summary: "Sammanfattning", needsReply: !/nyhetsbrev/i.test(user), autoSafe: !complaint, draft: "Hej! Tack för ditt mejl.",
-      extracted: { name: "Lisa Lind", phone: "070-123 45 67", from: "Kungsör", to: "Arboga", date: "2026-12-12", size: "2 rok" } };
+      extracted: { name: "Lisa Lind", phone: "070-123 45 67", from: "Kungsör", to: "Arboga", date: "2026-12-12", size: "2 rok", areaM2: 0 } };
   } else if (system.includes("klagomålsansvarig")) {
     out = { category: "damage", severity: "high", summary: "Spegel trasig", nextStep: "Ring kunden", draft: "Hej, vi beklagar…" };
   } else if (system.includes("säljare på FX Flytt") || system.includes("bästa säljare")) {
@@ -346,4 +346,12 @@ test("mejl utan ämne får ett riktigt ämne i svaret", () => {
   assert.equal(inbox.replySubject("", { category: "bokning" }), "Svar från FX Flytt");
   assert.equal(inbox.replySubject("Flytt i december"), "Re: Flytt i december");
   assert.equal(inbox.mailTitle({ subject: "(ingen rubrik)", summary: "Alax vill ha pris" }), "Alax vill ha pris");
+});
+
+test("prisförslaget hittar boytan i själva mejlet om AI:n missade den", () => {
+  const e = { name: "", phone: "", from: "Kungsör", to: "Stockholm", date: "", size: "lägenhet" };
+  assert.equal(estimate(e, PRICES), null);
+  const x = estimate(e, PRICES, "Hej, vi har en lägenhet på 60 kvm och vill ha en prisuppskattning")!;
+  assert.equal(x.m2, 60); assert.equal(x.to, "Stockholm"); assert.ok(x.bas! > 0);
+  assert.equal(estimate({ ...e, areaM2: 75 }, PRICES)!.m2, 75);
 });

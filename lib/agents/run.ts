@@ -55,7 +55,7 @@ async function afterMail(m: InMail, ctx: { booking: Booking | null; complaint: C
   await logActivity({ agent: "elsa", what: `Läste mejl från ${m.fromName || m.from}: ${M_CATS[m.category].toLowerCase()}${m.summary ? " – " + m.summary : ""}`, mailId: m.id, bookingId: m.bookingId });
   // A quote request from someone who is not a customer yet → a request in Offerter, with a price suggestion when possible.
   if (m.category === "offert" && !m.bookingId && m.status === "new") {
-    const est = estimate(m.extracted, prices);
+    const est = estimate(m.extracted, prices, m.text);
     if (est) {
       m.estimate = est;
       // The draft tells the customer the approximate price (from the same engine as the website).

@@ -6,14 +6,15 @@ import type { Extracted } from "./inbox.ts";
 export type Estimate = { from: string; to: string; km: number; m2: number; bas?: number; premium?: number; lines?: { label: string; amount: number }[] };
 
 export function areaOf(size: string): number | null {
-  const m = String(size || "").match(/(\d{2,3})\s*(m2|m²|kvm|kvadrat)/i);
+  const m = String(size || "").match(/(\d{2,3})\s*(m2|m²|m\^2|kvm|kvadrat|sqm)/i);
   const n = m ? Number(m[1]) : NaN;
   return n >= 10 && n <= 400 ? n : null;
 }
 
-export function estimate(e: Extracted | undefined, prices: unknown): Estimate | null {
+/** `text` is the customer's own e-mail: if the AI did not pick up the living area, it is read from there ("60 m²", "60 kvm"). */
+export function estimate(e: Extracted | undefined, prices: unknown, text = ""): Estimate | null {
   if (!e?.from || !e.to) return null;
-  const m2 = areaOf(e.size);
+  const m2 = areaOf(e.size) || (e.areaM2 && e.areaM2 >= 10 && e.areaM2 <= 400 ? e.areaM2 : null) || areaOf(text);
   if (!m2) return null;
   const town = (s: string) => s.split(",").pop()!.replace(/\d/g, "").trim();
   const q = quoteRoute({ from: town(e.from), to: town(e.to), area_m2: m2 }, prices) as Record<string, unknown>;
