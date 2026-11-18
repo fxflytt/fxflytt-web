@@ -25,7 +25,7 @@ test("distance and price match the price calculator (Kungsör–Örebro, 60 m²)
   assert.equal(roadKm(findTown("Kungsör")!, findTown("Örebro")!), 66);
   const q = quoteRoute({ from: "Kungsör", to: "Örebro", area_m2: 60 }, P) as any;
   assert.equal(q.distance_km, 66);
-  assert.equal(q.km_cost_kr, 792);
+  assert.equal(q.km_cost_per_truck_kr, 792);
   assert.equal(q.prices.bas.total_after_rut_kr, 4742);
   assert.equal(q.prices.premium.total_after_rut_kr, 7058);
 });

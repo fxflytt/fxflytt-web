@@ -114,3 +114,20 @@ test("paketval i offerten: Bas/Premium/Deluxe räknas, den valda behåller sina 
   assert.equal(packagesFor({ ...b, discount: { pct: 10 } }, P as never), null);                     // after a discount
   assert.equal(packagesFor({ ...b, data: { ...b.data, size: "Flytt per timme" } }, P as never), null);
 });
+
+test("körsträckan räknas per flyttbil (ägarens beslut 2026-11-18)", () => {
+  // 169 m² = 3 flyttbilar, 999 km: 999 × 12 × 3
+  const q = computePrice({ service: "move", areaM2: 169, distanceKm: 999, pkg: "bas" }, P);
+  const km = q.lines.find((l: any) => l.label.startsWith("Körsträcka"))!;
+  assert.equal(km.amount, 999 * 12 * 3);
+  assert.match(km.label, /× 3 flyttbilar/);
+  // under 15 km: free, whatever the number of trucks
+  assert.equal(computePrice({ service: "move", areaM2: 169, distanceKm: 10, pkg: "bas" }, P).lines.some((l: any) => l.label.startsWith("Körsträcka")), false);
+  // more stuff than the floor area: trucks from the volume count for the km too (50 m², 25 m³ = 2 bilar)
+  const v = computePrice({ service: "move", areaM2: 50, distanceKm: 100, pkg: "bas", volumeM3: 25 } as any, P as any);
+  assert.equal(v.lines.find((l: any) => l.label.startsWith("Körsträcka"))!.amount, 100 * 12 * 2);
+  // one truck: unchanged
+  assert.equal(computePrice({ service: "move", areaM2: 60, distanceKm: 66, pkg: "bas" }, P).totalAfterRut, 3950 + 792);
+  // hourly: no km cost
+  assert.equal(computePrice({ service: "hourly", crew: 4, hours: 3, distanceKm: 500 } as any, P).totalAfterRut, 3 * 1199);
+});

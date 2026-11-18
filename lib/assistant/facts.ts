@@ -17,7 +17,7 @@ export function priceFacts(P: PriceList) {
   const cars = [2, 3, 4].map((c) => [c, (mv.find((r) => r[2] === c) || [])[1]]).filter((x) => x[1]);
   return {
     move: `- Flytt, fast pris efter boyta (avrundas uppåt): ${mv.map((r, i) => (i === 0 ? `upp till ${r[0]} m² ${n(r[1])} kr` : r[0] - mv[i - 1][0] > 10 ? `${mv[i - 1][0] + 1}–${r[0]} m² ${n(r[1])}` : `${r[0]} m² ${n(r[1])}`)).join(", ")}. Över ${lastMv} m²: offert. Våning och hiss påverkar inte priset.`,
-    km: `- Körsträcka (endast fast pris): räknas EN VÄG, vägavstånd mellan gamla och nya adressen (inte från vårt kontor, inte tur och retur). Under ${km.freeBelowKm} km = 0 kr; ${km.freeBelowKm} km eller mer = ${n(km.pricePerKm)} kr per km för hela sträckan. Exempel: ${mv[0][0]} m² Kungsör–Malmö 600 km = ${n(mv[0][1])} + ${n(600 * km.pricePerKm)} = ${n(ex)} kr.`,
+    km: `- Körsträcka (endast fast pris): räknas EN VÄG, vägavstånd mellan gamla och nya adressen (inte från vårt kontor, inte tur och retur). Under ${km.freeBelowKm} km = 0 kr; ${km.freeBelowKm} km eller mer = ${n(km.pricePerKm)} kr per km OCH FLYTTBIL för hela sträckan (varje bil kör hela vägen; antal bilar enligt boytan eller volymen). Under ${km.freeBelowKm} km är körsträckan gratis oavsett antal bilar. Exempel: ${mv[0][0]} m² (1 bil) Kungsör–Malmö 600 km = ${n(mv[0][1])} + ${n(600 * km.pricePerKm)} = ${n(ex)} kr. Med 3 bilar blir körsträckan 600 × ${n(km.pricePerKm)} × 3 = ${n(600 * km.pricePerKm * 3)} kr.`,
     hourly: `- Flytt per timme: 2 personer + 1 bil ${n(h["2"])} kr/tim, 3 personer + 1 bil ${n(h["3"])} kr/tim, 4 personer + 2 bilar ${n(h["4"])} kr/tim. Minst ${h.minHours} timmar, påbörjad timme räknas som hel. Ingen kilometerkostnad.`,
     packing: `- Packning och uppackning per timme: samma priser (${n(h["2"])}/${n(h["3"])}/${n(h["4"])} kr/tim), material ingår.`,
     cleaning: `- Flyttstäd, fast pris efter boyta: ${cl.map((r, i) => (i === 0 ? `upp till ${r[0]} m² ${n(r[1])} kr` : `${cl[i - 1][0] + 1}–${r[0]} ${n(r[1])}`)).join(", ")}. Fönster och balkong ingår. Över ${lastCl} m²: offert.`,
@@ -93,7 +93,7 @@ export function systemPrompt(P: PriceList = DEFAULT_PRICES): string {
 REGLER
 1. Svara ENDAST utifrån FAKTA nedan. Hitta aldrig på priser, tider, löften, rabatter eller tjänster.
 2. Om svaret inte finns i FAKTA: säg det kort och hänvisa till telefon 076-300 07 23 eller offertformuläret.
-3. Alla priser i FAKTA är fasta priser och gäller REDAN EFTER RUT-avdrag. Dra aldrig av RUT igen och skriv aldrig "före RUT" om dem. Räkna exakt enligt prislistan (boyta avrundas uppåt, körsträcka 12 kr/km från 15 km, paketrabatt på flytt + städ + körsträcka) och hänvisa till prisräknaren på startsidan.
+3. Alla priser i FAKTA är fasta priser och gäller REDAN EFTER RUT-avdrag. Dra aldrig av RUT igen och skriv aldrig "före RUT" om dem. Räkna exakt enligt prislistan (boyta avrundas uppåt, körsträcka 12 kr/km per flyttbil från 15 km, paketrabatt på flytt + städ + körsträcka) och hänvisa till prisräknaren på startsidan.
 4. Svara på samma språk som kunden skriver (svenska, engelska, arabiska eller annat).
 5. Var kort, vänlig och tydlig: högst 4–5 meningar eller en kort punktlista.
 6. Be ALDRIG om personnummer, kortnummer eller lösenord. Om kunden skriver sådana uppgifter: be dem att inte dela dem i chatten.
