@@ -402,7 +402,7 @@
     const miss=setup?[!setup.password&&'Lösenord (ADMIN_PASSWORD)',!setup.storage&&'Lagring (Upstash Redis)',!setup.mail&&'E-post (SMTP)'].filter(Boolean):[];
     root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><div class="card"><h3 style="font-size:20px">Logga in i admin</h3>
       ${miss.length?`<div class="warn">Saknas i Vercel: ${esc(miss.join(', '))}</div>`:''}
-      <label class="f" for="un">Användarnamn <span class="muted" style="font-weight:500">(tomt = ägarlösenordet)</span></label><input id="un" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label class="f" for="un">E-post <span class="muted" style="font-weight:500">(eller användarnamn för personal)</span></label><input id="un" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="info@fxflytt.se">
       <label class="f" for="pw">Lösenord</label><input id="pw" type="password" autocomplete="current-password">
       <button class="btn" id="go">Logga in</button><div class="err" id="err"></div></div></div>`;
     const go=async()=>{ $('#err').textContent='';
@@ -410,7 +410,7 @@
       const j=await r.json().catch(()=>({}));
       if(r.ok){ start(); } else $('#err').textContent=j.error||'Fel';
     };
-    $('#go').onclick=go; $('#pw').onkeydown=(e)=>{ if(e.key==='Enter') go(); };
+    $('#go').onclick=go; $('#pw').onkeydown=(e)=>{ if(e.key==='Enter') go(); }; $('#un').onkeydown=(e)=>{ if(e.key==='Enter') $('#pw').focus(); };
   }
   const logout=async()=>{ await fetch('/api/admin/login',{method:'DELETE'}); location.hash=''; showLogin(); };
   $('#logout').onclick=logout; $('#mlogout').onclick=()=>{ if(confirm('Logga ut?')) logout(); };
@@ -2165,9 +2165,18 @@ FX Flytt</textarea>
   }
   const SETTINGS={};
   SETTINGS.users=async(el)=>{
-    let users=[]; try{ users=(await api('/api/admin/users')).users; }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    let users=[], owner={emails:[]}; try{ const j=await api('/api/admin/users'); users=j.users; owner=j.owner||owner; }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     const draw=()=>{
-      el.innerHTML=`<div class="card"><h3>Användare <span class="sub">${users.filter(u=>u.active).length} aktiva</span></h3>
+      el.innerHTML=(me&&me.id==='owner'?`<div class="card" id="ownc"><h3>🔐 Ägarens inloggning</h3>
+          <div class="muted">Du loggar in med en av de här e-postadresserna och ägarlösenordet. ${owner.ownPassword?'Lösenordet är ditt eget (ändrat här).':'Lösenordet är just nu det som står i Vercel (ADMIN_PASSWORD) – byt till ett eget nedan.'}</div>
+          <label class="f">E-postadresser som får logga in som ägare</label>
+          <div id="oe_list">${owner.emails.map((e,i)=>`<div style="display:flex;gap:6px;margin-bottom:6px"><input data-oe="${i}" value="${esc(e)}" type="email" autocomplete="off"><button class="btn gray sm" data-oerm="${i}" aria-label="Ta bort"${owner.emails.length<2?' disabled':''}>✕</button></div>`).join('')}</div>
+          <div class="btns"><button class="btn gray sm" id="oe_add">+ Lägg till adress</button><button class="btn sm" id="oe_save">Spara adresser</button></div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>Byt ägarlösenord</b>
+            <div class="row2"><div><label class="f" for="op_cur">Nuvarande lösenord</label><input id="op_cur" type="password" autocomplete="current-password"></div><div><label class="f" for="op_new">Nytt lösenord (minst 8 tecken)</label><input id="op_new" type="password" autocomplete="new-password"></div></div>
+            <label class="f" for="op_new2">Nytt lösenord igen</label><input id="op_new2" type="password" autocomplete="new-password">
+            <div class="muted" style="margin-top:6px">Du loggas ut på dina andra enheter när du byter.</div>
+            <div class="btns"><button class="btn sm" id="op_save">Byt lösenord</button></div></div><div id="oe_msg"></div></div>`:'')+`<div class="card"><h3>Användare <span class="sub">${users.filter(u=>u.active).length} aktiva</span></h3>
         <div class="muted" style="margin-bottom:10px"><b>Ägare</b> ser allt. <b>Kontor</b> sköter förfrågningar, offerter, kalender, personal och arbetsordrar – men ser inte statistik, ekonomi, timrapport, priser eller användare. Ägarlösenordet i Vercel fungerar alltid (lämna användarnamnet tomt).</div>
         ${users.length?users.map(u=>`<div class="todo"><a><b>${esc(u.name)} <span class="tag${u.role==='owner'?' ok':''}">${ROLE[u.role]}</span>${u.active?'':' <span class="tag no">Avstängd</span>'}</b><small>${esc(u.username)} · ${u.lastLoginAt?'senast inloggad '+esc(ago(u.lastLoginAt)):'aldrig inloggad'}</small></a>
           <button class="btn sec sm" data-pw="${u.id}">Nytt lösenord</button>
@@ -2177,6 +2186,15 @@ FX Flytt</textarea>
           <div class="row2"><div><label class="f" for="u_name">Namn</label><input id="u_name" autocomplete="off"></div><div><label class="f" for="u_user">Användarnamn</label><input id="u_user" autocomplete="off" autocapitalize="none" placeholder="t.ex. sara"></div></div>
           <div class="row2"><div><label class="f" for="u_pw">Lösenord (minst 8 tecken)</label><input id="u_pw" type="text" autocomplete="new-password"></div><div><label class="f" for="u_role">Roll</label><select id="u_role"><option value="office">Kontor</option><option value="owner">Ägare</option></select></div></div>
           <button class="btn" id="u_add">Skapa användare</button><div id="u_msg"></div></div>`;
+      if($('#ownc')){
+        const om=(t,ok)=>{ $('#oe_msg').innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
+        const cur=()=>[...el.querySelectorAll('[data-oe]')].map(x=>x.value.trim()).filter(Boolean);
+        $('#oe_add').onclick=()=>{ owner.emails=[...cur(),'']; draw(); const l=el.querySelectorAll('[data-oe]'); l[l.length-1].focus(); };
+        el.querySelectorAll('[data-oerm]').forEach(x=>x.onclick=()=>{ const l=cur(); l.splice(Number(x.dataset.oerm),1); owner.emails=l; draw(); });
+        $('#oe_save').onclick=async()=>{ try{ const r=await api('/api/admin/users?do=owner',{method:'POST',body:JSON.stringify({emails:cur()})}); owner={...owner,...r}; draw(); om('Sparat ✓ – logga in med någon av adresserna.',true); }catch(e){ om(e.message,false); } };
+        $('#op_save').onclick=async()=>{ if($('#op_new').value!==$('#op_new2').value) return om('De nya lösenorden är inte lika.',false);
+          try{ const r=await api('/api/admin/users?do=owner',{method:'POST',body:JSON.stringify({current:$('#op_cur').value,password:$('#op_new').value})}); owner={...owner,...r}; draw(); om('Lösenordet är bytt ✓',true); }catch(e){ om(e.message,false); } };
+      }
       const upd=async(id,body)=>{ try{ const r=await api('/api/admin/users?id='+id,{method:'PATCH',body:JSON.stringify(body)}); users=users.map(x=>x.id===id?r:x); draw(); notify('Sparat ✓'); }catch(e){ notify(e.message); } };
       el.querySelectorAll('[data-pw]').forEach(x=>x.onclick=()=>{ const pw=prompt('Nytt lösenord (minst 8 tecken). Användaren loggas ut överallt.'); if(pw) upd(x.dataset.pw,{password:pw}); });
       el.querySelectorAll('[data-role]').forEach(x=>x.onclick=()=>{ const u=users.find(y=>y.id===x.dataset.role); upd(u.id,{role:u.role==='owner'?'office':'owner'}); });
