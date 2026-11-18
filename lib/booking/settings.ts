@@ -21,15 +21,37 @@ export type Settings = {
   slaMin: number;           // warn when a web request is unanswered this many minutes (0 = off)
   // "Trygg affär" in the offer the customer opens: shown when filled in.
   orgNr: string; fskatt: boolean; insured: boolean; insurer: string;
+  // AI-teamet: the inbox assistant reads info@ (read-only) and the weekly sales report is e-mailed every Monday.
+  aiInboxOn: boolean;
+  aiReportOn: boolean;
+  aiReportTo: string;       // who gets the weekly report (empty = info@)
+  mailKeepDays: number;     // e-mails copied into the admin are deleted after this many days (GDPR)
+  aiNames: AiNames;         // the AI colleagues' names (lib/agents/team.ts)
+  aiAuto: AiAuto;           // what they may send by themselves – everything is off until the owner turns it on
+  aiDailyMax: number;       // at most this many e-mails sent by the AI team per day
+  aiSalesNotes: string;     // the owner's own words on how FX Flytt sells – Oskar follows them (lib/agents/playbook.ts)
 };
+export type AiNames = { elsa: string; oskar: string; maja: string; nils: string };
+export type AiAuto = {
+  request: boolean;   // Elsa: makes a request in Offerter (with a price suggestion) from a quote e-mail
+  reply: boolean;     // Elsa: answers simple questions herself
+  ack: boolean;       // Maja: confirms at once that a complaint has arrived and when we answer
+  followup: boolean; revive: boolean; calc: boolean; winback: boolean; upsell: boolean;   // Oskar's e-mails
+  sms: boolean;       // Oskar: may follow up offers by SMS (customers without e-mail, or as the second follow-up)
+  instant: boolean;   // Elsa: a personal e-mail at once to every new request from the website (instead of the standard receipt)
+  instantSms: boolean;// Elsa: an SMS within a minute to every new request from the website
+};
+export const AI_AUTO_DEFAULT: AiAuto = { request: true, reply: false, ack: false, followup: false, revive: false, calc: false, winback: false, upsell: false, sms: false, instant: false, instantSms: false };
+export const AI_NAMES_DEFAULT: AiNames = { elsa: "Elsa", oskar: "Oskar", maja: "Maja", nils: "Nils" };
 // What the customer sees about the company in the offer.
 export const trustView = (s: Settings) => (s.orgNr || s.fskatt || s.insured ? { orgNr: s.orgNr, fskatt: s.fskatt, insured: s.insured, insurer: s.insurer } : null);
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "" };
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "", aiInboxOn: true, aiReportOn: true, aiReportTo: "", mailKeepDays: 180, aiNames: AI_NAMES_DEFAULT, aiAuto: AI_AUTO_DEFAULT, aiDailyMax: 15, aiSalesNotes: "" };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
   const s = await kv<string | null>(["GET", KEY]);
-  return { ...DEFAULTS, ...(s ? JSON.parse(s) : {}) };
+  const v = s ? JSON.parse(s) : {};
+  return { ...DEFAULTS, ...v, aiNames: { ...AI_NAMES_DEFAULT, ...(v.aiNames || {}) }, aiAuto: { ...AI_AUTO_DEFAULT, ...(v.aiAuto || {}) } };
 }
 
 export async function updateSettings(d: Record<string, unknown>): Promise<Settings> {
@@ -64,6 +86,20 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
   if ("refFriendKr" in d) { const n = Math.round(Number(d.refFriendKr)); if (!(n >= 0 && n <= 10000)) throw new Error("Rabatt: 0–10 000 kr."); cur.refFriendKr = n; }
   if ("refReward" in d) { const t = typeof d.refReward === "string" ? d.refReward.trim().slice(0, 140) : ""; if (!t) throw new Error("Skriv vad kunden får."); cur.refReward = t; }
   if ("salesGoal" in d) { const n = Math.round(Number(d.salesGoal)); if (!(n >= 0 && n <= 100_000_000)) throw new Error("Ogiltigt mål."); cur.salesGoal = n; }
+  if ("aiInboxOn" in d) cur.aiInboxOn = d.aiInboxOn === true;
+  if ("aiReportOn" in d) cur.aiReportOn = d.aiReportOn === true;
+  if ("aiReportTo" in d) { const t = String(d.aiReportTo || "").trim().toLowerCase().slice(0, 200); if (t && !/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(t)) throw new Error("Ogiltig e-postadress."); cur.aiReportTo = t; }
+  if ("mailKeepDays" in d) { const n = Math.round(Number(d.mailKeepDays)); if (!(n >= 7 && n <= 730)) throw new Error("Spara mejl: 7–730 dagar."); cur.mailKeepDays = n; }
+  if (d.aiNames && typeof d.aiNames === "object") for (const k of Object.keys(AI_NAMES_DEFAULT) as (keyof AiNames)[]) {
+    const v = (d.aiNames as Record<string, unknown>)[k];
+    if (typeof v === "string") { const t = v.trim().replace(/[<>"]/g, "").slice(0, 24); if (!t) throw new Error("Varje AI-kollega behöver ett namn."); cur.aiNames[k] = t; }
+  }
+  if (d.aiAuto && typeof d.aiAuto === "object") for (const k of Object.keys(AI_AUTO_DEFAULT) as (keyof AiAuto)[]) {
+    const v = (d.aiAuto as Record<string, unknown>)[k];
+    if (typeof v === "boolean") cur.aiAuto[k] = v;
+  }
+  if ("aiSalesNotes" in d) cur.aiSalesNotes = String(d.aiSalesNotes || "").replace(/\r/g, "").trim().slice(0, 2000);
+  if ("aiDailyMax" in d) { const n = Math.round(Number(d.aiDailyMax)); if (!(n >= 0 && n <= 100)) throw new Error("Max mejl per dag: 0–100."); cur.aiDailyMax = n; }
   if (cur.clockOn && !cur.office) throw new Error("Ange kontorets position först.");
   await kv(["SET", KEY, JSON.stringify(cur)]);
   return cur;

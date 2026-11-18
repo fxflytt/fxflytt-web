@@ -8,6 +8,8 @@ import { createBooking, saveBooking } from "@/lib/booking/store.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
 import { applyCode } from "@/lib/booking/referral.ts";
 import { getSettings } from "@/lib/booking/settings.ts";
+import { after } from "next/server";
+import { instantOn, instantReply } from "@/lib/agents/instant.ts";
 
 export const runtime = "nodejs";
 
@@ -56,10 +58,10 @@ export async function POST(req: Request) {
   if (!data.name || !data.phone) return Response.json({ error: "Namn och telefon behövs." }, { status: 400 });
   if (!EMAIL_RE.test(data.email || "")) data.email = "";
   // Save it in the booking system too (if storage is set up). A failure here must not lose the e-mail.
-  let adminUrl: string | undefined;
+  let adminUrl: string | undefined, createdId = "";
   if (kvConfigured()) {
     try {
-      const b = await createBooking("web", data); adminUrl = `${process.env.SITE_URL || "https://www.fxflytt.se"}/admin#${b.id}`;
+      const b = await createBooking("web", data); createdId = b.id; adminUrl = `${process.env.SITE_URL || "https://www.fxflytt.se"}/admin#${b.id}`;
       const code = str((d as Record<string, unknown>).refCode, 20);
       if (code) { try { await saveBooking(b, await applyCode(b, code, await getSettings())); } catch (e) { await saveBooking(b, `Rabattkod ${code} gick inte att använda: ${(e as Error).message}`); } }
       const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
@@ -80,8 +82,14 @@ export async function POST(req: Request) {
     console.error("offer mail failed", lastError);
     return Response.json({ error: "send-failed" }, { status: 502 });
   }
-  // Confirmation to the customer. A failure here must not fail the request – we already have it.
+  // Elsa (AI-teamet) answers at once – a personal e-mail and/or SMS – when the owner turned it on. She sends the
+  // standard receipt herself if her own e-mail cannot be sent. It runs after the answer to the browser, so the visitor never waits.
   let confirmed = false;
+  if (createdId && await instantOn().catch(() => false)) {
+    after(() => instantReply(createdId).catch((e) => console.error("instant", (e as Error).message)));
+    return Response.json({ ok: true, confirmed: !!data.email });
+  }
+  // Confirmation to the customer. A failure here must not fail the request – we already have it.
   if (data.email) {
     try {
       const c = customerConfirmation(data);

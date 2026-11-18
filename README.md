@@ -7,7 +7,7 @@
 - `app/api/chat` – chattassistenten (Claude). Svarar bara utifrån `lib/assistant/facts.ts`.
 - `/admin` – adminpanelen: Idag, Bokningar, Kalender, Personal och fordon, Statistik. Personal och fordon sparas i Upstash (`lib/booking/team.ts`); vem som gör vilket jobb och krockar räknas i `public/fx-schedule.js` (samma fil i webbläsaren och på servern).
 - `db/schema.sql` – databasen för bokningar (används när Supabase är kopplat).
-- `tests/` – `npm test` (19 tester: priser, RUT, FlexFlytt, chatt).
+- `tests/` – `npm test` (priser, RUT, FlexFlytt, chatt, AI-teamet).
 
 ## Inställningar på Vercel (Environment Variables)
 | Namn | Vad | Var |
@@ -15,6 +15,20 @@
 | `ANTHROPIC_API_KEY` | Nyckeln från platform.claude.com (börjar med `sk-ant-`) | Vercel → Project → Settings → Environment Variables |
 
 Utan nyckeln fungerar sidan ändå: chattbubblan svarar då med inbyggda svar.
+
+## AI-teamet (i bokningssystemet: `/admin#ai`)
+Fyra AI-kollegor med svenska namn (ändras i Inställningar → AI-teamet). Från början skriver de bara utkast; ägaren väljer vad de får skicka själva.
+Mejl de skickar själva är undertecknade med namnet och "digital assistent", räknas mot en gräns per dag (standard 15) och syns i bokningens historik och i AI-team → Översikt.
+- **Elsa – kundservice/e-post** (`lib/agents/inbox.ts`): läser info@ över IMAP (`lib/mail/imap.ts`, samma `SMTP_USER`/`SMTP_PASS`, `mail.inleed.com:993`, ändra med `IMAP_HOST`/`IMAP_PORT`). Bara läsning. Sorterar, kopplar till bokningen, skriver svar utifrån företagsfakta (`lib/assistant/facts.ts`). Offertmejl → förfrågan i Offerter med prisförslag från prismotorn (`lib/agents/estimate.ts`). Kan få svara själv på enkla frågor.
+- **Oskar – säljare** (`lib/agents/sales.ts`): följ upp offert, väck förfallen offert, kalkyl-leads, vinn tillbaka nej, merförsäljning (flyttstäd/packning/kartonger), ringmanus. Ändrar aldrig priset.
+- **Maja – klagomål** (`lib/agents/complaints.ts`): allvar, nästa steg, svarsdag, svarsutkast, skaderapport. Kan få bekräfta direkt att klagomålet kommit in.
+- **Nils – analytiker** (`lib/agents/plan.ts`, `lib/agents/weekly.ts`): dagens plan varje morgon, veckorapport varje måndag (mejlas).
+- **Svar direkt** (`lib/agents/instant.ts`): nya förfrågningar från hemsidan kan få ett personligt mejl från Elsa inom en minut (i stället för standardkvittot) och/eller ett SMS. Faller tillbaka på standardkvittot om något går fel.
+- **SMS** (`lib/sms/send.ts`, 46elks.se): `ELKS_API_USER`, `ELKS_API_PASSWORD`, valfritt `SMS_FROM` (max 11 tecken, standard "FXFlytt") i Vercel. Oskar kan följa upp offerter med SMS (andra uppföljningen, och kunder utan e-post); Elsa kan skicka SMS direkt till nya förfrågningar.
+- **Oskars träning** (`lib/agents/playbook.ts`): säljmetod för svenska kunder (trygghet, ett litet nästa steg, invändningar, ämnesrader – aldrig falsk brådska eller påhittade rabatter), företagsfakta, hur full kundens flyttdag faktiskt är, ägarens egen **Säljstil** (Inställningar → AI-teamet) och mejl som ledde till en signerad bokning inom 14 dagar (den text som faktiskt skickades). Resultat per sorts mejl visas i AI-team → Oskar.
+- **Varför vi förlorar** (AI-team → Nils, `lib/agents/lost.ts`): vunna mot förlorade offerter – skäl, orter, storlek, pris, svarstid, uppföljning – med AI-förklaring och vad ni ska ändra.
+- Daglig körning: `/api/cron/agents` (vercel.json). Inkorgen läses också var 5:e minut när adminen är öppen.
+- Modeller (`lib/agents/claude.ts`): `claude-haiku-5-5` sorterar mejl; `claude-opus-5-5` skriver säljmejl, klagomålssvar, ringmanus och veckorapporten.
 
 ## Ta bort chattassistenten
 Ta bort raden `python3 add-chat.py` i `build-site.sh` och kör om bygget – eller sätt `ENABLED = false` i `public/chat-widget.js`.
