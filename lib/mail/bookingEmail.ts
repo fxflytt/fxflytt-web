@@ -185,3 +185,12 @@ export function campaignEmail(b: Booking, subject: string, body: string, offerUr
   const text = `${paras.join("\n\n")}\n\n${offerUrl ? "Se din offert: " + offerUrl : "Få en offert: https://www.fxflytt.se/#offert"}\n\nVill du inte få fler erbjudanden? Svara "Nej tack" på mejlet.\nFX Flytt AB · 076-300 07 23`;
   return { subject: fill(subject), html, text };
 }
+
+// A personal e-mail about the customer's offer (AI-säljaren writes it, the office checks it and sends it).
+export function personalOfferEmail(b: Booking, subject: string, body: string, offerUrl: string) {
+  const paras = body.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
+  const html = shell(subject, { text: "DIN OFFERT", bg: "#fff1e6", fg: "#c2560a" },
+    paras.map((x) => p(esc(x).replace(/\n/g, "<br>"))).join("") + summary(b) + button(offerUrl, "Se och signera offerten"));
+  const text = `${paras.join("\n\n")}\n\nSe och signera offerten: ${offerUrl}\n\nFX Flytt AB · 076-300 07 23`;
+  return { subject, html, text };
+}

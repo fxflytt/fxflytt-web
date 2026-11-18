@@ -46,7 +46,8 @@ export type Booking = {
   slaAlertedAt?: number;
   version?: number; prevId?: string; nextId?: string;   // a new version of an offer (Version 2, 3 …) and the one it replaced
   noMarketing?: boolean;     // the customer said no to campaign e-mails
-  campaigns?: { at: number; subject: string; by: string }[];     // the office was warned that nobody had answered this request
+  campaigns?: { at: number; subject: string; by: string }[];
+  closings?: { at: number; subject: string; by: string }[];   // personal "close the deal" e-mails (AI-säljaren)     // the office was warned that nobody had answered this request
   lead?: "calc";             // came from "Få priset på mejl" in the website calculator (no request sent yet)
   firstResponseAt?: number;   // first time someone in the office acted on a web request (speed to lead)
   contactedAt?: number;       // the customer has been reached (call answered, or moved to "Kontaktad")

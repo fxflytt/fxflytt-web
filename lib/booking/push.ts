@@ -41,10 +41,11 @@ export async function removeSub(match: (s: Sub) => boolean) {
 }
 
 // cat: which kind of notice it is – each office user can turn kinds off (Inställningar → Notiser).
-export type NoteCat = "new" | "view" | "signed" | "declined" | "sla" | "crew" | "reward" | "morning";
+export type NoteCat = "new" | "view" | "signed" | "declined" | "sla" | "crew" | "reward" | "morning" | "mail" | "complaint";
 export const NOTE_CATS: Record<NoteCat, string> = {
   new: "Ny förfrågan och nya leads", sla: "Förfrågan som ingen har svarat på", view: "Kunden öppnade offerten", signed: "Kunden signerade",
   declined: "Kunden tackade nej", crew: "Personalen: sjuk, ledighet, tog ett jobb, skada", reward: "Tipsa en vän: belöning att ge", morning: "Morgonnotis: samtal, fordon",
+  mail: "Viktiga mejl i inkorgen (AI)", complaint: "Nytt klagomål",
 };
 export type Note = { title: string; body: string; url: string; tag?: string; cat?: NoteCat };
 export type NotePrefs = { off: NoteCat[]; sound: boolean };

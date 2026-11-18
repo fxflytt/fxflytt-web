@@ -21,10 +21,15 @@ export type Settings = {
   slaMin: number;           // warn when a web request is unanswered this many minutes (0 = off)
   // "Trygg affär" in the offer the customer opens: shown when filled in.
   orgNr: string; fskatt: boolean; insured: boolean; insurer: string;
+  // AI-teamet: the inbox assistant reads info@ (read-only) and the weekly sales report is e-mailed every Monday.
+  aiInboxOn: boolean;
+  aiReportOn: boolean;
+  aiReportTo: string;       // who gets the weekly report (empty = info@)
+  mailKeepDays: number;     // e-mails copied into the admin are deleted after this many days (GDPR)
 };
 // What the customer sees about the company in the offer.
 export const trustView = (s: Settings) => (s.orgNr || s.fskatt || s.insured ? { orgNr: s.orgNr, fskatt: s.fskatt, insured: s.insured, insurer: s.insurer } : null);
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "" };
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "", aiInboxOn: true, aiReportOn: true, aiReportTo: "", mailKeepDays: 180 };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
@@ -64,6 +69,10 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
   if ("refFriendKr" in d) { const n = Math.round(Number(d.refFriendKr)); if (!(n >= 0 && n <= 10000)) throw new Error("Rabatt: 0–10 000 kr."); cur.refFriendKr = n; }
   if ("refReward" in d) { const t = typeof d.refReward === "string" ? d.refReward.trim().slice(0, 140) : ""; if (!t) throw new Error("Skriv vad kunden får."); cur.refReward = t; }
   if ("salesGoal" in d) { const n = Math.round(Number(d.salesGoal)); if (!(n >= 0 && n <= 100_000_000)) throw new Error("Ogiltigt mål."); cur.salesGoal = n; }
+  if ("aiInboxOn" in d) cur.aiInboxOn = d.aiInboxOn === true;
+  if ("aiReportOn" in d) cur.aiReportOn = d.aiReportOn === true;
+  if ("aiReportTo" in d) { const t = String(d.aiReportTo || "").trim().toLowerCase().slice(0, 200); if (t && !/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(t)) throw new Error("Ogiltig e-postadress."); cur.aiReportTo = t; }
+  if ("mailKeepDays" in d) { const n = Math.round(Number(d.mailKeepDays)); if (!(n >= 7 && n <= 730)) throw new Error("Spara mejl: 7–730 dagar."); cur.mailKeepDays = n; }
   if (cur.clockOn && !cur.office) throw new Error("Ange kontorets position först.");
   await kv(["SET", KEY, JSON.stringify(cur)]);
   return cur;

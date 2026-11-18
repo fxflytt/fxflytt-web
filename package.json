@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@vercel/blob": "0.27.3",
+    "imapflow": "2.12.1",
+    "mailparser": "3.14.5",
     "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",

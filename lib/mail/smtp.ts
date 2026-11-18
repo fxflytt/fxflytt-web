@@ -19,6 +19,9 @@ export type Mail = {
   subject: string;
   text: string;
   html?: string;
+  fromName?: string;        // shown as the sender (default "FX Flytt – webbplats")
+  inReplyTo?: string;       // Message-ID of the e-mail we answer, so the reply lands in the same thread
+  references?: string[];
 };
 
 const clean = (s: string) => s.replace(/[\r\n]+/g, " ").trim();
@@ -31,9 +34,11 @@ export function buildMessage(m: Mail, date = new Date()): string {
   const wrap = (t: string) => b64(t).replace(/.{1,76}/g, "$&\r\n");
   const boundary = "fx-" + Math.random().toString(36).slice(2);
   const headers = [
-    `From: ${encWord("FX Flytt – webbplats")} <${clean(m.from)}>`,
+    `From: ${encWord(m.fromName || "FX Flytt – webbplats")} <${clean(m.from)}>`,
     `To: <${clean(m.to)}>`,
     ...(m.replyTo ? [`Reply-To: <${clean(m.replyTo)}>`] : []),
+    ...(m.inReplyTo ? [`In-Reply-To: ${clean(m.inReplyTo)}`] : []),
+    ...(m.inReplyTo || m.references?.length ? [`References: ${[...(m.references || []), ...(m.inReplyTo ? [m.inReplyTo] : [])].map(clean).filter((x, i, a) => a.indexOf(x) === i).slice(-10).join(" ")}`] : []),
     `Subject: ${encWord(m.subject)}`,
     `Date: ${date.toUTCString().replace("GMT", "+0000")}`,
     `Message-ID: <${id}>`,
@@ -49,7 +54,8 @@ export function buildMessage(m: Mail, date = new Date()): string {
   return headers.join("\r\n") + "\r\n\r\n" + part("text/plain", m.text) + "\r\n" + part("text/html", m.html) + `\r\n--${boundary}--`;
 }
 
-export async function sendMail(opt: SmtpOptions, mail: Mail): Promise<void> {
+// Returns the message that was sent (so a copy can be put in the Sent folder).
+export async function sendMail(opt: SmtpOptions, mail: Mail): Promise<string> {
   const socket: net.Socket = opt.secure === false
     ? net.connect(opt.port, opt.host)
     : tls.connect({ host: opt.host, port: opt.port, servername: opt.host });
@@ -94,8 +100,10 @@ export async function sendMail(opt: SmtpOptions, mail: Mail): Promise<void> {
     await cmd(`MAIL FROM:<${clean(mail.from)}>`, [250], "MAIL FROM");
     await cmd(`RCPT TO:<${clean(mail.to)}>`, [250, 251], "RCPT TO");
     await cmd("DATA", [354], "DATA");
-    await cmd(buildMessage(mail) + "\r\n.", [250], "send");
+    const raw = buildMessage(mail);
+    await cmd(raw + "\r\n.", [250], "send");
     socket.write("QUIT\r\n");
+    return raw;
   } finally {
     socket.end();
   }
