@@ -36,8 +36,11 @@ export type AiAuto = {
   reply: boolean;     // Elsa: answers simple questions herself
   ack: boolean;       // Maja: confirms at once that a complaint has arrived and when we answer
   followup: boolean; revive: boolean; calc: boolean; winback: boolean; upsell: boolean;   // Oskar's e-mails
+  sms: boolean;       // Oskar: may follow up offers by SMS (customers without e-mail, or as the second follow-up)
+  instant: boolean;   // Elsa: a personal e-mail at once to every new request from the website (instead of the standard receipt)
+  instantSms: boolean;// Elsa: an SMS within a minute to every new request from the website
 };
-export const AI_AUTO_DEFAULT: AiAuto = { request: true, reply: false, ack: false, followup: false, revive: false, calc: false, winback: false, upsell: false };
+export const AI_AUTO_DEFAULT: AiAuto = { request: true, reply: false, ack: false, followup: false, revive: false, calc: false, winback: false, upsell: false, sms: false, instant: false, instantSms: false };
 export const AI_NAMES_DEFAULT: AiNames = { elsa: "Elsa", oskar: "Oskar", maja: "Maja", nils: "Nils" };
 // What the customer sees about the company in the offer.
 export const trustView = (s: Settings) => (s.orgNr || s.fskatt || s.insured ? { orgNr: s.orgNr, fskatt: s.fskatt, insured: s.insured, insurer: s.insurer } : null);

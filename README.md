@@ -23,6 +23,9 @@ Mejl de skickar själva är undertecknade med namnet och "digital assistent", r�
 - **Oskar – säljare** (`lib/agents/sales.ts`): följ upp offert, väck förfallen offert, kalkyl-leads, vinn tillbaka nej, merförsäljning (flyttstäd/packning/kartonger), ringmanus. Ändrar aldrig priset.
 - **Maja – klagomål** (`lib/agents/complaints.ts`): allvar, nästa steg, svarsdag, svarsutkast, skaderapport. Kan få bekräfta direkt att klagomålet kommit in.
 - **Nils – analytiker** (`lib/agents/plan.ts`, `lib/agents/weekly.ts`): dagens plan varje morgon, veckorapport varje måndag (mejlas).
+- **Svar direkt** (`lib/agents/instant.ts`): nya förfrågningar från hemsidan kan få ett personligt mejl från Elsa inom en minut (i stället för standardkvittot) och/eller ett SMS. Faller tillbaka på standardkvittot om något går fel.
+- **SMS** (`lib/sms/send.ts`, 46elks.se): `ELKS_API_USER`, `ELKS_API_PASSWORD`, valfritt `SMS_FROM` (max 11 tecken, standard "FXFlytt") i Vercel. Oskar kan följa upp offerter med SMS (andra uppföljningen, och kunder utan e-post); Elsa kan skicka SMS direkt till nya förfrågningar.
+- **Varför vi förlorar** (AI-team → Nils, `lib/agents/lost.ts`): vunna mot förlorade offerter – skäl, orter, storlek, pris, svarstid, uppföljning – med AI-förklaring och vad ni ska ändra.
 - Daglig körning: `/api/cron/agents` (vercel.json). Inkorgen läses också var 5:e minut när adminen är öppen.
 - Modeller (`lib/agents/claude.ts`): `claude-haiku-5-5` sorterar mejl; `claude-opus-5-5` skriver säljmejl, klagomålssvar, ringmanus och veckorapporten.
 

@@ -9,6 +9,7 @@ import { aiConfigured } from "@/lib/agents/claude.ts";
 import { AGENTS, agentName, listActivity, sentToday, type AgentId } from "@/lib/agents/team.ts";
 import { getPlan, makePlan } from "@/lib/agents/run.ts";
 import { getState } from "@/lib/agents/inbox.ts";
+import { smsConfigured } from "@/lib/sms/send.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export async function GET(req: Request) {
   if (!plan || plan.date !== today() || Date.now() - plan.madeAt > 30 * 6e4) plan = await makePlan();
   const [activity, sent, state] = await Promise.all([listActivity(60), sentToday(), getState()]);
   const team = (Object.keys(AGENTS) as AgentId[]).map((id) => ({ id, name: agentName(s, id), ...AGENTS[id] }));
-  return Response.json({ team, auto: s.aiAuto, dailyMax: s.aiDailyMax, sentToday: sent, plan, activity, inbox: { on: s.aiInboxOn, lastSync: state.lastSync, lastError: state.lastError }, report: s.aiReportOn, ai: aiConfigured(), mail: mailConfigured() });
+  return Response.json({ team, auto: s.aiAuto, dailyMax: s.aiDailyMax, sentToday: sent, plan, activity, inbox: { on: s.aiInboxOn, lastSync: state.lastSync, lastError: state.lastError }, report: s.aiReportOn, ai: aiConfigured(), mail: mailConfigured(), sms: smsConfigured() });
 }
 
 export async function POST(req: Request) {

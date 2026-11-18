@@ -246,3 +246,59 @@ test("AI-teamet: namn, gräns per dag och logg", async () => {
   assert.deepEqual((await team.listActivity(5)).map((a) => a.agent), ["elsa", "oskar"]);
   assert.match(team.aiSignature("Linnea", "Kundservice"), /Linnea, kundservice på FX Flytt\n\(Digital assistent/);
 });
+
+const sms = await import("../lib/sms/send.ts");
+const { nextAnswer } = await import("../lib/agents/instant.ts");
+const { lostNumbers } = await import("../lib/agents/lost.ts");
+
+test("SMS: bara svenska mobilnummer, rätt anrop till 46elks", async () => {
+  assert.equal(sms.mobileE164("070-123 45 67"), "+46701234567"); assert.equal(sms.mobileE164("+46 73 123 45 67"), "+46731234567");
+  assert.equal(sms.mobileE164("0046701234567"), "+46701234567"); assert.equal(sms.mobileE164("08-123 456 78"), null); assert.equal(sms.mobileE164(""), null);
+  await assert.rejects(sms.sendSms("0701234567", "hej"), /inte inställt/);
+  process.env.ELKS_API_USER = "u"; process.env.ELKS_API_PASSWORD = "p";
+  let seen: { url: string; init: RequestInit } | null = null;
+  const id = await sms.sendSms("070-123 45 67", "Hej Lisa!", (async (url: string, init: RequestInit) => { seen = { url, init }; return new Response('{"id":"s1"}'); }) as unknown as typeof fetch);
+  assert.equal(id, "s1"); assert.equal(seen!.url, "https://api.46elks.com/a1/sms");
+  const body = new URLSearchParams(String(seen!.init.body));
+  assert.equal(body.get("to"), "+46701234567"); assert.equal(body.get("from"), "FXFlytt"); assert.equal(body.get("message"), "Hej Lisa!");
+  assert.equal((seen!.init.headers as Record<string, string>).Authorization, "Basic " + Buffer.from("u:p").toString("base64"));
+  delete process.env.ELKS_API_USER; delete process.env.ELKS_API_PASSWORD;
+});
+
+test("Oskar: andra uppföljningen och kunder utan e-post går som SMS", async () => {
+  const now = Date.now(), day = 864e5;
+  const base = { status: "sent" as const, token: "t", sentAt: now - 5 * day };
+  const mk = async (name: string, data: Record<string, string>, p: Record<string, unknown> = {}) => ({ ...(await store.createBooking("admin", { name, phone: "", ...data })), ...base, ...p }) as import("../lib/booking/store.ts").Booking;
+  const l = [
+    await mk("mail", { email: "a@ex.se", phone: "0701111111" }),
+    await mk("second", { email: "b@ex.se", phone: "0702222222" }, { closings: [{ at: now - 4 * day, subject: "s", by: "x", kind: "followup" }] }),
+    await mk("onlyPhone", { phone: "0703333333" }),
+    await mk("landline", { phone: "08-1234567" }),
+  ];
+  const c = Object.fromEntries(sales.salesCandidates(l, now).map((x) => [x.b.data.name, x.channel]));
+  assert.deepEqual(c, { mail: "email", second: "sms", onlyPhone: "sms" });
+});
+
+test("Elsa: när offerten kommer (vardag före 16 = i dag)", () => {
+  assert.equal(nextAnswer(new Date("2026-11-18T09:00:00Z")), "i dag");        // Wednesday 10:00
+  assert.equal(nextAnswer(new Date("2026-11-18T17:00:00Z")), "i morgon");     // Wednesday 18:00
+  assert.equal(nextAnswer(new Date("2026-11-20T16:30:00Z")), "på måndag");    // Friday 17:30
+  assert.equal(nextAnswer(new Date("2026-11-22T10:00:00Z")), "på måndag");    // Sunday
+});
+
+test("Nils: varför vi förlorar – vunna mot förlorade", () => {
+  const now = Date.parse("2026-11-18T12:00:00Z"), day = 864e5;
+  const B = (p: Record<string, unknown>) => ({ id: "FX1", createdAt: now - 30 * day, updatedAt: 0, status: "sent", source: "web", data: { name: "A", phone: "1", from: "Gatan 1, Arboga", areaM2: "60" }, history: [], sentAt: now - 25 * day, ...p }) as never;
+  const n = lostNumbers([
+    B({ status: "signed", offer: { total: 6000, lines: [] }, firstResponseAt: now - 30 * day + 10 * 6e4, views: 2 }),
+    B({ status: "declined", declinedAt: now - 20 * day, decline: { reason: "price", text: "För dyrt jämfört med annan firma" }, offer: { total: 9000, lines: [] }, firstResponseAt: now - 30 * day + 120 * 6e4 }),
+    B({ status: "sent", offer: { total: 8000, lines: [] } }),                            // no answer for 25 days
+    B({ status: "declined", nextId: "FX2", declinedAt: now - 20 * day }),                // replaced by a new version – not lost
+    B({ sentAt: now - 200 * day, status: "declined" }),                                  // outside the period
+  ], 90, now);
+  assert.equal(n.offers, 3); assert.equal(n.won, 1); assert.equal(n.lost, 2); assert.equal(n.noAnswer, 1); assert.equal(n.winRate, 33);
+  assert.deepEqual(n.reasons.map((r) => r.reason).sort(), ["Priset är för högt", "Svarade aldrig"]);
+  assert.deepEqual(n.avgPrice, { won: 6000, lost: 8500 }); assert.deepEqual(n.responseMin, { won: 10, lost: 120 });
+  assert.equal(n.neverOpened, 2); assert.equal(n.noFollowUp, 2); assert.deepEqual(n.towns, [{ key: "Arboga", won: 1, lost: 2, winRate: 33 }]);
+  assert.deepEqual(n.quotes, ["För dyrt jämfört med annan firma"]);
+});

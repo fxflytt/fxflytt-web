@@ -8,6 +8,7 @@
 // Each customer gets each kind at most once (follow-up at most twice, three days apart). Customers who said
 // no to campaign e-mails get only the follow-up of their own offer.
 import { askJson, MODEL_WRITE, HOUSE_RULES, quote, type JsonSchema } from "./claude.ts";
+import { mobileE164, SMS_MAX } from "../sms/send.ts";
 import { CALL_OUTCOMES, DECLINE_REASONS, type Booking, type DeclineReason } from "../booking/store.ts";
 
 export type SalesKind = "followup" | "revive" | "calc" | "winback" | "upsell";
@@ -19,7 +20,7 @@ export const SALES_KINDS: Record<SalesKind, { label: string; why: string }> = {
   upsell: { label: "Merförsäljning", why: "Bokad – erbjud flyttstäd, packning eller kartonger" },
 };
 export type Closing = { subject: string; body: string; tip: string };
-export type Candidate = { b: Booking; kind: SalesKind; score: number; why: string };
+export type Candidate = { b: Booking; kind: SalesKind; score: number; why: string; channel: "email" | "sms" };
 
 const DAY = 864e5;
 const day = (t?: number) => (t ? new Date(t).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Stockholm" }) : "");
@@ -33,7 +34,10 @@ export function salesCandidates(all: Booking[], now = Date.now()): Candidate[] {
   const future = (b: Booking) => !b.date || b.date > today;
   const lastCall = (b: Booking) => (b.calls || []).slice(-1)[0]?.outcome;
   for (const b of all) {
-    if (!b.data.email || b.nextId || lastCall(b) === "notinterested") continue;
+    const mobile = !!mobileE164(b.data.phone);
+    if ((!b.data.email && !mobile) || b.nextId || lastCall(b) === "notinterested") continue;
+    // E-mail first; the second follow-up (or a customer without e-mail) gets an SMS.
+    const ch = (k: SalesKind): "email" | "sms" => (!b.data.email || (k === "followup" && mobile && sent(b, "followup").length === 1)) ? "sms" : "email";
     const age = b.sentAt ? now - b.sentAt : 0;
     if (b.status === "sent" && b.token && !b.signedAt && future(b)) {
       if (age <= 14 * DAY) {
@@ -44,24 +48,24 @@ export function salesCandidates(all: Booking[], now = Date.now()): Candidate[] {
           if (b.lastViewAt && now - b.lastViewAt < 2 * DAY) score += 15;
           if (lastCall(b) === "callback") score += 10;
           if (b.date && Date.parse(b.date) - now < 21 * DAY) score += 10;
-          out.push({ b, kind: "followup", score, why: b.views ? `Öppnade offerten ${b.views} gång${b.views > 1 ? "er" : ""}, senast ${day(b.lastViewAt)}` : "Har inte öppnat offerten" });
+          out.push({ b, kind: "followup", channel: ch("followup"), score, why: b.views ? `Öppnade offerten ${b.views} gång${b.views > 1 ? "er" : ""}, senast ${day(b.lastViewAt)}` : "Har inte öppnat offerten" });
         }
       } else if (age <= 45 * DAY && !sent(b, "revive").length) {
-        out.push({ b, kind: "revive", score: 15 + (b.views ? 10 : 0), why: `Skickad ${day(b.sentAt)}, inget svar` });
+        out.push({ b, kind: "revive", channel: ch("revive"), score: 15 + (b.views ? 10 : 0), why: `Skickad ${day(b.sentAt)}, inget svar` });
       }
     }
-    if (b.noMarketing) continue;
+    if (b.noMarketing || !b.data.email) continue;
     if (b.lead === "calc" && b.status === "new" && now - b.createdAt >= DAY && now - b.createdAt <= 10 * DAY && !sent(b, "calc").length)
-      out.push({ b, kind: "calc", score: 25, why: `Räknade pris ${day(b.createdAt)}${b.offer ? ` (${b.offer.total} kr)` : ""}` });
+      out.push({ b, kind: "calc", channel: "email", score: 25, why: `Räknade pris ${day(b.createdAt)}${b.offer ? ` (${b.offer.total} kr)` : ""}` });
     if (b.status === "declined" && b.declinedAt && now - b.declinedAt >= 2 * DAY && now - b.declinedAt <= 21 * DAY && future(b) && !sent(b, "winback").length) {
       const r = (b.decline?.reason || "other") as DeclineReason;
       if (r !== "no_move" && !/^Ersatt av version/.test(b.decline?.text || ""))
-        out.push({ b, kind: "winback", score: r === "price" ? 22 : 15, why: `Tackade nej: ${DECLINE_REASONS[r]}${b.decline?.text ? " – " + b.decline.text : ""}` });
+        out.push({ b, kind: "winback", channel: "email", score: r === "price" ? 22 : 15, why: `Tackade nej: ${DECLINE_REASONS[r]}${b.decline?.text ? " – " + b.decline.text : ""}` });
     }
     if (b.status === "signed" && b.date && !sent(b, "upsell").length) {
       const left = (Date.parse(b.date + "T12:00:00Z") - now) / DAY;
       const missing = [!hasLine(b, /städ|premium|deluxe/i) && "flyttstäd", !hasLine(b, /pack|deluxe/i) && "packning", !hasLine(b, /kartong/i) && "kartonger"].filter(Boolean);
-      if (left >= 4 && left <= 30 && missing.length) out.push({ b, kind: "upsell", score: 18, why: `Flyttar ${b.date} – saknar ${missing.join(", ")}` });
+      if (left >= 4 && left <= 30 && missing.length) out.push({ b, kind: "upsell", channel: "email", score: 18, why: `Flyttar ${b.date} – saknar ${missing.join(", ")}` });
     }
   }
   return out.sort((a, b) => b.score - a.score);
@@ -132,6 +136,22 @@ Inget tjat, ingen press, inga utropstecken i rad. Lova aldrig rabatt eller nytt 
 }
 /** The old name, used for the follow-up. */
 export const draftClosing = (b: Booking, today: string, hint = "") => draftSales("followup", b, today, { hint });
+
+// ---------- SMS ----------
+const SMS_SCHEMA: JsonSchema = { type: "object", additionalProperties: false, required: ["text"], properties: { text: { type: "string", description: "SMS-texten, högst 180 tecken, utan länk och utan telefonnummer (de läggs till automatiskt)." } } };
+/** A short SMS for a follow-up. The offer link and our phone number are added after the text. */
+export async function draftSms(kind: SalesKind, b: Booking, today: string, o: { hint?: string; name?: string } = {}): Promise<string> {
+  const r = await askJson<{ text: string }>({
+    model: MODEL_WRITE, effort: "low", schema: SMS_SCHEMA, maxTokens: 3000,
+    system: `${HOUSE_RULES}\n\nDu är ${o.name || "Oskar"}, säljare på FX Flytt. Skriv ett kort, personligt SMS på svenska till kunden (högst 180 tecken, du-form, förnamn, inga emojis).
+${kind === "revive" ? "Kunden har inte svarat på offerten på några veckor – fråga vänligt om flytten fortfarande är aktuell." : "Kunden har fått en offert men inte signerat – fråga om något är oklart och säg att det går att signera i mobilen."}
+Ingen rabatt, inget nytt pris, ingen press. Skriv inte ut länk eller telefonnummer – de läggs till efter texten. Avsluta inte med hälsning.`,
+    user: quote("underlag", salesContext(b, today)) + (o.hint ? `\n\nSäljarens önskemål:\n${quote("instruktion", o.hint.slice(0, 400))}` : ""),
+  });
+  return (typeof r.text === "string" ? r.text.trim() : "").replace(/https?:\/\/\S+/g, "").slice(0, 200);
+}
+export const smsLength = (text: string, link: string) => (text + "\n" + link + "\n").length;
+export { SMS_MAX };
 
 // ---------- call script ----------
 export type CallScript = { opening: string; questions: string[]; objections: { if: string; say: string }[]; close: string };

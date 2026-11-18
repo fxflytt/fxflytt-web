@@ -14,7 +14,8 @@ import { syncInbox, listMails, redraft, replyEmail, M_CATS, type InMail, type Sy
 import { listComplaints, updateComplaint, type Complaint } from "./complaints.ts";
 import { aiConfigured } from "./claude.ts";
 import { estimate } from "./estimate.ts";
-import { salesCandidates, draftSales, SALES_KINDS, type SalesKind } from "./sales.ts";
+import { salesCandidates, draftSales, draftSms, SALES_KINDS, type SalesKind } from "./sales.ts";
+import { sendSms, smsConfigured, smsFooter } from "../sms/send.ts";
 import { dailyPlan, type DayPlan } from "./plan.ts";
 import { AGENTS, agentName, aiBy, aiSignature, logActivity, takeQuota } from "./team.ts";
 import { kv } from "../booking/kv.ts";
@@ -115,16 +116,33 @@ export async function sendSales(kind: SalesKind, b: Booking, subject: string, bo
   await saveBooking(b, `${SALES_KINDS[kind].label}: mejl skickat "${subject}"${auto ? " (automatiskt)" : ""}`, by);
 }
 
+/** An SMS about the offer: the text, the link to the offer, and our phone number. */
+export async function sendSalesSms(kind: SalesKind, b: Booking, text: string, by: string, auto = false) {
+  const link = (kind === "followup" || kind === "revive") && b.token ? `${SITE}/signera?t=${b.token}` : "";
+  const msg = [text.trim(), link, smsFooter].filter(Boolean).join("\n");
+  await sendSms(b.data.phone, msg);
+  b.sms = [...(b.sms || []), { at: Date.now(), by, text: msg, ...(auto ? { auto: true } : {}) }].slice(-20);
+  b.closings = [...(b.closings || []), { at: Date.now(), subject: "SMS: " + text.slice(0, 60), by, kind, sms: true, ...(auto ? { auto: true } : {}) }].slice(-12);
+  await saveBooking(b, `${SALES_KINDS[kind].label}: SMS skickat${auto ? " (automatiskt)" : ""}: "${text.slice(0, 80)}"`, by);
+}
+
 /** Oskar sends the e-mails the owner allowed him to send by himself, best chance first, within the daily limit. */
 export async function runSalesAuto(): Promise<{ sent: string[]; failed: string[] }> {
   const s = await getSettings(), out = { sent: [] as string[], failed: [] as string[] };
   const kinds = (Object.keys(SALES_KINDS) as SalesKind[]).filter((k) => s.aiAuto[k]);
   if (!kinds.length || !aiConfigured() || !mailConfigured()) return out;
   const oskar = agentName(s, "oskar");
-  const list = salesCandidates(await listBookings(2000)).filter((c) => kinds.includes(c.kind)).slice(0, 12);
+  const smsOk = s.aiAuto.sms && smsConfigured();
+  const list = salesCandidates(await listBookings(2000)).filter((c) => kinds.includes(c.kind) && (c.channel === "email" || smsOk)).slice(0, 12);
   for (const c of list) {
     if (!(await takeQuota(s.aiDailyMax))) break;
     try {
+      if (c.channel === "sms") {
+        const text = await draftSms(c.kind, c.b, today(), { name: oskar });
+        await sendSalesSms(c.kind, c.b, text, aiBy(s, "oskar"), true);
+        await logActivity({ agent: "oskar", what: `${SALES_KINDS[c.kind].label}: SMS till ${c.b.data.name}: "${text.slice(0, 80)}"`, bookingId: c.b.id, auto: true });
+        out.sent.push(c.b.id); continue;
+      }
       const d = await draftSales(c.kind, c.b, today(), { name: oskar, signature: aiSignature(oskar, AGENTS.oskar.role) });
       await sendSales(c.kind, c.b, d.subject, d.body, aiBy(s, "oskar"), true);
       await logActivity({ agent: "oskar", what: `${SALES_KINDS[c.kind].label}: skickade "${d.subject}" till ${c.b.data.name}${d.tip ? " · Tips: " + d.tip : ""}`, bookingId: c.b.id, auto: true });

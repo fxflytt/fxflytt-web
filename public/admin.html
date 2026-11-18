@@ -856,7 +856,7 @@ FX Flytt</textarea>
       maja:`${klagAll.filter(c=>c.status!=='closed').length} öppna klagomål${klagAll.some(c=>c.status!=='closed'&&c.deadline<today())?' · <b style="color:var(--red)">försenat svar</b>':''}`,
       nils:`${(t.plan?.items||[]).length} saker på dagens plan`,
     };
-    const modes={elsa:mode(A.reply)+(A.request?' <span class="tag seen">Gör förfrågningar</span>':''),oskar:mode(['followup','revive','calc','winback','upsell'].some(k=>A[k])),maja:mode(A.ack),nils:'<span class="tag ok">Varje morgon</span>'};
+    const modes={elsa:mode(A.reply)+(A.request?' <span class="tag seen">Gör förfrågningar</span>':'')+(A.instant||A.instantSms?' <span class="tag seen">Svarar direkt</span>':''),oskar:mode(['followup','revive','calc','winback','upsell'].some(k=>A[k]))+(A.sms&&t.sms?' <span class="tag seen">📱 SMS</span>':''),maja:mode(A.ack),nils:'<span class="tag ok">Varje morgon</span>'};
     const P=t.plan||{items:[]};
     $('#tpane').innerHTML=`${!t.ai?'<div class="warn">AI är inte inställt (ANTHROPIC_API_KEY i Vercel) – teamet kan inte läsa eller skriva än.</div>':''}
       <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">${t.team.map(a=>`<a class="kpi lt" href="#" data-ag="${a.id}" style="display:flex;flex-direction:column;gap:8px">
@@ -884,20 +884,21 @@ FX Flytt</textarea>
       <div class="card" style="display:flex;gap:12px;align-items:center">${avatar('oskar')}<div><b>${esc(nm('oskar'))}, säljare</b><div class="muted">Jag letar varje dag efter kunder som är värda ett mejl – följer upp offerter, väcker gamla, ringer in kalkyl-leads, försöker vinna tillbaka nej och säljer till flyttstäd och packning. Tryck på en kund så skriver jag mejlet, du läser och skickar. Jag ändrar aldrig priset.</div></div></div>
       ${groups.length?groups.map(([k,l])=>`<div class="card"><h3>${SK[k][0]} ${SK[k][1]} <span class="sub">${l.length} · ${A[k]?'skickar själv varje morgon':'utkast'}</span></h3>
         ${l.map(x=>`<div class="todo"><a href="#${esc(x.id)}" data-cl="${esc(x.id)}" data-kind="${k}"><b>${esc(x.name)}${x.total?` <span class="tag">${esc(kr(x.total))}</span>`:''}${x.views?` <span class="tag seen">👁 ${x.views}</span>`:''}</b><small>${esc(x.why)}${x.date?' · flyttdag '+esc(fmtDate(x.date)):''}</small></a>
-          <button class="btn sm" data-cl2="${esc(x.id)}" data-kind="${k}">✨ Skriv mejl</button></div>`).join('')}</div>`).join(''):'<div class="card empty">Inga kunder att kontakta just nu.</div>'}
+          <button class="btn sm" data-cl2="${esc(x.id)}" data-kind="${k}" data-ch="${x.channel}">${x.channel==='sms'?'📱 Skriv SMS':'✨ Skriv mejl'}</button></div>`).join('')}</div>`).join(''):'<div class="card empty">Inga kunder att kontakta just nu.</div>'}
       <div class="muted">Automatiska påminnelser om offerten skickas fortfarande efter 1 och 3 dagar. Kunder som sagt nej till utskick får bara uppföljning av sin egen offert. Varje kund får varje sorts mejl högst en gång.</div>`;
-    root.querySelectorAll('[data-cl],[data-cl2]').forEach(x=>x.onclick=(e)=>{ e.preventDefault(); openClosing={id:x.dataset.cl||x.dataset.cl2,kind:x.dataset.kind}; location.hash=openClosing.id; });
+    root.querySelectorAll('[data-cl],[data-cl2]').forEach(x=>x.onclick=(e)=>{ e.preventDefault(); openClosing={id:x.dataset.cl||x.dataset.cl2,kind:x.dataset.kind,ch:x.dataset.ch||''}; location.hash=openClosing.id; });
   }
   // In the offer / booking: Oskar writes a sales e-mail of the kind that fits, and a call script.
   function closingKinds(b){
     const k=[], d=b.data||{}, day=864e5, age=b.sentAt?Date.now()-b.sentAt:0;
+    if(b.status==='sent'&&b.token&&(d.email||canSms(b))){ k.push(age>14*day?'revive':'followup'); }
     if(!d.email) return k;
-    if(b.status==='sent'&&b.token){ k.push(age>14*day?'revive':'followup'); }
     if(b.status==='new'&&b.lead==='calc') k.push('calc');
     if(b.status==='declined'&&!b.nextId) k.push('winback');
     if(b.status==='signed') k.push('upsell');
     return k;
   }
+  const canSms=(b)=>/^(\+46|0046|46)?0?7[02369]\d{7}$/.test(String((b.data||{}).phone||'').replace(/[\s\-().]/g,''));
   function closingCard(b){
     const kinds=closingKinds(b), canCall=['new','sent','declined'].includes(b.status)&&(b.data||{}).phone;
     if(!kinds.length&&!canCall) return '';
@@ -905,13 +906,25 @@ FX Flytt</textarea>
       ${kinds.length?`<div class="muted">Jag läser offerten, om kunden har öppnat den, påminnelser och samtal – och skriver ett kort personligt mejl. Du läser och skickar.</div>
       ${(b.closings||[]).length?`<div class="muted" style="margin-top:6px">Skickat: ${b.closings.map(c=>`${esc(fmtTs(c.at))} ”${esc(c.subject)}” (${esc(c.by)})`).join(' · ')}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">${kinds.length>1?`<select id="cl_kind" style="width:auto">${kinds.map(k=>`<option value="${k}">${SK[k][1]}</option>`).join('')}</select>`:`<input type="hidden" id="cl_kind" value="${kinds[0]}"><span class="tag" style="align-self:center">${SK[kinds[0]][0]} ${SK[kinds[0]][1]}</span>`}
-        <input id="cl_hint" placeholder="Valfritt: ”nämn att vi har en ledig lastbil den 14:e”" style="flex:1;min-width:180px"><button class="btn sec sm" id="cl_draft">✨ Skriv mejlet</button></div>
+        ${aiTeam.sms&&canSms(b)&&kinds.some(k=>k==='followup'||k==='revive')?`<div class="seg" id="cl_ch" style="padding:2px">${(b.data.email?[['email','✉ E-post'],['sms','📱 SMS']]:[['sms','📱 SMS']]).map(([c,l],i)=>`<button data-c="${c}" class="${i===0?'on':''}" style="padding:6px 12px">${l}</button>`).join('')}</div>`:''}
+        <input id="cl_hint" placeholder="Valfritt: ”nämn att vi har en ledig lastbil den 14:e”" style="flex:1;min-width:180px"><button class="btn sec sm" id="cl_draft">✨ Skriv</button></div>
       <div id="cl_box"></div>`:''}
       ${canCall?`<button class="btn gray sm" id="cl_script" style="margin-top:10px">📞 Ringmanus inför samtalet</button><div id="cl_sc"></div>`:''}<div id="cl_msg"></div></div>`;
   }
   function bindClosing(b){
     if(!$('#clcard')) return;
-    const draft=async(btn)=>{ const kind=$('#cl_kind').value; ibBusy(btn,true,nm('oskar')+' skriver…');
+    const chan=()=>{ const on=$('#cl_ch .on'); return on?on.dataset.c:(b.data.email?'email':'sms'); };
+    root.querySelectorAll('#cl_ch button').forEach(x=>x.onclick=()=>{ root.querySelectorAll('#cl_ch button').forEach(y=>y.classList.toggle('on',y===x)); $('#cl_box').innerHTML=''; });
+    const draftSms=async(btn,kind)=>{ ibBusy(btn,true,nm('oskar')+' skriver…');
+      try{ const r=await api('/api/admin/closing?id='+b.id,{method:'POST',body:JSON.stringify({action:'draft',channel:'sms',kind,hint:$('#cl_hint').value})});
+        $('#cl_box').innerHTML=`<label class="f" for="cl_sms">SMS (länken till offerten och vårt nummer läggs till)</label><textarea id="cl_sms" rows="3" maxlength="220">${esc(r.text)}</textarea><div class="muted" id="cl_len"></div>
+          <button class="btn" id="cl_send">Skicka SMS till ${esc(b.data.phone)}</button>`;
+        const len=()=>{ $('#cl_len').textContent=$('#cl_sms').value.length+' av 220 tecken'; }; len(); $('#cl_sms').oninput=len;
+        $('#cl_send').onclick=async(e)=>{ if(!confirm('Skicka SMS till '+b.data.phone+'?')) return; ibBusy(e.target,true,'Skickar…');
+          try{ const nb=await api('/api/admin/closing?id='+b.id,{method:'POST',body:JSON.stringify({action:'send',channel:'sms',kind,text:$('#cl_sms').value})}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; notify('SMS:et är skickat ✓'); showDetail(b.id); }
+          catch(er){ ibBusy(e.target,false); ibMsg('#cl_msg',er.message); } };
+      }catch(er){ ibMsg('#cl_msg',er.message); } finally{ ibBusy(btn,false); } };
+    const draft=async(btn)=>{ const kind=$('#cl_kind').value; if(chan()==='sms') return draftSms(btn,kind); ibBusy(btn,true,nm('oskar')+' skriver…');
       try{ const r=await api('/api/admin/closing?id='+b.id,{method:'POST',body:JSON.stringify({action:'draft',kind,hint:$('#cl_hint').value})});
         $('#cl_box').innerHTML=`${r.tip?`<div class="warn"><b>${esc(nm('oskar'))} tipsar:</b> ${esc(r.tip)}</div>`:''}<label class="f" for="cl_sub">Ämne</label><input id="cl_sub" value="${esc(r.subject)}">
           <label class="f" for="cl_body">Text</label><textarea id="cl_body" rows="10">${esc(r.body)}</textarea>
@@ -929,13 +942,43 @@ FX Flytt</textarea>
           <b style="display:block;margin-top:8px">Om kunden säger …</b>${r.objections.map(o=>`<div style="margin:4px 0"><i>”${esc(o.if)}”</i> → ${esc(o.say)}</div>`).join('')}
           <b style="display:block;margin-top:8px">Avsluta:</b> ${esc(r.close)}</div>`; }
       catch(er){ ibMsg('#cl_msg',er.message); } finally{ ibBusy(e.target,false); } };
-    if(openClosing&&openClosing.id===b.id){ const k=openClosing.kind; openClosing=null; if($('#cl_kind')&&k&&[...($('#cl_kind').options||[{value:$('#cl_kind').value}])].some(o=>o.value===k)) $('#cl_kind').value=k; $('#clcard').scrollIntoView({behavior:'smooth',block:'start'}); if($('#cl_draft')) draft($('#cl_draft')); }
+    if(openClosing&&openClosing.id===b.id){ const k=openClosing.kind; if(openClosing.ch==='sms'&&$('#cl_ch [data-c="sms"]')) $('#cl_ch [data-c="sms"]').click(); openClosing=null; if($('#cl_kind')&&k&&[...($('#cl_kind').options||[{value:$('#cl_kind').value}])].some(o=>o.value===k)) $('#cl_kind').value=k; $('#clcard').scrollIntoView({behavior:'smooth',block:'start'}); if($('#cl_draft')) draft($('#cl_draft')); }
+  }
+
+  // Nils → Varför vi förlorar: won vs lost offers, counted exactly, explained by the AI.
+  let nilsView='week';
+  const nilsSeg=()=>`<div style="margin:-4px 0 14px"><div class="seg" id="nseg">${[['week','📊 Veckorapport'],['lost','🔍 Varför vi förlorar']].map(([k,l])=>`<button data-k="${k}" class="${nilsView===k?'on':''}">${l}</button>`).join('')}</div></div>`;
+  const bindNilsSeg=()=>root.querySelectorAll('#nseg button').forEach(x=>x.onclick=()=>{ nilsView=x.dataset.k; showWeekly(true); });
+  async function showLost(){
+    root.innerHTML=navBar('inbox',nm('nils')+' · Varför vi förlorar')+`<main>${inboxTabs()}${nilsSeg()}<div id="lpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs(); bindNilsSeg();
+    let j; try{ j=await api('/api/admin/lost'); }catch(e){ $('#lpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const r=j.report, n=r?.numbers, a=r?.analysis;
+    const li=(l)=>l&&l.length?`<ul style="margin:6px 0 0;padding-left:20px">${l.map(x=>`<li style="margin:5px 0">${esc(x)}</li>`).join('')}</ul>`:'<div class="muted">–</div>';
+    const grp=(t,l)=>`<div class="card"><h3>${t}</h3>${l.length?l.map(g=>`<div class="todo"><a><b style="font-weight:600">${esc(g.key)}</b><small>${g.won} vunna · ${g.lost} förlorade</small></a><span class="tag ${g.winRate>=50?'ok':g.winRate>=30?'wn':'no'}">${g.winRate==null?'–':g.winRate+' %'}</span></div>`).join(''):'<div class="muted">För lite underlag.</div>'}</div>`;
+    const fv=(v,unit)=>v==null?'–':unit===' kr'?esc(kr(v)):esc(String(v))+unit;
+    const vs=(t,x,unit)=>`<div class="todo"><a><b style="font-weight:600">${t}</b></a><span class="tag ok">Vunna ${fv(x.won,unit)}</span><span class="tag no">Förlorade ${fv(x.lost,unit)}</span></div>`;
+    $('#lpane').innerHTML=`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><select id="l_days" style="width:auto">${[[30,'Senaste 30 dagarna'],[90,'Senaste 90 dagarna'],[180,'Senaste halvåret'],[365,'Senaste året']].map(([d,l])=>`<option value="${d}"${(n?.days||90)===d?' selected':''}>${l}</option>`).join('')}</select>
+        <button class="btn sec sm" id="l_make">${r?'Räkna om':'Analysera nu'}</button>${r?`<span class="muted">Gjord ${esc(ago(r.createdAt))}</span>`:''}</div><div id="l_msg"></div>
+      ${!r?`<div class="card empty">${esc(nm('nils'))} jämför offerterna ni vann med dem ni förlorade – skäl, orter, storlek, pris, svarstid och uppföljning – och förklarar vad ni kan ändra. Tryck <b>Analysera nu</b>.</div>`:`
+      <div class="card"><h3>${avatar('nils',26)} ${a?esc(a.headline):'Siffrorna'}</h3>${a?`<b style="display:block;margin-top:6px">Det här ser jag</b>${li(a.findings)}<b style="display:block;margin-top:12px">Gör så här</b>${li(a.fixes)}`:`<div class="muted">${r.aiError?'AI:n kunde inte skriva analysen: '+esc(r.aiError):n.lost?'Bara siffror – AI är inte inställt.':'Inga förlorade affärer i perioden 🎉'}</div>`}</div>
+      <div class="kpis"><div class="kpi lt"><small>Offerter</small><b>${n.offers}</b><small>${esc(fmtDate(n.from))} – nu</small></div>
+        <div class="kpi" style="background:var(--green)"><small>Vunna</small><b>${n.won}</b><small>${n.winRate==null?'':n.winRate+' % vinstandel'}</small></div>
+        <div class="kpi lt alert"><small>Förlorade</small><b>${n.lost}</b><small>${esc(kr(n.lostValue))}</small></div>
+        <div class="kpi lt"><small>Svarade aldrig</small><b>${n.noAnswer}</b><small>${n.neverOpened} öppnade aldrig offerten</small></div></div>
+      <div class="cols"><div class="card"><h3>Varför de sa nej</h3>${n.reasons.length?n.reasons.map(x=>`<div class="todo"><a><b style="font-weight:600">${esc(x.reason)}</b></a><span class="tag">${x.n}</span></div>`).join(''):'<div class="muted">–</div>'}</div>
+        <div class="card"><h3>Vunna mot förlorade</h3>${vs('Snittpris',n.avgPrice,' kr')}${vs('Pris per m²',n.pricePerM2,' kr')}${vs('Svarstid (median)',n.responseMin,' min')}${vs('Tid till offert (median)',n.hoursToOffer,' tim')}
+          <div class="todo"><a><b style="font-weight:600">Förlorade utan samtal</b><small>${n.noFollowUp} fick varken samtal, påminnelse eller mejl</small></a><span class="tag no">${n.noCall} av ${n.lost}</span></div>
+          <div class="todo"><a><b style="font-weight:600">Rabatt</b><small>gavs på ${n.discount.given} offerter</small></a><span class="tag">${n.discount.wonAfter} vann</span></div></div></div>
+      <div class="cols">${grp('Per ort (från)',n.towns)}${grp('Per bostadsstorlek',n.sizes)}</div>
+      <div class="cols">${grp('Per prisnivå',n.prices)}<div class="card"><h3>Kundernas egna ord</h3>${n.quotes.length?n.quotes.map(q=>`<div class="muted" style="padding:6px 0;border-top:1px solid var(--line)">”${esc(q)}”</div>`).join(''):'<div class="muted">Inga kommentarer.</div>'}</div></div>`}`;
+    $('#l_make').onclick=async(e)=>{ ibBusy(e.target,true,nm('nils')+' analyserar…'); try{ await api('/api/admin/lost',{method:'POST',body:JSON.stringify({days:Number($('#l_days').value)})}); showLost(); }catch(er){ ibBusy(e.target,false); ibMsg('#l_msg',er.message); } };
   }
 
   // Statistik → Veckorapport: written every Monday by the AI from last week's numbers.
   async function showWeekly(inAi){
     showWeekly.inAi=!!inAi;
-    if(inAi){ root.innerHTML=navBar('inbox',nm('nils')+' · Rapporter')+`<main>${inboxTabs()}<div class="card" style="display:flex;gap:12px;align-items:center">${avatar('nils')}<div><b>${esc(nm('nils'))}, analytiker</b><div class="muted">Varje morgon gör jag dagens plan (se Översikt), och varje måndag skriver jag veckorapporten: siffrorna räknas exakt av systemet, jag skriver vad de betyder och tre saker att göra.</div></div></div><div id="wpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs(); }
+    if(inAi&&nilsView==='lost') return showLost();
+    if(inAi){ root.innerHTML=navBar('inbox',nm('nils')+' · Rapporter')+`<main>${inboxTabs()}${nilsSeg()}<div class="card" style="display:flex;gap:12px;align-items:center">${avatar('nils')}<div><b>${esc(nm('nils'))}, analytiker</b><div class="muted">Varje morgon gör jag dagens plan (se Översikt), och varje måndag skriver jag veckorapporten: siffrorna räknas exakt av systemet, jag skriver vad de betyder och tre saker att göra.</div></div></div><div id="wpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs(); bindNilsSeg(); }
     else { view='stat'; root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="wpane"><div class="empty">Laddar…</div></div></main>`; bindStatTabs(); }
     let j; try{ j=await api('/api/admin/weekly'+(showWeekly.week?'?week='+showWeekly.week:'')); }catch(e){ $('#wpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     const r=j.report, n=r?.numbers, a=r?.analysis;
@@ -2419,7 +2462,7 @@ FX Flytt</textarea>
   SETTINGS.ai=async(el)=>{
     let s; try{ s=await api('/api/admin/settings'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     let st={}; try{ st=(await api('/api/admin/inbox')).state||{}; }catch(_){}
-    const N=s.aiNames||{}, A=s.aiAuto||{};
+    const N=s.aiNames||{}, A=s.aiAuto||{}; const sms=!!(await loadTeam()).sms;
     const tg=(k,label,sub)=>`<div class="todo"><a><b style="font-weight:700">${label}</b><small>${sub}</small></a><label class="tg" style="margin:0"><input type="checkbox" data-auto="${k}"${A[k]?' checked':''}> Själv</label></div>`;
     const person=(id,role)=>`<div style="display:flex;gap:10px;align-items:center">${avatar(id,34)}<div style="flex:1"><label class="f" for="ai_n_${id}" style="margin-top:0">${role}</label><input id="ai_n_${id}" value="${esc(N[id]||'')}" maxlength="24"></div></div>`;
     el.innerHTML=`<div class="card"><h3>AI-teamet</h3>
@@ -2430,13 +2473,17 @@ FX Flytt</textarea>
     <div class="card"><h3>${avatar('elsa',26)} E-post</h3>
       <div class="todo"><a><b style="font-weight:700">Läs info@</b><small>Bara läsning – inget raderas eller flyttas. ${st.lastSync?'Senast läst '+esc(ago(st.lastSync)):'Inte läst än'}${st.lastError?' · <span style="color:var(--red)">Fel: '+esc(st.lastError)+'</span>':''}</small></a><label class="tg" style="margin:0"><input type="checkbox" id="ai_in"${s.aiInboxOn?' checked':''}> På</label></div>
       ${tg('request','Gör förfrågningar av offertmejl','Ett mejl som vill ha offert blir en förfrågan i Offerter, med prisförslag från prislistan när ort och boyta står i mejlet. Inget skickas till kunden.')}
+      ${tg('instant','Svarar direkt på nya förfrågningar från hemsidan','Ett personligt mejl inom en minut i stället för standardkvittot: tackar, upprepar vad kunden vill, säger när offerten kommer och frågar om det som saknas (våning, hiss, tunga saker).')}
+      ${tg('instantSms','SMS direkt till nya förfrågningar','”Tack för din förfrågan – du får din offert i dag/i morgon och kan signera i mobilen.” Kräver SMS (se nedan).')}
       ${tg('reply','Svarar själv på enkla frågor','Bara när svaret helt bygger på fakta om företaget, eller bara ber om uppgifter för en offert. Aldrig klagomål, pengar, ändringar eller avbokningar.')}</div>
     <div class="card"><h3>${avatar('oskar',26)} Försäljning – mejl som skickas själv varje morgon</h3>
       ${tg('followup','Följ upp offert','Skickad, inte signerad. Högst två gånger, minst tre dagar emellan.')}
       ${tg('revive','Väck förfallen offert','Inget svar på 2–6 veckor. En gång.')}
       ${tg('calc','Kalkyl-leads','Räknade pris på hemsidan men bad aldrig om offert. En gång.')}
       ${tg('winback','Vinn tillbaka','Tackade nej (pris, datum, annan firma). En gång, 2–21 dagar efter.')}
-      ${tg('upsell','Merförsäljning','Bokade kunder: flyttstäd, packning eller kartonger 4–30 dagar före flytten. En gång.')}</div>
+      ${tg('upsell','Merförsäljning','Bokade kunder: flyttstäd, packning eller kartonger 4–30 dagar före flytten. En gång.')}
+      ${tg('sms','Följer upp med SMS','Andra uppföljningen av en offert (och kunder utan e-post) går som SMS med länk till offerten. Gäller bara när ”Följ upp offert” eller ”Väck förfallen offert” är på.')}
+      <div class="${sms?'okmsg':'warn'}" style="margin-top:10px">${sms?'📱 SMS är inställt.':'📱 SMS är inte inställt än. Skapa ett konto på <b>46elks.se</b> (svensk SMS-tjänst, betala per SMS, ca 0,50 kr) och lägg in <b>ELKS_API_USER</b> och <b>ELKS_API_PASSWORD</b> i Vercel → Settings → Environment Variables. Avsändaren blir ”FXFlytt” (ändra med SMS_FROM).'}</div></div>
     <div class="card"><h3>${avatar('maja',26)} Klagomål</h3>
       ${tg('ack','Bekräftar direkt att klagomålet kommit in','Ett kort mejl: vi har fått ditt ärende och svarar senast [dag]. Inga löften. Svaret skriver ni.')}</div>
     <div class="card"><h3>${avatar('nils',26)} Rapporter och gränser</h3>
