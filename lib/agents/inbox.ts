@@ -12,6 +12,7 @@ import { listBookings, type Booking } from "../booking/store.ts";
 import { askJson, MODEL_FAST, MODEL_WRITE, HOUSE_RULES, quote, aiConfigured, type JsonSchema } from "./claude.ts";
 import { addComplaint, assess, bookingContext, type Assessment } from "./complaints.ts";
 import type { RawMail } from "../mail/imap.ts";
+import type { Estimate } from "./estimate.ts";
 
 export type MCat = "offert" | "bokning" | "klagomal" | "faktura" | "jobb" | "leverantor" | "spam" | "ovrigt";
 export const M_CATS: Record<MCat, string> = {
@@ -23,7 +24,8 @@ export type Extracted = { name: string; phone: string; from: string; to: string;
 export type InMail = {
   id: string; uid: number; messageId: string; inReplyTo: string; references: string[];
   from: string; fromName: string; subject: string; date: number; text: string; attachments: string[];
-  category: MCat; priority: "high" | "normal" | "low"; summary: string; needsReply: boolean; draft: string;
+  category: MCat; priority: "high" | "normal" | "low"; summary: string; needsReply: boolean; autoSafe?: boolean; draft: string;
+  estimate?: Estimate; autoReplied?: boolean;
   extracted?: Extracted; bookingId?: string; complaintId?: string;
   status: MStatus; answers?: { at: number; by: string; text: string }[]; doneBy?: string;
   aiError?: string;
@@ -70,14 +72,15 @@ export function findBooking(m: Pick<RawMail, "from" | "subject" | "text">, all: 
 }
 
 // ---------- the AI's triage ----------
-export type Triage = { category: MCat; priority: "high" | "normal" | "low"; summary: string; needsReply: boolean; draft: string; extracted: Extracted };
+export type Triage = { category: MCat; priority: "high" | "normal" | "low"; summary: string; needsReply: boolean; autoSafe: boolean; draft: string; extracted: Extracted };
 const TRIAGE_SCHEMA: JsonSchema = {
-  type: "object", additionalProperties: false, required: ["category", "priority", "summary", "needsReply", "draft", "extracted"],
+  type: "object", additionalProperties: false, required: ["category", "priority", "summary", "needsReply", "autoSafe", "draft", "extracted"],
   properties: {
     category: { type: "string", enum: Object.keys(M_CATS) },
     priority: { type: "string", enum: ["high", "normal", "low"], description: "high = kund som vill boka snart, flyttar inom 7 dagar, klagomål eller något brådskande. low = reklam, nyhetsbrev, automatiska mejl." },
     summary: { type: "string", description: "En mening på svenska till kontoret: vem, vad de vill." },
     needsReply: { type: "boolean", description: "false för skräppost, reklam, nyhetsbrev, automatiska kvitton och mejl som bara säger tack." },
+    autoSafe: { type: "boolean", description: "true BARA om svaret kan skickas utan att en människa läser det: kunden ställer en enkel fråga som besvaras helt med fakta i <foretaget>, eller vill ha offert och svaret bara tackar och ber om saknade uppgifter. false vid klagomål, pengar, faktura, ändring eller avbokning av en bokning, datum som måste bekräftas, arg kund, eller om du är minsta osäker." },
     draft: { type: "string", description: "Utkast till svar till avsändaren, eller tom sträng om inget svar behövs. Vid offertförfrågan: tacka, bekräfta det kunden skrivit och be om det som saknas för en offert (från- och tilladress, datum, bostadens storlek, våningar/hiss, telefonnummer). Hitta aldrig på pris." },
     extracted: {
       type: "object", additionalProperties: false, required: ["name", "phone", "from", "to", "date", "size"],
@@ -95,9 +98,10 @@ const TRIAGE_SYSTEM = `${HOUSE_RULES}
 Du sorterar inkommande e-post till FX Flytts gemensamma inkorg info@fxflytt.se och skriver ett utkast till svar.
 Kontoret granskar alltid utkastet innan något skickas.`;
 
-export async function triage(m: RawMail, b: Booking | null, today: string): Promise<Triage> {
+export async function triage(m: RawMail, b: Booking | null, today: string, facts = "", name = "Elsa"): Promise<Triage> {
   const t = await askJson<Triage>({
-    model: MODEL_FAST, effort: "low", schema: TRIAGE_SCHEMA, maxTokens: 4000, system: TRIAGE_SYSTEM,
+    model: MODEL_FAST, effort: "low", schema: TRIAGE_SCHEMA, maxTokens: 4000,
+    system: `${TRIAGE_SYSTEM}\nDu heter ${name} och arbetar i kundservice.${facts ? `\n\nFakta om företaget (det enda du får påstå om priser och tjänster):\n<foretaget>\n${facts}\n</foretaget>` : ""}`,
     user: `I dag är det ${today}.\n${quote("underlag", bookingContext(b))}\n\n${quote("mejl", `Från: ${m.fromName} <${m.from}>\nÄmne: ${m.subject}${m.attachments.length ? "\nBilagor: " + m.attachments.join(", ") : ""}\n\n${m.text.slice(0, 8000)}`)}`,
   });
   return cleanTriage(t);
@@ -107,7 +111,7 @@ export function cleanTriage(t: Partial<Triage>): Triage {
   return {
     category: (t.category && t.category in M_CATS ? t.category : "ovrigt") as MCat,
     priority: t.priority === "high" || t.priority === "low" ? t.priority : "normal",
-    summary: str(t.summary, 400), needsReply: t.needsReply !== false, draft: str(t.draft, 4000),
+    summary: str(t.summary, 400), needsReply: t.needsReply !== false, autoSafe: t.autoSafe === true, draft: str(t.draft, 4000),
     extracted: {
       name: str(e.name, 120), phone: str(e.phone, 40), from: str(e.from, 200), to: str(e.to, 200),
       date: /^\d{4}-\d{2}-\d{2}$/.test(e.date || "") ? e.date! : "", size: str(e.size, 80),
@@ -117,10 +121,10 @@ export function cleanTriage(t: Partial<Triage>): Triage {
 
 // A better reply from the stronger model, optionally following the office's own words ("säg att vi kan tisdag").
 const REDRAFT_SCHEMA: JsonSchema = { type: "object", additionalProperties: false, required: ["draft"], properties: { draft: { type: "string" } } };
-export async function redraft(m: InMail, b: Booking | null, hint: string, today: string): Promise<string> {
+export async function redraft(m: InMail, b: Booking | null, hint: string, today: string, o: { fast?: boolean; facts?: string } = {}): Promise<string> {
   const r = await askJson<{ draft: string }>({
-    model: MODEL_WRITE, effort: "medium", schema: REDRAFT_SCHEMA, maxTokens: 6000,
-    system: `${HOUSE_RULES}\n\nSkriv ett svar på kundens mejl som kontoret kan skicka efter granskning.`,
+    model: o.fast ? MODEL_FAST : MODEL_WRITE, effort: o.fast ? "low" : "medium", schema: REDRAFT_SCHEMA, maxTokens: 6000,
+    system: `${HOUSE_RULES}\n\nSkriv ett svar på kundens mejl som kontoret kan skicka efter granskning.${o.facts ? `\n\nFakta om företaget:\n<foretaget>\n${o.facts}\n</foretaget>` : ""}`,
     user: `I dag är det ${today}.\n${quote("underlag", bookingContext(b))}\n\n${quote("mejl", `Från: ${m.fromName} <${m.from}>\nÄmne: ${m.subject}\n\n${m.text.slice(0, 8000)}`)}` +
       (m.draft ? `\n\nTidigare utkast:\n${quote("utkast", m.draft)}` : "") +
       (hint ? `\n\nKontorets instruktion för svaret (följ den, men lova inget utöver den):\n${quote("instruktion", hint.slice(0, 1000))}` : ""),
@@ -138,6 +142,9 @@ export type SyncResult = { skipped?: string; read: number; saved: number; compla
 export async function syncInbox(o: {
   fetchNew: typeof import("../mail/imap.ts").fetchNew; keepDays: number; minGapMs?: number; max?: number;
   notify?: (m: InMail) => Promise<void>;
+  facts?: string; names?: { elsa: string; maja: string };
+  // Runs after an e-mail is sorted and saved (make a request, answer by itself …). Changes to the mail are saved after it.
+  after?: (m: InMail, ctx: { booking: Booking | null; complaint: import("./complaints.ts").Complaint | null }) => Promise<void>;
 }): Promise<SyncResult> {
   const res: SyncResult = { read: 0, saved: 0, complaints: 0, urgent: [], more: false };
   const st = await getState();
@@ -170,25 +177,28 @@ export async function syncInbox(o: {
       {
         const b = findBooking(m, all);
         let t: Triage | null = null, aiError = "";
-        if (aiConfigured()) { try { t = await triage(m, b, today); } catch (e) { aiError = (e as Error).message.slice(0, 200); } }
+        if (aiConfigured()) { try { t = await triage(m, b, today, o.facts, o.names?.elsa); } catch (e) { aiError = (e as Error).message.slice(0, 200); } }
         const mail: InMail = {
           id: "M" + randomBytes(5).toString("hex"), uid: m.uid, messageId: m.messageId, inReplyTo: m.inReplyTo, references: m.references.slice(-10),
           from: m.from, fromName: m.fromName, subject: m.subject, date: m.date, text: m.text, attachments: m.attachments,
-          ...(t || { category: "ovrigt", priority: "normal", summary: "", needsReply: true, draft: "" } as Omit<Triage, "extracted">),
+          ...(t || { category: "ovrigt", priority: "normal", summary: "", needsReply: true, autoSafe: false, draft: "" } as Omit<Triage, "extracted">),
           ...(t && Object.values(t.extracted).some(Boolean) ? { extracted: t.extracted } : { extracted: undefined }),
           ...(b ? { bookingId: b.id } : {}), status: t && !t.needsReply ? "done" : "new", ...(aiError ? { aiError } : {}),
         };
         if (mail.category === "spam") mail.status = "done";
+        let complaint: import("./complaints.ts").Complaint | null = null;
         if (mail.category === "klagomal") {
           let a: Assessment | null = null;
           try { if (aiConfigured()) a = await assess(m.text, m.subject, b); } catch { /* the office can press "Bedöm med AI" later */ }
           const c = await addComplaint({ source: "email", name: m.fromName || b?.data.name, email: m.from, phone: b?.data.phone, bookingId: b?.id, mailId: mail.id,
-            subject: m.subject, text: m.text, assessment: a, by: "AI-inkorgen" });
+            subject: m.subject, text: m.text, assessment: a, by: `${o.names?.maja || "Maja"} (AI)` });
+          complaint = c;
           mail.complaintId = c.id; mail.status = "new"; res.complaints++;
           if (a?.draft) mail.draft = a.draft;
           if (a?.severity === "high") mail.priority = "high";
         }
         await saveMail(mail, o.keepDays); res.saved++;
+        if (o.after) { try { await o.after(mail, { booking: b, complaint }); await saveMail(mail, o.keepDays); } catch (e) { console.error("inbox after", (e as Error).message); } }
         if (mail.status === "new" && (mail.priority === "high" || mail.category === "offert" || mail.category === "klagomal")) res.urgent.push(mail);
       }
     };

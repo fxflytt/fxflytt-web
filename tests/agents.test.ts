@@ -10,6 +10,10 @@ function run(c: string[]): unknown {
     case "GET": return S.get(a[0]) ?? null;
     case "DEL": S.delete(a[0]); return 1;
     case "EXPIRE": return 1;
+    case "INCR": case "DECR": { const n = Number(S.get(a[0]) || 0) + (cmd === "INCR" ? 1 : -1); S.set(a[0], String(n)); return n; }
+    case "LPUSH": { const l = JSON.parse(S.get("L:" + a[0]) || "[]"); l.unshift(...a.slice(1)); S.set("L:" + a[0], JSON.stringify(l)); return l.length; }
+    case "LTRIM": { const l = JSON.parse(S.get("L:" + a[0]) || "[]"); S.set("L:" + a[0], JSON.stringify(l.slice(Number(a[1]), Number(a[2]) + 1))); return "OK"; }
+    case "LRANGE": { const l = JSON.parse(S.get("L:" + a[0]) || "[]"); return l.slice(Number(a[1]), Number(a[2]) + 1); }
     case "MGET": return a.map((k) => S.get(k) ?? null);
     case "SADD": { const s = SETS.get(a[0]) ?? new Set(); const had = s.has(a[1]); s.add(a[1]); SETS.set(a[0], s); return had ? 0 : 1; }
     case "ZADD": { const m = Z.get(a[0]) ?? new Map(); m.set(a[2], Number(a[1])); Z.set(a[0], m); return 1; }
@@ -29,7 +33,7 @@ function fakeClaude(body: Record<string, unknown>) {
   if (system.includes("sorterar inkommande")) {
     const complaint = /trasig|klaga/i.test(user);
     out = { category: complaint ? "klagomal" : /offert|flytta/i.test(user) ? "offert" : "leverantor", priority: complaint ? "high" : "normal",
-      summary: "Sammanfattning", needsReply: !/nyhetsbrev/i.test(user), draft: "Hej! Tack för ditt mejl.",
+      summary: "Sammanfattning", needsReply: !/nyhetsbrev/i.test(user), autoSafe: !complaint, draft: "Hej! Tack för ditt mejl.",
       extracted: { name: "Lisa Lind", phone: "070-123 45 67", from: "Kungsör", to: "Arboga", date: "2026-12-12", size: "2 rok" } };
   } else if (system.includes("klagomålsansvarig")) {
     out = { category: "damage", severity: "high", summary: "Spegel trasig", nextStep: "Ring kunden", draft: "Hej, vi beklagar…" };
@@ -177,4 +181,68 @@ test("askJson: AI-fel blir begripliga", async () => {
   await assert.rejects(askJson({ model: MODEL_FAST, effort: "low", system: "s", user: "u", schema, fetchImpl: f({ content: [], stop_reason: "refusal" }) }), /ville inte/);
   await assert.rejects(askJson({ model: MODEL_FAST, effort: "low", system: "s", user: "u", schema, fetchImpl: f({ error: "x" }, 529) }), /Claude API 529/);
   await assert.rejects(askJson({ model: MODEL_FAST, effort: "low", system: "s", user: "u", schema, fetchImpl: f({ content: [{ type: "text", text: "{oops" }], stop_reason: "end_turn" }) }), /gick inte att läsa/);
+});
+
+const team = await import("../lib/agents/team.ts");
+const { estimate, areaOf } = await import("../lib/agents/estimate.ts");
+const { dailyPlan } = await import("../lib/agents/plan.ts");
+const settings = await import("../lib/booking/settings.ts");
+import PRICES from "../lib/pricing/prices.json" with { type: "json" };
+
+test("Elsa: prisförslag från ort och boyta med samma prismotor som hemsidan", () => {
+  assert.equal(areaOf("2 rok, 60 m²"), 60); assert.equal(areaOf("3:a 75 kvm"), 75); assert.equal(areaOf("2 rok"), null);
+  const e = estimate({ name: "", phone: "", from: "Storgatan 1, Kungsör", to: "Arboga", date: "", size: "60 m2" }, PRICES)!;
+  assert.equal(e.from, "Kungsör"); assert.equal(e.to, "Arboga"); assert.equal(e.m2, 60); assert.ok(e.bas! > 0); assert.ok(e.premium! > 0);
+  assert.equal(estimate({ name: "", phone: "", from: "Atlantis", to: "Arboga", date: "", size: "60 m2" }, PRICES), null);
+});
+
+test("efter-steget körs för varje sorterat mejl och ändringar sparas", async () => {
+  const seen: string[] = [];
+  const r = await inbox.syncInbox({
+    fetchNew: async () => ({ mails: [raw(21, { from: "ny@ex.se", subject: "Vill flytta", text: "Vi vill flytta, offert tack", messageId: "<n21@ex>" })], uidValidity: "7", lastUid: 21, more: false }),
+    keepDays: 30, after: async (m, ctx) => { seen.push(m.category + ":" + (ctx.booking ? "b" : "-")); m.status = "answered"; m.autoReplied = true; },
+  });
+  assert.equal(r.saved, 1); assert.deepEqual(seen, ["offert:-"]); assert.equal(r.urgent.length, 0);   // answered → no notice
+  const m = (await inbox.listMails()).find((x) => x.from === "ny@ex.se")!;
+  assert.equal(m.status, "answered"); assert.equal(m.autoReplied, true); assert.equal(m.autoSafe, true);
+});
+
+test("Oskar: fem sorters kunder, var och en högst en gång", async () => {
+  const now = Date.now(), day = 864e5, future = new Date(now + 10 * day).toISOString().slice(0, 10);
+  const mk = async (name: string, p: Record<string, unknown>) => ({ ...(await store.createBooking("admin", { name, phone: "1", email: name + "@ex.se" })), ...p }) as import("../lib/booking/store.ts").Booking;
+  const list = [
+    await mk("calc", { lead: "calc", createdAt: now - 2 * day }),
+    await mk("calcNo", { lead: "calc", createdAt: now - 2 * day, noMarketing: true }),
+    await mk("win", { status: "declined", declinedAt: now - 3 * day, decline: { reason: "price" } }),
+    await mk("winMoved", { status: "declined", declinedAt: now - 3 * day, decline: { reason: "no_move" } }),
+    await mk("up", { status: "signed", date: future, offer: { total: 5000, lines: [{ label: "Flytt", amount: 5000 }] } }),
+    await mk("upDone", { status: "signed", date: future, offer: { total: 9000, lines: [{ label: "Flytt", amount: 5000 }, { label: "Flyttstäd", amount: 3000 }, { label: "Packning", amount: 500 }, { label: "Flyttkartonger hyra", amount: 500 }] } }),
+    await mk("revive", { status: "sent", token: "t", sentAt: now - 20 * day }),
+    await mk("revived", { status: "sent", token: "t", sentAt: now - 20 * day, closings: [{ at: now - day, subject: "s", by: "x", kind: "revive" }] }),
+  ];
+  const c = sales.salesCandidates(list, now).map((x) => x.b.data.name + ":" + x.kind).sort();
+  assert.deepEqual(c, ["calc:calc", "revive:revive", "up:upsell", "win:winback"]);
+  assert.match(sales.salesCandidates(list, now).find((x) => x.kind === "upsell")!.why, /flyttstäd, packning, kartonger/);
+});
+
+test("Nils: dagens plan sätter det viktigaste först", () => {
+  const today = "2026-11-18", now = Date.parse("2026-11-18T09:00:00Z");
+  const B = (p: Record<string, unknown>) => ({ id: "FX1", createdAt: now, updatedAt: 0, status: "new", source: "web", data: { name: "Kim", phone: "1" }, history: [], ...p }) as never;
+  const p = dailyPlan([B({}), B({ status: "sent", lastViewAt: now - 3600e3, views: 2, data: { name: "Ola", phone: "1" } }), B({ status: "sent", followUp: { at: "2026-11-18T10:00", note: "ville fundera", by: "x" }, data: { name: "Eva", phone: "1" } })],
+    [{ status: "new", deadline: "2026-11-17", name: "Per" } as never], [], [], today, now);
+  assert.deepEqual(p.items.map((i) => i.prio), [1, 1, 2, 2]);
+  assert.match(p.items[0].text, /Per.*försenat/); assert.match(p.items[1].text, /Kim/); assert.match(p.items[2].text, /Ring Eva – ville fundera/);
+  assert.equal(p.counts.hot, 1);
+});
+
+test("AI-teamet: namn, gräns per dag och logg", async () => {
+  const s = await settings.updateSettings({ aiNames: { elsa: " Linnea ", oskar: "Johan" }, aiAuto: { reply: true, hack: true }, aiDailyMax: 2 });
+  assert.equal(s.aiNames.elsa, "Linnea"); assert.equal(s.aiNames.maja, "Maja"); assert.equal(s.aiAuto.reply, true); assert.equal(s.aiAuto.followup, false);
+  assert.equal(team.aiBy(s, "elsa"), "Linnea (AI)");
+  await assert.rejects(settings.updateSettings({ aiNames: { nils: "  " } }), /namn/);
+  assert.equal(await team.takeQuota(2), true); assert.equal(await team.takeQuota(2), true); assert.equal(await team.takeQuota(2), false);
+  assert.equal(await team.sentToday(), 2);
+  await team.logActivity({ agent: "oskar", what: "Skickade mejl" }); await team.logActivity({ agent: "elsa", what: "Läste mejl" });
+  assert.deepEqual((await team.listActivity(5)).map((a) => a.agent), ["elsa", "oskar"]);
+  assert.match(team.aiSignature("Linnea", "Kundservice"), /Linnea, kundservice på FX Flytt\n\(Digital assistent/);
 });

@@ -330,7 +330,7 @@
   <a class="brand" href="#"><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"></a>
   <a class="nav" href="#" data-v="today"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Idag</a>
   <a class="nav" href="#offerter" data-v="offers"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 14l2 2 4-4"/></svg>Offerter<span class="ct" id="ctNew" hidden></span></a>
-  <a class="nav" href="#inkorg" data-v="inbox"><svg class="i" viewBox="0 0 24 24"><path d="M3 13l3-8h12l3 8v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 13h5l1.5 2.5h5L16 13h5"/></svg>Inkorg<span class="ct" id="ctMail" hidden></span></a>
+  <a class="nav" href="#ai" data-v="inbox"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9.5 15.5h5M3 12v3M21 12v3"/></svg>AI-team<span class="ct" id="ctMail" hidden></span></a>
   <a class="nav" href="#bokningar" data-v="list"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Bokningar</a>
   <a class="nav" href="#kalender" data-v="cal"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalender</a>
   <a class="nav" href="#personal" data-v="team"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.9.8 3.1 2.5 3.5 5.2"/></svg><span>Personal<span class="lbl-long"> och fordon</span></span><span class="ct" id="ctCrew" hidden></span></a>
@@ -394,7 +394,7 @@
   // ---------- login ----------
   async function start(){
     const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
-    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); swReg().catch(()=>{}); Promise.all([loadMail(),loadKlag()]).catch(()=>{}).then(()=>autoSyncMail()); }
+    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); swReg().catch(()=>{}); Promise.all([loadMail(),loadKlag(),loadTeam()]).catch(()=>{}).then(()=>autoSyncMail()); }
     else showLogin(s.setup);
   }
   function showLogin(setup){
@@ -498,6 +498,8 @@
     if(id==='ny'){ newMode='offer'; return showNew(); }
     if(id==='ny-bokning'){ newMode='booking'; return showNew(); }
     if(id==='offerter'){ listSec='offers'; return showList(); }
+    if(id==='ai'){ inboxTab='team'; return showInbox(); }
+    if(id==='rapporter'){ inboxTab='nils'; return showInbox(); }
     if(id==='inkorg'){ inboxTab='mail'; return showInbox(); }
     if(id==='klagomal'){ inboxTab='klag'; return showInbox(); }
     if(id==='saljaren'){ inboxTab='sales'; return showInbox(); }
@@ -514,7 +516,7 @@
   }
   window.addEventListener('hashchange',()=>{ Promise.resolve().then(route).catch(()=>{}); });
   // Marks the menu item and sets the page title. Returns '' so the views can keep `navBar(x)+…`.
-  const TITLES={today:'Idag',offers:'Offerter',inbox:'Inkorg',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny offert',newb:'Ny bokning',set:'Inställningar'};
+  const TITLES={today:'Idag',offers:'Offerter',inbox:'AI-team',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny offert',newb:'Ny bokning',set:'Inställningar'};
   function navBar(active,title){
     document.querySelectorAll('#side a.nav').forEach(a=>a.classList.toggle('on',a.dataset.v===active));
     $('#title').textContent=title||TITLES[active]||'';
@@ -678,7 +680,9 @@ FX Flytt</textarea>
   const KCAT={damage:'Skada',delay:'Försening',price:'Pris / faktura',staff:'Bemötande',cleaning:'Flyttstäd',missing:'Något saknas',other:'Annat'};
   const KSEV={high:['Hög','no'],medium:['Medel','wn'],low:['Låg','']};
   const KST={new:'Ny',handling:'Hanteras',closed:'Avslutad'};
-  let inboxTab='mail', mailAll=[], mailState={}, mailInfo={}, mailFilter='todo', mailOpen=null, klagAll=[], klagOpen=null, klagFilter='open', klagNew=false, openClosing=null;
+  let aiTeam={team:[],auto:{}}, inboxTab='team', mailAll=[], mailState={}, mailInfo={}, mailFilter='todo', mailOpen=null, klagAll=[], klagOpen=null, klagFilter='open', klagNew=false, openClosing=null;
+  const nm=(id)=>(aiTeam.team.find(x=>x.id===id)||{}).name||({elsa:'Elsa',oskar:'Oskar',maja:'Maja',nils:'Nils'}[id]);
+  async function loadTeam(){ try{ aiTeam=await api('/api/admin/aiteam'); }catch(_){} return aiTeam; }
   const ibMsg=(sel,t,ok)=>{ const e=$(sel); if(e) e.innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
   const ibBusy=(btn,on,label)=>{ if(!btn) return; if(on){ btn.dataset.l=btn.textContent; btn.disabled=true; btn.textContent=label||'Vänta…'; } else { btn.disabled=false; btn.textContent=btn.dataset.l||btn.textContent; } };
   const mailTodo=(m)=>m.status==='new';
@@ -692,11 +696,13 @@ FX Flytt</textarea>
     try{ const r=await api('/api/admin/inbox?sync='+(force?'1':'auto'),{method:'POST'}); if(force||r.saved||!mailAll.length){ await Promise.all([loadMail(),loadKlag()]); if(view==='inbox'&&!force&&!mailOpen&&!klagOpen&&!klagNew&&inboxTab!=='sales') showInbox(); } return r; }
     catch(e){ if(force) throw e; }
   }
-  const inboxTabs=()=>`<div class="seg" id="ibtabs" style="margin-bottom:16px">${[['mail','✉ E-post',mailAll.filter(mailTodo).length],['klag','⚠ Klagomål',klagAll.filter(c=>c.status!=='closed').length],['sales','🎯 Säljaren',0]].map(([k,l,n])=>`<button data-k="${k}" class="${inboxTab===k?'on':''}">${l}${n?` <span class="tag" style="margin-left:4px">${n}</span>`:''}</button>`).join('')}</div>`;
-  const bindInboxTabs=()=>root.querySelectorAll('#ibtabs button').forEach(x=>x.onclick=()=>{ inboxTab=x.dataset.k; mailOpen=null; klagOpen=null; location.hash={mail:'inkorg',klag:'klagomal',sales:'saljaren'}[inboxTab]; });
+  const inboxTabs=()=>`<div class="seg" id="ibtabs" style="margin-bottom:16px">${[['team','Översikt',0],['mail',nm('elsa')+' · E-post',mailAll.filter(mailTodo).length],['sales',nm('oskar')+' · Sälj',0],['klag',nm('maja')+' · Klagomål',klagAll.filter(c=>c.status!=='closed').length],['nils',nm('nils')+' · Rapporter',0]].map(([k,l,n])=>`<button data-k="${k}" class="${inboxTab===k?'on':''}">${l}${n?` <span class="tag" style="margin-left:4px">${n}</span>`:''}</button>`).join('')}</div>`;
+  const bindInboxTabs=()=>root.querySelectorAll('#ibtabs button').forEach(x=>x.onclick=()=>{ inboxTab=x.dataset.k; mailOpen=null; klagOpen=null; location.hash={team:'ai',mail:'inkorg',klag:'klagomal',sales:'saljaren',nils:'rapporter'}[inboxTab]; });
   async function showInbox(){
     view='inbox';
-    if(!mailAll.length&&!showInbox.loaded){ showInbox.loaded=true; root.innerHTML=navBar('inbox')+`<main><div class="empty">Laddar…</div></main>`; try{ await Promise.all([loadMail(),loadKlag()]); }catch(e){ root.innerHTML=navBar('inbox')+`<main><div class="err">${esc(e.message)}</div></main>`; return; } autoSyncMail(); }
+    if(!mailAll.length&&!showInbox.loaded){ showInbox.loaded=true; root.innerHTML=navBar('inbox')+`<main><div class="empty">Laddar…</div></main>`; try{ await Promise.all([loadMail(),loadKlag(),loadTeam()]); }catch(e){ root.innerHTML=navBar('inbox')+`<main><div class="err">${esc(e.message)}</div></main>`; return; } autoSyncMail(); }
+    if(inboxTab==='team') return showTeamAI();
+    if(inboxTab==='nils') return showWeekly(true);
     if(inboxTab==='klag') return showKlag();
     if(inboxTab==='sales') return showSeller();
     if(mailOpen) return showMail(mailOpen);
@@ -712,7 +718,7 @@ FX Flytt</textarea>
         <b>${m.priority==='high'?'🔴 ':''}${esc(m.fromName||m.from)} <span class="tag ${c[1]}">${esc(c[0])}</span>${m.status==='answered'?' <span class="tag ok">Besvarad</span>':''}${m.bookingId?` <span class="tag">${esc(m.bookingId)}</span>`:''}</b>
         <small><b style="display:inline;font-size:12.5px">${esc(m.subject)}</b> – ${esc(m.summary||m.text.slice(0,140))}</small></a>
         <small class="muted" style="white-space:nowrap">${esc(ago(m.date))}</small></div>`; }).join(''):`<div class="empty">${mailFilter==='todo'?'Inga mejl att svara på 🎉':'Inga mejl här.'}</div>`}</div>
-      <div class="muted" style="margin-top:8px">AI:n läser info@ (bara läsning – inget raderas eller flyttas), sorterar och skriver utkast. Inget skickas förrän någon trycker <b>Skicka</b>. Kopiorna här raderas efter den tid som står i Inställningar → AI-teamet.</div></main>`;
+      <div class="muted" style="margin-top:8px">${esc(nm('elsa'))} läser info@ (bara läsning – inget raderas eller flyttas), sorterar, kopplar till bokningen och skriver utkast. ${aiTeam.auto?.reply?'Enkla frågor besvarar hon själv (Inställningar → AI-teamet).':'Inget skickas förrän någon trycker <b>Skicka</b>.'} Kopiorna här raderas efter den tid som står i Inställningar → AI-teamet.</div></main>`;
     bindInboxTabs();
     root.querySelectorAll('.chips [data-f]').forEach(x=>x.onclick=()=>{ mailFilter=x.dataset.f; showInbox(); });
     root.querySelectorAll('[data-m]').forEach(x=>x.onclick=()=>{ mailOpen=x.dataset.m; showInbox(); });
@@ -729,15 +735,17 @@ FX Flytt</textarea>
         ${m.aiError?`<div class="warn">AI:n kunde inte läsa mejlet: ${esc(m.aiError)}</div>`:''}
         ${b?`<div class="muted">Kund: <a href="#${esc(b.id)}"><b>${esc(b.data.name)}</b> · ${esc(b.id)} · ${esc(ST[b.status]||b.status)}</a></div>`:m.bookingId?`<div class="muted">Bokning ${esc(m.bookingId)}</div>`:''}
         ${m.complaintId?`<div class="muted">⚠ Klagomål: <a href="#klagomal" id="m_k">öppna klagomålet</a></div>`:''}
+        ${m.estimate?`<div class="okmsg">💰 Prisförslag från ${esc(nm('elsa'))}: Bas <b>${esc(kr(m.estimate.bas))}</b>${m.estimate.premium?` · Premium <b>${esc(kr(m.estimate.premium))}</b>`:''} efter RUT (${esc(m.estimate.from)}–${esc(m.estimate.to)} ca ${m.estimate.km} km, ${m.estimate.m2} m²). Kontrollera adresserna innan offerten skickas.</div>`:''}
+        ${m.autoReplied?`<div class="okmsg">🤖 ${esc(nm('elsa'))} svarade själv – se svaret nedan.</div>`:''}
         ${m.extracted&&!m.bookingId?`<div class="muted" style="margin-top:6px">Uppgifter i mejlet: ${esc([m.extracted.name,m.extracted.phone,[m.extracted.from,m.extracted.to].filter(Boolean).join(' → '),m.extracted.date,m.extracted.size].filter(Boolean).join(' · ')||'–')}</div>`:''}
         <details style="margin-top:10px"${m.text.length<1200?' open':''}><summary style="cursor:pointer;font-weight:700">Mejlet</summary><div style="white-space:pre-wrap;background:#f6f8fa;border-radius:12px;padding:12px;margin-top:8px;font-size:14px;max-height:420px;overflow:auto">${esc(m.text)||'<i>(tomt)</i>'}</div></details>
         ${(m.answers||[]).map(a=>`<div style="white-space:pre-wrap;background:#e6f5ec;border-radius:12px;padding:12px;margin-top:8px;font-size:14px"><small class="muted">Svar från ${esc(a.by)} ${esc(fmtTs(a.at))}</small>\n${esc(a.text)}</div>`).join('')}
       </div>
       <div class="card"><h3>Svar till ${esc(m.fromName||m.from)}</h3>
         <textarea id="m_txt" rows="11" placeholder="Skriv ett svar…">${esc(m.draft||'')}</textarea>
-        <div class="muted" style="margin-top:4px">${m.draft?'✨ Utkast från AI:n – läs igenom och ändra innan du skickar.':''} Skickas från info@ i samma tråd, med kundens mejl citerat under.</div>
+        <div class="muted" style="margin-top:4px">${m.draft?'✨ Utkast från '+esc(nm('elsa'))+' – läs igenom och ändra innan du skickar.':''} Skickas från info@ i samma tråd, med kundens mejl citerat under.</div>
         <button class="btn" id="m_send">Skicka svar</button>
-        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="m_hint" placeholder="Säg till AI:n, t.ex. ”vi kan tisdag 9:00, pris 6 500 kr”" style="flex:1;min-width:200px"><button class="btn sec sm" id="m_redo">✨ Skriv om med AI</button></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="m_hint" placeholder="Säg till AI:n, t.ex. ”vi kan tisdag 9:00, pris 6 500 kr”" style="flex:1;min-width:200px"><button class="btn sec sm" id="m_redo">✨ Be ${esc(nm('elsa'))} skriva om</button></div>
         <div id="m_msg"></div></div>
       <div class="card"><h3>Mer</h3><div style="display:flex;gap:8px;flex-wrap:wrap">
         ${m.bookingId?'':'<button class="btn sec sm" id="m_req">➕ Skapa förfrågan av mejlet</button>'}
@@ -757,7 +765,7 @@ FX Flytt</textarea>
     if($('#m_reopen')) $('#m_reopen').onclick=async(e)=>{ try{ await act({action:'reopen'},e.target); showMail(m.id); }catch(er){ ibMsg('#m_msg2',er.message); } };
     if($('#m_spam')) $('#m_spam').onclick=async(e)=>{ try{ await act({action:'spam'},e.target); mailOpen=null; showInbox(); }catch(er){ ibMsg('#m_msg2',er.message); } };
     if($('#m_req')) $('#m_req').onclick=async(e)=>{ try{ const r=await act({action:'request'},e.target,'Skapar…'); all.unshift(r.booking); updateCounts(); notify('Förfrågan skapad – fyll i och skicka offerten'); location.hash=r.booking.id; }catch(er){ ibMsg('#m_msg2',er.message); } };
-    if($('#m_klag')) $('#m_klag').onclick=async(e)=>{ try{ const r=await act({action:'complaint'},e.target,'AI bedömer…'); klagAll.unshift(r.complaint); notify('Klagomålet är registrerat'); showMail(m.id); }catch(er){ ibMsg('#m_msg2',er.message); } };
+    if($('#m_klag')) $('#m_klag').onclick=async(e)=>{ try{ const r=await act({action:'complaint'},e.target,nm('maja')+' bedömer…'); klagAll.unshift(r.complaint); notify('Klagomålet är registrerat'); showMail(m.id); }catch(er){ ibMsg('#m_msg2',er.message); } };
     if($('#m_link')) $('#m_link').onclick=async(e)=>{ try{ await act({action:'link',bookingId:$('#m_bid').value},e.target); showMail(m.id); }catch(er){ ibMsg('#m_msg2',er.message); } };
   }
 
@@ -774,7 +782,7 @@ FX Flytt</textarea>
         <b>${esc(c.name||c.email||'Okänd kund')} <span class="tag ${KSEV[c.severity][1]}">${KSEV[c.severity][0]}</span> <span class="tag">${esc(KCAT[c.category]||c.category)}</span>${c.status==='closed'?' <span class="tag ok">Avslutad</span>':c.status==='handling'?' <span class="tag seen">Hanteras</span>':''}</b>
         <small>${esc(c.summary||c.subject)}</small></a>
         <small style="white-space:nowrap;${late(c)?'color:var(--red);font-weight:700':''}" class="muted">${c.status==='closed'?esc(ago(c.updatedAt)):'Svara senast '+esc(fmtDate(c.deadline))}</small></div>`).join(''):'<div class="empty">Inga klagomål här.</div>'}</div>
-      <div class="muted" style="margin-top:8px">Klagomål i info@ hamnar här av sig själva. AI:n bedömer hur allvarligt det är och skriver ett svar – men lovar aldrig ersättning. Allvarliga svaras inom en arbetsdag, övriga inom tre.</div></main>`;
+      <div class="muted" style="margin-top:8px">Klagomål i info@ hamnar här av sig själva. ${esc(nm('maja'))} bedömer hur allvarligt det är och skriver ett svar – men lovar aldrig ersättning. Allvarliga svaras inom en arbetsdag, övriga inom tre.</div></main>`;
     bindInboxTabs();
     root.querySelectorAll('.chips [data-f]').forEach(x=>x.onclick=()=>{ klagFilter=x.dataset.f; showKlag(); });
     root.querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>{ klagOpen=x.dataset.k; showKlag(); });
@@ -787,9 +795,9 @@ FX Flytt</textarea>
         <div class="row2"><div><label class="f" for="kn_n">Kundens namn</label><input id="kn_n"></div><div><label class="f" for="kn_p">Telefon</label><input id="kn_p" inputmode="tel"></div></div>
         <label class="f" for="kn_e">E-post</label><input id="kn_e" type="email">
         <label class="f" for="kn_t">Vad klagar kunden på?</label><textarea id="kn_t" rows="6"></textarea>
-        <button class="btn" id="kn_go">Spara${''} – AI:n bedömer det</button><div id="kn_msg"></div></div></main>`;
+        <button class="btn" id="kn_go">Spara – ${esc(nm('maja'))} bedömer det</button><div id="kn_msg"></div></div></main>`;
     $('#back').onclick=()=>{ klagNew=false; showKlag(); };
-    $('#kn_go').onclick=async(e)=>{ ibBusy(e.target,true,'AI bedömer…');
+    $('#kn_go').onclick=async(e)=>{ ibBusy(e.target,true,nm('maja')+' bedömer…');
       try{ const c=await api('/api/admin/complaints',{method:'POST',body:JSON.stringify({bookingId:$('#kn_b').value,name:$('#kn_n').value,phone:$('#kn_p').value,email:$('#kn_e').value,text:$('#kn_t').value})});
         klagAll.unshift(c); klagNew=false; klagOpen=c.id; updateMailCount(); showKlag(); }
       catch(er){ ibBusy(e.target,false); ibMsg('#kn_msg',er.message); } };
@@ -808,7 +816,7 @@ FX Flytt</textarea>
       </div>
       ${c.status!=='closed'?`<div class="card"><h3>Svar till kunden</h3>
         <textarea id="k_txt" rows="10" placeholder="Skriv ett svar…">${esc(c.draft||'')}</textarea>
-        <div class="muted" style="margin-top:4px">${c.draft?'✨ Utkast från AI:n – läs igenom. Lova inte ersättning innan ni har bestämt det.':''}</div>
+        <div class="muted" style="margin-top:4px">${c.draft?'✨ Utkast från '+esc(nm('maja'))+' – läs igenom. Lova inte ersättning innan ni har bestämt det.':''}</div>
         ${c.email?'<button class="btn" id="k_send">Skicka svar</button>':'<div class="warn">Kunden har ingen e-post – ring kunden.</div>'}
         <div id="k_msg"></div></div>`:''}
       <div class="card"><h3>Hantering</h3>
@@ -817,7 +825,7 @@ FX Flytt</textarea>
         <label class="f" for="k_res">Hur löstes det? (krävs för att avsluta)</label><input id="k_res" value="${esc(c.resolution||'')}" placeholder="t.ex. ”Ersatte lampan, 800 kr” eller ”Ingen ersättning – kunden nöjd med förklaringen”">
         <label class="f" for="k_note">Anteckning</label><input id="k_note" placeholder="t.ex. ”Ringde kunden, skickar bilder i kväll”">
         <button class="btn sec" id="k_save">Spara</button>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn gray sm" id="k_ai">✨ Bedöm igen med AI</button>${b&&!c.damageId?'<button class="btn gray sm" id="k_dmg">🧾 Skapa skaderapport</button>':''}${c.damageId?'<a class="btn gray sm" href="#skador">Visa skaderapporten</a>':''}${c.mailId?'<button class="btn gray sm" id="k_mail">✉ Visa mejlet</button>':''}${isOwner()?'<button class="btn red sm" id="k_del">Ta bort</button>':''}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn gray sm" id="k_ai">✨ Be ${esc(nm('maja'))} bedöma igen</button>${b&&!c.damageId?'<button class="btn gray sm" id="k_dmg">🧾 Skapa skaderapport</button>':''}${c.damageId?'<a class="btn gray sm" href="#skador">Visa skaderapporten</a>':''}${c.mailId?'<button class="btn gray sm" id="k_mail">✉ Visa mejlet</button>':''}${isOwner()?'<button class="btn red sm" id="k_del">Ta bort</button>':''}</div>
         <div id="k_msg2"></div></div>
       <div class="card"><h3>Historik</h3>${c.log.slice().reverse().map(l=>`<div class="muted" style="padding:5px 0;border-top:1px solid var(--line);white-space:pre-wrap">${esc(fmtTs(l.at))} · <b>${esc(l.by)}</b> · ${esc(l.what)}</div>`).join('')}</div></main>`;
     const put=(nc)=>{ const i=klagAll.findIndex(x=>x.id===c.id); if(i>=0) klagAll[i]=nc; updateMailCount(); };
@@ -829,53 +837,106 @@ FX Flytt</textarea>
     if($('#k_send')) $('#k_send').onclick=async(e)=>{ const t=$('#k_txt').value.trim(); if(!t) return ibMsg('#k_msg','Skriv ett svar först.'); if(!confirm('Skicka svaret till '+c.email+'?')) return;
       try{ await post({action:'reply',text:t},e.target,'Skickar…'); loadMail().catch(()=>{}); notify('Svaret är skickat ✓'); showKlagOne(c.id); }catch(er){ ibMsg('#k_msg',er.message); } };
     $('#k_save').onclick=async()=>{ try{ await patch({status:$('#k_st').value,severity:$('#k_sev').value,resolution:$('#k_res').value,note:$('#k_note').value}); notify('Sparat ✓'); showKlagOne(c.id); }catch(er){ ibMsg('#k_msg2',er.message); } };
-    $('#k_ai').onclick=async(e)=>{ try{ await post({action:'assess'},e.target,'AI bedömer…'); showKlagOne(c.id); }catch(er){ ibMsg('#k_msg2',er.message); } };
+    $('#k_ai').onclick=async(e)=>{ try{ await post({action:'assess'},e.target,nm('maja')+' bedömer…'); showKlagOne(c.id); }catch(er){ ibMsg('#k_msg2',er.message); } };
     if($('#k_dmg')) $('#k_dmg').onclick=async(e)=>{ try{ await post({action:'damage'},e.target,'Skapar…'); load().catch(()=>{}); notify('Skaderapport skapad – se Personal → Skador'); showKlagOne(c.id); }catch(er){ ibMsg('#k_msg2',er.message); } };
     if($('#k_mail')) $('#k_mail').onclick=()=>{ mailOpen=c.mailId; inboxTab='mail'; location.hash='inkorg'; };
     if($('#k_del')) $('#k_del').onclick=async()=>{ if(!confirm('Ta bort klagomålet för gott?')) return; try{ await api('/api/admin/complaints?id='+c.id,{method:'DELETE'}); klagAll=klagAll.filter(x=>x.id!==c.id); klagOpen=null; updateMailCount(); showKlag(); }catch(er){ ibMsg('#k_msg2',er.message); } };
   }
 
-  // Säljaren: open offers worth a personal e-mail today. The AI writes it in the offer (booking detail) – the office sends it.
-  async function showSeller(){
-    root.innerHTML=navBar('inbox','Säljaren')+`<main>${inboxTabs()}<div id="slpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs();
-    let j; try{ j=await api('/api/admin/closing'); }catch(e){ $('#slpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
-    $('#slpane').innerHTML=`${j.ai?'':'<div class="warn">AI är inte inställt (ANTHROPIC_API_KEY i Vercel).</div>'}
-      <div class="card"><h3>🎯 Följ upp i dag <span class="sub">${j.list.length} offerter</span></h3>
-        <div class="muted" style="margin-bottom:6px">Skickade offerter som inte är signerade, bäst chans först (kunden har öppnat offerten, nyligen, ringer tillbaka …). Tryck på en kund – AI:n skriver ett personligt mejl som du läser och skickar.</div>
-        ${j.list.length?j.list.map(x=>`<div class="todo"><a href="#${esc(x.id)}" data-cl="${esc(x.id)}"><b>${esc(x.name)} <span class="tag">${esc(kr(x.total))}</span>${x.views?` <span class="tag seen">👁 ${x.views}</span>`:''}</b>
-          <small>${x.lastViewAt?'Öppnade offerten '+esc(ago(x.lastViewAt)):'Har inte öppnat offerten'} · skickad ${esc(ago(x.sentAt))}${x.date?' · flyttdag '+esc(fmtDate(x.date)):''}</small></a>
-          <button class="btn sm" data-cl2="${esc(x.id)}">✨ Skriv mejl</button></div>`).join(''):'<div class="empty">Inga offerter att följa upp just nu.</div>'}</div>
-      <div class="muted">Automatiska påminnelser skickas fortfarande efter 1 och 3 dagar. Det personliga mejlet är ett extra steg för de offerter som är värda det. AI:n ändrar aldrig priset – tycker den att rabatt skulle hjälpa säger den det som ett tips till dig.</div>`;
-    root.querySelectorAll('[data-cl],[data-cl2]').forEach(x=>x.onclick=(e)=>{ e.preventDefault(); openClosing=x.dataset.cl||x.dataset.cl2; location.hash=openClosing; });
+  // ---------- Översikt: the AI team as colleagues – who does what, today's plan (Nils) and what they have done ----------
+  const AGENT_ICON={elsa:'✉',oskar:'🎯',maja:'🤝',nils:'📊'}, AGENT_TAB={elsa:'mail',oskar:'sales',maja:'klag',nils:'nils'}, AGENT_COLOR={elsa:'#1f5fae',oskar:'#e8650a',maja:'#1f8a4c',nils:'#6b4fbb'};
+  const avatar=(id,size=44)=>`<span style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;background:${AGENT_COLOR[id]};color:#fff;font-weight:800;font-size:${Math.round(size*.42)}px">${esc((nm(id)||'?')[0])}</span>`;
+  async function showTeamAI(){
+    root.innerHTML=navBar('inbox')+`<main>${inboxTabs()}<div id="tpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs();
+    await loadTeam(); const t=aiTeam; if(!t.team?.length){ $('#tpane').innerHTML='<div class="err">Kunde inte läsa AI-teamet.</div>'; return; }
+    const A=t.auto||{}, mode=(on)=>on?'<span class="tag ok">Skickar själv</span>':'<span class="tag">Skriver utkast</span>';
+    const status={
+      elsa:`${mailAll.filter(mailTodo).length} mejl att svara · ${t.inbox?.lastSync?'läste '+esc(ago(t.inbox.lastSync)):'har inte läst än'}${t.inbox?.on===false?' · <b>avstängd</b>':''}`,
+      oskar:`${(t.plan?.counts?.sales)||0} kunder att kontakta i dag`,
+      maja:`${klagAll.filter(c=>c.status!=='closed').length} öppna klagomål${klagAll.some(c=>c.status!=='closed'&&c.deadline<today())?' · <b style="color:var(--red)">försenat svar</b>':''}`,
+      nils:`${(t.plan?.items||[]).length} saker på dagens plan`,
+    };
+    const modes={elsa:mode(A.reply)+(A.request?' <span class="tag seen">Gör förfrågningar</span>':''),oskar:mode(['followup','revive','calc','winback','upsell'].some(k=>A[k])),maja:mode(A.ack),nils:'<span class="tag ok">Varje morgon</span>'};
+    const P=t.plan||{items:[]};
+    $('#tpane').innerHTML=`${!t.ai?'<div class="warn">AI är inte inställt (ANTHROPIC_API_KEY i Vercel) – teamet kan inte läsa eller skriva än.</div>':''}
+      <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">${t.team.map(a=>`<a class="kpi lt" href="#" data-ag="${a.id}" style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:12px;align-items:center">${avatar(a.id)}<div><b style="font-size:18px;display:block">${esc(a.name)}</b><small>${AGENT_ICON[a.id]} ${esc(a.role)}</small></div></div>
+        <small style="color:var(--ink)">${status[a.id]}</small><div>${modes[a.id]}</div></a>`).join('')}</div>
+      <div class="cols"><div class="card"><h3>${avatar('nils',26)} Dagens plan från ${esc(nm('nils'))} <span class="sub">${P.madeAt?'gjord '+esc(ago(P.madeAt)):''}</span></h3>
+          ${P.items.length?P.items.map(i=>`<div class="todo"><span class="tag ${i.prio===1?'no':i.prio===2?'wn':''}" style="flex:none">${i.prio===1?'Nu':i.prio===2?'I dag':'När du hinner'}</span><a href="${esc(i.href)}"><b style="font-weight:600">${esc(i.text)}</b></a></div>`).join(''):'<div class="muted">Inget brådskande i dag 🎉</div>'}
+          <button class="btn gray sm" id="t_plan" style="margin-top:10px">Gör om planen</button></div>
+        <div class="card"><h3>Vad teamet har gjort <span class="sub">${t.sentToday||0} av ${t.dailyMax} automatiska mejl i dag</span></h3>
+          ${(t.activity||[]).length?t.activity.slice(0,30).map(x=>`<div class="todo" style="align-items:flex-start">${avatar(x.agent,26)}<a ${x.bookingId?`href="#${esc(x.bookingId)}"`:''} style="cursor:${x.bookingId?'pointer':'default'}"><b style="font-weight:600;font-size:13.5px">${esc(nm(x.agent))}${x.auto?' <span class="tag ok" style="font-size:11px">själv</span>':''}</b><small>${esc(x.what)}</small></a><small class="muted" style="white-space:nowrap">${esc(ago(x.at))}</small></div>`).join(''):'<div class="muted">Inget än – teamet börjar när det kommer mejl, offerter och bokningar.</div>'}</div></div>
+      <div class="muted">${isOwner()?'Namn och vad teamet får göra själva ändrar du i <a href="#installningar" id="t_set">Inställningar → AI-teamet</a>. ':''}Allt som skickas syns i bokningens historik och här.</div>`;
+    root.querySelectorAll('[data-ag]').forEach(x=>x.onclick=(e)=>{ e.preventDefault(); inboxTab=AGENT_TAB[x.dataset.ag]; location.hash={mail:'inkorg',sales:'saljaren',klag:'klagomal',nils:'rapporter'}[inboxTab]; });
+    $('#t_plan').onclick=async(e)=>{ ibBusy(e.target,true,nm('nils')+' räknar…'); try{ await api('/api/admin/aiteam?plan=1',{method:'POST'}); showTeamAI(); }catch(er){ ibBusy(e.target,false); notify(er.message); } };
+    if($('#t_set')) $('#t_set').onclick=()=>{ setTab='ai'; };
   }
-  // In the offer: the AI writes a personal e-mail for an offer that has been sent but not signed.
+
+  // Oskar: customers worth an e-mail today, in five groups. He writes it in the customer's offer/booking – the office sends it.
+  const SK={followup:['🎯','Följ upp offert'],revive:['🔁','Väck förfallen offert'],calc:['🧮','Kalkyl-leads'],winback:['↩','Vinn tillbaka'],upsell:['➕','Merförsäljning']};
+  async function showSeller(){
+    root.innerHTML=navBar('inbox',nm('oskar')+' · Sälj')+`<main>${inboxTabs()}<div id="slpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs();
+    let j; try{ j=await api('/api/admin/closing'); }catch(e){ $('#slpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const A=aiTeam.auto||{};
+    const groups=Object.keys(SK).map(k=>[k,j.list.filter(x=>x.kind===k)]).filter(([,l])=>l.length);
+    $('#slpane').innerHTML=`${j.ai?'':'<div class="warn">AI är inte inställt (ANTHROPIC_API_KEY i Vercel).</div>'}
+      <div class="card" style="display:flex;gap:12px;align-items:center">${avatar('oskar')}<div><b>${esc(nm('oskar'))}, säljare</b><div class="muted">Jag letar varje dag efter kunder som är värda ett mejl – följer upp offerter, väcker gamla, ringer in kalkyl-leads, försöker vinna tillbaka nej och säljer till flyttstäd och packning. Tryck på en kund så skriver jag mejlet, du läser och skickar. Jag ändrar aldrig priset.</div></div></div>
+      ${groups.length?groups.map(([k,l])=>`<div class="card"><h3>${SK[k][0]} ${SK[k][1]} <span class="sub">${l.length} · ${A[k]?'skickar själv varje morgon':'utkast'}</span></h3>
+        ${l.map(x=>`<div class="todo"><a href="#${esc(x.id)}" data-cl="${esc(x.id)}" data-kind="${k}"><b>${esc(x.name)}${x.total?` <span class="tag">${esc(kr(x.total))}</span>`:''}${x.views?` <span class="tag seen">👁 ${x.views}</span>`:''}</b><small>${esc(x.why)}${x.date?' · flyttdag '+esc(fmtDate(x.date)):''}</small></a>
+          <button class="btn sm" data-cl2="${esc(x.id)}" data-kind="${k}">✨ Skriv mejl</button></div>`).join('')}</div>`).join(''):'<div class="card empty">Inga kunder att kontakta just nu.</div>'}
+      <div class="muted">Automatiska påminnelser om offerten skickas fortfarande efter 1 och 3 dagar. Kunder som sagt nej till utskick får bara uppföljning av sin egen offert. Varje kund får varje sorts mejl högst en gång.</div>`;
+    root.querySelectorAll('[data-cl],[data-cl2]').forEach(x=>x.onclick=(e)=>{ e.preventDefault(); openClosing={id:x.dataset.cl||x.dataset.cl2,kind:x.dataset.kind}; location.hash=openClosing.id; });
+  }
+  // In the offer / booking: Oskar writes a sales e-mail of the kind that fits, and a call script.
+  function closingKinds(b){
+    const k=[], d=b.data||{}, day=864e5, age=b.sentAt?Date.now()-b.sentAt:0;
+    if(!d.email) return k;
+    if(b.status==='sent'&&b.token){ k.push(age>14*day?'revive':'followup'); }
+    if(b.status==='new'&&b.lead==='calc') k.push('calc');
+    if(b.status==='declined'&&!b.nextId) k.push('winback');
+    if(b.status==='signed') k.push('upsell');
+    return k;
+  }
   function closingCard(b){
-    return b.status==='sent'&&b.token&&(b.data||{}).email?`<div class="card" id="clcard"><h3>✨ Personligt mejl (AI-säljaren)</h3>
-      <div class="muted">AI:n läser offerten, om kunden har öppnat den, påminnelser och samtal – och skriver ett kort personligt mejl som hjälper kunden att bestämma sig. Du läser och skickar.</div>
+    const kinds=closingKinds(b), canCall=['new','sent','declined'].includes(b.status)&&(b.data||{}).phone;
+    if(!kinds.length&&!canCall) return '';
+    return `<div class="card" id="clcard"><h3>${avatar('oskar',26)} ${esc(nm('oskar'))} – säljhjälp</h3>
+      ${kinds.length?`<div class="muted">Jag läser offerten, om kunden har öppnat den, påminnelser och samtal – och skriver ett kort personligt mejl. Du läser och skickar.</div>
       ${(b.closings||[]).length?`<div class="muted" style="margin-top:6px">Skickat: ${b.closings.map(c=>`${esc(fmtTs(c.at))} ”${esc(c.subject)}” (${esc(c.by)})`).join(' · ')}</div>`:''}
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="cl_hint" placeholder="Valfritt: ”nämn att vi har en ledig lastbil den 14:e”" style="flex:1;min-width:200px"><button class="btn sec sm" id="cl_draft">✨ Skriv mejlet</button></div>
-      <div id="cl_box"></div><div id="cl_msg"></div></div>`:'';
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">${kinds.length>1?`<select id="cl_kind" style="width:auto">${kinds.map(k=>`<option value="${k}">${SK[k][1]}</option>`).join('')}</select>`:`<input type="hidden" id="cl_kind" value="${kinds[0]}"><span class="tag" style="align-self:center">${SK[kinds[0]][0]} ${SK[kinds[0]][1]}</span>`}
+        <input id="cl_hint" placeholder="Valfritt: ”nämn att vi har en ledig lastbil den 14:e”" style="flex:1;min-width:180px"><button class="btn sec sm" id="cl_draft">✨ Skriv mejlet</button></div>
+      <div id="cl_box"></div>`:''}
+      ${canCall?`<button class="btn gray sm" id="cl_script" style="margin-top:10px">📞 Ringmanus inför samtalet</button><div id="cl_sc"></div>`:''}<div id="cl_msg"></div></div>`;
   }
   function bindClosing(b){
     if(!$('#clcard')) return;
-    const draft=async(btn)=>{ ibBusy(btn,true,'AI skriver…');
-      try{ const r=await api('/api/admin/closing?id='+b.id,{method:'POST',body:JSON.stringify({action:'draft',hint:$('#cl_hint').value})});
-        $('#cl_box').innerHTML=`${r.tip?`<div class="warn"><b>Tips till dig:</b> ${esc(r.tip)}</div>`:''}<label class="f" for="cl_sub">Ämne</label><input id="cl_sub" value="${esc(r.subject)}">
+    const draft=async(btn)=>{ const kind=$('#cl_kind').value; ibBusy(btn,true,nm('oskar')+' skriver…');
+      try{ const r=await api('/api/admin/closing?id='+b.id,{method:'POST',body:JSON.stringify({action:'draft',kind,hint:$('#cl_hint').value})});
+        $('#cl_box').innerHTML=`${r.tip?`<div class="warn"><b>${esc(nm('oskar'))} tipsar:</b> ${esc(r.tip)}</div>`:''}<label class="f" for="cl_sub">Ämne</label><input id="cl_sub" value="${esc(r.subject)}">
           <label class="f" for="cl_body">Text</label><textarea id="cl_body" rows="10">${esc(r.body)}</textarea>
-          <div class="muted" style="margin-top:4px">Under texten läggs en sammanfattning av offerten och knappen ”Se och signera offerten”.</div>
+          <div class="muted" style="margin-top:4px">Under texten läggs ${b.offer?'en sammanfattning och ':''}en knapp (${kind==='upsell'?'”Lägg till i min flytt”':kind==='calc'?'”Få en offert”':'till offerten'}).</div>
           <button class="btn" id="cl_send">Skicka till ${esc(b.data.email)}</button>`;
         $('#cl_send').onclick=async(e)=>{ if(!confirm('Skicka mejlet till '+b.data.email+'?')) return; ibBusy(e.target,true,'Skickar…');
-          try{ const nb=await api('/api/admin/closing?id='+b.id,{method:'POST',body:JSON.stringify({action:'send',subject:$('#cl_sub').value,body:$('#cl_body').value})}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; notify('Mejlet är skickat ✓'); showDetail(b.id); }
+          try{ const nb=await api('/api/admin/closing?id='+b.id,{method:'POST',body:JSON.stringify({action:'send',kind,subject:$('#cl_sub').value,body:$('#cl_body').value})}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; notify('Mejlet är skickat ✓'); showDetail(b.id); }
           catch(er){ ibBusy(e.target,false); ibMsg('#cl_msg',er.message); } };
       }catch(er){ ibMsg('#cl_msg',er.message); } finally{ ibBusy(btn,false); } };
-    $('#cl_draft').onclick=(e)=>draft(e.target);
-    if(openClosing===b.id){ openClosing=null; $('#clcard').scrollIntoView({behavior:'smooth',block:'start'}); draft($('#cl_draft')); }
+    if($('#cl_draft')) $('#cl_draft').onclick=(e)=>draft(e.target);
+    if($('#cl_script')) $('#cl_script').onclick=async(e)=>{ ibBusy(e.target,true,nm('oskar')+' skriver…');
+      try{ const r=await api('/api/admin/closing?id='+b.id,{method:'POST',body:JSON.stringify({action:'script'})});
+        $('#cl_sc').innerHTML=`<div style="background:#f6f8fa;border-radius:12px;padding:12px 14px;margin-top:10px;font-size:14px;line-height:1.5">
+          <b>Börja:</b> ${esc(r.opening)}<br><b style="display:block;margin-top:8px">Fråga:</b><ul style="margin:2px 0;padding-left:20px">${r.questions.map(q=>`<li>${esc(q)}</li>`).join('')}</ul>
+          <b style="display:block;margin-top:8px">Om kunden säger …</b>${r.objections.map(o=>`<div style="margin:4px 0"><i>”${esc(o.if)}”</i> → ${esc(o.say)}</div>`).join('')}
+          <b style="display:block;margin-top:8px">Avsluta:</b> ${esc(r.close)}</div>`; }
+      catch(er){ ibMsg('#cl_msg',er.message); } finally{ ibBusy(e.target,false); } };
+    if(openClosing&&openClosing.id===b.id){ const k=openClosing.kind; openClosing=null; if($('#cl_kind')&&k&&[...($('#cl_kind').options||[{value:$('#cl_kind').value}])].some(o=>o.value===k)) $('#cl_kind').value=k; $('#clcard').scrollIntoView({behavior:'smooth',block:'start'}); if($('#cl_draft')) draft($('#cl_draft')); }
   }
 
   // Statistik → Veckorapport: written every Monday by the AI from last week's numbers.
-  async function showWeekly(){
-    view='stat';
-    root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="wpane"><div class="empty">Laddar…</div></div></main>`; bindStatTabs();
+  async function showWeekly(inAi){
+    showWeekly.inAi=!!inAi;
+    if(inAi){ root.innerHTML=navBar('inbox',nm('nils')+' · Rapporter')+`<main>${inboxTabs()}<div class="card" style="display:flex;gap:12px;align-items:center">${avatar('nils')}<div><b>${esc(nm('nils'))}, analytiker</b><div class="muted">Varje morgon gör jag dagens plan (se Översikt), och varje måndag skriver jag veckorapporten: siffrorna räknas exakt av systemet, jag skriver vad de betyder och tre saker att göra.</div></div></div><div id="wpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs(); }
+    else { view='stat'; root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="wpane"><div class="empty">Laddar…</div></div></main>`; bindStatTabs(); }
     let j; try{ j=await api('/api/admin/weekly'+(showWeekly.week?'?week='+showWeekly.week:'')); }catch(e){ $('#wpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     const r=j.report, n=r?.numbers, a=r?.analysis;
     const li=(l)=>l&&l.length?`<ul style="margin:6px 0 0;padding-left:20px">${l.map(x=>`<li style="margin:4px 0">${esc(x)}</li>`).join('')}</ul>`:'<div class="muted">–</div>';
@@ -901,8 +962,8 @@ FX Flytt</textarea>
       <div class="cols"><div class="card"><h3>🔥 Heta offerter</h3>${n.hot.length?n.hot.map(h=>`<div class="todo"><a href="#${esc(h.id)}"><b>${esc(h.name)}</b><small>${esc(kr(h.total))} · öppnad ${h.views} gånger${h.lastViewAt?', senast '+esc(ago(h.lastViewAt)):''}</small></a></div>`).join(''):'<div class="muted">Inga öppnade offerter väntar.</div>'}</div>
         <div class="card"><h3>Förlorade – varför</h3>${n.lostReasons.length?n.lostReasons.map(x=>`<div class="todo"><a><b>${esc(x.reason)}</b></a><span class="tag">${x.n}</span></div>`).join(''):'<div class="muted">Inga förlorade affärer.</div>'}
           ${n.bySeller.length?`<h3 style="margin-top:16px">Per säljare</h3>${n.bySeller.map(s=>`<div class="todo"><a><b>${esc(s.name)}</b><small>${s.sent} skickade · ${s.signed} signerade</small></a><span class="tag ok">${esc(kr(s.value))}</span></div>`).join('')}`:''}</div></div>`}`;
-    if($('#w_sel')) $('#w_sel').onchange=()=>{ showWeekly.week=$('#w_sel').value; showWeekly(); };
-    $('#w_make').onclick=async(e)=>{ ibBusy(e.target,true,'AI räknar och skriver…'); try{ const nr=await api('/api/admin/weekly',{method:'POST'}); showWeekly.week=nr.week; showWeekly(); }catch(er){ ibBusy(e.target,false); ibMsg('#w_msg',er.message); } };
+    if($('#w_sel')) $('#w_sel').onchange=()=>{ showWeekly.week=$('#w_sel').value; showWeekly(showWeekly.inAi); };
+    $('#w_make').onclick=async(e)=>{ ibBusy(e.target,true,nm('nils')+' räknar och skriver…'); try{ const nr=await api('/api/admin/weekly',{method:'POST'}); showWeekly.week=nr.week; showWeekly(showWeekly.inAi); }catch(er){ ibBusy(e.target,false); ibMsg('#w_msg',er.message); } };
   }
 
   // ---------- statistics ----------
@@ -2353,22 +2414,43 @@ FX Flytt</textarea>
       <div class="btns"><button class="btn" id="co_save">Spara</button></div><div id="co_msg"></div></div>`;
     $('#co_save').onclick=async()=>{ try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({orgNr:$('#co_org').value,fskatt:$('#co_fs').checked,insured:$('#co_ins').checked,insurer:$('#co_insr').value})}); $('#co_msg').innerHTML='<div class="okmsg">Sparat ✓ – syns i offerten.</div>'; }catch(e){ $('#co_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
   };
-  // Inställningar → AI-teamet (owner).
+  // Inställningar → AI-teamet (owner): names, what they may send by themselves, limits.
   SET_TABS.push(['ai','AI-teamet',true]);
   SETTINGS.ai=async(el)=>{
     let s; try{ s=await api('/api/admin/settings'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     let st={}; try{ st=(await api('/api/admin/inbox')).state||{}; }catch(_){}
+    const N=s.aiNames||{}, A=s.aiAuto||{};
+    const tg=(k,label,sub)=>`<div class="todo"><a><b style="font-weight:700">${label}</b><small>${sub}</small></a><label class="tg" style="margin:0"><input type="checkbox" data-auto="${k}"${A[k]?' checked':''}> Själv</label></div>`;
+    const person=(id,role)=>`<div style="display:flex;gap:10px;align-items:center">${avatar(id,34)}<div style="flex:1"><label class="f" for="ai_n_${id}" style="margin-top:0">${role}</label><input id="ai_n_${id}" value="${esc(N[id]||'')}" maxlength="24"></div></div>`;
     el.innerHTML=`<div class="card"><h3>AI-teamet</h3>
-      <div class="muted">Fyra ”medarbetare” som jobbar med Claude (samma AI-nyckel som chatten på hemsidan). De läser, sorterar och skriver utkast – <b>en människa på kontoret trycker alltid Skicka</b>. Inget skickas till kunder automatiskt, utom den automatiska påminnelsen om offerten som redan fanns.</div>
-      <div class="todo"><a><b>✉ Inkorgen</b><small>Läser info@fxflytt.se (bara läsning), sorterar mejlen, hittar kundens bokning och skriver svarsutkast. ${st.lastSync?'Senast läst '+esc(ago(st.lastSync)):'Inte läst än'}${st.lastError?' · <span style="color:var(--red)">Fel: '+esc(st.lastError)+'</span>':''}</small></a><label class="tg" style="margin:0"><input type="checkbox" id="ai_in"${s.aiInboxOn?' checked':''}> På</label></div>
-      <div class="todo"><a><b>🎯 Säljaren</b><small>Visar vilka offerter som är värda ett personligt mejl och skriver det (Inkorg → Säljaren, eller i offerten).</small></a><span class="tag ok">Alltid på</span></div>
-      <div class="todo"><a><b>⚠ Klagomål</b><small>Klagomål i info@ hamnar i Inkorg → Klagomål med bedömning, nästa steg och svarsutkast. Allvarliga ger en notis.</small></a><span class="tag ok">Följer inkorgen</span></div>
-      <div class="todo"><a><b>📊 Veckorapporten</b><small>Varje måndag: förra veckans försäljning, klagomål och e-post med sammanfattning och tre saker att göra. Mejlas och finns under Statistik.</small></a><label class="tg" style="margin:0"><input type="checkbox" id="ai_rep"${s.aiReportOn?' checked':''}> På</label></div>
+      <div class="muted">Fyra AI-kollegor som jobbar i bokningssystemet med Claude (samma nyckel som chatten). Allt de gör syns under <b>AI-team</b> och i bokningens historik.
+        Från början skriver de bara utkast – du väljer här vad de får skicka själva. Mejl de skickar själva är undertecknade med namnet och ”digital assistent”, så kunden vet det.</div>
+      <div class="row2" style="margin-top:6px">${person('elsa','Kundservice – e-post')}${person('oskar','Säljare')}</div>
+      <div class="row2">${person('maja','Klagomål')}${person('nils','Analytiker')}</div></div>
+    <div class="card"><h3>${avatar('elsa',26)} E-post</h3>
+      <div class="todo"><a><b style="font-weight:700">Läs info@</b><small>Bara läsning – inget raderas eller flyttas. ${st.lastSync?'Senast läst '+esc(ago(st.lastSync)):'Inte läst än'}${st.lastError?' · <span style="color:var(--red)">Fel: '+esc(st.lastError)+'</span>':''}</small></a><label class="tg" style="margin:0"><input type="checkbox" id="ai_in"${s.aiInboxOn?' checked':''}> På</label></div>
+      ${tg('request','Gör förfrågningar av offertmejl','Ett mejl som vill ha offert blir en förfrågan i Offerter, med prisförslag från prislistan när ort och boyta står i mejlet. Inget skickas till kunden.')}
+      ${tg('reply','Svarar själv på enkla frågor','Bara när svaret helt bygger på fakta om företaget, eller bara ber om uppgifter för en offert. Aldrig klagomål, pengar, ändringar eller avbokningar.')}</div>
+    <div class="card"><h3>${avatar('oskar',26)} Försäljning – mejl som skickas själv varje morgon</h3>
+      ${tg('followup','Följ upp offert','Skickad, inte signerad. Högst två gånger, minst tre dagar emellan.')}
+      ${tg('revive','Väck förfallen offert','Inget svar på 2–6 veckor. En gång.')}
+      ${tg('calc','Kalkyl-leads','Räknade pris på hemsidan men bad aldrig om offert. En gång.')}
+      ${tg('winback','Vinn tillbaka','Tackade nej (pris, datum, annan firma). En gång, 2–21 dagar efter.')}
+      ${tg('upsell','Merförsäljning','Bokade kunder: flyttstäd, packning eller kartonger 4–30 dagar före flytten. En gång.')}</div>
+    <div class="card"><h3>${avatar('maja',26)} Klagomål</h3>
+      ${tg('ack','Bekräftar direkt att klagomålet kommit in','Ett kort mejl: vi har fått ditt ärende och svarar senast [dag]. Inga löften. Svaret skriver ni.')}</div>
+    <div class="card"><h3>${avatar('nils',26)} Rapporter och gränser</h3>
+      <div class="todo"><a><b style="font-weight:700">Veckorapport varje måndag</b><small>Mejlas och finns under AI-team → ${esc(N.nils||'Nils')}.</small></a><label class="tg" style="margin:0"><input type="checkbox" id="ai_rep"${s.aiReportOn?' checked':''}> På</label></div>
       <div class="row2"><div><label class="f" for="ai_to">Veckorapporten skickas till</label><input id="ai_to" type="email" value="${esc(s.aiReportTo||'')}" placeholder="info@fxflytt.se"></div>
-        <div><label class="f" for="ai_keep">Spara kopior av mejl i adminen (dagar)</label><input id="ai_keep" type="number" min="7" max="730" value="${esc(String(s.mailKeepDays))}"></div></div>
+        <div><label class="f" for="ai_max">Högst antal mejl teamet skickar själv per dag</label><input id="ai_max" type="number" min="0" max="100" value="${esc(String(s.aiDailyMax))}"></div></div>
+      <label class="f" for="ai_keep">Spara kopior av mejl i adminen (dagar)</label><input id="ai_keep" type="number" min="7" max="730" value="${esc(String(s.mailKeepDays))}" style="max-width:200px">
       <div class="muted" style="margin-top:6px">Mejlen ligger kvar i info@ som vanligt – det här gäller bara kopian i adminen (GDPR: spara inte längre än ni behöver).</div>
       <button class="btn" id="ai_save">Spara</button><div id="ai_msg"></div></div>`;
-    $('#ai_save').onclick=async()=>{ try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({aiInboxOn:$('#ai_in').checked,aiReportOn:$('#ai_rep').checked,aiReportTo:$('#ai_to').value,mailKeepDays:Number($('#ai_keep').value)})}); ibMsg('#ai_msg','Sparat ✓',true); }catch(e){ ibMsg('#ai_msg',e.message); } };
+    $('#ai_save').onclick=async()=>{
+      const auto={}; el.querySelectorAll('[data-auto]').forEach(x=>auto[x.dataset.auto]=x.checked);
+      const names={}; ['elsa','oskar','maja','nils'].forEach(id=>names[id]=$('#ai_n_'+id).value);
+      try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({aiNames:names,aiAuto:auto,aiDailyMax:Number($('#ai_max').value),aiInboxOn:$('#ai_in').checked,aiReportOn:$('#ai_rep').checked,aiReportTo:$('#ai_to').value,mailKeepDays:Number($('#ai_keep').value)})});
+        await loadTeam(); ibMsg('#ai_msg','Sparat ✓',true); }catch(e){ ibMsg('#ai_msg',e.message); } };
   };
 
   SET_TABS.push(['ref','Tipsa en vän',true]);

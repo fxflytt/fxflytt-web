@@ -79,8 +79,12 @@ export async function POST(req: Request) {
       const n = await createBooking("admin", {
         name: e?.name || m.fromName || m.from, phone: e?.phone || "", email: m.from,
         from: e?.from || "", to: e?.to || "", date: e?.date || "", size: e?.size || "",
+        areaM2: m.estimate ? String(m.estimate.m2) : "", distanceKm: m.estimate?.km,
         message: `Från e-post (${new Date(m.date).toLocaleDateString("sv-SE")}): ${m.subject}\n\n${m.text.slice(0, 2500)}`,
-      }, { history: [{ at: Date.now(), what: "Skapad från e-post i Inkorgen", by: u.name }] });
+      }, {
+        ...(m.estimate?.bas ? { offer: { total: m.estimate.bas, lines: m.estimate.lines || [], note: `Prisförslag: ${m.estimate.from}–${m.estimate.to} ca ${m.estimate.km} km, ${m.estimate.m2} m². Kontrollera adresserna innan offerten skickas.` } } : {}),
+        history: [{ at: Date.now(), what: "Skapad från e-post i AI-team → E-post", by: u.name }],
+      });
       m.bookingId = n.id; await saveMail(m, keep);
       return Response.json({ mail: m, booking: n });
     }
