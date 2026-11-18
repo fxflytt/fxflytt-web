@@ -77,11 +77,11 @@ const TRIAGE_SCHEMA: JsonSchema = {
   type: "object", additionalProperties: false, required: ["category", "priority", "summary", "needsReply", "autoSafe", "draft", "extracted"],
   properties: {
     category: { type: "string", enum: Object.keys(M_CATS) },
-    priority: { type: "string", enum: ["high", "normal", "low"], description: "high = kund som vill boka snart, flyttar inom 7 dagar, klagomål eller något brådskande. low = reklam, nyhetsbrev, automatiska mejl." },
+    priority: { type: "string", enum: ["high", "normal", "low"], description: "high BARA om: flyttdagen är inom 7 dagar från i dag (räkna från dagens datum), klagomål, arg kund, eller något som måste lösas i dag. En vanlig offertförfrågan med flytt längre fram är normal. low = reklam, nyhetsbrev, automatiska mejl." },
     summary: { type: "string", description: "En mening på svenska till kontoret: vem, vad de vill." },
     needsReply: { type: "boolean", description: "false för skräppost, reklam, nyhetsbrev, automatiska kvitton och mejl som bara säger tack." },
     autoSafe: { type: "boolean", description: "true BARA om svaret kan skickas utan att en människa läser det: kunden ställer en enkel fråga som besvaras helt med fakta i <foretaget>, eller vill ha offert och svaret bara tackar och ber om saknade uppgifter. false vid klagomål, pengar, faktura, ändring eller avbokning av en bokning, datum som måste bekräftas, arg kund, eller om du är minsta osäker." },
-    draft: { type: "string", description: "Utkast till svar till avsändaren, eller tom sträng om inget svar behövs. Vid offertförfrågan: tacka, bekräfta det kunden skrivit och be om det som saknas för en offert (från- och tilladress, datum, bostadens storlek, våningar/hiss, telefonnummer). Hitta aldrig på pris." },
+    draft: { type: "string", description: "Utkast till svar till avsändaren, eller tom sträng om inget svar behövs. Högst 90 ord. Vid offertförfrågan: tacka kort, bekräfta flytten i en mening och be om det som saknas för en offert (högst 3 saker, t.ex. adresserna, våning/hiss, telefonnummer). Hitta aldrig på pris." },
     extracted: {
       type: "object", additionalProperties: false, required: ["name", "phone", "from", "to", "date", "size"],
       description: "Uppgifter för en flyttförfrågan, tom sträng när de inte står i mejlet.",
@@ -217,14 +217,26 @@ export async function syncInbox(o: {
 }
 
 // Subject for a reply: "Re: …" once.
-export const replySubject = (s: string) => (/^(re|sv|aw):/i.test(s.trim()) ? s.trim() : "Re: " + s.trim());
+const NO_SUBJECT = /^\(?(ingen rubrik|no subject|inget ämne)\)?$/i;
+export const hasSubject = (s: string) => !!s.trim() && !NO_SUBJECT.test(s.trim());
+/** Subject for a reply: "Re: …" once. An e-mail without subject gets a real one ("Din flytt Kungsör–Arboga – FX Flytt"). */
+export function replySubject(s: string, m?: Pick<InMail, "extracted" | "category">): string {
+  if (!hasSubject(s)) {
+    const e = m?.extracted, town = (x: string) => x.split(",").pop()!.replace(/\d/g, "").trim();
+    if (e?.from && e?.to) return `Din flytt ${town(e.from)}–${town(e.to)} – FX Flytt`;
+    return m?.category === "offert" ? "Din offertförfrågan – FX Flytt" : "Svar från FX Flytt";
+  }
+  return /^(re|sv|aw):/i.test(s.trim()) ? s.trim() : "Re: " + s.trim();
+}
+/** A readable title in the admin for an e-mail without subject. */
+export const mailTitle = (m: Pick<InMail, "subject" | "summary">) => (hasSubject(m.subject) ? m.subject : m.summary.slice(0, 80) || "(ingen rubrik)");
 
 // The reply as e-mail: plain and personal (no big banner), with the customer's own words quoted below.
 export function replyEmail(m: InMail, text: string) {
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
   const when = new Date(m.date).toLocaleString("sv-SE", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Stockholm" });
   const quoted = m.text.slice(0, 4000);
-  const subject = replySubject(m.subject);
+  const subject = replySubject(m.subject, m);
   const html = `<!DOCTYPE html><html lang="sv"><body style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:22px;color:#14212b">
 ${text.split(/\n{2,}/).map((p) => `<p style="margin:0 0 14px">${esc(p).replace(/\n/g, "<br>")}</p>`).join("")}
 <p style="margin:18px 0 0;color:#5b6b78;font-size:13px">FX Flytt AB · 076-300 07 23 · <a href="https://www.fxflytt.se" style="color:#0d2a3f">www.fxflytt.se</a></p>

@@ -21,7 +21,7 @@ export function nextAnswer(now = new Date()): string {
 
 const SCHEMA: JsonSchema = { type: "object", additionalProperties: false, required: ["subject", "body"], properties: {
   subject: { type: "string", description: "Ämnesrad, t.ex. 'Tack Anna – vi har fått din förfrågan om flytt till Arboga'." },
-  body: { type: "string", description: "Mejlet, 70–140 ord, stycken med tom rad emellan. Ingen hälsning på slutet (läggs till)." },
+  body: { type: "string", description: "Mejlet, 50–90 ord, stycken med tom rad emellan. Ingen hälsning på slutet (läggs till)." },
 } };
 
 export function requestContext(b: Booking, when: string): string {

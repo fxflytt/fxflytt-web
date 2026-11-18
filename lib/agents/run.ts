@@ -60,7 +60,7 @@ async function afterMail(m: InMail, ctx: { booking: Booking | null; complaint: C
       m.estimate = est;
       // The draft tells the customer the approximate price (from the same engine as the website).
       try {
-        m.draft = await redraft(m, null, `Ge ett ungefärligt pris efter RUT: Bas (bara flytt) ${kr(est.bas!)}${est.premium ? `, Premium (flytt + flyttstäd) ${kr(est.premium)}` : ""}, räknat på ${est.m2} m² och ca ${est.km} km mellan ${est.from} och ${est.to}. Säg att exakt pris kommer i offerten när vi har adresserna, och be om det som saknas.`, today(), { fast: true, facts: companyFacts(prices as never) });
+        m.draft = await redraft(m, null, `Ge ett ungefärligt pris efter RUT: Bas (bara flytt) ${kr(est.bas!)}${est.premium ? `, Premium (flytt + flyttstäd) ${kr(est.premium)}` : ""}, räknat på ${est.m2} m² och ca ${est.km} km mellan ${est.from} och ${est.to}. Skriv priset i en eller två korta rader (förklara inte RUT, moms eller körsträckan). Säg att exakt pris kommer i offerten när vi har adresserna, och be om det som saknas. Hela svaret högst 90 ord.`, today(), { fast: true, facts: companyFacts(prices as never) });
       } catch { /* keep the first draft */ }
     }
     if (s.aiAuto.request) {

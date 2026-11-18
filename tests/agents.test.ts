@@ -340,3 +340,10 @@ test("Oskars mejl skrivs med träningen och kalendern", async () => {
   assert.match(call.system, /städgaranti/); assert.match(call.system, /familjeföretag/); assert.match(call.user, /NÄSTAN FULL/);
   assert.equal((call.body.output_config as { effort: string }).effort, "high");
 });
+
+test("mejl utan ämne får ett riktigt ämne i svaret", () => {
+  assert.equal(inbox.replySubject("(ingen rubrik)", { category: "offert", extracted: { name: "", phone: "", from: "Storgatan 1, Kungsör", to: "Arboga", date: "", size: "" } }), "Din flytt Kungsör–Arboga – FX Flytt");
+  assert.equal(inbox.replySubject("", { category: "bokning" }), "Svar från FX Flytt");
+  assert.equal(inbox.replySubject("Flytt i december"), "Re: Flytt i december");
+  assert.equal(inbox.mailTitle({ subject: "(ingen rubrik)", summary: "Alax vill ha pris" }), "Alax vill ha pris");
+});

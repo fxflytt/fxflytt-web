@@ -686,6 +686,7 @@ FX Flytt</textarea>
   const ibMsg=(sel,t,ok)=>{ const e=$(sel); if(e) e.innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
   const ibBusy=(btn,on,label)=>{ if(!btn) return; if(on){ btn.dataset.l=btn.textContent; btn.disabled=true; btn.textContent=label||'Vänta…'; } else { btn.disabled=false; btn.textContent=btn.dataset.l||btn.textContent; } };
   const mailTodo=(m)=>m.status==='new';
+  const mTitle=(m)=>/^\(?(ingen rubrik|no subject|inget ämne)\)?$/i.test((m.subject||'').trim())?(m.summary||'(ingen rubrik)').slice(0,80):m.subject;
   function updateMailCount(){ const e=$('#ctMail'); if(!e) return; const n=mailAll.filter(mailTodo).length+klagAll.filter(c=>c.status==='new').length; e.hidden=!n; e.textContent=n>99?'99+':String(n); }
   async function loadMail(){ const j=await api('/api/admin/inbox'); mailAll=j.mails||[]; mailState=j.state||{}; mailInfo={ai:j.ai,mail:j.mail,on:j.on}; updateMailCount(); }
   async function loadKlag(){ const j=await api('/api/admin/complaints'); klagAll=j.complaints||[]; updateMailCount(); }
@@ -716,7 +717,7 @@ FX Flytt</textarea>
       <div class="chips">${Object.entries(F).map(([k,[l]])=>`<button data-f="${k}" class="${k===mailFilter?'on':''}">${l}</button>`).join('')}</div>
       <div class="card" style="padding:6px 18px">${list.length?list.map(m=>{ const c=MCAT[m.category]||MCAT.ovrigt; return `<div class="todo" data-m="${esc(m.id)}" style="cursor:pointer"><a>
         <b>${m.priority==='high'?'🔴 ':''}${esc(m.fromName||m.from)} <span class="tag ${c[1]}">${esc(c[0])}</span>${m.status==='answered'?' <span class="tag ok">Besvarad</span>':''}${m.bookingId?` <span class="tag">${esc(m.bookingId)}</span>`:''}</b>
-        <small><b style="display:inline;font-size:12.5px">${esc(m.subject)}</b> – ${esc(m.summary||m.text.slice(0,140))}</small></a>
+        <small><b style="display:inline;font-size:12.5px">${esc(mTitle(m))}</b> – ${esc(m.summary||m.text.slice(0,140))}</small></a>
         <small class="muted" style="white-space:nowrap">${esc(ago(m.date))}</small></div>`; }).join(''):`<div class="empty">${mailFilter==='todo'?'Inga mejl att svara på 🎉':'Inga mejl här.'}</div>`}</div>
       <div class="muted" style="margin-top:8px">${esc(nm('elsa'))} läser info@ (bara läsning – inget raderas eller flyttas), sorterar, kopplar till bokningen och skriver utkast. ${aiTeam.auto?.reply?'Enkla frågor besvarar hon själv (Inställningar → AI-teamet).':'Inget skickas förrän någon trycker <b>Skicka</b>.'} Kopiorna här raderas efter den tid som står i Inställningar → AI-teamet.</div></main>`;
     bindInboxTabs();
@@ -727,8 +728,8 @@ FX Flytt</textarea>
   function showMail(id){
     const m=mailAll.find(x=>x.id===id); if(!m){ mailOpen=null; return showInbox(); }
     const c=MCAT[m.category]||MCAT.ovrigt, b=m.bookingId?all.find(x=>x.id===m.bookingId):null;
-    root.innerHTML=navBar('inbox',m.subject)+`<main style="max-width:900px"><button class="back" id="back">‹ Inkorgen</button>
-      <div class="card"><h3>${esc(m.subject)}</h3>
+    root.innerHTML=navBar('inbox',mTitle(m))+`<main style="max-width:900px"><button class="back" id="back">‹ Inkorgen</button>
+      <div class="card"><h3>${esc(mTitle(m))}</h3>
         <div class="tags" style="margin-bottom:8px"><span class="tag ${c[1]}">${esc(c[0])}</span>${m.priority==='high'?' <span class="tag no">Brådskande</span>':''}${m.status==='answered'?' <span class="tag ok">Besvarad</span>':m.status==='done'?' <span class="tag">Klar</span>':''}</div>
         <div class="muted">Från <b>${esc(m.fromName)}</b> &lt;${esc(m.from)}&gt; · ${esc(fmtTs(m.date))}${m.attachments?.length?' · 📎 '+esc(m.attachments.join(', ')):''}</div>
         ${m.summary?`<div class="okmsg" style="background:#eef3fb;border-color:#d3e0f3;color:#1d4f8a">✨ ${esc(m.summary)}</div>`:''}
