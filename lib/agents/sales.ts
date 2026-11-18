@@ -9,6 +9,7 @@
 // no to campaign e-mails get only the follow-up of their own offer.
 import { askJson, MODEL_WRITE, HOUSE_RULES, quote, type JsonSchema } from "./claude.ts";
 import { mobileE164, SMS_MAX } from "../sms/send.ts";
+import { SALES_PLAYBOOK, KIND_PLAYBOOK, type WinExample } from "./playbook.ts";
 import { CALL_OUTCOMES, DECLINE_REASONS, type Booking, type DeclineReason } from "../booking/store.ts";
 
 export type SalesKind = "followup" | "revive" | "calc" | "winback" | "upsell";
@@ -96,22 +97,24 @@ export function salesContext(b: Booking, today: string): string {
   return rows.filter(Boolean).join("\n");
 }
 
-const KIND_TEXT: Record<SalesKind, string> = {
-  followup: `Kunden har fått en offert men inte signerat. Hjälp kunden att bestämma sig: knyt an till kundens egen flytt (datum, sträcka, bostad),
-lyft fram trygghet (fast pris, försäkrade, RUT dras direkt), nämn att datum fylls på (bara om flyttdagen är inom 6 veckor) och gör det lätt att
-svara eller ringa med frågor. Har kunden öppnat offerten flera gånger: fråga vänligt om något är oklart.`,
-  revive: `Kunden fick en offert för några veckor sedan och har inte svarat. Skriv ett kort, avslappnat mejl: fråga om flytten fortfarande är aktuell,
-om datumet har ändrats, och erbjud att uppdatera offerten. Inget tjat – det här är sista mejlet om offerten.`,
-  calc: `Kunden räknade fram ett pris i prisräknaren på hemsidan och fick det på mejl, men har inte bett om en offert. Tacka för intresset,
-påminn om priset (efter RUT) och vad som ingår, och berätta att en offert är gratis och kan signeras i mobilen. Be kunden svara med datum och adresser,
-eller fylla i formuläret via knappen.`,
-  winback: `Kunden tackade nej till offerten. Skriv ett respektfullt mejl som tackar för svaret och, utifrån skälet, erbjuder ett alternativ:
-vid pris – Bas-paketet (bara flytt) eller att kunden packar själv; vid datum – att vi gärna hittar ett annat datum; vid annan flyttfirma –
-önska lycka till och säg att vi finns om planerna ändras. Max ett försök, ingen press. Lova inget nytt pris.`,
-  upsell: `Kunden har bokat flytten. Skriv ett kort, hjälpsamt mejl som bekräftar att allt är klart och erbjuder det som saknas i bokningen:
-flyttstäd (fast pris, städgaranti), packning eller flyttkartonger. Sälj med omtanke ("slipp städa själv sista dagen"). Kunden kan svara på mejlet
-eller ringa för att lägga till. Nämn inga priser som inte står i underlaget.`,
-};
+// What Oskar knows besides the customer's own booking (see lib/agents/playbook.ts): real facts about the company,
+// the owner's own sales notes, how full the customer's moving day really is, and e-mails that led to signed bookings.
+export type Training = { facts?: string; notes?: string; examples?: WinExample[]; load?: { jobs: number; vehicles: number; nearlyFull: boolean } | null; trust?: string };
+
+export function trainingText(t: Training = {}, kind?: SalesKind): string {
+  return [
+    SALES_PLAYBOOK, kind ? KIND_PLAYBOOK[kind] : "",
+    t.facts ? `FAKTA OM FX FLYTT (det enda du får påstå om priser, tjänster och villkor):\n<foretaget>\n${t.facts}\n</foretaget>` : "",
+    t.trust ? `TRYGGHET SOM GÄLLER JUST NU: ${t.trust}` : "",
+    t.notes ? `ÄGARENS EGEN SÄLJSTIL (följ den, den går före det allmänna ovan):\n<agarens_stil>\n${t.notes}\n</agarens_stil>` : "",
+    t.examples?.length ? `MEJL SOM FAKTISKT LEDDE TILL BOKNING (lär dig av tonen och upplägget – kopiera dem inte, och använd inte deras fakta):\n` +
+      t.examples.map((e, i) => `<exempel nr="${i + 1}" signerade_efter_dagar="${e.daysToSign}">\nÄmne: ${e.subject}\n${e.body.slice(0, 1200)}\n</exempel>`).join("\n") : "",
+  ].filter(Boolean).join("\n\n");
+}
+const loadLine = (t: Training) => !t.load ? "" : t.load.nearlyFull
+  ? `Kalendern för kundens flyttdag: ${t.load.jobs} jobb bokade, vi har ${t.load.vehicles} bilar – dagen är NÄSTAN FULL (det är sant att säga).`
+  : `Kalendern för kundens flyttdag: ${t.load.jobs} jobb bokade av ${t.load.vehicles} bilar – det finns plats (säg INTE att dagen är full).`;
+
 const SCHEMA: JsonSchema = {
   type: "object", additionalProperties: false, required: ["subject", "body", "tip"],
   properties: {
@@ -121,32 +124,37 @@ const SCHEMA: JsonSchema = {
   },
 };
 
-export async function draftSales(kind: SalesKind, b: Booking, today: string, o: { hint?: string; name?: string; signature?: string } = {}): Promise<Closing> {
+export async function draftSales(kind: SalesKind, b: Booking, today: string, o: { hint?: string; name?: string; signature?: string; training?: Training } = {}): Promise<Closing> {
+  const t = o.training || {};
   const r = await askJson<Closing>({
-    model: MODEL_WRITE, effort: "medium", schema: SCHEMA, maxTokens: 6000,
+    model: MODEL_WRITE, effort: "high", schema: SCHEMA, maxTokens: 12000,
     system: `${HOUSE_RULES}
 
-Du är ${o.name || "Oskar"}, säljare på FX Flytt. ${KIND_TEXT[kind]}
-Inget tjat, ingen press, inga utropstecken i rad. Lova aldrig rabatt eller nytt pris – tycker du att en rabatt skulle hjälpa, skriv det i tipset till säljaren.` +
+Du är ${o.name || "Oskar"}, FX Flytts bästa säljare. Du skriver ett mejl till kunden nedan.
+
+${trainingText(t, kind)}
+
+Lova aldrig rabatt eller nytt pris – tycker du att en rabatt skulle hjälpa, skriv det i tipset till säljaren.` +
       (o.signature ? `\nAvsluta mejlet exakt med:\n${o.signature}` : ""),
-    user: quote("underlag", salesContext(b, today)) + (o.hint ? `\n\nSäljarens önskemål om mejlet:\n${quote("instruktion", o.hint.slice(0, 800))}` : ""),
+    user: quote("underlag", [salesContext(b, today), loadLine(t)].filter(Boolean).join("\n")) + (o.hint ? `\n\nSäljarens önskemål om mejlet:\n${quote("instruktion", o.hint.slice(0, 800))}` : ""),
   });
   const s = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
   return { subject: s(r.subject, 140) || `Din flytt med FX Flytt – ${b.id}`, body: s(r.body, 3000), tip: s(r.tip, 400) };
 }
 /** The old name, used for the follow-up. */
-export const draftClosing = (b: Booking, today: string, hint = "") => draftSales("followup", b, today, { hint });
+export const draftClosing = (b: Booking, today: string, hint = "", training?: Training) => draftSales("followup", b, today, { hint, training });
 
 // ---------- SMS ----------
 const SMS_SCHEMA: JsonSchema = { type: "object", additionalProperties: false, required: ["text"], properties: { text: { type: "string", description: "SMS-texten, högst 180 tecken, utan länk och utan telefonnummer (de läggs till automatiskt)." } } };
 /** A short SMS for a follow-up. The offer link and our phone number are added after the text. */
-export async function draftSms(kind: SalesKind, b: Booking, today: string, o: { hint?: string; name?: string } = {}): Promise<string> {
+export async function draftSms(kind: SalesKind, b: Booking, today: string, o: { hint?: string; name?: string; training?: Training } = {}): Promise<string> {
+  const t = o.training || {};
   const r = await askJson<{ text: string }>({
-    model: MODEL_WRITE, effort: "low", schema: SMS_SCHEMA, maxTokens: 3000,
-    system: `${HOUSE_RULES}\n\nDu är ${o.name || "Oskar"}, säljare på FX Flytt. Skriv ett kort, personligt SMS på svenska till kunden (högst 180 tecken, du-form, förnamn, inga emojis).
+    model: MODEL_WRITE, effort: "medium", schema: SMS_SCHEMA, maxTokens: 4000,
+    system: `${HOUSE_RULES}\n\n${trainingText({ ...t, examples: [] }, kind)}\n\nDu är ${o.name || "Oskar"}, säljare på FX Flytt. Skriv ett kort, personligt SMS på svenska till kunden (högst 180 tecken, du-form, förnamn, inga emojis).
 ${kind === "revive" ? "Kunden har inte svarat på offerten på några veckor – fråga vänligt om flytten fortfarande är aktuell." : "Kunden har fått en offert men inte signerat – fråga om något är oklart och säg att det går att signera i mobilen."}
 Ingen rabatt, inget nytt pris, ingen press. Skriv inte ut länk eller telefonnummer – de läggs till efter texten. Avsluta inte med hälsning.`,
-    user: quote("underlag", salesContext(b, today)) + (o.hint ? `\n\nSäljarens önskemål:\n${quote("instruktion", o.hint.slice(0, 400))}` : ""),
+    user: quote("underlag", [salesContext(b, today), loadLine(t)].filter(Boolean).join("\n")) + (o.hint ? `\n\nSäljarens önskemål:\n${quote("instruktion", o.hint.slice(0, 400))}` : ""),
   });
   return (typeof r.text === "string" ? r.text.trim() : "").replace(/https?:\/\/\S+/g, "").slice(0, 200);
 }
@@ -164,11 +172,11 @@ const SCRIPT_SCHEMA: JsonSchema = {
     close: { type: "string", description: "Hur säljaren avslutar och ber om bokningen." },
   },
 };
-export async function callScript(b: Booking, today: string): Promise<CallScript> {
+export async function callScript(b: Booking, today: string, t: Training = {}): Promise<CallScript> {
   const r = await askJson<CallScript>({
-    model: MODEL_WRITE, effort: "low", schema: SCRIPT_SCHEMA, maxTokens: 4000,
-    system: `${HOUSE_RULES}\n\nSkriv ett kort ringmanus på svenska för en säljare på FX Flytt som ska ringa kunden nedan. Naturligt talspråk, ingen säljjargong.`,
-    user: quote("underlag", salesContext(b, today)),
+    model: MODEL_WRITE, effort: "medium", schema: SCRIPT_SCHEMA, maxTokens: 6000,
+    system: `${HOUSE_RULES}\n\n${trainingText({ ...t, examples: [] })}\n\nSkriv ett kort ringmanus på svenska för en säljare på FX Flytt som ska ringa kunden nedan. Naturligt talspråk som går att säga högt, ingen säljjargong. Använd invändningarna och svaren ur träningen, anpassade till just den här kunden.`,
+    user: quote("underlag", [salesContext(b, today), loadLine(t)].filter(Boolean).join("\n")),
   });
   const s = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
   return {

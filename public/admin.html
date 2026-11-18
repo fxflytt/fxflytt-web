@@ -882,6 +882,12 @@ FX Flytt</textarea>
     const groups=Object.keys(SK).map(k=>[k,j.list.filter(x=>x.kind===k)]).filter(([,l])=>l.length);
     $('#slpane').innerHTML=`${j.ai?'':'<div class="warn">AI är inte inställt (ANTHROPIC_API_KEY i Vercel).</div>'}
       <div class="card" style="display:flex;gap:12px;align-items:center">${avatar('oskar')}<div><b>${esc(nm('oskar'))}, säljare</b><div class="muted">Jag letar varje dag efter kunder som är värda ett mejl – följer upp offerter, väcker gamla, ringer in kalkyl-leads, försöker vinna tillbaka nej och säljer till flyttstäd och packning. Tryck på en kund så skriver jag mejlet, du läser och skickar. Jag ändrar aldrig priset.</div></div></div>
+      <div class="cols"><div class="card"><h3>🎓 Min träning</h3>
+        <div class="todo"><a><b style="font-weight:600">Säljmetod för svenska kunder</b><small>Visa att jag läst, ta bort oron (fast pris, RUT direkt, städgaranti), ett litet nästa steg, svar på vanliga invändningar – aldrig falsk brådska eller påhittade rabatter.</small></a><span class="tag ok">✓</span></div>
+        <div class="todo"><a><b style="font-weight:600">Fakta om FX Flytt och kalendern</b><small>Prislistan, paketen och villkoren – och hur full kundens flyttdag faktiskt är.</small></a><span class="tag ok">✓</span></div>
+        <div class="todo"><a><b style="font-weight:600">Er egen säljstil</b><small>${j.notes?'Jag följer det ni skrivit i Inställningar → AI-teamet.':'Inte ifylld än – skriv hur ni vill sälja i Inställningar → AI-teamet → Säljstil.'}</small></a><span class="tag ${j.notes?'ok':'wn'}">${j.notes?'✓':'Saknas'}</span></div>
+        <div class="todo"><a><b style="font-weight:600">Mejl som blev bokningar</b><small>Jag lär mig av mejlen som ledde till en signerad bokning inom 14 dagar – även de ni har skrivit om innan ni skickade.</small></a><span class="tag ${j.learned?'ok':''}">${j.learned||0} st</span></div></div>
+        <div class="card"><h3>📈 Resultat – senaste 90 dagarna</h3>${(j.results||[]).length?(j.results||[]).map(r=>`<div class="todo"><a><b style="font-weight:600">${esc((SK[r.kind]||['',r.kind])[1])}</b><small>${r.sent} skickade${r.sms?` (varav ${r.sms} SMS)`:''} · ${r.won} blev bokning inom 14 dagar</small></a><span class="tag ${r.rate>=20?'ok':r.rate>=8?'wn':''}">${r.rate==null?'–':r.rate+' %'}</span></div>`).join(''):'<div class="muted">Inga säljmejl skickade än.</div>'}</div></div>
       ${groups.length?groups.map(([k,l])=>`<div class="card"><h3>${SK[k][0]} ${SK[k][1]} <span class="sub">${l.length} · ${A[k]?'skickar själv varje morgon':'utkast'}</span></h3>
         ${l.map(x=>`<div class="todo"><a href="#${esc(x.id)}" data-cl="${esc(x.id)}" data-kind="${k}"><b>${esc(x.name)}${x.total?` <span class="tag">${esc(kr(x.total))}</span>`:''}${x.views?` <span class="tag seen">👁 ${x.views}</span>`:''}</b><small>${esc(x.why)}${x.date?' · flyttdag '+esc(fmtDate(x.date)):''}</small></a>
           <button class="btn sm" data-cl2="${esc(x.id)}" data-kind="${k}" data-ch="${x.channel}">${x.channel==='sms'?'📱 Skriv SMS':'✨ Skriv mejl'}</button></div>`).join('')}</div>`).join(''):'<div class="card empty">Inga kunder att kontakta just nu.</div>'}
@@ -2482,6 +2488,8 @@ FX Flytt</textarea>
       ${tg('calc','Kalkyl-leads','Räknade pris på hemsidan men bad aldrig om offert. En gång.')}
       ${tg('winback','Vinn tillbaka','Tackade nej (pris, datum, annan firma). En gång, 2–21 dagar efter.')}
       ${tg('upsell','Merförsäljning','Bokade kunder: flyttstäd, packning eller kartonger 4–30 dagar före flytten. En gång.')}
+      <label class="f" for="ai_notes">Säljstil – lär ${esc(N.oskar||'Oskar')} hur ni säljer (följs före allt annat)</label>
+      <textarea id="ai_notes" rows="6" maxlength="2000" placeholder="T.ex.:\n- Vi är ett familjeföretag i Kungsör, säg gärna det.\n- Nämn att samma personal gör hela flytten.\n- Kunder i Västerås tycker ofta att vi är dyra – lyft att priset är fast och inkl. RUT.\n- Skriv aldrig ”tveka inte att höra av dig”.">${esc(s.aiSalesNotes||'')}</textarea>
       ${tg('sms','Följer upp med SMS','Andra uppföljningen av en offert (och kunder utan e-post) går som SMS med länk till offerten. Gäller bara när ”Följ upp offert” eller ”Väck förfallen offert” är på.')}
       <div class="${sms?'okmsg':'warn'}" style="margin-top:10px">${sms?'📱 SMS är inställt.':'📱 SMS är inte inställt än. Skapa ett konto på <b>46elks.se</b> (svensk SMS-tjänst, betala per SMS, ca 0,50 kr) och lägg in <b>ELKS_API_USER</b> och <b>ELKS_API_PASSWORD</b> i Vercel → Settings → Environment Variables. Avsändaren blir ”FXFlytt” (ändra med SMS_FROM).'}</div></div>
     <div class="card"><h3>${avatar('maja',26)} Klagomål</h3>
@@ -2496,7 +2504,7 @@ FX Flytt</textarea>
     $('#ai_save').onclick=async()=>{
       const auto={}; el.querySelectorAll('[data-auto]').forEach(x=>auto[x.dataset.auto]=x.checked);
       const names={}; ['elsa','oskar','maja','nils'].forEach(id=>names[id]=$('#ai_n_'+id).value);
-      try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({aiNames:names,aiAuto:auto,aiDailyMax:Number($('#ai_max').value),aiInboxOn:$('#ai_in').checked,aiReportOn:$('#ai_rep').checked,aiReportTo:$('#ai_to').value,mailKeepDays:Number($('#ai_keep').value)})});
+      try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({aiSalesNotes:$('#ai_notes').value,aiNames:names,aiAuto:auto,aiDailyMax:Number($('#ai_max').value),aiInboxOn:$('#ai_in').checked,aiReportOn:$('#ai_rep').checked,aiReportTo:$('#ai_to').value,mailKeepDays:Number($('#ai_keep').value)})});
         await loadTeam(); ibMsg('#ai_msg','Sparat ✓',true); }catch(e){ ibMsg('#ai_msg',e.message); } };
   };
 

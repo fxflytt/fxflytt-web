@@ -29,6 +29,7 @@ export type Settings = {
   aiNames: AiNames;         // the AI colleagues' names (lib/agents/team.ts)
   aiAuto: AiAuto;           // what they may send by themselves – everything is off until the owner turns it on
   aiDailyMax: number;       // at most this many e-mails sent by the AI team per day
+  aiSalesNotes: string;     // the owner's own words on how FX Flytt sells – Oskar follows them (lib/agents/playbook.ts)
 };
 export type AiNames = { elsa: string; oskar: string; maja: string; nils: string };
 export type AiAuto = {
@@ -44,7 +45,7 @@ export const AI_AUTO_DEFAULT: AiAuto = { request: true, reply: false, ack: false
 export const AI_NAMES_DEFAULT: AiNames = { elsa: "Elsa", oskar: "Oskar", maja: "Maja", nils: "Nils" };
 // What the customer sees about the company in the offer.
 export const trustView = (s: Settings) => (s.orgNr || s.fskatt || s.insured ? { orgNr: s.orgNr, fskatt: s.fskatt, insured: s.insured, insurer: s.insurer } : null);
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "", aiInboxOn: true, aiReportOn: true, aiReportTo: "", mailKeepDays: 180, aiNames: AI_NAMES_DEFAULT, aiAuto: AI_AUTO_DEFAULT, aiDailyMax: 15 };
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "", aiInboxOn: true, aiReportOn: true, aiReportTo: "", mailKeepDays: 180, aiNames: AI_NAMES_DEFAULT, aiAuto: AI_AUTO_DEFAULT, aiDailyMax: 15, aiSalesNotes: "" };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
@@ -97,6 +98,7 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
     const v = (d.aiAuto as Record<string, unknown>)[k];
     if (typeof v === "boolean") cur.aiAuto[k] = v;
   }
+  if ("aiSalesNotes" in d) cur.aiSalesNotes = String(d.aiSalesNotes || "").replace(/\r/g, "").trim().slice(0, 2000);
   if ("aiDailyMax" in d) { const n = Math.round(Number(d.aiDailyMax)); if (!(n >= 0 && n <= 100)) throw new Error("Max mejl per dag: 0–100."); cur.aiDailyMax = n; }
   if (cur.clockOn && !cur.office) throw new Error("Ange kontorets position först.");
   await kv(["SET", KEY, JSON.stringify(cur)]);

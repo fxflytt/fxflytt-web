@@ -11,7 +11,8 @@ import { mailConfigured } from "@/lib/mail/send.ts";
 import { aiConfigured } from "@/lib/agents/claude.ts";
 import { draftSales, draftSms, salesCandidates, callScript, SALES_KINDS, type SalesKind } from "@/lib/agents/sales.ts";
 import { smsConfigured, mobileE164 } from "@/lib/sms/send.ts";
-import { sendSales, sendSalesSms } from "@/lib/agents/run.ts";
+import { sendSales, sendSalesSms, salesTraining } from "@/lib/agents/run.ts";
+import { salesResults, winningExamples } from "@/lib/agents/playbook.ts";
 import { agentName, logActivity } from "@/lib/agents/team.ts";
 
 export const runtime = "nodejs";
@@ -23,9 +24,10 @@ const today = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/S
 export async function GET(req: Request) {
   const u = await requireUser(req); if (u instanceof Response) return u;
   if (!kvConfigured()) return err("Lagring saknas.", 503);
-  const list = salesCandidates(await listBookings(2000)).slice(0, 40).map(({ b, score, kind, why, channel }) => ({
+  const all = await listBookings(2000);
+  const list = salesCandidates(all).slice(0, 40).map(({ b, score, kind, why, channel }) => ({
     id: b.id, name: b.data.name, total: b.offer?.total || 0, views: b.views || 0, lastViewAt: b.lastViewAt, sentAt: b.sentAt, date: b.date, score, kind, why, channel }));
-  return Response.json({ list, kinds: SALES_KINDS, ai: aiConfigured(), sms: smsConfigured() });
+  return Response.json({ list, kinds: SALES_KINDS, ai: aiConfigured(), sms: smsConfigured(), results: salesResults(all, Date.now() - 90 * 864e5), learned: winningExamples(all, "", 500).length, notes: !!(await getSettings()).aiSalesNotes });
 }
 
 export async function POST(req: Request) {
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
   const s = await getSettings();
   if (d.action === "script") {
     if (!aiConfigured()) return err("AI är inte inställt (ANTHROPIC_API_KEY).", 503);
-    try { const r = await callScript(b, today()); await logActivity({ agent: "oskar", what: `Skrev ringmanus för ${b.data.name} åt ${u.name}`, bookingId: b.id }); return Response.json(r); }
+    try { const r = await callScript(b, today(), await salesTraining(b, "", { s })); await logActivity({ agent: "oskar", what: `Skrev ringmanus för ${b.data.name} åt ${u.name}`, bookingId: b.id }); return Response.json(r); }
     catch (e) { return err((e as Error).message, 502); }
   }
   const kind = (typeof d.kind === "string" && d.kind in SALES_KINDS ? d.kind : "followup") as SalesKind;
@@ -50,7 +52,7 @@ export async function POST(req: Request) {
   if (kind === "winback" && b.status !== "declined") return err("Kunden har inte tackat nej.");
   if (d.action === "draft" && sms) {
     if (!aiConfigured()) return err("AI är inte inställt (ANTHROPIC_API_KEY).", 503);
-    try { return Response.json({ text: await draftSms(kind, b, today(), { hint: typeof d.hint === "string" ? d.hint : "", name: agentName(s, "oskar") }) }); }
+    try { return Response.json({ text: await draftSms(kind, b, today(), { hint: typeof d.hint === "string" ? d.hint : "", name: agentName(s, "oskar"), training: await salesTraining(b, kind, { s }) }) }); }
     catch (e) { return err((e as Error).message, 502); }
   }
   if (d.action === "send" && sms) {
@@ -62,7 +64,7 @@ export async function POST(req: Request) {
   if (d.action === "draft") {
     if (!aiConfigured()) return err("AI är inte inställt (ANTHROPIC_API_KEY).", 503);
     try {
-      const r = await draftSales(kind, b, today(), { hint: typeof d.hint === "string" ? d.hint : "", name: agentName(s, "oskar") });
+      const r = await draftSales(kind, b, today(), { hint: typeof d.hint === "string" ? d.hint : "", name: agentName(s, "oskar"), training: await salesTraining(b, kind, { s }) });
       await logActivity({ agent: "oskar", what: `Skrev ett mejl (${SALES_KINDS[kind].label.toLowerCase()}) till ${b.data.name} åt ${u.name}`, bookingId: b.id });
       return Response.json(r);
     } catch (e) { return err((e as Error).message, 502); }

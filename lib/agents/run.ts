@@ -14,7 +14,9 @@ import { syncInbox, listMails, redraft, replyEmail, M_CATS, type InMail, type Sy
 import { listComplaints, updateComplaint, type Complaint } from "./complaints.ts";
 import { aiConfigured } from "./claude.ts";
 import { estimate } from "./estimate.ts";
-import { salesCandidates, draftSales, draftSms, SALES_KINDS, type SalesKind } from "./sales.ts";
+import { salesCandidates, draftSales, draftSms, SALES_KINDS, type SalesKind, type Training } from "./sales.ts";
+import { winningExamples, dayLoad } from "./playbook.ts";
+import { listResources } from "../booking/team.ts";
 import { sendSms, smsConfigured, smsFooter } from "../sms/send.ts";
 import { dailyPlan, type DayPlan } from "./plan.ts";
 import { AGENTS, agentName, aiBy, aiSignature, logActivity, takeQuota } from "./team.ts";
@@ -112,8 +114,17 @@ export function salesLink(kind: SalesKind, b: Booking): { url: string; label: st
 export async function sendSales(kind: SalesKind, b: Booking, subject: string, body: string, by: string, auto = false) {
   const l = salesLink(kind, b);
   await send(b.data.email!, personalOfferEmail(b, subject, body, l.url, l.label, l.badge), COMPANY_TO, { fromName: "FX Flytt" });
-  b.closings = [...(b.closings || []), { at: Date.now(), subject, by, kind, ...(auto ? { auto: true } : {}) }].slice(-12);
+  b.closings = [...(b.closings || []), { at: Date.now(), subject, by, kind, body: body.slice(0, 2000), ...(auto ? { auto: true } : {}) }].slice(-12);
   await saveBooking(b, `${SALES_KINDS[kind].label}: mejl skickat "${subject}"${auto ? " (automatiskt)" : ""}`, by);
+}
+
+/** Everything Oskar knows besides the booking itself: facts, the owner's sales notes, the calendar, e-mails that worked. */
+export async function salesTraining(b: Booking, kind: SalesKind | "", ctx?: { all?: Booking[]; vehicles?: number; s?: Settings; facts?: string }): Promise<Training> {
+  const s = ctx?.s || await getSettings();
+  const all = ctx?.all || await listBookings(2000);
+  const vehicles = ctx?.vehicles ?? (await listResources().catch(() => [])).filter((r) => r.kind === "vehicle" && (r as { active?: boolean }).active !== false).length;
+  const trust = [s.insured ? `Vi är försäkrade${s.insurer ? " (" + s.insurer + ")" : ""}` : "", s.fskatt ? "Godkänd för F-skatt" : "", s.orgNr ? "Org.nr " + s.orgNr : ""].filter(Boolean).join(". ");
+  return { facts: ctx?.facts || companyFacts(await getPrices()), notes: s.aiSalesNotes, examples: kind ? winningExamples(all, kind) : [], load: dayLoad(all, b.date, vehicles), trust };
 }
 
 /** An SMS about the offer: the text, the link to the offer, and our phone number. */
@@ -133,17 +144,19 @@ export async function runSalesAuto(): Promise<{ sent: string[]; failed: string[]
   if (!kinds.length || !aiConfigured() || !mailConfigured()) return out;
   const oskar = agentName(s, "oskar");
   const smsOk = s.aiAuto.sms && smsConfigured();
-  const list = salesCandidates(await listBookings(2000)).filter((c) => kinds.includes(c.kind) && (c.channel === "email" || smsOk)).slice(0, 12);
+  const all = await listBookings(2000), facts = companyFacts(await getPrices());
+  const vehicles = (await listResources().catch(() => [])).filter((r) => r.kind === "vehicle" && (r as { active?: boolean }).active !== false).length;
+  const list = salesCandidates(all).filter((c) => kinds.includes(c.kind) && (c.channel === "email" || smsOk)).slice(0, 12);
   for (const c of list) {
     if (!(await takeQuota(s.aiDailyMax))) break;
     try {
       if (c.channel === "sms") {
-        const text = await draftSms(c.kind, c.b, today(), { name: oskar });
+        const text = await draftSms(c.kind, c.b, today(), { name: oskar, training: await salesTraining(c.b, c.kind, { all, vehicles, s, facts }) });
         await sendSalesSms(c.kind, c.b, text, aiBy(s, "oskar"), true);
         await logActivity({ agent: "oskar", what: `${SALES_KINDS[c.kind].label}: SMS till ${c.b.data.name}: "${text.slice(0, 80)}"`, bookingId: c.b.id, auto: true });
         out.sent.push(c.b.id); continue;
       }
-      const d = await draftSales(c.kind, c.b, today(), { name: oskar, signature: aiSignature(oskar, AGENTS.oskar.role) });
+      const d = await draftSales(c.kind, c.b, today(), { name: oskar, signature: aiSignature(oskar, AGENTS.oskar.role), training: await salesTraining(c.b, c.kind, { all, vehicles, s, facts }) });
       await sendSales(c.kind, c.b, d.subject, d.body, aiBy(s, "oskar"), true);
       await logActivity({ agent: "oskar", what: `${SALES_KINDS[c.kind].label}: skickade "${d.subject}" till ${c.b.data.name}${d.tip ? " · Tips: " + d.tip : ""}`, bookingId: c.b.id, auto: true });
       out.sent.push(c.b.id);

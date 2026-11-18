@@ -37,7 +37,7 @@ function fakeClaude(body: Record<string, unknown>) {
       extracted: { name: "Lisa Lind", phone: "070-123 45 67", from: "Kungsör", to: "Arboga", date: "2026-12-12", size: "2 rok" } };
   } else if (system.includes("klagomålsansvarig")) {
     out = { category: "damage", severity: "high", summary: "Spegel trasig", nextStep: "Ring kunden", draft: "Hej, vi beklagar…" };
-  } else if (system.includes("säljare på FX Flytt")) {
+  } else if (system.includes("säljare på FX Flytt") || system.includes("bästa säljare")) {
     out = { subject: "Din flytt till Arboga", body: "Hej Lisa!\n\nVi håller datumet åt dig.", tip: "Ring henne i eftermiddag" };
   } else if (system.includes("försäljningsanalytiker")) {
     out = { headline: "Bra vecka", summary: "Fler signerade.", good: ["a"], watch: ["b"], actions: ["1", "2", "3"] };
@@ -301,4 +301,42 @@ test("Nils: varför vi förlorar – vunna mot förlorade", () => {
   assert.deepEqual(n.avgPrice, { won: 6000, lost: 8500 }); assert.deepEqual(n.responseMin, { won: 10, lost: 120 });
   assert.equal(n.neverOpened, 2); assert.equal(n.noFollowUp, 2); assert.deepEqual(n.towns, [{ key: "Arboga", won: 1, lost: 2, winRate: 33 }]);
   assert.deepEqual(n.quotes, ["För dyrt jämfört med annan firma"]);
+});
+
+const pb = await import("../lib/agents/playbook.ts");
+
+test("Oskar lär sig av mejl som blev bokningar, och räknar sina resultat", () => {
+  const now = Date.now(), day = 864e5;
+  const B = (p: Record<string, unknown>) => ({ id: "FX1", createdAt: 0, updatedAt: 0, status: "signed", source: "web", data: { name: "A", phone: "1" }, history: [], ...p }) as never;
+  const all = [
+    B({ signedAt: now - 5 * day, closings: [{ at: now - 7 * day, subject: "Din flytt till Arboga", body: "Hej Lisa! …", by: "Oskar (AI)", kind: "followup" }] }),
+    B({ signedAt: now - 5 * day, closings: [{ at: now - 40 * day, subject: "För gammal", body: "x", by: "x", kind: "followup" }] }),     // signed long after – not credited
+    B({ signedAt: now - 1 * day, closings: [{ at: now - 2 * day, subject: "SMS: hej", by: "x", kind: "followup", sms: true }] }),         // SMS: counted, not an example
+    B({ status: "sent", closings: [{ at: now - 3 * day, subject: "Inget svar", body: "y", by: "x", kind: "followup" }] }),
+    B({ signedAt: now - 2 * day, closings: [{ at: now - 3 * day, subject: "Flyttstäd?", body: "z", by: "x", kind: "upsell" }] }),
+  ];
+  const ex = pb.winningExamples(all, "followup");
+  assert.deepEqual(ex.map((e) => [e.subject, e.daysToSign]), [["Din flytt till Arboga", 2]]);
+  assert.equal(pb.winningExamples(all, "").length, 2);
+  const r = Object.fromEntries(pb.salesResults(all, now - 90 * day).map((x) => [x.kind, x]));
+  assert.deepEqual([r.followup.sent, r.followup.won, r.followup.sms, r.followup.rate], [4, 2, 1, 50]);
+  assert.deepEqual([r.upsell.sent, r.upsell.won], [1, 1]);
+});
+
+test("Oskar säger bara att dagen är full när kalendern faktiskt är full", () => {
+  const B = (date: string, status = "signed") => ({ id: "FX1", createdAt: 0, updatedAt: 0, status, source: "web", data: { name: "A", phone: "1" }, history: [], date }) as never;
+  const all = [B("2026-12-12"), B("2026-12-12"), B("2026-12-12"), B("2026-12-12", "sent"), B("2026-12-13")];
+  assert.deepEqual(pb.dayLoad(all, "2026-12-12", 4), { jobs: 3, vehicles: 4, nearlyFull: true });
+  assert.equal(pb.dayLoad(all, "2026-12-13", 4)!.nearlyFull, false);
+  assert.equal(pb.dayLoad(all, undefined, 4), null);
+  const t = sales.trainingText({ notes: "Vi är ett familjeföretag", examples: [{ kind: "followup", subject: "S", body: "B", daysToSign: 1 }], load: { jobs: 1, vehicles: 3, nearlyFull: false } }, "winback");
+  assert.match(t, /SÅ SÄLJER DU/); assert.match(t, /VINN TILLBAKA/); assert.match(t, /<agarens_stil>\nVi är ett familjeföretag/); assert.match(t, /<exempel nr="1"/);
+});
+
+test("Oskars mejl skrivs med träningen och kalendern", async () => {
+  const b = { ...(await store.createBooking("admin", { name: "Lisa Lind", phone: "1", email: "l@ex.se" })), status: "sent" as const, token: "t", sentAt: Date.now() - 2 * 864e5, date: "2026-12-12" };
+  await sales.draftSales("followup", b, "2026-11-18", { training: { facts: "7 dagars städgaranti", notes: "Säg att vi är familjeföretag", load: { jobs: 3, vehicles: 4, nearlyFull: true } } });
+  const call = claudeCalls.at(-1)!;
+  assert.match(call.system, /städgaranti/); assert.match(call.system, /familjeföretag/); assert.match(call.user, /NÄSTAN FULL/);
+  assert.equal((call.body.output_config as { effort: string }).effort, "high");
 });
