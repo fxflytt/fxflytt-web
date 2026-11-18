@@ -45,8 +45,12 @@ export async function POST(req: Request) {
   }, {
     offer: isFinite(total) && total > 0 ? offerFrom(Math.round(total), d) : undefined,
     time: TIME.test(str(d.time, 5)) ? str(d.time, 5) : undefined,
+    ...(Number(d.durationH) >= 1 && Number(d.durationH) <= 14 ? { durationH: Math.round(Number(d.durationH) * 2) / 2 } : {}),
   });
-  b.history[0].by = u.name; await saveBooking(b);
+  b.history[0].by = u.name;
+  // "Ny bokning": the customer has already said yes (on the phone) – booked straight away, no offer to sign.
+  if (d.direct === true) { b.status = "signed"; b.history.push({ at: Date.now(), what: "Bokad direkt (kunden har tackat ja, ingen offert att signera)", by: u.name }); }
+  await saveBooking(b);
   return Response.json(b);
 }
 

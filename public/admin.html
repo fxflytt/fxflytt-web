@@ -33,6 +33,7 @@
   #side .ct{margin-left:auto;background:var(--accent);color:#fff;font-size:11px;font-weight:800;border-radius:999px;min-width:20px;height:20px;line-height:20px;text-align:center;padding:0 6px}
   #side a.newbtn{display:flex;align-items:center;justify-content:center;gap:8px;margin:18px 4px 0;background:var(--accent);color:#fff;text-decoration:none;font-weight:800;border-radius:12px;padding:11px;font-size:14.5px}
   #side a.newbtn:hover{background:var(--accent2)}
+  #side a.newbtn.sec{margin-top:8px;background:none;border:1.5px solid #3a5a72;color:#e6eef4;padding:9px;font-size:14px}#side a.newbtn.sec:hover{background:rgba(255,255,255,.06)}
   #side .lbl-m{display:none}
   body.office .own{display:none!important}
   .side-foot{margin-top:auto;padding:12px 10px 0;border-top:1px solid rgba(255,255,255,.1);font-size:12px;color:#8fa6b8}
@@ -53,7 +54,8 @@
     #side a.nav.on{background:none;color:#fff}#side a.nav.on::before{left:30%;right:30%;top:0;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
     #side .ct{position:absolute;top:4px;left:calc(50% + 6px);margin:0;min-width:17px;height:17px;line-height:17px;font-size:10px;padding:0 4px}
     #side a.newbtn{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));margin:0;width:56px;height:56px;border-radius:18px;padding:0;box-shadow:0 8px 22px rgba(232,101,10,.45)}
-    #side a.newbtn span{display:none}#side a.newbtn svg{width:26px;height:26px}
+    #side a.newbtn span{display:none}#side a.newbtn svg{width:26px;height:26px}#side a.newbtn.sec{display:none}
+    #side a.nav{font-size:10px}
     body.v-new #side a.newbtn,body.v-detail #side a.newbtn{display:none}
     #wrap{margin-left:0;padding-bottom:calc(70px + env(safe-area-inset-bottom))}
     #top{padding:10px 16px}#top h1{font-size:18px}
@@ -106,6 +108,12 @@
   .chips button.on{background:var(--navy);border-color:var(--navy);color:#fff}
   .chips.ltf{padding-top:0;margin-top:-4px}.chips.ltf button{font-size:12px;padding:5px 10px;border-style:dashed}.chips.ltf button.on{border-style:solid}
   .tag.lt{background:#eef0fb;color:#3d3fa8}
+  .selbox{position:absolute;left:2px;right:2px;background:rgba(255,122,26,.18);border:2px dashed var(--accent);border-radius:8px;z-index:3;font-size:12px;font-weight:800;color:#a34500;padding:2px 6px;pointer-events:none}
+  .wk-col{touch-action:pan-y}
+  .card.qn{max-width:560px;width:100%;max-height:92vh;overflow:auto}.qn .btns{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px}.qn .btns .btn{margin:0}.qn .seg{margin-bottom:6px}
+  .qn_crew{display:flex;flex-wrap:wrap;gap:6px}.qn_crew label{display:flex;align-items:center;gap:6px;border:1px solid var(--line2);border-left:4px solid var(--c);border-radius:10px;padding:6px 10px;font-size:13.5px;font-weight:600;cursor:pointer}
+  .nbtns{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;margin-top:6px}@media (max-width:640px){.nbtns{grid-template-columns:1fr 1fr}.nbtns #n_send{grid-column:1/-1;order:-1}}
+  .ostat{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:baseline;margin:0 2px 12px;font-size:13.5px;color:#47525c}.ostat b{color:var(--navy);font-size:15px}.ostat small{color:var(--muted);margin-left:auto}
   .selbar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
   .item.sel{position:relative;padding-left:44px}.item.sel::before{content:"";position:absolute;left:14px;top:50%;width:20px;height:20px;margin-top:-10px;border:2px solid var(--line2);border-radius:6px;background:#fff}
   .item.sel.on{border-color:var(--accent);background:#fff8f2}.item.sel.on::before{content:"✓";color:#fff;background:var(--accent);border-color:var(--accent);font-weight:900;font-size:14px;line-height:20px;text-align:center}
@@ -321,12 +329,14 @@
 <nav id="side" aria-label="Meny">
   <a class="brand" href="#"><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"></a>
   <a class="nav" href="#" data-v="today"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Idag</a>
-  <a class="nav" href="#bokningar" data-v="list"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Bokningar<span class="ct" id="ctNew" hidden></span></a>
+  <a class="nav" href="#offerter" data-v="offers"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 14l2 2 4-4"/></svg>Offerter<span class="ct" id="ctNew" hidden></span></a>
+  <a class="nav" href="#bokningar" data-v="list"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Bokningar</a>
   <a class="nav" href="#kalender" data-v="cal"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Kalender</a>
   <a class="nav" href="#personal" data-v="team"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.9.8 3.1 2.5 3.5 5.2"/></svg><span>Personal<span class="lbl-long"> och fordon</span></span><span class="ct" id="ctCrew" hidden></span></a>
   <a class="nav own" href="#statistik" data-v="stat"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Statistik</a>
   <a class="nav" href="#installningar" data-v="set"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="lbl-m">Mer</span><span class="lbl-long">Inställningar</span></a>
-  <a class="newbtn" href="#ny"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Ny bokning</span></a>
+  <a class="newbtn" href="#ny"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Ny offert</span></a>
+  <a class="newbtn sec" href="#ny-bokning"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Ny bokning</span></a>
   <div class="side-foot"><div id="whoami" style="padding:0 0 6px"></div><button id="logout"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg>Logga ut</button></div>
 </nav>
 <div id="wrap">
@@ -471,7 +481,7 @@
       const fresh=events().filter(e=>e.t>newestSeenInSession);
       if(fresh.length&&feed.prefs?.sound) beep();
       if(fresh.length){ newestSeenInSession=fresh[0].t; toast(`${fresh[0].txt}${fresh.length>1?` (+${fresh.length-1} till)`:''}`,hashOf(fresh[0].url)); }
-      if(fresh.length||load.changed){ if(view==='list'&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); else if(view==='cal'&&!dragging) showCal(); }
+      if(fresh.length||load.changed){ if((view==='list'||view==='offers')&&document.activeElement?.id!=='q') showList(); else if(view==='today') showToday(); else if(view==='cal'&&!dragging) showCal(); }
       if(!$('#npanel').hidden) drawPanel();
     };
     setInterval(tick,30000);
@@ -483,7 +493,9 @@
   function route(){
     const id=location.hash.slice(1);
     if(/^FX\d{6}-[0-9A-F]{6}$/.test(id)) return showDetail(id);
-    if(id==='ny') return showNew();
+    if(id==='ny'){ newMode='offer'; return showNew(); }
+    if(id==='ny-bokning'){ newMode='booking'; return showNew(); }
+    if(id==='offerter'){ listSec='offers'; return showList(); }
     if(id==='kalender') return showCal();
     if(id==='statistik'&&isOwner()) return showStats();
     if(id==='personal') return showTeam();
@@ -492,12 +504,12 @@
     if(id==='skador'){ teamKind='dmg'; return showTeam(); }
     if(id==='installningar') return showSettings();
     if(id==='statistik'&&!isOwner()) return showToday();
-    if(id==='bokningar') return showList();
+    if(id==='bokningar'){ listSec='bookings'; return showList(); }
     return showToday();
   }
   window.addEventListener('hashchange',()=>{ Promise.resolve().then(route).catch(()=>{}); });
   // Marks the menu item and sets the page title. Returns '' so the views can keep `navBar(x)+…`.
-  const TITLES={today:'Idag',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny bokning',set:'Inställningar'};
+  const TITLES={today:'Idag',offers:'Offerter',list:'Bokningar',cal:'Kalender',team:'Personal och fordon',stat:'Statistik',new:'Ny offert',newb:'Ny bokning',set:'Inställningar'};
   function navBar(active,title){
     document.querySelectorAll('#side a.nav').forEach(a=>a.classList.toggle('on',a.dataset.v===active));
     $('#title').textContent=title||TITLES[active]||'';
@@ -532,7 +544,13 @@
   const isExpired=(b)=>b.status==='sent'&&((b.sentAt&&Date.now()-b.sentAt>EXPIRE_DAYS*864e5)||(b.date&&b.date<=today()));
   const boxesLeft=(b)=>b.boxes?b.boxes.qty-b.boxes.returned:0;
   const rentsBoxes=(b)=>(b.offer?.lines||[]).some(l=>/kartong.*hyr/i.test(l.label))||(b.extras||[]).some(e=>b.extrasChosen?.includes(e.id)&&/kartong.*hyr/i.test(e.label))||(b.data?.extras||[]).some(x=>/kartong/i.test(x));
-  const FILTERS={active:['Aktiva',b=>['new','sent','signed'].includes(b.status)&&!isExpired(b)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'&&!isExpired(b)],expired:['Förfallna',isExpired],signed:['Bokade',b=>b.status==='signed'],done:['Klara',b=>b.status==='done'],closed:['Nekade/avbokade',b=>['declined','cancelled'].includes(b.status)],boxes:['Kartonger ute',b=>boxesLeft(b)>0],all:['Alla',()=>true]};
+  // Offerter: requests and offers that are not booked yet. Bokningar: what the customer has said yes to.
+  const OFFER_FILTERS={active:['Aktiva',b=>['new','sent'].includes(b.status)&&!isExpired(b)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'&&!isExpired(b)],expired:['Förfallna',isExpired],declined:['Nekade',b=>b.status==='declined'],all:['Alla offerter',b=>['new','sent','declined'].includes(b.status)]};
+  const BOOK_FILTERS={upcoming:['Kommande',b=>b.status==='signed'&&(!b.date||b.date>=today())],todo:['Att avsluta',b=>b.status==='signed'&&b.date&&b.date<today()],done:['Klara',b=>b.status==='done'],cancelled:['Avbokade',b=>b.status==='cancelled'],boxes:['Kartonger ute',b=>boxesLeft(b)>0],all:['Alla bokningar',b=>['signed','done','cancelled'].includes(b.status)]};
+  let listSec='offers', bookFilter='upcoming', bookSort='date', newMode='offer', prevHash='', curHash=location.hash.slice(1);
+  window.addEventListener('hashchange',()=>{ prevHash=curHash; curHash=location.hash.slice(1); });
+  const FL=()=>listSec==='offers'?OFFER_FILTERS:BOOK_FILTERS;
+  const curF=()=>listSec==='offers'?filter:bookFilter;
   function itemHtml(b){
     const o=b.offer, d=b.data||{};
     const route=[d.from,d.to].filter(Boolean).map(x=>String(x).split(',')[0]).join(' → ');
@@ -575,11 +593,14 @@
     return s?`<div class="tags">${s}</div>`:'';
   }
   function showList(){
-    if(listMode==='board') return showBoard();
-    view='list';
-    root.innerHTML=navBar('list')+`<main>${listToggle()}<div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortBy==='created'?' selected':''}>Senaste</option><option value="date"${sortBy==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortBy==='price'?' selected':''}>Pris</option><option value="chance"${sortBy==='chance'?' selected':''}>Chans att vinna</option></select></div>
-      <div class="chips">${Object.entries(FILTERS).map(([k,v])=>`<button data-f="${k}" class="${k===filter?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
-      <div class="chips ltf">${Object.entries(LTAG).map(([k,l])=>`<button data-lt="${k}" class="${k===tagFilter?'on':''}">${l}</button>`).join('')}</div>
+    const offers=listSec==='offers';
+    if(offers&&listMode==='board') return showBoard();
+    view=offers?'offers':'list';
+    const sortKey=offers?sortBy:bookSort;
+    root.innerHTML=navBar(view)+`<main>${offers?listToggle()+offerStats():''}<div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortKey==='created'?' selected':''}>Senaste</option><option value="date"${sortKey==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortKey==='price'?' selected':''}>Pris</option>${offers?`<option value="chance"${sortBy==='chance'?' selected':''}>Chans att vinna</option>`:''}</select></div>
+      <div class="chips">${Object.entries(FL()).map(([k,v])=>`<button data-f="${k}" class="${k===curF()?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
+      ${offers?'':'<div class="muted" style="margin:-4px 2px 10px">Här är det som kunden har sagt ja till. Förfrågningar och offerter finns under <a href="#offerter">Offerter</a>.</div>'}
+      <div class="chips ltf"${offers?'':' hidden'}>${Object.entries(LTAG).map(([k,l])=>`<button data-lt="${k}" class="${k===tagFilter?'on':''}">${l}</button>`).join('')}</div>
       <div class="selbar"><button class="btn gray sm" id="selmode">${selMode?'✕ Sluta välja':'☑ Välj flera'}</button>${selMode?'<button class="btn gray sm" id="selall">Välj alla i listan</button><span class="muted" id="selinfo"></span>':''}</div>
       <div id="items"></div>
       <button class="btn gray sm" id="reload" style="margin-top:6px">Uppdatera</button>
@@ -587,14 +608,14 @@
     bindNav();
     let shown=[];
     const fill=()=>{
-      const f=FILTERS[filter]||FILTERS.active;
+      const f=FL()[curF()]||Object.values(FL())[0];
       const words=q.toLowerCase().split(/\s+/).filter(Boolean);
       const hay=(b)=>{const d=b.data||{};return [d.name,d.phone,String(d.phone||'').replace(/\D/g,''),d.email,b.id,d.from,d.to,d.size,b.signature?.name].filter(Boolean).join(' ').toLowerCase();};
       // A search looks through all bookings, whatever filter is chosen.
       let list=words.length?all.filter(b=>{const h=hay(b);return words.every(w=>h.includes(w));}):all.filter(f[1]);
       if(tagFilter) list=list.filter(b=>leadTags(b).includes(tagFilter));
       const by={created:(a,b)=>(b.createdAt||0)-(a.createdAt||0),date:(a,b)=>(a.date||'9999').localeCompare(b.date||'9999'),price:(a,b)=>(b.offer?.total||0)-(a.offer?.total||0),chance:(a,b)=>(winChance(b)??-1)-(winChance(a)??-1)||(b.createdAt||0)-(a.createdAt||0)};
-      list=list.slice().sort(by[sortBy]||by.created);
+      list=list.slice().sort(by[offers?sortBy:bookSort]||by.created);
       root.querySelectorAll('.chips').forEach(c=>c.style.opacity=words.length?'.45':'');
       $('#items').innerHTML=(words.length?`<div class="muted" style="margin:0 0 8px">${list.length} träff${list.length===1?'':'ar'} bland alla bokningar</div>`:'')+
         (list.length?list.map(b=>selMode?itemHtml(b).replace('<button class="item"',`<button class="item sel${sel.has(b.id)?' on':''}"`):itemHtml(b)).join(''):`<div class="empty">${words.length?'Ingen bokning matchar sökningen.':'Inga bokningar här ännu.'}</div>`);
@@ -603,11 +624,11 @@
       syncSel();
     };
     fill();
-    root.querySelectorAll('.chips button[data-f]').forEach(b=>b.onclick=()=>{ filter=b.dataset.f; q=''; showList(); });
+    root.querySelectorAll('.chips button[data-f]').forEach(b=>b.onclick=()=>{ if(listSec==='offers') filter=b.dataset.f; else bookFilter=b.dataset.f; q=''; showList(); });
     root.querySelectorAll('.chips button[data-lt]').forEach(b=>b.onclick=()=>{ tagFilter=tagFilter===b.dataset.lt?'':b.dataset.lt; showList(); });
     bindListToggle();
     $('#q').oninput=()=>{ q=$('#q').value; fill(); };
-    $('#sort').onchange=()=>{ sortBy=$('#sort').value; fill(); };
+    $('#sort').onchange=()=>{ if(offers) sortBy=$('#sort').value; else bookSort=$('#sort').value; fill(); };
     $('#reload').onclick=async()=>{ await load(); showList(); };
     function syncSel(){ for(const id of [...sel]) if(!all.some(b=>b.id===id)) sel.delete(id); if($('#bulkn')) $('#bulkn').textContent=sel.size+' valda'; if($('#bulkbar')) $('#bulkbar').classList.toggle('dim',!sel.size); }
     $('#selmode').onclick=()=>{ selMode=!selMode; if(!selMode) sel.clear(); showList(); };
@@ -815,6 +836,39 @@ FX Flytt</textarea>
   const hit=(sel,x,y,useX=true)=>[...root.querySelectorAll(sel)].find(c=>{ const r=c.getBoundingClientRect(); return (!useX||(x>=r.left&&x<r.right))&&y>=r.top&&y<r.bottom; });
   const rangeTxt=(s,dur)=>S.fmtMin(s)+'–'+S.fmtMin(s+dur);
 
+  // Quick new job from the calendar – a small window over the calendar, so a mistake is just "Avbryt".
+  function quickNew(p){
+    const people=res.filter(r=>r.kind==='person'&&r.active), cars=res.filter(r=>r.kind==='vehicle'&&r.active), pick=new Set(p.crew||[]);
+    const times=['']; for(let m=7*60;m<=18*60;m+=30) times.push(S.fmtMin(m));
+    const box=document.createElement('div'); box.className='pinbox'; box.id='qn';
+    box.innerHTML=`<div class="card qn"><h3>Nytt jobb · ${esc(dfmt(p.date,{weekday:'long',day:'numeric',month:'long'}))}</h3>
+      <div class="seg" id="qn_t"><button data-t="booking" class="on">✅ Bokning (klar)</button><button data-t="offer">📄 Offert att skicka</button></div>
+      <div class="row2"><div><label class="f" for="qn_n">Namn *</label><input id="qn_n" autocomplete="off"></div><div><label class="f" for="qn_p">Telefon *</label><input id="qn_p" type="tel" autocomplete="off"></div></div>
+      <div class="row2"><div><label class="f" for="qn_from">Från</label><input id="qn_from" placeholder="Gata och ort"></div><div><label class="f" for="qn_to">Till</label><input id="qn_to" placeholder="Gata och ort"></div></div>
+      <div class="row2"><div><label class="f" for="qn_d">Datum</label><input id="qn_d" type="date" value="${esc(p.date)}"></div><div class="row2" style="gap:6px"><div><label class="f" for="qn_tm">Start</label><select id="qn_tm">${times.map(t=>`<option value="${t}"${t===(p.time||'')?' selected':''}>${t||'Ingen tid'}</option>`).join('')}</select></div><div><label class="f" for="qn_h">Timmar</label><input id="qn_h" type="number" min="1" max="14" step="0.5" value="${p.dur||''}" placeholder="4"></div></div></div>
+      <label class="f" for="qn_tot">Pris efter RUT (kr, valfritt)</label><input id="qn_tot" type="number" inputmode="numeric">
+      ${people.length||cars.length?`<label class="f">Personal och fordon</label><div class="qn_crew">${[...people,...cars].map(r=>`<label style="--c:${esc(r.color)}"><input type="checkbox" value="${esc(r.id)}"${pick.has(r.id)?' checked':''}> ${esc(r.name)}${absOn&&r.kind==='person'&&absOn(r.id,p.date).length?' ⛔':''}</label>`).join('')}</div>`:''}
+      <div class="err" id="qn_err"></div>
+      <div class="btns"><button class="btn gray" id="qn_x">Avbryt</button><button class="btn sec" id="qn_full">Öppna hela formuläret</button><button class="btn" id="qn_ok">Spara</button></div></div>`;
+    document.body.appendChild(box);
+    let type='booking'; const v=(id)=>box.querySelector('#'+id).value;
+    box.querySelectorAll('#qn_t button').forEach(x=>x.onclick=()=>{ type=x.dataset.t; box.querySelectorAll('#qn_t button').forEach(y=>y.classList.toggle('on',y===x)); box.querySelector('#qn_ok').textContent=type==='offer'?'Spara utkast':'Spara'; });
+    const close=()=>{ box.remove(); document.removeEventListener('keydown',esck); };
+    const esck=(e)=>{ if(e.key==='Escape') close(); }; document.addEventListener('keydown',esck);
+    box.onclick=(e)=>{ if(e.target===box) close(); };
+    box.querySelector('#qn_x').onclick=close;
+    box.querySelector('#qn_full').onclick=()=>{ newPrefill={origin:'cal',name:v('qn_n'),phone:v('qn_p'),from:v('qn_from'),to:v('qn_to'),date:v('qn_d'),time:v('qn_tm'),dur:v('qn_h'),total:v('qn_tot')};
+      close(); location.hash=type==='offer'?'ny':'ny-bokning'; };
+    box.querySelector('#qn_ok').onclick=async()=>{ const ok=box.querySelector('#qn_ok'); ok.disabled=true; box.querySelector('#qn_err').textContent='';
+      const crew=[...box.querySelectorAll('.qn_crew input:checked')].map(x=>x.value);
+      try{ let b=await api('/api/admin/bookings',{method:'POST',body:JSON.stringify({name:v('qn_n'),phone:v('qn_p'),from:v('qn_from'),to:v('qn_to'),date:v('qn_d'),time:v('qn_tm'),
+          durationH:v('qn_h')?Number(v('qn_h')):undefined,total:v('qn_tot')||undefined,direct:type==='booking'})});
+        if(crew.length) b=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify({crew})});
+        all.unshift(b); updateCounts(); close(); calDate=b.date||calDate; showCal();
+        toast((type==='offer'?'📄 Offerten':'✅ Bokningen')+' för '+b.data.name+' är sparad – tryck för att öppna',b.id);
+      }catch(e){ ok.disabled=false; box.querySelector('#qn_err').textContent=e.message; } };
+    setTimeout(()=>box.querySelector('#qn_n').focus(),30);
+  }
   function showCal(){
     view='cal';
     const t=today(), keepX=lastCalView===calView?(root.querySelector('.xs')?.scrollLeft||0):null;
@@ -834,7 +888,7 @@ FX Flytt</textarea>
       let dayList='';
       if(calDay){
         const list=all.filter(b=>b.date===calDay&&!S.INACTIVE.includes(b.status)).sort(byTime), n=signedOn(calDay).length;
-        dayList=`<div class="card" style="margin-top:16px"><h3>${esc(fmtDate(calDay))} <span class="sub">${n} bokade av max ${CAP}</span></h3>${n>=CAP?'<div class="warn">Dagen är full.</div>':''}<div id="items">${list.length?list.map(itemHtml).join(''):'<div class="muted">Inga bokningar.</div>'}</div></div>`;
+        dayList=`<div class="card" style="margin-top:16px"><h3>${esc(fmtDate(calDay))} <span class="sub">${n} bokade av max ${CAP}</span></h3><button class="btn sec sm" id="dayNew" style="margin-bottom:10px">+ Ny bokning den här dagen</button>${n>=CAP?'<div class="warn">Dagen är full.</div>':''}<div id="items">${list.length?list.map(itemHtml).join(''):'<div class="muted">Inga bokningar.</div>'}</div></div>`;
       }
       body=`<div class="card" style="padding:12px"><div class="mon">${['Mån','Tis','Ons','Tor','Fre','Lör','Sön'].map(x=>`<div class="h">${x}</div>`).join('')}${cells}</div>
         <p class="muted" style="margin:10px 2px 0">Siffran = bokade jobb (orange nästan fullt, röd fullt ${CAP}). Streckade = offert ej signerad. Dra ett jobb till en annan dag för att flytta det.</p></div>${dayList}`;
@@ -882,9 +936,17 @@ FX Flytt</textarea>
         },
         cancel(){ clearDrop(); showCal(); },
       };
-      if(fine) setTimeout(()=>root.querySelectorAll('.wk-col').forEach(col=>col.addEventListener('click',(e)=>{
-        if(e.target!==col||justDragged) return; const r=col.getBoundingClientRect();
-        newPrefill={date:col.dataset.d,time:S.fmtMin(clampStart(Math.floor((OPEN+(e.clientY-r.top)/PX*60)/30)*30))}; location.hash='ny';
+      // Empty time: click = new job there; drag down = new job with that length.
+      if(fine) setTimeout(()=>root.querySelectorAll('.wk-col').forEach(col=>col.addEventListener('pointerdown',(e)=>{
+        if(e.target!==col||e.button!==0||justDragged) return; e.preventDefault();
+        const r=col.getBoundingClientRect(), at=(y)=>clampStart(Math.floor((OPEN+(y-r.top)/PX*60)/30)*30), a=at(e.clientY);
+        const g=document.createElement('div'); g.className='selbox'; col.appendChild(g);
+        const draw=(b)=>{ const s0=Math.min(a,b), s1=Math.max(a,b)+30; g.style.top=(s0-OPEN)/60*PX+'px'; g.style.height=(s1-s0)/60*PX+'px'; g.textContent=S.fmtMin(s0)+'–'+S.fmtMin(s1); return [s0,s1]; };
+        let span=draw(a), moved=false;
+        const mv=(ev)=>{ moved=true; span=draw(at(ev.clientY)); };
+        const up=()=>{ document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); g.remove();
+          quickNew({date:col.dataset.d,time:S.fmtMin(span[0]),dur:moved&&span[1]-span[0]>=60?(span[1]-span[0])/60:null}); };
+        document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
       })),0);
     }
 
@@ -976,6 +1038,12 @@ FX Flytt</textarea>
     $('#prev').onclick=()=>step(-1); $('#next').onclick=()=>step(1); $('#tdy').onclick=()=>{ calDate=today(); calDay=null; showCal(); };
     $('#pre').onchange=()=>{ showPre=$('#pre').checked; lsSet('fx_calpre',showPre?'1':'0'); showCal(); };
     root.querySelectorAll('.day').forEach(c=>c.onclick=()=>{ if(justDragged) return; calDay=c.dataset.d; showCal(); });
+    if($('#dayNew')) $('#dayNew').onclick=()=>quickNew({date:calDay});
+    // Staff view: click an empty spot on a person's row = new job for that person at that time.
+    if(calView==='team'&&fine) root.querySelectorAll('.tl-row[data-r] .tl-track').forEach(tr=>tr.addEventListener('click',(e)=>{
+      if(e.target!==tr||justDragged) return; const row=tr.closest('.tl-row'), r=tr.getBoundingClientRect(), pxh=parseFloat(getComputedStyle(tr.closest('.tl')).getPropertyValue('--pxh'))||60;
+      quickNew({date:calDate,time:S.fmtMin(clampStart(Math.floor((OPEN+(e.clientX-r.left)/pxh*60)/30)*30)),crew:row.dataset.r?[row.dataset.r]:[]});
+    }));
     root.querySelectorAll('[data-id]').forEach(e=>e.addEventListener('click',(ev)=>{ ev.stopPropagation(); if(justDragged) return; location.hash=e.dataset.id; }));
     if(handlers) enableDrag(root.querySelector('main'),handlers);
   }
@@ -989,7 +1057,9 @@ FX Flytt</textarea>
     const locked=b.status==='signed'||b.status==='done';
     const DURS=[];for(let h=1;h<=14;h+=.5)DURS.push(h);
     const est=S.estimateHours(b);
-    root.innerHTML=navBar('list',d.name||b.id)+`<main><button class="back" id="back">‹ Tillbaka</button>
+    root.innerHTML=navBar(['new','sent','declined'].includes(b.status)?'offers':'list',d.name||b.id)+`<main><button class="back" id="back">‹ Tillbaka</button>
+      ${b.nextId?`<div class="warn" style="margin-bottom:12px">Den här offerten är ersatt av en nyare version – <a href="#${esc(b.nextId)}">öppna den</a>.</div>`:''}
+      ${b.version?`<div class="muted" style="margin:-4px 2px 10px"><span class="tag">Version ${b.version}</span> av <a href="#${esc(b.prevId)}">${esc(b.prevId)}</a></div>`:''}
     <div class="cols"><div>
       <div class="card"><div class="top" style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b style="font-size:20px">${esc(d.name)}</b><span class="st ${b.status}">${ST[b.status]}</span></div>
         <div class="muted">${esc(b.id)} · skapad ${esc(fmtTs(b.createdAt))} · ${b.source==='web'?'från hemsidan':'manuell'}</div>
@@ -1061,7 +1131,8 @@ FX Flytt</textarea>
         ${b.status==='sent'?`<div class="muted" style="margin-top:4px">🔔 ${b.reminders?.length?`Påminnelser: ${b.reminders.map(x=>esc(fmtTs(x))).join(', ')}`:'Ingen påminnelse än'}${b.data?.email?(b.reminders?.length>=2?' · inga fler skickas automatiskt':' · skickas automatiskt efter 1 och 3 dagar'):' · kunden har ingen e-post, påminn via SMS'}</div>`:''}
         ${b.status==='declined'?`<div class="warn"><b>Kunden tackade nej</b>${b.declinedAt?' '+esc(fmtTs(b.declinedAt)):''}${b.decline?`<br>Anledning: <b>${esc(WHY[b.decline.reason]||b.decline.reason)}</b>${b.decline.text?`<br>"${esc(b.decline.text)}"`:''}`:'<br>Ingen anledning angiven.'}</div>`:''}
         ${b.discount?`<div class="okmsg">Rabatt ${b.discount.pct} % – tidigare pris ${kr(b.discount.before)}, nu ${kr(o?.total)}.</div>`:''}
-        ${locked?'':`<button class="btn" id="send">${b.status==='sent'?'Skicka offerten igen':'Skicka offert via e-post'}</button><button class="btn sec" id="link">Kopiera länk (för SMS)</button>`}
+        ${locked?'':`<button class="btn" id="send">${b.status==='sent'?'Skicka offerten igen':'Skicka offert via e-post'}</button><button class="btn sec" id="link">Kopiera länk (för SMS)</button>
+          <div class="btns" style="margin-top:6px"><button class="btn gray sm" id="o_prev">👁 Förhandsgranska</button>${o&&o.total>0?'<button class="btn gray sm" id="o_tpl">💾 Spara som mall</button>':''}${['sent','declined'].includes(b.status)&&!b.nextId?'<button class="btn gray sm" id="o_ver">📝 Ny version</button>':''}</div>`}
         ${b.status==='sent'&&b.data?.email?'<button class="btn sec" id="remind">Skicka påminnelse nu</button>':''}
         <div id="msg2"></div></div>
       ${!locked&&b.status!=='cancelled'?`<div class="card"><h3>Tillval i offerten</h3>
@@ -1107,7 +1178,7 @@ FX Flytt</textarea>
       <div class="card hist"><h3>Historik</h3>${(b.history||[]).slice().reverse().map(h=>`<div><span class="muted">${esc(fmtTs(h.at))}</span> ${esc(h.what)}${h.by?` <span class="muted">· ${esc(h.by)}</span>`:''}</div>`).join('')}</div>
     </div></div></main>`;
     bindNav();
-    $('#back').onclick=()=>{ location.hash={cal:'kalender',today:'',team:'personal',stat:'statistik'}[view]??'bokningar'; };
+    $('#back').onclick=()=>{ location.hash={cal:'kalender',today:'',team:'personal',stat:'statistik',offers:'offerter'}[view]??(['new','sent','declined'].includes(b.status)?'offerter':'bokningar'); };
     const msg=(el,t,ok)=>{ $(el).innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
     let lastConflicts=[];
     const patch=async(body)=>{ try{ const nb=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; lastConflicts=S.conflicts(nb,all,res); updateCounts(); return true; }catch(e){ msg(body&&'crew' in body?'#msgp':'#msg',e.message,false); return false; } };
@@ -1218,7 +1289,7 @@ FX Flytt</textarea>
       const real=['signed','done'].includes(b.status)||b.signedAt;
       if(!confirm(`Ta bort ${(b.data||{}).name||b.id} helt?\n\nBokningen, historiken och länkarna försvinner och kan inte tas fram igen här (bara från en säkerhetskopia).`+(real?'\n\nOBS: kunden har signerat. Vill du bara stoppa flytten – välj Avboka i stället.':''))) return;
       if(real&&!confirm('Är du säker? Den signerade bokningen tas bort.')) return;
-      try{ await api('/api/admin/bookings?id='+b.id,{method:'DELETE'}); all=all.filter(x=>x.id!==b.id); updateCounts(); notify('Bokningen är borttagen'); location.hash='bokningar'; }catch(e){ alert(e.message); }
+      try{ await api('/api/admin/bookings?id='+b.id,{method:'DELETE'}); all=all.filter(x=>x.id!==b.id); updateCounts(); notify('Bokningen är borttagen'); location.hash=['new','sent','declined'].includes(b.status)?'offerter':'bokningar'; }catch(e){ alert(e.message); }
     };
     root.querySelectorAll('[data-s]').forEach(x=>x.onclick=async()=>{
       if(x.dataset.s==='cancelled'&&!confirm('Avboka den här bokningen?')) return;
@@ -1283,6 +1354,12 @@ FX Flytt</textarea>
       root.querySelectorAll('#pcts .chip').forEach(c=>c.onclick=()=>{ $('#pct').value=''; preview(Number(c.dataset.p)); });
       $('#pct').oninput=()=>preview(Math.round(Number($('#pct').value)));
     }
+    if($('#o_prev')) $('#o_prev').onclick=async()=>{ const w=window.open('about:blank','_blank');
+      try{ const j=await api('/api/admin/send?id='+b.id+'&preview=1',{method:'POST'}); if(w) w.location=j.url; else window.open(j.url,'_blank'); }catch(e){ if(w) w.close(); msg('#msg2',e.message,false); } };
+    if($('#o_tpl')) $('#o_tpl').onclick=async()=>{ const name=prompt('Namn på mallen (t.ex. Pianoflytt inom stan):',d.size||''); if(!name) return;
+      try{ await api('/api/admin/templates',{method:'POST',body:JSON.stringify({name,size:d.size||'',total:o.total,lines:o.lines||[],customerNote:o.customerNote||''})}); notify('Mallen "'+name+'" är sparad – välj den i Ny offert'); }catch(e){ msg('#msg2',e.message,false); } };
+    if($('#o_ver')) $('#o_ver').onclick=async()=>{ if(!confirm('Göra en ny version av offerten? Den här stängs (Ersatt), och du får en kopia att ändra och skicka igen.')) return;
+      try{ const n=await api('/api/admin/sales?id='+b.id,{method:'POST',body:JSON.stringify({newVersion:true})}); const i=all.findIndex(x=>x.id===b.id); if(i>=0){ all[i].status='declined'; all[i].nextId=n.id; } all.unshift(n); notify('Version '+n.version+' är skapad – ändra och skicka'); location.hash=n.id; }catch(e){ msg('#msg2',e.message,false); } };
     if(linkBtn) linkBtn.onclick=async()=>{
       const body={date:$('#dt').value,time:$('#tm').value,customerNote:$('#cn').value};
       if($('#tot').value) body.total=Number($('#tot').value);
@@ -1326,7 +1403,11 @@ FX Flytt</textarea>
   const airKm=(a,b)=>{ const R=6371,r=Math.PI/180,dLa=(b.lat-a.lat)*r,dLo=(b.lon-a.lon)*r; const h=Math.sin(dLa/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
   function showNew(){
     const opt=(l,sel)=>l.map(x=>`<option${x===sel?' selected':''}>${esc(x)}</option>`).join('');
-    root.innerHTML=navBar('new')+`<main style="max-width:820px">
+    const isOffer=newMode!=='booking', from=newPrefill&&newPrefill.origin;
+    root.innerHTML=navBar(isOffer?'new':'newb')+`<main style="max-width:820px">
+    <button class="back" id="nback">‹ Tillbaka</button>
+    <div class="seg" id="nmode" style="margin-bottom:8px"><button data-m="offer" class="${isOffer?'on':''}">📄 Ny offert</button><button data-m="booking" class="${isOffer?'':'on'}">✅ Ny bokning</button></div>
+    <div class="muted" style="margin:0 2px 14px">${isOffer?'Kunden får en länk, väljer paket och signerar själv.':'Kunden har redan sagt ja (t.ex. i telefon) – jobbet bokas direkt, utan offert att signera.'}</div>
     <div class="card" id="pastecard"><h3>📋 Klistra in lead <span class="sub">från en lead-sajt, ett mejl eller ett sms</span></h3>
       <textarea id="n_paste" style="min-height:90px" placeholder="Kopiera hela förfrågan och klistra in den här – namn, telefon, adresser, datum och storlek fylls i nedan."></textarea>
       <div class="btns" style="margin-top:8px"><button class="btn sec" id="n_fill">Fyll i från texten</button></div><div id="n_pmsg"></div></div>
@@ -1343,6 +1424,7 @@ FX Flytt</textarea>
       <div class="row2"><div><label class="f">Datum</label><input id="n_date" type="date"></div><div><label class="f">Starttid</label><select id="n_time">${timeOpts('')}</select></div></div>
     </div>
     <div class="card"><h3>Pris – räknas med samma prislista som hemsidan</h3>
+      ${isOffer?'<label class="f" for="n_tpl">Mall</label><select id="n_tpl"><option value="">Ingen mall – räkna med prislistan</option></select>':''}
       <label class="f">Tjänst</label><select id="n_svc">${SVC.map(([v,l])=>`<option value="${v}">${esc(l)}</option>`).join('')}</select>
       <div class="row2" id="w_area"><div><label class="f">Boyta (m²)</label><input id="n_m2" type="number" inputmode="numeric" min="1"></div><div id="w_km"><label class="f">Avstånd (km, en väg)</label><input id="n_km" type="number" inputmode="numeric" min="0"></div></div>
       <div class="row2" id="w_hours" hidden><div><label class="f">Antal personer</label><select id="n_crew"><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div><div><label class="f" id="l_hours">Timmar</label><input id="n_h" type="number" inputmode="numeric" min="1" value="3"></div></div>
@@ -1352,10 +1434,22 @@ FX Flytt</textarea>
       <div class="muted" id="totinfo"></div>
       <label class="f">Text till kunden</label><textarea id="n_cn" placeholder="T.ex. Inkl. bärhjälp, 2 flyttare"></textarea>
       <label class="f">Övrigt (internt)</label><textarea id="n_msg"></textarea>
-      <button class="btn" id="create">Spara bokning</button><div class="err" id="err"></div></div></main>`;
+      ${isOffer?`<div class="nbtns"><button class="btn gray" id="create">Spara utkast</button><button class="btn sec" id="n_prev">👁 Förhandsgranska</button><button class="btn" id="n_send">Spara och skicka offerten</button></div>`
+        :`<div class="row2"><div><label class="f" for="n_dur">Längd (timmar)</label><input id="n_dur" type="number" min="1" max="14" step="0.5" placeholder="Räknas själv"></div><div></div></div>
+          <button class="btn" id="create">Spara bokning</button>`}<div class="err" id="err"></div></div></main>`;
+    $('#nback').onclick=()=>{ location.hash=from==='cal'?'kalender':prevHash&&prevHash!=='ny'&&prevHash!=='ny-bokning'?prevHash:(isOffer?'offerter':'bokningar'); };
+    root.querySelectorAll('#nmode button').forEach(x=>x.onclick=()=>{ location.hash=x.dataset.m==='offer'?'ny':'ny-bokning'; });
     bindNav();
     const v=(id)=>$('#'+id).value;
-    if(newPrefill){ $('#n_date').value=newPrefill.date; $('#n_time').value=newPrefill.time; newPrefill=null; }
+    if(newPrefill){ const P=newPrefill; ['name','phone','email','from','to','date','time','total','msg','cn'].forEach(k=>{ if(P[k]!=null&&$('#n_'+k)) $('#n_'+k).value=P[k]; }); if(P.dur&&$('#n_dur')) $('#n_dur').value=P.dur; newPrefill=null; if(P.total) setTimeout(()=>$('#n_total')&&$('#n_total').dispatchEvent(new Event('input')),0); }
+    // --- offer templates ---
+    let tplLines=null, tplTotal=null, tpls=[];
+    if($('#n_tpl')) api('/api/admin/templates').then(j=>{ tpls=j.templates||[]; if(!$('#n_tpl')) return;
+      $('#n_tpl').innerHTML='<option value="">Ingen mall – räkna med prislistan</option>'+tpls.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} – ${kr(t.total)}</option>`).join('')+(tpls.length?'':'<option disabled>Inga mallar än – spara en från en offert</option>');
+      $('#n_tpl').onchange=()=>{ const t=tpls.find(x=>x.id===$('#n_tpl').value); tplLines=t?t.lines:null; tplTotal=t?t.total:null; if(!t) return;
+        const sv=SVC.find(x=>x[1]===t.size); if(sv) $('#n_svc').value=sv[0];
+        $('#n_total').value=t.total; $('#n_total').dispatchEvent(new Event('input')); if(t.customerNote) $('#n_cn').value=t.customerNote; notify('Mallen "'+t.name+'" är ifylld'); };
+    }).catch(()=>{});
     // --- existing customers ---
     const pickCust=(c)=>{ $('#n_name').value=c.name||''; $('#n_phone').value=c.phone||''; if(c.email) $('#n_email').value=c.email; $('#sugg').innerHTML=''; showKnown(); };
     const suggest=(q)=>{
@@ -1445,18 +1539,42 @@ FX Flytt</textarea>
     ['n_svc','n_m2','n_km','n_crew','n_h','n_box','n_xc'].forEach(id=>{ $('#'+id).oninput=run; $('#'+id).onchange=run; });
     $('#n_total').oninput=()=>{ manual=$('#n_total').value!==''; run(); };
     run();
-    $('#create').onclick=async()=>{
+    let saved=null;
+    const save=async()=>{
+      if(saved) return saved;
       const [svc,pkg]=v('n_svc').split('|'), t=Number(v('n_total'));
-      const useLines=calc&&t===calc.totalAfterRut;
+      const useLines=calc&&t===calc.totalAfterRut, useTpl=!useLines&&tplLines&&tplLines.length&&t===tplTotal;
       const flo=(f,h)=>`${v(f)} · ${v(h).toLowerCase()}`;
       const hourlyNote=svc==='hourly'?`Minst ${window.FX_PRICES.hourly.minHours} timmar. Du betalar för den tid flytten faktiskt tar (${window.FX_PRICES.hourly[v('n_crew')]} kr/tim efter RUT).`:'';
-      try{ const b=await api('/api/admin/bookings',{method:'POST',body:JSON.stringify({name:v('n_name'),phone:v('n_phone'),email:v('n_email'),from:v('n_from'),to:v('n_to'),
+      const b=await api('/api/admin/bookings',{method:'POST',body:JSON.stringify({name:v('n_name'),phone:v('n_phone'),email:v('n_email'),from:v('n_from'),to:v('n_to'),
           size:SVC.find(x=>x[0]===v('n_svc'))[1],areaM2:svc==='hourly'||svc==='other'?'':v('n_m2'),distanceKm:v('n_km')===''?undefined:Number(v('n_km')),
           floorFrom:svc==='cleaning'?'':flo('n_ff','n_hf'),floorTo:svc==='cleaning'?'':flo('n_ft','n_ht'),
-          date:v('n_date'),time:v('n_time'),total:v('n_total'),lines:useLines?calc.lines:undefined,note:useLines?hourlyNote:'',customerNote:v('n_cn'),message:v('n_msg')})});
-        all.unshift(b); location.hash=b.id; }
-      catch(e){ $('#err').textContent=e.message; }
+          date:v('n_date'),time:v('n_time'),total:v('n_total'),lines:useLines?calc.lines:useTpl?tplLines:undefined,note:useLines?hourlyNote:'',customerNote:v('n_cn'),message:v('n_msg'),
+          direct:!isOffer,durationH:$('#n_dur')&&v('n_dur')?Number(v('n_dur')):undefined})});
+      all.unshift(b); saved=b; return b;
     };
+    const busy=(id,on,label)=>{ const x=$('#'+id); if(x){ x.disabled=on; if(label) x.textContent=label; } };
+    const after=(b)=>{ if(from==='cal'&&b.date){ calDate=b.date; location.hash='kalender'; } else location.hash=b.id; };
+    $('#create').onclick=async()=>{ $('#err').textContent=''; busy('create',true);
+      try{ const b=await save(); notify(isOffer?'Offerten är sparad som utkast':'Bokningen är sparad ✓'); after(b); }catch(e){ $('#err').textContent=e.message; busy('create',false); } };
+    if($('#n_prev')) $('#n_prev').onclick=async()=>{ $('#err').textContent='';
+      const w=window.open('about:blank','_blank');
+      try{ const b=await save(); const j=await api('/api/admin/send?id='+b.id+'&preview=1',{method:'POST'}); if(w) w.location=j.url; else window.open(j.url,'_blank'); location.hash=b.id; }
+      catch(e){ if(w) w.close(); $('#err').textContent=e.message; } };
+    if($('#n_send')) $('#n_send').onclick=async()=>{ $('#err').textContent='';
+      if(!v('n_date')) return $('#err').textContent='Välj ett datum – det behövs i offerten.';
+      if(!(Number(v('n_total'))>0)) return $('#err').textContent='Sätt ett pris först.';
+      const email=v('n_email').trim();
+      if(!confirm(email?`Spara och skicka offerten till ${email}?`:'Kunden har ingen e-post. Spara och skapa en länk att skicka via SMS?')) return;
+      busy('n_send',true,'Skickar…');
+      try{ const b=await save();
+        if(email){ await api('/api/admin/send?id='+b.id,{method:'POST'}); notify('Offerten är skickad till '+email+' ✓'); after(b); return; }
+        const j=await api('/api/admin/send?id='+b.id+'&linkOnly=1',{method:'POST'}); try{ await navigator.clipboard.writeText(j.url); }catch(_){}
+        const box=document.createElement('div'); box.className='pinbox';
+        box.innerHTML=`<div class="card"><h3>Skicka länken till ${esc(b.data.name)}</h3><div class="muted">Länken är kopierad.</div><input readonly value="${esc(j.url)}" style="margin:8px 0">
+          <a class="btn" href="sms:${esc(String(b.data.phone||'').replace(/\s/g,''))}?&body=${encodeURIComponent('Hej! Här är din offert från FX Flytt: '+j.url)}">Öppna SMS med länken</a><button class="btn gray" id="lk_ok">Klar</button></div>`;
+        document.body.appendChild(box); box.querySelector('#lk_ok').onclick=()=>{ box.remove(); after(b); };
+      }catch(e){ $('#err').textContent=e.message; busy('n_send',false,'Spara och skicka offerten'); if(saved) location.hash=saved.id; } };
   }
 
   // ---------- today ----------
@@ -1502,7 +1620,7 @@ FX Flytt</textarea>
         <a class="kpi" href="#kalender" style="background:var(--navy)"><small>Jobb i dag</small><b>${jt.length}</b><small>${people(jt)} i personalen ute</small></a>
         <a class="kpi" href="#kalender" style="background:#2f6fb2"><small>Jobb i morgon</small><b>${jm.length}</b><small>${people(jm)} i personalen</small></a>
         <a class="kpi lt${miss.length?' alert':''}" href="#bokningar"><small>Saknar personal (14 dagar)</small><b>${miss.length}</b><small>bokade jobb utan någon tilldelad</small></a>
-        <a class="kpi lt" href="#bokningar"><small>Nya förfrågningar</small><b>${fresh.length}</b><small>${waiting.length} offert${waiting.length===1?'':'er'} väntar på svar</small></a>
+        <a class="kpi lt" href="#offerter"><small>Nya förfrågningar</small><b>${fresh.length}</b><small>${waiting.length} offert${waiting.length===1?'':'er'} väntar på svar</small></a>
       </div>
       <div class="cols"><div>
         <div class="sec-h"><h2>I dag · ${esc(fmtDate(t))}</h2>${jt.length?`<a class="btn sec sm" style="margin-left:auto" href="/arbetsorder?d=${t}&print=1" target="_blank">🖨 Arbetsordrar</a>`:''}</div>
@@ -1514,7 +1632,7 @@ FX Flytt</textarea>
         ${staffHtml}
       </div><div>
         <div class="card"><h3>Att göra</h3>${todoHtml}</div>
-        ${block('Nya förfrågningar',fresh.slice(0,6),'Inga nya förfrågningar.',fresh.length>6?`<a href="#bokningar">Visa alla ${fresh.length}</a>`:'')}
+        ${block('Nya förfrågningar',fresh.slice(0,6),'Inga nya förfrågningar.',fresh.length>6?`<a href="#offerter">Visa alla ${fresh.length}</a>`:'')}
       </div></div></main>`;
     root.querySelectorAll('.item').forEach(x=>x.onclick=()=>{ location.hash=x.dataset.id; });
     // who is clocked in right now (Stämpelklockan)
@@ -1635,7 +1753,7 @@ FX Flytt</textarea>
     const cols=STAGES.map(([k,l,c])=>{ const list=all.filter(b=>stageOf(b)===k&&(k!=='won'&&k!=='lost'||(b.updatedAt||b.createdAt)>=since)).sort((x,y)=>(followDue(y)?1:0)-(followDue(x)?1:0)||(y.updatedAt||0)-(x.updatedAt||0));
       const sum=list.reduce((a,b)=>a+(b.offer?.total||0),0);
       return `<div class="bcol" data-stage="${k}"><div class="bhead" style="--c:${c}"><b>${l}</b><span>${list.length}</span></div><div class="bsum muted">${sum?kr(sum):''}</div>${list.slice(0,60).map(boardCard).join('')||'<div class="muted bempty">–</div>'}</div>`; }).join('');
-    root.innerHTML=navBar('list')+`<main style="max-width:none">${listToggle()}
+    view='offers'; root.innerHTML=navBar('offers')+`<main style="max-width:none">${listToggle()}${offerStats()}
       <div class="xs"><div class="board">${cols}</div></div>
       <p class="muted" style="margin:10px 2px">Dra en kund till <b>Kontaktad</b> eller <b>Förlorad</b>. Resten flyttas av sig själv när du skickar offerten, kunden öppnar den eller signerar. Bokad och Förlorad visar de senaste 60 dagarna.</p></main>`;
     bindListToggle();
@@ -1651,16 +1769,22 @@ FX Flytt</textarea>
       cancel(c){ c.g.remove(); showBoard(); },
     });
   }
+  // Offers: the last 30 days at a glance.
+  function offerStats(){
+    const from=Date.now()-30*864e5, sent=all.filter(b=>b.sentAt&&b.sentAt>=from), opened=sent.filter(b=>b.views), won=sent.filter(b=>b.signedAt);
+    const nw=all.filter(b=>b.status==='new').length, rate=sent.length?Math.round(won.length*100/sent.length):0;
+    return `<div class="ostat"><span><b>${nw}</b> nya</span><span><b>${sent.length}</b> skickade</span><span><b>${opened.length}</b> öppnade</span><span><b>${won.length}</b> signerade</span><span><b>${rate} %</b> acceptansgrad</span><small>senaste 30 dagarna</small></div>`;
+  }
   const listToggle=()=>`<div class="seg" id="lmode" style="margin-bottom:12px"><button data-m="list" class="${listMode==='list'?'on':''}">Lista</button><button data-m="board" class="${listMode==='board'?'on':''}">Försäljningstavla</button></div>`;
   const bindListToggle=()=>root.querySelectorAll('#lmode button').forEach(x=>x.onclick=()=>{ listMode=x.dataset.m; try{ localStorage.setItem('fx_listmode',listMode); }catch(_){} showList(); });
   // Same customer (phone or e-mail) with another open request → probably a duplicate.
   const OPENST=['new','sent','declined'];
   const dupsOf=(b)=>{ if(!OPENST.includes(b.status)||b.signedAt) return []; const p=digits((b.data||{}).phone), e=((b.data||{}).email||'').toLowerCase();
-    return all.filter(x=>x.id!==b.id&&OPENST.includes(x.status)&&!x.signedAt&&((p.length>=6&&digits((x.data||{}).phone)===p)||(e&&((x.data||{}).email||'').toLowerCase()===e))); };
+    return all.filter(x=>x.id!==b.id&&OPENST.includes(x.status)&&!x.signedAt&&!x.nextId&&!b.nextId&&x.id!==b.prevId&&x.prevId!==b.id&&((p.length>=6&&digits((x.data||{}).phone)===p)||(e&&((x.data||{}).email||'').toLowerCase()===e))); };
   async function salesAct(b,body,ok){
     try{ const nb=await api('/api/admin/sales?id='+b.id,{method:'POST',body:JSON.stringify(body)}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; updateCounts(); if(ok) notify(ok); }
     catch(e){ notify(e.message); }
-    if(view==='list') showList(); else if(location.hash.slice(1)===b.id) showDetail(b.id);
+    if(view==='list'||view==='offers') showList(); else if(location.hash.slice(1)===b.id) showDetail(b.id);
   }
   function lostDialog(b){
     const box=document.createElement('div'); box.className='pinbox';
@@ -1668,7 +1792,7 @@ FX Flytt</textarea>
       <label class="f">Anteckning</label><input id="lt" placeholder="T.ex. valde en firma 500 kr billigare">
       <div class="btns"><button class="btn gray" id="lx">Avbryt</button><button class="btn red" id="lok">Markera som förlorad</button></div></div>`;
     document.body.appendChild(box);
-    box.querySelector('#lx').onclick=()=>{ box.remove(); if(view==='list') showList(); };
+    box.querySelector('#lx').onclick=()=>{ box.remove(); if(view==='list'||view==='offers') showList(); };
     box.querySelector('#lok').onclick=async()=>{ const r=box.querySelector('#lr').value, t=box.querySelector('#lt').value; box.remove(); await salesAct(b,{stage:'lost',reason:r,text:t},'Markerad som förlorad'); };
   }
 

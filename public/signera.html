@@ -69,7 +69,7 @@
   const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const kr=(n)=>Math.round(n).toLocaleString('sv-SE')+' kr';
   const fmtDate=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}):'Enligt överenskommelse';
-  const t=new URLSearchParams(location.search).get('t')||'';
+  const t=new URLSearchParams(location.search).get('t')||'', PREVIEW=new URLSearchParams(location.search).get('preview')==='1';
   const app=$('#app');
   const COMPANY=`<div class="card"><b>FX Flytt AB</b><div class="muted">Drottninggatan 1, 736 31 Kungsör · <a href="tel:+46763000723">076-300 07 23</a> · <a href="mailto:info@fxflytt.se">info@fxflytt.se</a></div>
     <div class="badges"><span>F-skatt</span><span>Trafiktillstånd</span><span>Försäkrade hos Trygg-Hansa</span><span>7 dagars städgaranti</span></div></div>`;
@@ -93,6 +93,7 @@
   // The offer as shown: with the package the customer has picked.
   const curOffer=(v)=>{ const p=(v.packages||[]).find(x=>x.id===pkgSel); return p?{...v.offer,total:p.total,lines:p.lines}:v.offer; };
   function render(v){
+    if(PREVIEW&&!document.getElementById('pvbar')){ const d=document.createElement('div'); d.id='pvbar'; d.textContent='👁 Förhandsgranskning – så här ser kunden offerten. Inget har skickats.'; d.style.cssText='position:sticky;top:0;z-index:50;background:#0d2a3f;color:#fff;font-weight:700;text-align:center;padding:10px 14px;font-size:14px'; document.body.prepend(d); }
     const first=esc((v.name||'').split(' ')[0]);
     if(v.packages&&!pkgSel) pkgSel=v.pkg||v.packages[0].id;
     if(v.status==='signed'||v.status==='done'){
@@ -155,6 +156,7 @@
   }
   function kind(){const r=document.querySelector('input[name=kind]:checked');return r?r.value:'private';}
   async function act(action){
+    if(PREVIEW){ $('#err').textContent='Det här är en förhandsgranskning – kunden signerar i sin egen länk.'; return; }
     const btn=action==='decline'?$('#nosend'):$('#sign'), label=btn.textContent, err=$('#err'); err.textContent=''; btn.disabled=true; btn.textContent=action==='decline'?'Skickar…':'Signerar…';
     try{
       const why=document.querySelector('input[name=why]:checked');

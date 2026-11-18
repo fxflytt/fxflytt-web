@@ -3,13 +3,14 @@
 //   {followUp: {at: "YYYY-MM-DDTHH:MM", note}} | {followUp: null}   next time to call
 //   {stage: "contacted"}                     moved on the sales board
 //   {stage: "lost", reason, text}            the customer said no (on the phone)
+//   {newVersion: true}                     a new version of the offer (Version 2 …): a copy to change and send again; this one is closed
 //   {merge: otherId}                       merge a duplicate request into this one (the other is removed)
 //   {refCode} a friend's code (Tipsa en vän) · {issueCode: true} make this customer's code · {rewardGiven: friendId}
 import { requireUser } from "@/lib/booking/auth.ts";
 import { applyCode, issueCode, markGiven } from "@/lib/booking/referral.ts";
 import { getSettings } from "@/lib/booking/settings.ts";
 import { mergeInto, sameCustomer } from "@/lib/booking/merge.ts";
-import { getBooking, saveBooking, deleteBooking, CALL_OUTCOMES, DECLINE_REASONS, type CallOutcome, type DeclineReason } from "@/lib/booking/store.ts";
+import { getBooking, saveBooking, deleteBooking, createBooking, CALL_OUTCOMES, DECLINE_REASONS, type CallOutcome, type DeclineReason } from "@/lib/booking/store.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +59,18 @@ export async function POST(req: Request) {
     const had = !!b.refCode; const code = await issueCode(b); if (!had) await saveBooking(b, `Kod för Tipsa en vän: ${code}`, u.name);
   } else if (typeof d.rewardGiven === "string") {
     try { await markGiven(b, d.rewardGiven, u.name); } catch (e) { return err((e as Error).message); }
+  } else if (d.newVersion === true) {
+    if (b.status === "signed" || b.status === "done" || b.signedAt) return err("Offerten är redan signerad.");
+    if (b.nextId) return err("Det finns redan en nyare version.");
+    const v = (b.version || 1) + 1;
+    const n = await createBooking(b.source, { ...b.data, price: undefined }, {
+      offer: b.offer ? { ...b.offer, lines: [...b.offer.lines] } : undefined, extras: b.extras, pkgChoiceOff: b.pkgChoiceOff,
+      date: b.date, time: b.time, durationH: b.durationH, lead: b.lead, referral: b.referral, calls: b.calls, version: v, prevId: b.id,
+      history: [{ at: now, what: `Version ${v} – kopia av ${b.id}`, by: u.name }],
+    });
+    b.nextId = n.id; b.status = "declined"; b.declinedAt = now; b.decline = { reason: "other", text: `Ersatt av version ${v} (${n.id})` }; b.followUp = undefined;
+    await saveBooking(b, `Ersatt av version ${v}: ${n.id}`, u.name);
+    return Response.json(n);
   } else if (typeof d.merge === "string") {
     const o = await getBooking(d.merge);
     if (!o) return err("Hittar inte den andra bokningen.");
