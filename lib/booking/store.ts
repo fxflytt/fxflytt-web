@@ -44,6 +44,7 @@ export type Booking = {
   refRewards?: { bookingId: string; name: string; at: number; givenAt?: number; givenBy?: string }[];   // friends who booked
   referral?: { code: string; fromId: string; fromName: string; kr: number; rewardedAt?: number };     // booked with a friend's code
   slaAlertedAt?: number;
+  version?: number; prevId?: string; nextId?: string;   // a new version of an offer (Version 2, 3 …) and the one it replaced
   noMarketing?: boolean;     // the customer said no to campaign e-mails
   campaigns?: { at: number; subject: string; by: string }[];     // the office was warned that nobody had answered this request
   lead?: "calc";             // came from "Få priset på mejl" in the website calculator (no request sent yet)

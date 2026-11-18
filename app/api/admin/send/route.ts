@@ -1,4 +1,6 @@
 // Admin: e-mail the offer link to the customer (POST ?id=). Returns the link as well.
+//   &linkOnly=1  only make the link (sent by SMS by hand)
+//   &preview=1   make the link to look at it first – nothing is sent and the status does not change
 import { requireUser } from "@/lib/booking/auth.ts";
 import { getBooking, saveBooking, issueToken } from "@/lib/booking/store.ts";
 import { packagesFor } from "@/lib/booking/packages.ts";
@@ -20,6 +22,7 @@ export async function POST(req: Request) {
   b.packages = b.pkgChoiceOff ? undefined : (packagesFor(b, await getPrices()) || undefined);
   const token = await issueToken(b);
   const url = `${SITE}/signera?t=${token}`;
+  if (new URL(req.url).searchParams.get("preview") === "1") { await saveBooking(b); return Response.json({ ok: true, url: url + "&preview=1" }); }
   const only = new URL(req.url).searchParams.get("linkOnly") === "1";
   if (!only) {
     if (!b.data.email) return Response.json({ error: "Kunden har ingen e-post – kopiera länken och skicka via SMS." , url }, { status: 400 });
