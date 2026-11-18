@@ -5,7 +5,7 @@ def C(slug, name, lan, desc, lead, intro, areas, tips, faq, far=False):
     title = f"Flyttfirma {name} – flytt & flyttstäd | FX Flytt"
     if far:
         faq = faq + [("Är det dyrare att anlita er i " + name + "?",
-                      "Nej, du betalar samma fasta pris som i alla våra orter. Är avståndet mellan din gamla och nya adress 15 km eller mer tillkommer 12 kr per km.")]
+                      "Nej, du betalar samma fasta pris som i alla våra orter. Är avståndet mellan din gamla och nya adress 15 km eller mer tillkommer 12 kr per km och flyttbil.")]
     return dict(slug=slug, name=name, lan=lan, title=title, desc=desc,
                 h1=f"Flyttfirma i <span>{name}</span>", lead=lead, intro=intro,
                 areas=areas, tips=tips, faq=faq)
@@ -197,7 +197,7 @@ EXTRA = [
    ["Villa i Kolsva eller Munktorp? Räkna med förråd och garage.", "Kolla med hyresvärden om hissen behöver bokas.", "Boka flyttstäd samtidigt – då får du 10 % rabatt med Premium."],
    [("Flyttar ni i Kolsva?", "Ja, hela Köpings kommun ingår."),
     ("Hur snabbt kan ni komma?", "Vårt kontor ligger i Kungsör, nära Köping. Ring oss så hittar vi en dag som passar."),
-    ("Ingår körsträckan?", "Ja, om avståndet mellan dina adresser är under 15 km. Annars 12 kr/km för hela sträckan.")]),
+    ("Ingår körsträckan?", "Ja, om avståndet mellan dina adresser är under 15 km. Annars 12 kr/km per flyttbil för hela sträckan.")]),
 
  C("kumla", "Kumla", "Örebro län",
    "Flyttfirma i Kumla och Hallsberg. FX Flytt hjälper dig med flytt, packning, montering och flyttstäd till fast pris. Gratis offert och RUT-avdrag.",
