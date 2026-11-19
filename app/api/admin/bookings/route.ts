@@ -93,6 +93,34 @@ export async function PATCH(req: Request) {
     const same = ids.length === before.size && ids.every((id) => before.has(id));
     if (!same) { b.crew = ids; changes.push(ids.length ? "personal " + ids.map((id) => byId.get(id)!.name).join(", ") : "personal borttagen"); }
   }
+  // The customer's details (name, phone, addresses, size …) – corrected by the office.
+  if (d.data && typeof d.data === "object") {
+    const nd = d.data as Record<string, unknown>, cur = b.data as unknown as Record<string, unknown>;
+    const LIM: Record<string, [string, number]> = {
+      name: ["namn", 120], phone: ["telefon", 40], email: ["e-post", 200], from: ["från", 200], to: ["till", 200], size: ["tjänst", 80],
+      areaM2: ["boyta", 10], home: ["bostad", 60], floorFrom: ["våning från", 140], floorTo: ["våning till", 140], date: ["önskat datum", 10], message: ["meddelande", 3000],
+    };
+    const changed: string[] = [];
+    for (const [k, [label, max]] of Object.entries(LIM)) {
+      if (!(k in nd)) continue;
+      let v = str(nd[k], max);
+      if (k === "areaM2") v = v.replace(/[^\d]/g, "").slice(0, 5);
+      if (k === "date" && v && !DATE.test(v)) return Response.json({ error: "Ogiltigt datum." }, { status: 400 });
+      if (k === "email" && v && !/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(v)) return Response.json({ error: "E-postadressen ser fel ut." }, { status: 400 });
+      if ((k === "name" || k === "phone") && !v) return Response.json({ error: "Namn och telefon behövs." }, { status: 400 });
+      if ((cur[k] ?? "") !== v) { cur[k] = v; changed.push(label); }
+    }
+    if ("extras" in nd) {
+      const ex = Array.isArray(nd.extras) ? [...new Set(nd.extras.map((x) => str(x, 60)).filter(Boolean))].slice(0, 12) : [];
+      if (JSON.stringify(cur.extras || []) !== JSON.stringify(ex)) { cur.extras = ex; changed.push("önskemål"); }
+    }
+    if ("distanceKm" in nd) {
+      const km = nd.distanceKm === "" || nd.distanceKm == null ? undefined : Math.round(Number(nd.distanceKm));
+      if (km !== undefined && !(km >= 0 && km < 5000)) return Response.json({ error: "Ogiltigt avstånd." }, { status: 400 });
+      if (cur.distanceKm !== km) { cur.distanceKm = km; changed.push("avstånd"); }
+    }
+    if (changed.length) changes.push("kunduppgifter (" + changed.join(", ") + ")");
+  }
   if ("adminNote" in d) { b.adminNote = str(d.adminNote, 2000); changes.push("intern anteckning"); }
   if ("boxes" in d) {
     const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" });
@@ -108,7 +136,14 @@ export async function PATCH(req: Request) {
   if ("total" in d) {
     const t = Math.round(Number(d.total));
     if (!(t > 0 && t < 1e7)) return Response.json({ error: "Ogiltigt pris." }, { status: 400 });
-    if (!b.offer || b.offer.total !== t) {
+    // Lines from the price list (sent with "Räkna om priset") are kept when they add up to the total.
+    const raw = Array.isArray(d.lines) ? d.lines.slice(0, 15) : null;
+    const lines = raw ? raw.map((l) => ({ label: str((l as { label?: unknown })?.label, 120), amount: Math.round(Number((l as { amount?: unknown })?.amount)) })).filter((l) => l.label && isFinite(l.amount)) : null;
+    if (lines && lines.length === raw!.length && lines.reduce((a, l) => a + l.amount, 0) === t) {
+      b.offer = { ...(b.offer || { lines: [] }), total: t, lines, custom: false };
+      b.discount = undefined; b.packages = undefined;
+      changes.push("pris " + t + " kr (prislistan)");
+    } else if (!b.offer || b.offer.total !== t) {
       b.offer = { ...(b.offer || { lines: [] }), total: t, custom: true };
       b.discount = undefined; // a hand-set price replaces any earlier discount
       b.packages = undefined; // and any package choice
