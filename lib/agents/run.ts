@@ -13,13 +13,14 @@ import { companyFacts } from "../assistant/facts.ts";
 import { syncInbox, listMails, redraft, replyEmail, M_CATS, type InMail, type SyncResult } from "./inbox.ts";
 import { listComplaints, updateComplaint, type Complaint } from "./complaints.ts";
 import { aiConfigured } from "./claude.ts";
-import { estimate } from "./estimate.ts";
+import { estimateNote } from "./estimate.ts";
+import { knowledge } from "./knowledge.ts";
 import { salesCandidates, draftSales, draftSms, SALES_KINDS, type SalesKind, type Training } from "./sales.ts";
 import { winningExamples, dayLoad } from "./playbook.ts";
 import { listResources } from "../booking/team.ts";
 import { sendSms, smsConfigured, smsFooter } from "../sms/send.ts";
 import { dailyPlan, type DayPlan } from "./plan.ts";
-import { AGENTS, agentName, aiBy, aiSignature, logActivity, takeQuota } from "./team.ts";
+import { AGENTS, agentName, aiBy, aiSignature, replyLang, logActivity, takeQuota } from "./team.ts";
 import { kv } from "../booking/kv.ts";
 import { lastWeek, weekNumbers, analyse, saveReport, getReport, reportEmail, type WeekReport } from "./weekly.ts";
 
@@ -37,7 +38,7 @@ export async function runInboxSync(minGapMs = 0): Promise<SyncResult> {
   const prices = await getPrices();
   const elsa = agentName(s, "elsa"), maja = agentName(s, "maja");
   return syncInbox({
-    fetchNew, keepDays: s.mailKeepDays, minGapMs, facts: companyFacts(prices), names: { elsa, maja },
+    fetchNew, keepDays: s.mailKeepDays, minGapMs, facts: companyFacts(prices), knowledge: knowledge(prices), prices, names: { elsa, maja },
     after: (m, ctx) => afterMail(m, ctx, s, prices),
     notify: async (m) => {
       const complaint = m.category === "klagomal";
@@ -55,32 +56,25 @@ async function afterMail(m: InMail, ctx: { booking: Booking | null; complaint: C
   await logActivity({ agent: "elsa", what: `Läste mejl från ${m.fromName || m.from}: ${M_CATS[m.category].toLowerCase()}${m.summary ? " – " + m.summary : ""}`, mailId: m.id, bookingId: m.bookingId });
   // A quote request from someone who is not a customer yet → a request in Offerter, with a price suggestion when possible.
   if (m.category === "offert" && !m.bookingId && m.status === "new") {
-    const est = estimate(m.extracted, prices, m.text);
-    if (est) {
-      m.estimate = est;
-      // The draft tells the customer the approximate price (from the same engine as the website).
-      try {
-        m.draft = await redraft(m, null, `Ge ett ungefärligt pris efter RUT: Bas (bara flytt) ${kr(est.bas!)}${est.premium ? `, Premium (flytt + flyttstäd) ${kr(est.premium)}` : ""}, räknat på ${est.m2} m² och ca ${est.km} km mellan ${est.from} och ${est.to}. Skriv priset i en eller två korta rader (förklara inte RUT, moms eller körsträckan). Säg att exakt pris kommer i offerten när vi har adresserna, och be om det som saknas. Hela svaret högst 90 ord.`, today(), { fast: true, facts: companyFacts(prices as never) });
-      } catch { /* keep the first draft */ }
-    }
+    const est = m.estimate;
     if (s.aiAuto.request) {
       const e = m.extracted;
       const b = await createBooking("admin", {
         name: e?.name || m.fromName || m.from, phone: e?.phone || "", email: m.from, from: e?.from || "", to: e?.to || "",
-        date: e?.date || "", size: e?.size || "", areaM2: est ? String(est.m2) : "", distanceKm: est?.km,
+        date: e?.date || "", size: e?.size || "", areaM2: est ? String(est.m2) : "", distanceKm: est?.km ?? undefined,
         message: `Från e-post (${new Date(m.date).toLocaleDateString("sv-SE")}): ${m.subject}\n\n${m.text.slice(0, 2500)}`,
       }, {
-        ...(est ? { offer: { total: est.bas!, lines: est.lines || [], note: `Prisförslag från ${elsa} (AI): ${est.from}–${est.to} ca ${est.km} km, ${est.m2} m². Kontrollera adresserna innan offerten skickas.` } } : {}),
-        history: [{ at: Date.now(), what: `Skapad av ${aiBy(s, "elsa")} från e-post${est ? ` med prisförslag ${kr(est.bas!)}` : ""}` }],
+        ...(est ? { offer: { total: (est.bas ?? est.cleaning)!, lines: est.lines || [], note: `Prisförslag från ${elsa} (AI): ${estimateNote(est)}. Kontrollera adresserna innan offerten skickas.` } } : {}),
+        history: [{ at: Date.now(), what: `Skapad av ${aiBy(s, "elsa")} från e-post${est ? ` med prisförslag ${kr((est.bas ?? est.cleaning)!)}` : ""}` }],
       });
       m.bookingId = b.id;
-      await logActivity({ agent: "elsa", what: `Gjorde en förfrågan av mejlet från ${b.data.name}${est ? ` – prisförslag ${kr(est.bas!)}` : ""}`, bookingId: b.id, mailId: m.id, auto: true });
+      await logActivity({ agent: "elsa", what: `Gjorde en förfrågan av mejlet från ${b.data.name}${est ? ` – prisförslag ${kr((est.bas ?? est.cleaning)!)}` : ""}`, bookingId: b.id, mailId: m.id, auto: true });
     }
   }
   // Simple questions: Elsa answers by herself (only if the owner allowed it, and only what the AI marked as safe).
   if (s.aiAuto.reply && m.autoSafe && m.draft && m.status === "new" && ["offert", "bokning", "ovrigt"].includes(m.category) && m.priority !== "high"
       && !/no-?reply|mailer-daemon|notifications?@/i.test(m.from) && mailConfigured() && await takeQuota(s.aiDailyMax)) {
-    const text = m.draft.replace(/\n*Vänliga hälsningar[\s\S]*$/i, "").trim() + "\n\n" + aiSignature(elsa, AGENTS.elsa.role);
+    const text = m.draft.replace(/\n*(Vänliga hälsningar|Med vänliga hälsningar|Best regards|Kind regards)[\s\S]*$/i, "").trim() + "\n\n" + aiSignature(elsa, AGENTS.elsa.role, replyLang(m.draft));
     try {
       await saveSent(await send(m.from, replyEmail(m, text), undefined, { inReplyTo: m.messageId || undefined, references: m.references, fromName: `${elsa} · FX Flytt` }));
       m.answers = [{ at: Date.now(), by: aiBy(s, "elsa"), text }]; m.status = "answered"; m.autoReplied = true; m.draft = "";

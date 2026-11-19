@@ -13,7 +13,11 @@ import { getSettings } from "@/lib/booking/settings.ts";
 import { getBooking, saveBooking, createBooking } from "@/lib/booking/store.ts";
 import { send, mailConfigured } from "@/lib/mail/send.ts";
 import { aiConfigured } from "@/lib/agents/claude.ts";
-import { listMails, getMail, saveMail, getState, redraft, replyEmail, type InMail } from "@/lib/agents/inbox.ts";
+import { listMails, getMail, saveMail, getState, writeReply, replyEmail, type InMail } from "@/lib/agents/inbox.ts";
+import { getPrices } from "@/lib/pricing/current.ts";
+import { knowledge } from "@/lib/agents/knowledge.ts";
+import { estimateNote } from "@/lib/agents/estimate.ts";
+import { agentName } from "@/lib/agents/team.ts";
 import { addComplaint, assess } from "@/lib/agents/complaints.ts";
 import { runInboxSync } from "@/lib/agents/run.ts";
 
@@ -65,7 +69,11 @@ export async function POST(req: Request) {
     }
     case "redraft": {
       if (!aiConfigured()) return err("AI är inte inställt (ANTHROPIC_API_KEY).", 503);
-      try { m.draft = await redraft(m, b, typeof d.hint === "string" ? d.hint : "", today()); m.aiError = undefined; }
+      try {
+        const maybe = !b && m.maybeBookingId ? await getBooking(m.maybeBookingId) : null;
+        const r = await writeReply(m, { link: { sure: b, maybe, note: m.matchNote || "" }, estimate: m.estimate, knowledge: knowledge(await getPrices()), name: agentName(await getSettings(), "elsa"), today: today(), hint: typeof d.hint === "string" ? d.hint : "" });
+        m.draft = r.draft; if (r.note) m.note = r.note; m.aiError = undefined;
+      }
       catch (e) { return err((e as Error).message, 502); }
       return save(m);
     }
@@ -79,10 +87,10 @@ export async function POST(req: Request) {
       const n = await createBooking("admin", {
         name: e?.name || m.fromName || m.from, phone: e?.phone || "", email: m.from,
         from: e?.from || "", to: e?.to || "", date: e?.date || "", size: e?.size || "",
-        areaM2: m.estimate ? String(m.estimate.m2) : "", distanceKm: m.estimate?.km,
+        areaM2: m.estimate ? String(m.estimate.m2) : "", distanceKm: m.estimate?.km ?? undefined,
         message: `Från e-post (${new Date(m.date).toLocaleDateString("sv-SE")}): ${m.subject}\n\n${m.text.slice(0, 2500)}`,
       }, {
-        ...(m.estimate?.bas ? { offer: { total: m.estimate.bas, lines: m.estimate.lines || [], note: `Prisförslag: ${m.estimate.from}–${m.estimate.to} ca ${m.estimate.km} km, ${m.estimate.m2} m². Kontrollera adresserna innan offerten skickas.` } } : {}),
+        ...(m.estimate && (m.estimate.bas ?? m.estimate.cleaning) ? { offer: { total: (m.estimate.bas ?? m.estimate.cleaning)!, lines: m.estimate.lines || [], note: `Prisförslag: ${estimateNote(m.estimate)}. Kontrollera adresserna innan offerten skickas.` } } : {}),
         history: [{ at: Date.now(), what: "Skapad från e-post i AI-team → E-post", by: u.name }],
       });
       m.bookingId = n.id; await saveMail(m, keep);
@@ -91,7 +99,7 @@ export async function POST(req: Request) {
     case "complaint": {
       if (m.complaintId) return err("Det finns redan ett klagomål för mejlet.");
       let a = null;
-      try { if (aiConfigured()) a = await assess(m.text, m.subject, b); } catch { /* the office can assess later */ }
+      try { if (aiConfigured()) a = await assess(m.text, m.subject, b, knowledge(await getPrices())); } catch { /* the office can assess later */ }
       const c = await addComplaint({ source: "email", name: m.fromName || b?.data.name, email: m.from, phone: b?.data.phone, bookingId: b?.id, mailId: m.id,
         subject: m.subject, text: m.text, assessment: a, by: u.name });
       m.complaintId = c.id; m.category = "klagomal"; if (a?.draft && !m.draft) m.draft = a.draft;
@@ -101,7 +109,7 @@ export async function POST(req: Request) {
     case "link": {
       const x = await getBooking(typeof d.bookingId === "string" ? d.bookingId.trim().toUpperCase() : "");
       if (!x) return err("Hittar inte bokningen.");
-      m.bookingId = x.id; return save(m);
+      m.bookingId = x.id; m.maybeBookingId = undefined; m.matchNote = undefined; return save(m);
     }
     default: return err("Okänd åtgärd.");
   }

@@ -16,6 +16,8 @@ import { listComplaints, addComplaint, updateComplaint, removeComplaint, assess,
 import { getMail, saveMail, replyEmail, replySubject } from "@/lib/agents/inbox.ts";
 import { addDamage } from "@/lib/booking/damage.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
+import { getPrices } from "@/lib/pricing/current.ts";
+import { knowledge } from "@/lib/agents/knowledge.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,7 +41,7 @@ export async function POST(req: Request) {
       if (d.bookingId && !b) return err("Hittar inte bokningen.");
       const text = typeof d.text === "string" ? d.text : "";
       let a = null;
-      try { if (aiConfigured() && text.trim()) a = await assess(text, "", b); } catch { /* still saved */ }
+      try { if (aiConfigured() && text.trim()) a = await assess(text, "", b, knowledge(await getPrices())); } catch { /* still saved */ }
       const c = await addComplaint({ source: d.source === "other" ? "other" : "phone", name: (d.name as string) || b?.data.name, email: (d.email as string) || b?.data.email,
         phone: (d.phone as string) || b?.data.phone, bookingId: b?.id, text, assessment: a, by: u.name });
       if (b) await saveBooking(b, `Klagomål registrerat: ${c.subject}`, u.name);
@@ -51,7 +53,7 @@ export async function POST(req: Request) {
     const b = cur.bookingId ? await getBooking(cur.bookingId) : null;
     if (d.action === "assess") {
       if (!aiConfigured()) return err("AI är inte inställt (ANTHROPIC_API_KEY).", 503);
-      const a = await assess(cur.text, cur.subject, b);
+      const a = await assess(cur.text, cur.subject, b, knowledge(await getPrices()));
       return Response.json(await updateComplaint(id, (c) => { Object.assign(c, a); return "AI-bedömning: " + K_CATS[a.category]; }, u.name));
     }
     if (d.action === "reply") {

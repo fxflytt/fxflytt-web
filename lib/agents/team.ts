@@ -42,5 +42,8 @@ export async function sentToday(): Promise<number> {
 }
 
 // The line under every e-mail the team sends by itself, so the customer knows it was written by an AI assistant.
-export const aiSignature = (name: string, role: string) =>
-  `Vänliga hälsningar\n${name}, ${role.toLowerCase()} på FX Flytt\n(Digital assistent – en kollega på kontoret läser också ditt mejl. Ring 076-300 07 23 om något är bråttom.)`;
+export const aiSignature = (name: string, role: string, lang: "sv" | "en" = "sv") => lang === "en"
+  ? `Best regards\n${name}, FX Flytt customer service\n(Digital assistant – a colleague in the office also reads your e-mail. Call +46 76-300 07 23 if it is urgent.)`
+  : `Vänliga hälsningar\n${name}, ${role.toLowerCase()} på FX Flytt\n(Digital assistent – en kollega på kontoret läser också ditt mejl. Ring 076-300 07 23 om något är bråttom.)`;
+/** English when the reply is written in English (the AI answers in the customer's language). */
+export const replyLang = (text: string): "sv" | "en" => (/\b(best regards|kind regards|thank you|we can help)\b/i.test(text) && !/vänliga hälsningar/i.test(text) ? "en" : "sv");
