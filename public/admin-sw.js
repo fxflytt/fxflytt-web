@@ -26,3 +26,15 @@ self.addEventListener("notificationclick", (e) => {
     return self.clients.openWindow(url);
   })());
 });
+
+// The browser can replace the push subscription (expired, reset). Subscribe again at once and tell the
+// server, so notifications keep coming even if the app is not opened.
+self.addEventListener("pushsubscriptionchange", (e) => {
+  e.waitUntil((async () => {
+    const info = await fetch("/api/admin/push", { credentials: "same-origin" }).then((r) => r.json()).catch(() => null);
+    if (!info || !info.publicKey) return;
+    const k = info.publicKey, p = "=".repeat((4 - (k.length % 4)) % 4), raw = atob((k + p).replace(/-/g, "+").replace(/_/g, "/"));
+    const sub = await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: Uint8Array.from(raw, (c) => c.charCodeAt(0)) });
+    await fetch("/api/admin/push", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(sub.toJSON()) });
+  })().catch(() => {}));
+});

@@ -353,8 +353,14 @@
   $('#bell').onclick=async()=>{ const s=await pushState(); if(!s.on) return turnOn();
     if(confirm('Stänga av notiser på den här telefonen?')){ await fetch('/api/crew/push?endpoint='+encodeURIComponent(s.sub.endpoint),{method:'DELETE'}); await s.sub.unsubscribe().catch(()=>{}); pushBanner(); } };
   $('#out').onclick=async()=>{ if(!confirm('Logga ut?')) return; await fetch('/api/crew/login',{method:'DELETE'}); data=null; showLogin(); };
+  // Each time the app opens: keep this phone's notification subscription alive and known by the server.
+  async function healPush(){
+    try{ const s=await pushState(); if(!pushOk()||Notification.permission!=='granted'||s.on) return;
+      const r=await reg(); await navigator.serviceWorker.ready; const sub=s.sub||await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(s.key)});
+      await fetch('/api/crew/push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub.toJSON())}); }catch(_){}
+  }
   reg().catch(()=>{});
-  start().catch(()=>showLogin());
+  start().then(()=>{ if(!$('#top').hidden) healPush(); }).catch(()=>showLogin());
 })();
 </script>
 </body>

@@ -359,15 +359,17 @@
 (function(){
   const $=(s,el=document)=>el.querySelector(s);
   const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const kr=(n)=>n==null?'–':Math.round(n).toLocaleString('sv-SE')+' kr';
+  // Formatters are made once – creating one per call made long lists slow on phones.
+  const NF=new Intl.NumberFormat('sv-SE'), DF=new Intl.DateTimeFormat('sv-SE',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}), DFM=new Map();
+  const kr=(n)=>n==null?'–':NF.format(Math.round(n))+' kr';
   const CAP=10;
   const ST={new:'Ny',sent:'Offert skickad',signed:'Signerad',declined:'Nekad',done:'Klar',cancelled:'Avbokad'};
   const ago=(t)=>{ if(!t) return ''; const m=Math.round((Date.now()-t)/6e4); if(m<2) return 'just nu'; if(m<60) return m+' min sedan'; const h=Math.round(m/60); if(h<24) return h+' tim sedan'; const d=Math.round(h/24); return d===1?'i går':d+' dagar sedan'; };
-  const fmtDate=(d)=>/^\d{4}-\d{2}-\d{2}$/.test(d||'')?new Date(d+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}):'Inget datum';
+  const fmtDate=(d)=>{ if(!/^\d{4}-\d{2}-\d{2}$/.test(d||'')) return 'Inget datum'; let v=DFM.get(d); if(!v){ v=DF.format(new Date(d+'T12:00:00Z')); DFM.set(d,v); } return v; };
   const TIMES=[];for(let h=7;h<=18;h++){TIMES.push(String(h).padStart(2,'0')+':00');if(h<18)TIMES.push(String(h).padStart(2,'0')+':30');}
   const timeOpts=(cur)=>'<option value="">Ingen tid</option>'+TIMES.map(t=>`<option${t===cur?' selected':''}>${t}</option>`).join('')+(cur&&!TIMES.includes(cur)?`<option selected>${cur}</option>`:'');
   const fmtTs=(t)=>t?new Date(t).toLocaleString('sv-SE',{dateStyle:'short',timeStyle:'short'}):'';
-  const today=()=>new Date().toLocaleDateString('sv-SE');
+  let todayC=['',0]; const today=()=>{ const n=Date.now(); if(n-todayC[1]>30000) todayC=[new Date(n).toLocaleDateString('sv-SE'),n]; return todayC[0]; };
   const addDays=(d,n)=>{ const x=new Date(d+'T12:00:00Z'); x.setUTCDate(x.getUTCDate()+n); return x.toISOString().slice(0,10); };
   const resById=(id)=>res.find(r=>r.id===id);
   const whoChip=(r)=>`<span class="who${r.kind==='vehicle'?' v':''}" style="--c:${esc(r.color)}">${esc(r.name)}</span>`;
@@ -397,7 +399,7 @@
   // ---------- login ----------
   async function start(){
     const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
-    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); swReg().catch(()=>{}); Promise.all([loadMail(),loadKlag(),loadTeam()]).catch(()=>{}).then(()=>autoSyncMail()); }
+    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); healPush(); Promise.all([loadMail(),loadKlag(),loadTeam()]).catch(()=>{}).then(()=>autoSyncMail()); }
     else showLogin(s.setup);
   }
   function showLogin(setup){
@@ -545,7 +547,7 @@
     if(last&&(last.outcome==='answered'||last.outcome==='callback')) p+=10;
     if(b.referral) p+=10;
     if(b.lead==='calc'&&b.status==='new') p=Math.max(p,20);
-    const back=all.some(x=>x.id!==b.id&&(x.status==='done'||x.status==='signed')&&digits((x.data||{}).phone)===digits((b.data||{}).phone)&&digits((b.data||{}).phone).length>=6);
+    const back=samePerson(b).some(x=>(x.status==='done'||x.status==='signed')&&digits((x.data||{}).phone)===digits((b.data||{}).phone));
     if(back) p+=10;
     if(b.sentAt&&now-b.sentAt>21*day&&!(b.lastViewAt&&now-b.lastViewAt<7*day)) p=Math.min(p,15);
     return Math.max(5,Math.min(90,Math.round(p/5)*5));
@@ -557,7 +559,7 @@
   // Offerter: requests and offers that are not booked yet. Bokningar: what the customer has said yes to.
   const OFFER_FILTERS={active:['Aktiva',b=>['new','sent'].includes(b.status)&&!isExpired(b)],new:['Nya',b=>b.status==='new'],sent:['Skickade',b=>b.status==='sent'&&!isExpired(b)],expired:['Förfallna',isExpired],declined:['Nekade',b=>b.status==='declined'],all:['Alla offerter',b=>['new','sent','declined'].includes(b.status)]};
   const BOOK_FILTERS={upcoming:['Kommande',b=>b.status==='signed'&&(!b.date||b.date>=today())],todo:['Att avsluta',b=>b.status==='signed'&&b.date&&b.date<today()],done:['Klara',b=>b.status==='done'],cancelled:['Avbokade',b=>b.status==='cancelled'],boxes:['Kartonger ute',b=>boxesLeft(b)>0],all:['Alla bokningar',b=>['signed','done','cancelled'].includes(b.status)]};
-  let listSec='offers', bookFilter='upcoming', bookSort='date', newMode='offer', prevHash='', curHash=location.hash.slice(1);
+  let listShow=100, lastListView='', listSec='offers', bookFilter='upcoming', bookSort='date', newMode='offer', prevHash='', curHash=location.hash.slice(1);
   window.addEventListener('hashchange',()=>{ prevHash=curHash; curHash=location.hash.slice(1); });
   const FL=()=>listSec==='offers'?OFFER_FILTERS:BOOK_FILTERS;
   const curF=()=>listSec==='offers'?filter:bookFilter;
@@ -588,7 +590,7 @@
   let tagFilter='';
   function tags(b){
     const t=[];
-    { const lt=leadTags(b).filter(k=>k!=='move'||leadTags(b).length===1); if(lt.length&&['new','sent'].includes(b.status)) t.push(...lt.map(k=>`<span class="tag lt">${LTAG[k]}</span>`)); }
+    { const L=leadTags(b), lt=L.filter(k=>k!=='move'||L.length===1); if(lt.length&&['new','sent'].includes(b.status)) t.push(...lt.map(k=>`<span class="tag lt">${LTAG[k]}</span>`)); }
     if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 ${b.views}× · ${esc(ago(b.lastViewAt))}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
     if(b.reminders?.length) t.push(`<span class="tag">🔔 ${b.reminders.length} påminnelse${b.reminders.length>1?'r':''}</span>`);
     if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
@@ -606,7 +608,7 @@
     const offers=listSec==='offers';
     if(offers&&listMode==='board') return showBoard();
     view=offers?'offers':'list';
-    const sortKey=offers?sortBy:bookSort;
+    const sortKey=offers?sortBy:bookSort; if(view!==lastListView){ listShow=100; lastListView=view; }
     root.innerHTML=navBar(view)+`<main>${offers?listToggle()+offerStats():''}<div class="srch"><input id="q" type="search" placeholder="Sök namn, telefon, ort, bokningsnr…" value="${esc(q)}"><select id="sort"><option value="created"${sortKey==='created'?' selected':''}>Senaste</option><option value="date"${sortKey==='date'?' selected':''}>Flyttdatum</option><option value="price"${sortKey==='price'?' selected':''}>Pris</option>${offers?`<option value="chance"${sortBy==='chance'?' selected':''}>Chans att vinna</option>`:''}</select></div>
       <div class="chips">${Object.entries(FL()).map(([k,v])=>`<button data-f="${k}" class="${k===curF()?'on':''}">${v[0]} (${all.filter(v[1]).length})</button>`).join('')}</div>
       ${offers?'':'<div class="muted" style="margin:-4px 2px 10px">Här är det som kunden har sagt ja till. Förfrågningar och offerter finns under <a href="#offerter">Offerter</a>.</div>'}
@@ -627,17 +629,20 @@
       const by={created:(a,b)=>(b.createdAt||0)-(a.createdAt||0),date:(a,b)=>(a.date||'9999').localeCompare(b.date||'9999'),price:(a,b)=>(b.offer?.total||0)-(a.offer?.total||0),chance:(a,b)=>(winChance(b)??-1)-(winChance(a)??-1)||(b.createdAt||0)-(a.createdAt||0)};
       list=list.slice().sort(by[offers?sortBy:bookSort]||by.created);
       root.querySelectorAll('.chips').forEach(c=>c.style.opacity=words.length?'.45':'');
-      $('#items').innerHTML=(words.length?`<div class="muted" style="margin:0 0 8px">${list.length} träff${list.length===1?'':'ar'} bland alla bokningar</div>`:'')+
+      const full=list; list=list.slice(0,listShow);
+      $('#items').innerHTML=(words.length?`<div class="muted" style="margin:0 0 8px">${full.length} träff${full.length===1?'':'ar'} bland alla bokningar</div>`:'')+
         (list.length?list.map(b=>selMode?itemHtml(b).replace('<button class="item"',`<button class="item sel${sel.has(b.id)?' on':''}"`):itemHtml(b)).join(''):`<div class="empty">${words.length?'Ingen bokning matchar sökningen.':'Inga bokningar här ännu.'}</div>`);
-      shown=list.map(b=>b.id);
+      if(full.length>list.length) $('#items').insertAdjacentHTML('beforeend',`<button class="btn sec" id="more" style="width:100%;margin-top:6px">Visa fler (${full.length-list.length} kvar)</button>`);
+      if($('#more')) $('#more').onclick=()=>{ listShow+=100; fill(); };
+      shown=full.map(b=>b.id);
       root.querySelectorAll('.item').forEach(b=>b.onclick=()=>{ if(!selMode){ location.hash=b.dataset.id; return; } const id=b.dataset.id; sel.has(id)?sel.delete(id):sel.add(id); b.classList.toggle('on',sel.has(id)); syncSel(); });
       syncSel();
     };
     fill();
-    root.querySelectorAll('.chips button[data-f]').forEach(b=>b.onclick=()=>{ if(listSec==='offers') filter=b.dataset.f; else bookFilter=b.dataset.f; q=''; showList(); });
+    root.querySelectorAll('.chips button[data-f]').forEach(b=>b.onclick=()=>{ if(listSec==='offers') filter=b.dataset.f; else bookFilter=b.dataset.f; q=''; listShow=100; showList(); });
     root.querySelectorAll('.chips button[data-lt]').forEach(b=>b.onclick=()=>{ tagFilter=tagFilter===b.dataset.lt?'':b.dataset.lt; showList(); });
     bindListToggle();
-    $('#q').oninput=()=>{ q=$('#q').value; fill(); };
+    $('#q').oninput=()=>{ q=$('#q').value; listShow=100; fill(); };
     $('#sort').onchange=()=>{ if(offers) sortBy=$('#sort').value; else bookSort=$('#sort').value; fill(); };
     $('#reload').onclick=async()=>{ await load(); showList(); };
     function syncSel(){ for(const id of [...sel]) if(!all.some(b=>b.id===id)) sel.delete(id); if($('#bulkn')) $('#bulkn').textContent=sel.size+' valda'; if($('#bulkbar')) $('#bulkbar').classList.toggle('dim',!sel.size); }
@@ -1405,9 +1410,22 @@ FX Flytt</textarea>
   }
 
   // ---------- detail ----------
-  async function showDetail(id){
-    let b=all.find(x=>x.id===id);
-    try{ b=await api('/api/admin/bookings?id='+id); const i=all.findIndex(x=>x.id===id); if(i>=0) all[i]=b; else all.unshift(b); }catch(e){ if(!b){ root.innerHTML=navBar('list')+`<main><div class="empty">Bokningen hittades inte.</div></main>`; bindNav(); return; } }
+  async function showDetail(id,fresh){
+    let b=fresh||all.find(x=>x.id===id);
+    if(!fresh){
+      if(b){
+        // Show what we already have at once; the full copy (with photos) is fetched in the background and
+        // replaces it only if something changed and the user is not typing in a field.
+        const upd=b.updatedAt;
+        api('/api/admin/bookings?id='+id).then(nb=>{ const i=all.findIndex(x=>x.id===id); if(i>=0) all[i]=nb; else all.unshift(nb);
+          if(location.hash.slice(1)!==id) return; const ae=document.activeElement; if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+          if(nb.updatedAt!==upd||(nb.photos||[]).length) showDetail(id,nb); }).catch(()=>{});
+      } else {
+        root.innerHTML=navBar('list','')+'<main><div class="empty">Laddar…</div></main>';
+        try{ b=await api('/api/admin/bookings?id='+id); all.unshift(b); }catch(e){ root.innerHTML=navBar('list')+`<main><div class="empty">Bokningen hittades inte.</div></main>`; bindNav(); return; }
+        if(location.hash.slice(1)!==id) return;
+      }
+    }
     const d=b.data||{}, o=b.offer;
     const rows=[['Tjänst',d.size],['Från',d.from],['Till',d.to],['Avstånd',d.distanceKm?'ca '+d.distanceKm+' km':''],['Önskat datum',d.date],['Boyta',d.areaM2?d.areaM2+' m²':''],['Bostad',d.home],['Våning (från)',d.floorFrom],['Våning (till)',d.floorTo],['Önskemål',(d.extras||[]).join(', ')],['Volym',d.volume?String(d.volume.m3).replace('.',',')+' m³':''],['Meddelande',d.message]];
     const locked=b.status==='signed'||b.status==='done';
@@ -2196,8 +2214,15 @@ FX Flytt</textarea>
   const bindListToggle=()=>root.querySelectorAll('#lmode button').forEach(x=>x.onclick=()=>{ listMode=x.dataset.m; try{ localStorage.setItem('fx_listmode',listMode); }catch(_){} showList(); });
   // Same customer (phone or e-mail) with another open request → probably a duplicate.
   const OPENST=['new','sent','declined'];
-  const dupsOf=(b)=>{ if(!OPENST.includes(b.status)||b.signedAt) return []; const p=digits((b.data||{}).phone), e=((b.data||{}).email||'').toLowerCase();
-    return all.filter(x=>x.id!==b.id&&OPENST.includes(x.status)&&!x.signedAt&&!x.nextId&&!b.nextId&&x.id!==b.prevId&&x.prevId!==b.id&&((p.length>=6&&digits((x.data||{}).phone)===p)||(e&&((x.data||{}).email||'').toLowerCase()===e))); };
+  // Bookings by phone and e-mail, so the list does not search every booking for every row (it got slow with many).
+  let IDX=null;
+  const custIdx=()=>{ if(IDX&&IDX.all===all&&IDX.n===all.length&&Date.now()-IDX.at<3000) return IDX;
+    const ph=new Map(), em=new Map(), add=(m,k,b)=>{ if(!k) return; const l=m.get(k); if(l) l.push(b); else m.set(k,[b]); };
+    for(const b of all){ const d=b.data||{}, p=digits(d.phone); if(p.length>=6) add(ph,p,b); add(em,(d.email||'').toLowerCase(),b); }
+    return IDX={all,n:all.length,at:Date.now(),ph,em}; };
+  const samePerson=(b)=>{ const d=b.data||{}, I=custIdx(), p=digits(d.phone), e=(d.email||'').toLowerCase(); const out=new Set([...(p.length>=6?I.ph.get(p)||[]:[]),...(e?I.em.get(e)||[]:[])]); out.delete(b); return [...out]; };
+  const dupsOf=(b)=>{ if(!OPENST.includes(b.status)||b.signedAt||b.nextId) return [];
+    return samePerson(b).filter(x=>OPENST.includes(x.status)&&!x.signedAt&&!x.nextId&&x.id!==b.prevId&&x.prevId!==b.id); };
   async function salesAct(b,body,ok){
     try{ const nb=await api('/api/admin/sales?id='+b.id,{method:'POST',body:JSON.stringify(body)}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; updateCounts(); if(ok) notify(ok); }
     catch(e){ notify(e.message); }
@@ -2292,6 +2317,17 @@ FX Flytt</textarea>
   const pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
   const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent), standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
   const swReg=()=>pushOk()?navigator.serviceWorker.register('/admin-sw.js',{scope:'/admin'}):Promise.resolve(null);
+  // Every time the app opens: if notifications are allowed on this device, make sure the phone still has a
+  // subscription and that the server knows it (a lost or replaced subscription is why notices stop coming).
+  async function healPush(){
+    try{
+      const reg=await swReg(); if(!reg||Notification.permission!=='granted') return;
+      await navigator.serviceWorker.ready; reg.update().catch(()=>{});
+      let sub=await reg.pushManager.getSubscription();
+      if(!sub){ const info=await api('/api/admin/push'); sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(info.publicKey)}); }
+      await api('/api/admin/push',{method:'POST',body:JSON.stringify(sub.toJSON())});
+    }catch(_){}
+  }
   const b64=(s)=>{ const p='='.repeat((4-s.length%4)%4), r=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(r,c=>c.charCodeAt(0)); };
   SET_TABS.unshift(['push','Notiser',false]);
   if(setTab==='users') setTab='push';
