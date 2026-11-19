@@ -402,7 +402,7 @@
     const miss=setup?[!setup.password&&'Lösenord (ADMIN_PASSWORD)',!setup.storage&&'Lagring (Upstash Redis)',!setup.mail&&'E-post (SMTP)'].filter(Boolean):[];
     root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><div class="card"><h3 style="font-size:20px">Logga in i admin</h3>
       ${miss.length?`<div class="warn">Saknas i Vercel: ${esc(miss.join(', '))}</div>`:''}
-      <label class="f" for="un">Användarnamn <span class="muted" style="font-weight:500">(tomt = ägarlösenordet)</span></label><input id="un" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <label class="f" for="un">E-post <span class="muted" style="font-weight:500">(eller användarnamn för personal)</span></label><input id="un" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="info@fxflytt.se">
       <label class="f" for="pw">Lösenord</label><input id="pw" type="password" autocomplete="current-password">
       <button class="btn" id="go">Logga in</button><div class="err" id="err"></div></div></div>`;
     const go=async()=>{ $('#err').textContent='';
@@ -410,7 +410,7 @@
       const j=await r.json().catch(()=>({}));
       if(r.ok){ start(); } else $('#err').textContent=j.error||'Fel';
     };
-    $('#go').onclick=go; $('#pw').onkeydown=(e)=>{ if(e.key==='Enter') go(); };
+    $('#go').onclick=go; $('#pw').onkeydown=(e)=>{ if(e.key==='Enter') go(); }; $('#un').onkeydown=(e)=>{ if(e.key==='Enter') $('#pw').focus(); };
   }
   const logout=async()=>{ await fetch('/api/admin/login',{method:'DELETE'}); location.hash=''; showLogin(); };
   $('#logout').onclick=logout; $('#mlogout').onclick=()=>{ if(confirm('Logga ut?')) logout(); };
@@ -1408,6 +1408,8 @@ FX Flytt</textarea>
     const d=b.data||{}, o=b.offer;
     const rows=[['Tjänst',d.size],['Från',d.from],['Till',d.to],['Avstånd',d.distanceKm?'ca '+d.distanceKm+' km':''],['Önskat datum',d.date],['Boyta',d.areaM2?d.areaM2+' m²':''],['Bostad',d.home],['Våning (från)',d.floorFrom],['Våning (till)',d.floorTo],['Tillval',(d.extras||[]).join(', ')],['Volym',d.volume?String(d.volume.m3).replace('.',',')+' m³':''],['Meddelande',d.message]];
     const locked=b.status==='signed'||b.status==='done';
+    // An offer (not booked yet) shows only what is needed to sell it – staff, vehicles, job sheet and boxes come when the customer has signed.
+    const isOff=['new','sent','declined'].includes(b.status);
     const DURS=[];for(let h=1;h<=14;h+=.5)DURS.push(h);
     const est=S.estimateHours(b);
     root.innerHTML=navBar(['new','sent','declined'].includes(b.status)?'offers':'list',d.name||b.id)+`<main><button class="back" id="back">‹ Tillbaka</button>
@@ -1430,30 +1432,33 @@ FX Flytt</textarea>
         ${b.followUp?`<div class="${followDue(b)?'warn':'okmsg'}" style="margin-top:8px">📞 Ring ${esc(fmtDate(b.followUp.at.slice(0,10)))} kl. ${esc(b.followUp.at.slice(11))}${b.followUp.note?' – '+esc(b.followUp.note):''}</div>`:''}
         ${(b.calls||[]).length?`<div class="calls">${b.calls.slice().reverse().map(c=>`<div><span class="muted">${esc(fmtTs(c.at))} · ${esc(c.by)}</span> <b>${esc(OUT[c.outcome])}</b>${c.note?' – '+esc(c.note):''}</div>`).join('')}</div>`:''}
         <button class="back" id="lostbtn" style="padding:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)">Kunden tackade nej i telefon…</button></div>`:''}
-      <div class="card" id="plan"><h3>Planering</h3>
+      <div class="card" id="plan"><h3>${isOff?'Datum och tid':'Planering'}</h3>
         ${locked?'<div class="warn">Offerten är signerad. Flyttar du datum eller tid – prata med kunden först.</div>':''}
         <div class="row3"><div><label class="f" for="dt">Flyttdatum</label><input id="dt" type="date" value="${esc(b.date||'')}"></div>
         <div><label class="f" for="tm">Starttid</label><select id="tm">${timeOpts(b.time)}</select></div>
         <div><label class="f" for="du">Längd</label><select id="du"><option value="">Auto (${esc(fmtH(est))})</option>${DURS.map(h=>`<option value="${h}"${b.durationH===h?' selected':''}>${esc(fmtH(h))}</option>`).join('')}</select></div></div>
         <div class="muted" id="planinfo" style="margin-top:8px"></div>
         <div id="daywarn"></div>
+        ${isOff?'<div class="muted" style="margin-top:8px">Personal, fordon och arbetsorder väljer du när kunden har signerat.</div>':''}
+        <div${isOff?' hidden':''}>
         ${res.length?`<label class="f">Personal</label><div class="pick" id="pickP"></div><label class="f">Fordon</label><div class="pick" id="pickV"></div>`
           :`<div class="dbox" style="margin-top:12px"><b>Ingen personal inlagd än.</b><div class="muted">Lägg till personal och fordon så kan du välja dem här och se krockar direkt.</div><a class="btn sec sm" style="margin-top:10px;display:inline-flex" href="#personal">Lägg till personal</a></div>`}
         <div id="clash"></div>
         <div id="absw"></div>
-        <button class="btn" id="psave">Spara planering</button><div id="msgp"></div>
+        </div>
+        <button class="btn" id="psave">${isOff?'Spara datum och tid':'Spara planering'}</button><div id="msgp"></div>
         ${b.status==='signed'&&b.date&&b.date>=today()?`<div class="dbox" id="oc" style="margin-top:14px">${(()=>{ const oc=b.openCall;
           if(oc&&!oc.closedAt) return `<b>🙋 Frågat personalen</b> <span class="muted">· ${esc(fmtTs(oc.at))}</span><div class="muted" style="margin-top:4px">${oc.yes.length} av ${oc.need} tillsatta${oc.yes.length?': '+esc(oc.yes.map(id=>resById(id)?.name||'').join(', ')):''} · skickat till ${oc.asked.length}${oc.no.length?` · ${oc.no.length} kan inte`:''}</div><button class="btn gray sm" id="oc_stop" style="margin-top:8px">Stäng frågan</button>`;
           return `${oc?`<div class="muted" style="margin-bottom:6px">Senaste frågan: ${oc.yes.length?'tillsatt av '+esc(oc.yes.map(id=>resById(id)?.name||'').join(', ')):'stängd'}.</div>`:''}<b>Behöver du fler?</b><div class="muted">Fråga alla som är lediga och har appen – de första som svarar ja hamnar på jobbet.</div>
             <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap"><select id="oc_n" style="width:auto">${[1,2,3,4].map(n=>`<option value="${n}">${n} person${n>1?'er':''}</option>`).join('')}</select><input id="oc_note" placeholder="Meddelande (frivilligt)" style="flex:1;min-width:160px"><button class="btn sm" id="oc_go">🙋 Fråga personalen</button></div><div id="oc_msg"></div>`; })()}</div>`:''}
         </div>
-      <div class="card" id="wo"><h3>Arbetsorder för personalen</h3>
+      <div class="card" id="wo"${isOff?' hidden':''}><h3>Arbetsorder för personalen</h3>
         <div class="muted">En sida med adresser, tid, kundens telefon, våning och hiss – utan pris. Skriv ut den eller skicka länken till personalen.</div>
         <label class="f" for="cw">Att tänka på (syns för personalen)</label><textarea id="cw" style="min-height:64px" placeholder="T.ex. portkod 1234, pianot står i källaren, ring kunden 30 min innan">${esc(b.crewNote||'')}</textarea>
         <div class="btns"><button class="btn" id="woopen">🖨 Öppna / skriv ut</button><button class="btn sec" id="wolink">Kopiera länk</button></div>
         <div id="wosms" class="tags" style="margin-top:10px"></div><div id="msgw"></div>
         <button class="back" id="worenew"${b.workToken?'':' hidden'} style="padding:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)">Gör en ny länk (den gamla slutar fungera)</button></div>
-      ${['declined','cancelled'].includes(b.status)&&!b.boxes?'':`<div class="card" id="bx"><h3>Hyrkartonger ${boxesLeft(b)?`<span class="sub">${boxesLeft(b)} ute</span>`:''}</h3>
+      ${(isOff||b.status==='cancelled')&&!b.boxes?'':`<div class="card" id="bx"><h3>Hyrkartonger ${boxesLeft(b)?`<span class="sub">${boxesLeft(b)} ute</span>`:''}</h3>
         ${!b.boxes?`${rentsBoxes(b)?'<div class="warn" style="margin-top:0">Kunden har valt flyttkartonger – registrera dem när de lämnas ut.</div>':'<div class="muted">Inga hyrkartonger.</div>'}<button class="btn sec" id="bx_new">+ Lämna ut kartonger</button>`
         :`${boxesLeft(b)===0?`<div class="okmsg" style="margin-top:0">Alla ${b.boxes.qty} kartonger är tillbaka${b.boxes.returnedDate?' ('+esc(fmtDate(b.boxes.returnedDate))+')':''}.</div>`
           :b.boxes.dueDate<today()?`<div class="warn" style="margin-top:0"><b>Försenade:</b> ${boxesLeft(b)} kartonger skulle varit tillbaka ${esc(fmtDate(b.boxes.dueDate))}</div>`
@@ -2168,9 +2173,18 @@ FX Flytt</textarea>
   }
   const SETTINGS={};
   SETTINGS.users=async(el)=>{
-    let users=[]; try{ users=(await api('/api/admin/users')).users; }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    let users=[], owner={emails:[]}; try{ const j=await api('/api/admin/users'); users=j.users; owner=j.owner||owner; }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     const draw=()=>{
-      el.innerHTML=`<div class="card"><h3>Användare <span class="sub">${users.filter(u=>u.active).length} aktiva</span></h3>
+      el.innerHTML=(me&&me.id==='owner'?`<div class="card" id="ownc"><h3>🔐 Ägarens inloggning</h3>
+          <div class="muted">Du loggar in med en av de här e-postadresserna och ägarlösenordet. ${owner.ownPassword?'Lösenordet är ditt eget (ändrat här).':'Lösenordet är just nu det som står i Vercel (ADMIN_PASSWORD) – byt till ett eget nedan.'}</div>
+          <label class="f">E-postadresser som får logga in som ägare</label>
+          <div id="oe_list">${owner.emails.map((e,i)=>`<div style="display:flex;gap:6px;margin-bottom:6px"><input data-oe="${i}" value="${esc(e)}" type="email" autocomplete="off"><button class="btn gray sm" data-oerm="${i}" aria-label="Ta bort"${owner.emails.length<2?' disabled':''}>✕</button></div>`).join('')}</div>
+          <div class="btns"><button class="btn gray sm" id="oe_add">+ Lägg till adress</button><button class="btn sm" id="oe_save">Spara adresser</button></div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>Byt ägarlösenord</b>
+            <div class="row2"><div><label class="f" for="op_cur">Nuvarande lösenord</label><input id="op_cur" type="password" autocomplete="current-password"></div><div><label class="f" for="op_new">Nytt lösenord (minst 8 tecken)</label><input id="op_new" type="password" autocomplete="new-password"></div></div>
+            <label class="f" for="op_new2">Nytt lösenord igen</label><input id="op_new2" type="password" autocomplete="new-password">
+            <div class="muted" style="margin-top:6px">Du loggas ut på dina andra enheter när du byter.</div>
+            <div class="btns"><button class="btn sm" id="op_save">Byt lösenord</button></div></div><div id="oe_msg"></div></div>`:'')+`<div class="card"><h3>Användare <span class="sub">${users.filter(u=>u.active).length} aktiva</span></h3>
         <div class="muted" style="margin-bottom:10px"><b>Ägare</b> ser allt. <b>Kontor</b> sköter förfrågningar, offerter, kalender, personal och arbetsordrar – men ser inte statistik, ekonomi, timrapport, priser eller användare. Ägarlösenordet i Vercel fungerar alltid (lämna användarnamnet tomt).</div>
         ${users.length?users.map(u=>`<div class="todo"><a><b>${esc(u.name)} <span class="tag${u.role==='owner'?' ok':''}">${ROLE[u.role]}</span>${u.active?'':' <span class="tag no">Avstängd</span>'}</b><small>${esc(u.username)} · ${u.lastLoginAt?'senast inloggad '+esc(ago(u.lastLoginAt)):'aldrig inloggad'}</small></a>
           <button class="btn sec sm" data-pw="${u.id}">Nytt lösenord</button>
@@ -2180,6 +2194,15 @@ FX Flytt</textarea>
           <div class="row2"><div><label class="f" for="u_name">Namn</label><input id="u_name" autocomplete="off"></div><div><label class="f" for="u_user">Användarnamn</label><input id="u_user" autocomplete="off" autocapitalize="none" placeholder="t.ex. sara"></div></div>
           <div class="row2"><div><label class="f" for="u_pw">Lösenord (minst 8 tecken)</label><input id="u_pw" type="text" autocomplete="new-password"></div><div><label class="f" for="u_role">Roll</label><select id="u_role"><option value="office">Kontor</option><option value="owner">Ägare</option></select></div></div>
           <button class="btn" id="u_add">Skapa användare</button><div id="u_msg"></div></div>`;
+      if($('#ownc')){
+        const om=(t,ok)=>{ $('#oe_msg').innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
+        const cur=()=>[...el.querySelectorAll('[data-oe]')].map(x=>x.value.trim()).filter(Boolean);
+        $('#oe_add').onclick=()=>{ owner.emails=[...cur(),'']; draw(); const l=el.querySelectorAll('[data-oe]'); l[l.length-1].focus(); };
+        el.querySelectorAll('[data-oerm]').forEach(x=>x.onclick=()=>{ const l=cur(); l.splice(Number(x.dataset.oerm),1); owner.emails=l; draw(); });
+        $('#oe_save').onclick=async()=>{ try{ const r=await api('/api/admin/users?do=owner',{method:'POST',body:JSON.stringify({emails:cur()})}); owner={...owner,...r}; draw(); om('Sparat ✓ – logga in med någon av adresserna.',true); }catch(e){ om(e.message,false); } };
+        $('#op_save').onclick=async()=>{ if($('#op_new').value!==$('#op_new2').value) return om('De nya lösenorden är inte lika.',false);
+          try{ const r=await api('/api/admin/users?do=owner',{method:'POST',body:JSON.stringify({current:$('#op_cur').value,password:$('#op_new').value})}); owner={...owner,...r}; draw(); om('Lösenordet är bytt ✓',true); }catch(e){ om(e.message,false); } };
+      }
       const upd=async(id,body)=>{ try{ const r=await api('/api/admin/users?id='+id,{method:'PATCH',body:JSON.stringify(body)}); users=users.map(x=>x.id===id?r:x); draw(); notify('Sparat ✓'); }catch(e){ notify(e.message); } };
       el.querySelectorAll('[data-pw]').forEach(x=>x.onclick=()=>{ const pw=prompt('Nytt lösenord (minst 8 tecken). Användaren loggas ut överallt.'); if(pw) upd(x.dataset.pw,{password:pw}); });
       el.querySelectorAll('[data-role]').forEach(x=>x.onclick=()=>{ const u=users.find(y=>y.id===x.dataset.role); upd(u.id,{role:u.role==='owner'?'office':'owner'}); });

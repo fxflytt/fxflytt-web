@@ -58,7 +58,12 @@ export const OWNER: SessionUser = { id: "owner", name: "Ägaren", role: "owner" 
 export async function currentUser(req: Request): Promise<SessionUser | null> {
   const s = readSession(req);
   if (!s) return null;
-  if (s.uid === "owner") return OWNER;
+  if (s.uid === "owner") {
+    // The owner is logged out everywhere when the owner password is changed (session version).
+    const { getOwner } = await import("./owner.ts");
+    const o = await getOwner().catch(() => null);
+    return !o || o.sv === s.sv ? OWNER : null;
+  }
   const u = await getUser(s.uid).catch(() => null);
   return u && u.active && u.sv === s.sv ? { id: u.id, name: u.name, role: u.role } : null;
 }
