@@ -47,7 +47,7 @@ export type Booking = {
   version?: number; prevId?: string; nextId?: string;   // a new version of an offer (Version 2, 3 …) and the one it replaced
   noMarketing?: boolean;     // the customer said no to campaign e-mails
   campaigns?: { at: number; subject: string; by: string }[];
-  closings?: { at: number; subject: string; by: string; kind?: string; auto?: boolean; sms?: boolean; body?: string }[];
+  closings?: { at: number; subject: string; by: string; kind?: string; auto?: boolean; sms?: boolean; body?: string; skills?: string[] }[];
   sms?: { at: number; by: string; text: string; auto?: boolean }[];   // SMS sent to the customer from the booking system   // personal sales e-mails (Oskar, the AI salesman): follow-up, win-back, upsell …     // the office was warned that nobody had answered this request
   lead?: "calc";             // came from "Få priset på mejl" in the website calculator (no request sent yet)
   firstResponseAt?: number;   // first time someone in the office acted on a web request (speed to lead)

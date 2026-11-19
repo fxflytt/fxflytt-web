@@ -117,3 +117,82 @@ export function dayLoad(all: Booking[], date: string | undefined, vehicles: numb
   const cap = Math.max(1, vehicles);
   return { jobs, vehicles: cap, nearlyFull: jobs >= cap - 1 && jobs > 0 };
 }
+
+// ---------- sales skills ----------
+// Proven sales techniques, written for a Swedish moving company and kept honest. Oskar picks 1–3 per e-mail and says
+// which ones he used; the booking system then measures which skills lead to signed bookings (skillResults), and the
+// best ones are recommended to him for each kind of e-mail.
+export type Skill = { id: string; name: string; how: string; example: string; kinds: SalesKind[] };
+export const SALES_SKILLS: Skill[] = [
+  { id: "spegla", name: "Spegla kunden", kinds: ["followup", "revive", "calc", "winback", "upsell"],
+    how: "Använd kundens egna ord och detaljer (orten, datumet, det kunden skrev, t.ex. 'pianot' eller 'tredje våningen utan hiss'). Visar att en människa har läst.",
+    example: "Du skrev att ni har ett piano på tredje våningen – det planerar vi in med rätt antal personer." },
+  { id: "riskfritt", name: "Ta bort risken", kinds: ["followup", "revive", "calc", "winback"],
+    how: "Säg det som gör beslutet ofarligt – bara det som står i fakta: fast pris, RUT dras direkt, ändring kostnadsfritt till 6 dagar före, försäkrade hos Trygg-Hansa, 7 dagars städgaranti.",
+    example: "Priset är fast, och skulle datumet ändras kan du flytta det utan kostnad fram till 6 dagar före." },
+  { id: "litet_ja", name: "Ett litet ja", kinds: ["followup", "revive", "calc", "winback", "upsell"],
+    how: "Avsluta med en fråga som är lätt att säga ja till, inte 'vill du boka?'. Ett litet ja leder till nästa.",
+    example: "Passar den 12 december fortfarande?" },
+  { id: "tva_val", name: "Två bra val", kinds: ["followup", "calc", "upsell"],
+    how: "Ge två konkreta alternativ i stället för ja/nej – båda leder framåt.",
+    example: "Vill du att vi ringer dig i eftermiddag, eller passar det bättre i morgon förmiddag?" },
+  { id: "paketjamforelse", name: "Jämför paketen", kinds: ["followup", "calc", "winback"],
+    how: "Visa Bas, Premium och Deluxe med priserna ur underlaget, från dyrast till billigast, och säg vilket de flesta med samma bostad väljer bara om det står i underlaget – annars vilket som passar kundens situation (t.ex. Premium för den som ska lämna en hyresrätt).",
+    example: "Ska lägenheten godkännas av hyresvärden är Premium oftast smartast – då ingår flyttstäd med 7 dagars städgaranti." },
+  { id: "framtidsbild", name: "Måla flyttdagen", kinds: ["followup", "upsell", "calc"],
+    how: "Beskriv kort hur dagen blir när vi tar hand om det – lugnt och konkret, utan överdrifter.",
+    example: "Ni lämnar nycklarna på eftermiddagen, och städningen är redan klar när hyresvärden kommer." },
+  { id: "kanna_fann", name: "Förstå – andra – fann", kinds: ["winback", "followup"],
+    how: "Vid oro för priset: visa förståelse, säg att andra kunder känt likadant, och vad de upptäckte (fast pris efter RUT jämfört med timpris före RUT). Bara sanna saker.",
+    example: "Jag förstår – många jämför. Det de brukar upptäcka är att vårt pris redan är efter RUT och fast, medan andra ofta anger timpris före RUT." },
+  { id: "fragan", name: "Fråga om behovet", kinds: ["followup", "revive", "winback"],
+    how: "Ställ en öppen fråga om det som kan hålla emot (datum, priset, något som är oklart) – i stället för att upprepa erbjudandet.",
+    example: "Är det något i offerten som inte riktigt stämmer med det ni tänkt er?" },
+  { id: "utvag", name: "Ge en utväg", kinds: ["revive", "winback"],
+    how: "Gör det lätt att säga nej – det ökar faktiskt svaren och visar respekt.",
+    example: "Har planerna ändrats är det helt okej – svara bara nej, så hör vi inte av oss om den här offerten igen." },
+  { id: "socialt_bevis", name: "Sant socialt bevis", kinds: ["followup", "calc", "revive"],
+    how: "Använd BARA siffror som står i underlaget (t.ex. hur många flyttar vi gjort i kundens ort). Aldrig påhittade recensioner eller kunder.",
+    example: "Vi har gjort 14 flyttar i Köping det senaste året, så vi känner området väl." },
+  { id: "ps", name: "Personligt P.S.", kinds: ["followup", "calc", "upsell", "revive"],
+    how: "Ett P.S. på en mening med den starkaste trygghetspunkten eller en personlig detalj – nästan alla läser det.",
+    example: "P.S. Har ni kartonger? Vi kan leverera dem hem till er innan flytten." },
+  { id: "varde_fore_pris", name: "Värde före pris", kinds: ["followup", "calc", "upsell", "winback"],
+    how: "Säg vad som ingår innan du nämner priset, så att priset ses mot det kunden får.",
+    example: "I priset ingår två flyttare, flyttbil, bärhjälp och försäkring – 5 456 kr efter RUT." },
+];
+const SKILL_IDS = new Set(SALES_SKILLS.map((s) => s.id));
+export const cleanSkills = (v: unknown): string[] => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === "string" && SKILL_IDS.has(x)))].slice(0, 3) : []);
+
+/** Which skills are used, and how often an e-mail with that skill was followed by a signed booking within 14 days. */
+export function skillResults(all: Booking[], since = 0, kind?: SalesKind): { id: string; name: string; used: number; won: number; rate: number | null }[] {
+  const m = new Map<string, { used: number; won: number }>();
+  for (const b of all) for (const c of b.closings || []) {
+    if (c.at < since || (kind && (c.kind || "followup") !== kind)) continue;
+    for (const id of c.skills || []) {
+      const x = m.get(id) || { used: 0, won: 0 }; x.used++;
+      if (b.signedAt && c.at < b.signedAt && b.signedAt - c.at <= 14 * DAY) x.won++;
+      m.set(id, x);
+    }
+  }
+  return SALES_SKILLS.filter((s) => m.has(s.id)).map((s) => { const x = m.get(s.id)!; return { id: s.id, name: s.name, ...x, rate: x.used ? Math.round((x.won * 100) / x.used) : null }; })
+    .sort((a, b) => (b.rate ?? -1) - (a.rate ?? -1) || b.used - a.used);
+}
+
+/** The skills section of Oskar's training for one kind of e-mail – the ones that have worked best here first. */
+export function skillsText(kind: SalesKind | undefined, all: Booking[] = []): string {
+  const list = SALES_SKILLS.filter((s) => !kind || s.kinds.includes(kind));
+  const proven = kind ? skillResults(all, 0, kind).filter((r) => r.used >= 5 && (r.rate ?? 0) > 0).slice(0, 3) : [];
+  return `DINA SÄLJFÄRDIGHETER (välj 1–3 som passar just den här kunden – inte alla på en gång – och ange deras id i "skills"):\n` +
+    list.map((s) => `- ${s.id} – ${s.name}: ${s.how}\n  Exempel: "${s.example}"`).join("\n") +
+    (proven.length ? `\nSOM HAR FUNGERAT BÄST HOS FX FLYTT för den här sortens mejl: ${proven.map((r) => `${r.name} (${r.rate} % blev bokning, ${r.used} mejl)`).join(", ")}. Välj gärna någon av dem.` : "");
+}
+
+/** True social proof from the booking system: how many moves we did from/to the customer's town in the last 12 months. */
+export function townProof(all: Booking[], townName: string, now = Date.now()): string {
+  const t = townName.trim().toLowerCase();
+  if (!t) return "";
+  const n = all.filter((b) => b.status === "done" && b.date && Date.parse(b.date) > now - 365 * DAY &&
+    [b.data.from, b.data.to].some((a) => (a || "").split(",").pop()!.replace(/\d/g, "").trim().toLowerCase() === t)).length;
+  return n >= 3 ? `Sant att säga: vi har gjort ${n} flyttar från eller till ${townName} det senaste året.` : "";
+}
