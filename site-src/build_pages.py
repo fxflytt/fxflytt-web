@@ -228,7 +228,7 @@ flyttfirma = page("flyttfirma.html",
   <div class="wrap">
     <div class="center"><span class="eyebrow">Våra orter</span><h2>Här flyttar vi</h2></div>
     <div class="city-cards">{cards}
-      <a class="city-card" href="index.html#offert"><h3><svg><use href="#i-truck"/></svg>Hela Sverige</h3><p>Längre flyttar mellan städer – fast pris plus 12 kr/km. Räkna ut priset direkt.</p><span class="go">Få offert →</span></a>
+      <a class="city-card" href="index.html#offert"><h3><svg><use href="#i-truck"/></svg>Hela Sverige</h3><p>Längre flyttar mellan städer – fast pris plus 12 kr/km per flyttbil. Räkna ut priset direkt.</p><span class="go">Få offert →</span></a>
     </div>
   </div>
 </section>
@@ -305,7 +305,7 @@ paket = page("paket.html",
       <p class="lead">Priser inkl. moms efter RUT-avdrag. Boytan avrundas uppåt till närmaste steg.</p></div>
     <div class="pl-grid">
       <div><h3>Flytt – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Flyttbilar</th><th>Pris</th></tr></thead><tbody data-fxp-table="move">{move_tbl}</tbody></table>
-        <p class="small">Över 240 m²: pris enligt offert. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km: 0 kr. 15 km eller mer: 12 kr/km för hela sträckan – till exempel 66 km × 12 kr = 792 kr. Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt. Exempel 60 m², 66 km med Premium: (3 950 + 3 100 + 792 kr) − 10 % = 7 058 kr. Våning och hiss påverkar inte priset.</p></div>
+        <p class="small">Över 240 m²: pris enligt offert. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km: 0 kr. 15 km eller mer: 12 kr/km per flyttbil för hela sträckan – till exempel 66 km × 12 kr = 792 kr. Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt. Exempel 60 m², 66 km med Premium: (3 950 + 3 100 + 792 kr) − 10 % = 7 058 kr. Våning och hiss påverkar inte priset.</p></div>
       <div><h3>Flyttstäd – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody data-fxp-table="clean">{clean_tbl}</tbody></table>
         <p class="small">Fönster och balkong ingår. Över 300 m²: pris enligt offert.</p></div>
     </div>
@@ -582,7 +582,7 @@ villkor = page("villkor.html",
     <ul>
       <li>Alla priser anges i svenska kronor inklusive moms.</li>
       <li>Fast pris gäller för den boyta kunden uppger. Vid timpris debiteras minst 3 timmar, och påbörjad timme räknas som hel.</li>
-      <li>Körsträcka räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km debiteras ingen körsträcka. Vid 15 km eller mer debiteras 12 kr/km för hela sträckan, till exempel 66 km × 12 kr = 792 kr.</li>
+      <li>Körsträcka räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km debiteras ingen körsträcka. Vid 15 km eller mer debiteras 12 kr/km per flyttbil för hela sträckan, till exempel 66 km × 12 kr = 792 kr.</li>
       <li>Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt.</li>
       <li>Övriga tillval enligt prislista eller offert.</li>
       <li><b>Inga dolda avgifter.</b> Vi går igenom alla detaljer med dig innan flytten. Det pris som står i din bokningsbekräftelse är det du betalar – inga extra avgifter tillkommer i efterhand.</li>
@@ -966,7 +966,7 @@ prisguide = page("vad-kostar-flytt.html",
     <h2 style="font-size:1.5rem;margin:34px 0 6px">Vad påverkar priset?</h2>
     <ul class="ticks" style="display:grid;gap:10px">
       <li><b>Boytan.</b> Det fasta priset räknas på antal kvadratmeter – större bostad betyder fler flyttare, fler bilar och längre tid.</li>
-      <li><b>Avståndet mellan adresserna.</b> Under {G['freeKm']} km ingår körsträckan. Från {G['freeKm']} km betalar du {G['perKm']} kr/km för hela sträckan, en väg.</li>
+      <li><b>Avståndet mellan adresserna.</b> Under {G['freeKm']} km ingår körsträckan. Från {G['freeKm']} km betalar du {G['perKm']} kr/km per flyttbil för hela sträckan, en väg.</li>
       <li><b>Vad som ingår.</b> Flyttstäd, packning och montering kan läggas till – och med paketen Premium och Deluxe får du 10 respektive 20 % rabatt.</li>
       <li><b>Det som inte påverkar:</b> våning och hiss. Vi frågar om dem för att planera rätt, men priset ändras inte.</li>
     </ul>
@@ -1074,7 +1074,7 @@ flytthjalp = service_page("flytthjalp.html",
   ("Passar per timme för dig?", _ul(["<b>Ja</b> – om du flyttar från en liten lägenhet, bara några möbler eller redan har packat allt.",
     "<b>Hellre fast pris</b> – om bostaden är större, eller om du vill slippa oro för att det tar längre tid än tänkt."]))],
  [("Hur många timmar behöver jag?",f"En etta tar ofta {R['minHours']}–4 timmar med 2 flyttare, men det beror på mängd, packning och bärsträcka. Osäker? Välj fast pris."),
-  ("Ingår körsträckan i timpriset?",f"Under {G['freeKm']} km mellan adresserna ingår den. Längre än så tillkommer {G['perKm']} kr/km för hela sträckan."),
+  ("Ingår körsträckan i timpriset?",f"Under {G['freeKm']} km mellan adresserna ingår den. Längre än så tillkommer {G['perKm']} kr/km per flyttbil för hela sträckan."),
   ("Kan jag få hjälp med bara packning eller montering?","Ja, packning och ned-/montering kan bokas per timme, 595 kr/tim för 2 personer efter RUT.")])
 
 # ---------------------------------------------------------------- English page
@@ -1155,7 +1155,7 @@ english = lang_page("en.html", "en", False,
     <h2 id="prices" style="font-size:1.5rem;margin:34px 0 6px">Fixed prices</h2>
     <p style="color:var(--muted);margin-bottom:12px">Moves under {G['freeKm']} km, including VAT, after the RUT tax deduction. Premium = move + move-out cleaning with 10 % off.</p>
     <div class="cmp-scroll"><table class="cmp ex"><thead><tr><th>Home</th><th>Move (Bas)</th><th class="hot">Move + cleaning (Premium)</th></tr></thead><tbody>{_en_rows}</tbody></table></div>
-    <p class="cmp-note">Longer moves: {G['perKm']} SEK/km for the whole distance when the addresses are {G['freeKm']} km or more apart. Hourly help: 2 movers + truck {R['2']} SEK/hour after RUT, minimum {R['minHours']} hours. Floor and lift do not change the price.</p>
+    <p class="cmp-note">Longer moves: {G['perKm']} SEK/km per truck for the whole distance when the addresses are {G['freeKm']} km or more apart. Hourly help: 2 movers + truck {R['2']} SEK/hour after RUT, minimum {R['minHours']} hours. Floor and lift do not change the price.</p>
 
     <h2 id="rut" style="font-size:1.5rem;margin:34px 0 6px">What is RUT?</h2>
     <p style="color:var(--muted)">RUT is a Swedish tax deduction for household services: you pay only half of the labour cost. We deduct it directly on the invoice and apply to Skatteverket (the Swedish Tax Agency) for you. You need a Swedish personal identity number (personnummer) and enough RUT allowance left for the year. If you are not entitled to RUT, the price is higher – the quote shows it before you book.</p>
@@ -1190,14 +1190,14 @@ bohagsflytt = service_page("bohagsflytt.html",
     "<b>Filtar och möbelskydd</b> så att möbler, golv och trapphus klarar sig.", "<b>En personlig kontaktperson</b> från offert till flyttdag."])),
   ("Pris", f'<p style="color:var(--muted);margin-bottom:12px">Fast pris efter boyta för en flytt under {G["freeKm"]} km, inkl. moms efter RUT-avdrag. Premium = flytt + flyttstäd med 10 % rabatt.</p>'
      f'<div class="cmp-scroll"><table class="cmp ex"><thead><tr><th>Bostad</th><th>Flytt (Bas)</th><th class="hot">Flytt + städ (Premium)</th></tr></thead><tbody>{_b_rows}</tbody></table></div>'
-     f'<p class="cmp-note">Längre flytt: {G["perKm"]} kr/km för hela sträckan när avståndet mellan adresserna är {G["freeKm"]} km eller mer. Våning och hiss påverkar inte priset. <a href="vad-kostar-flytt.html">Fler prisexempel</a> · <a href="paket.html">Jämför paketen</a></p>'),
+     f'<p class="cmp-note">Längre flytt: {G["perKm"]} kr/km per flyttbil för hela sträckan när avståndet mellan adresserna är {G["freeKm"]} km eller mer. Våning och hiss påverkar inte priset. <a href="vad-kostar-flytt.html">Fler prisexempel</a> · <a href="paket.html">Jämför paketen</a></p>'),
   ("Så går det till", _how([("Begär offert", "Fyll i formuläret eller ring oss – berätta adresser, boyta och datum."), ("Fast pris", "Du får ett tydligt pris och väljer Bas, Premium eller Deluxe."), ("Flyttdagen", "Vi bär, lastar, kör och ställer in allt på plats.")])),
   ("Bra att veta", _ul(["Har du betydligt mer saker än boytan brukar rymma – till exempel ett fullt förråd eller garage – berätta det, så blir priset rätt från början. Använd gärna <a href=\"kubikraknare.html\">kubikräknaren</a>.",
     "Vill du ha hjälp med packning, montering eller flyttstäd? Välj Premium eller Deluxe, eller lägg till det i offerten.",
     "Värdesaker, kontanter och viktiga dokument tar du med själv."]))],
  [("Vad ingår i en bohagsflytt?", "Lastbil med förare, bärhjälp, lastning och lossning, filtar och möbelskydd samt en personlig kontaktperson. Packning och flyttstäd kan läggas till."),
   ("Vad kostar en bohagsflytt?", f"Fast pris efter boyta – till exempel {_kr(H[1]['bas'])} för en tvåa på cirka 60 m² under {G['freeKm']} km, efter RUT-avdrag."),
-  ("Kan ni flytta till en annan stad?", f"Ja, i hela Sverige. Från {G['freeKm']} km mellan adresserna tillkommer {G['perKm']} kr/km för hela sträckan.")])
+  ("Kan ni flytta till en annan stad?", f"Ja, i hela Sverige. Från {G['freeKm']} km mellan adresserna tillkommer {G['perKm']} kr/km per flyttbil för hela sträckan.")])
 
 packning = service_page("packning.html",
  f"Packhjälp – vi packar och packar upp, {_n(R['2'])} kr/tim | FX Flytt",

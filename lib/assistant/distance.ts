@@ -31,7 +31,8 @@ export function quoteRoute(input: Input, P: unknown) {
   const prices = P as { km: { pricePerKm: number; freeBelowKm: number } };
   const kmCost = km >= prices.km.freeBelowKm ? km * prices.km.pricePerKm : 0;
   const out: Record<string, unknown> = {
-    from: a[0], to: b[0], distance_km: km, km_cost_kr: kmCost,
+    from: a[0], to: b[0], distance_km: km, km_cost_per_truck_kr: kmCost,
+    km_rule: "Körsträckan räknas per flyttbil (varje bil kör hela vägen). Antal bilar beror på boytan – se raderna i priserna.",
     note: "Ungefärligt vägavstånd mellan orternas centrum. Exakt pris räknas på kundens adresser i prisräknaren eller offerten.",
   };
   const m2 = Number(input.area_m2);
