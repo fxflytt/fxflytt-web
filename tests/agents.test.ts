@@ -34,7 +34,9 @@ function fakeClaude(body: Record<string, unknown>) {
     const complaint = /trasig|klaga/i.test(user);
     out = { category: complaint ? "klagomal" : /offert|flytta/i.test(user) ? "offert" : "leverantor", priority: complaint ? "high" : "normal",
       summary: "Sammanfattning", needsReply: !/nyhetsbrev/i.test(user), autoSafe: !complaint, draft: "Hej! Tack för ditt mejl.",
-      extracted: { name: "Lisa Lind", phone: "070-123 45 67", from: "Kungsör", to: "Arboga", date: "2026-12-12", size: "2 rok", areaM2: 0 } };
+      extracted: { name: /Per Holm/.test(user) ? "Per Holm" : "Lisa Lind", phone: "070-123 45 67", from: "Kungsör", to: "Arboga", date: /FX\d{6}-|12 december/.test(user) ? "2026-12-12" : "", size: "2 rok", areaM2: /60 m²/.test(user) ? 60 : 0, service: "move" } };
+  } else if (system.includes("skriver ett svar på ett mejl till info@")) {
+    out = { draft: "Hej! Svar från Elsa.", note: /INGEN BEKRÄFTAD BOKNING/.test(user) ? "Osäker koppling till bokning" : "" };
   } else if (system.includes("klagomålsansvarig")) {
     out = { category: "damage", severity: "high", summary: "Spegel trasig", nextStep: "Ring kunden", draft: "Hej, vi beklagar…" };
   } else if (system.includes("säljare på FX Flytt") || system.includes("bästa säljare")) {
@@ -83,12 +85,15 @@ test("inkorgen: sorterar, hittar bokningen, gör klagomål och skippar egna mejl
   const list = await inbox.listMails();
   assert.equal(list.length, 2);
   const per = list.find((m) => m.from === "per@ex.se")!;
-  assert.equal(per.bookingId, b.id); assert.equal(per.category, "klagomal"); assert.equal(per.status, "new"); assert.ok(per.complaintId);
+  // Same e-mail address but no moving date in the mail: only a possible match – nothing from the booking goes to the customer.
+  assert.equal(per.bookingId, undefined); assert.equal(per.maybeBookingId, b.id); assert.match(per.matchNote!, /inte bekräftad/); assert.equal(per.note, per.matchNote);
+  assert.equal(per.category, "klagomal"); assert.equal(per.status, "new"); assert.ok(per.complaintId);
   assert.equal(per.draft, "Hej, vi beklagar…");      // the complaints desk's reply replaces the quick draft
+  assert.ok(!claudeCalls.filter((x) => x.user.includes("spegel")).some((x) => x.user.includes("Köping")));   // booking details never reach the AI
   const lisa = list.find((m) => m.from === "lisa@ex.se")!;
-  assert.equal(lisa.extracted?.to, "Arboga"); assert.equal(lisa.bookingId, undefined);
+  assert.equal(lisa.extracted?.to, "Arboga"); assert.equal(lisa.bookingId, undefined); assert.equal(lisa.draft, "Hej! Svar från Elsa.");
   const c = (await K.listComplaints())[0];
-  assert.equal(c.bookingId, b.id); assert.equal(c.severity, "high"); assert.equal(c.mailId, per.id);
+  assert.equal(c.bookingId, undefined); assert.equal(c.severity, "high"); assert.equal(c.mailId, per.id);
   assert.deepEqual(await inbox.getState().then((s) => [s.uidValidity, s.lastUid, s.lastError]), ["7", 13, ""]);
   // the same messages again: nothing new; a call soon after is skipped
   const again = await inbox.syncInbox({ fetchNew: async () => ({ mails, uidValidity: "7", lastUid: 13, more: false }), keepDays: 30 });
@@ -193,7 +198,9 @@ test("Elsa: prisförslag från ort och boyta med samma prismotor som hemsidan", 
   assert.equal(areaOf("2 rok, 60 m²"), 60); assert.equal(areaOf("3:a 75 kvm"), 75); assert.equal(areaOf("2 rok"), null);
   const e = estimate({ name: "", phone: "", from: "Storgatan 1, Kungsör", to: "Arboga", date: "", size: "60 m2" }, PRICES)!;
   assert.equal(e.from, "Kungsör"); assert.equal(e.to, "Arboga"); assert.equal(e.m2, 60); assert.ok(e.bas! > 0); assert.ok(e.premium! > 0);
-  assert.equal(estimate({ name: "", phone: "", from: "Atlantis", to: "Arboga", date: "", size: "60 m2" }, PRICES), null);
+  const u = estimate({ name: "", phone: "", from: "Atlantis", to: "Arboga", date: "", size: "60 m2" }, PRICES)!;
+  assert.equal(u.kmUnknown, true); assert.equal(u.km, null);        // unknown town: price without the km cost, and it says so
+  assert.equal(estimate({ name: "", phone: "", from: "Kungsör", to: "Arboga", date: "", size: "60 m2", service: "piano" }, PRICES), null);
 });
 
 test("efter-steget körs för varje sorterat mejl och ändringar sparas", async () => {
@@ -354,4 +361,43 @@ test("prisförslaget hittar boytan i själva mejlet om AI:n missade den", () => 
   const x = estimate(e, PRICES, "Hej, vi har en lägenhet på 60 kvm och vill ha en prisuppskattning")!;
   assert.equal(x.m2, 60); assert.equal(x.to, "Stockholm"); assert.ok(x.bas! > 0);
   assert.equal(estimate({ ...e, areaM2: 75 }, PRICES)!.m2, 75);
+});
+
+test("granskningen: rätt bokning bara när den är säker, avgifter från bokningens datum", async () => {
+  const today = "2026-11-18";
+  const sara = { ...(await store.createBooking("web", { name: "Sara Holm", phone: "1", email: "same@ex.se" })), status: "signed" as const, date: "2026-12-15" };
+  const all = [sara];
+  // Ahmed writes from the same address about another booking on 5 December: not sure.
+  const a = inbox.linkBooking({ from: "same@ex.se", fromName: "Ahmed", subject: "Ändra datum", text: "Vi vill flytta vår flytt den 5 december" }, { name: "Ahmed", date: "2026-12-05" } as never, all);
+  assert.equal(a.sure, null); assert.equal(a.maybe?.id, sara.id);
+  const block = inbox.bookingBlock(a, today);
+  assert.match(block, /INGEN BEKRÄFTAD BOKNING/); assert.ok(!block.includes("2026-12-15")); assert.ok(!block.includes(sara.id)); assert.match(a.note, /inte bekräftad/);
+  // "Ring mig" without anything: not sure either.
+  assert.equal(inbox.linkBooking({ from: "same@ex.se", fromName: "", subject: "Ring mig", text: "Ring mig" }, { name: "", date: "" } as never, all).sure, null);
+  // Name and date match → sure, with the days counted from the booking.
+  const ok = inbox.linkBooking({ from: "same@ex.se", fromName: "Sara Holm", subject: "Avboka", text: "Vi vill avboka" }, { name: "Sara", date: "2026-12-15" } as never, all);
+  assert.equal(ok.sure?.id, sara.id);
+  assert.match(inbox.bookingBlock(ok, today), /Dagar kvar till flyttdagen enligt bokningen \(räknat av systemet\): 27\. .*KOSTNADSFRI/);
+  assert.match(inbox.bookingBlock(ok, "2026-12-11"), /: 4\. .*10 %/);
+  // The booking number in the e-mail is always enough.
+  assert.equal(inbox.linkBooking({ from: "other@ex.se", fromName: "", subject: "Fråga", text: `Gäller ${sara.id}` }, undefined, all).sure?.id, sara.id);
+});
+
+test("granskningen: Elsas svar får prisförslag, regler och fakta från hemsidan", async () => {
+  const est = estimate({ name: "", phone: "", from: "Västerås", to: "Västerås", date: "", size: "90 m²", service: "move" }, PRICES)!;
+  assert.equal(est.sameTown, true); assert.deepEqual([est.bas, est.premium, est.deluxe], [5625, 8347, 9205]);
+  const r = await inbox.writeReply({ from: "k@ex.se", fromName: "K", subject: "Paket", text: "Vad är skillnaden mellan paketen? 90 m² i Västerås", draft: "", extracted: undefined },
+    { link: { sure: null, maybe: null, note: "" }, estimate: est, knowledge: (await import("../lib/agents/knowledge.ts")).knowledge(PRICES as never), today: "2026-11-18" });
+  assert.equal(r.draft, "Hej! Svar från Elsa.");
+  const call = claudeCalls.at(-1)!;
+  assert.match(call.user, /Deluxe .*9 205 kr/); assert.match(call.system, /prisraknare/); assert.match(call.system, /Trygg-Hansa/);
+  assert.match(call.system, /tullpapper/); assert.match(call.system, /Best regards/); assert.match(call.system, /flygel eller vanligt \(upprätt\) piano/);
+  const c = estimate({ name: "", phone: "", from: "Köping", to: "", date: "", size: "58 kvm", service: "cleaning" }, PRICES)!;
+  assert.equal(c.cleaning, 3100);
+});
+
+test("signaturen följer kundens språk", () => {
+  assert.equal(team.replyLang("Hi John,\n\nYes, we can help you in English.\n\nBest regards\nFX Flytt"), "en");
+  assert.equal(team.replyLang("Hej!\n\nVänliga hälsningar\nFX Flytt"), "sv");
+  assert.match(team.aiSignature("Elsa", "Kundservice", "en"), /^Best regards\nElsa, FX Flytt customer service/);
 });

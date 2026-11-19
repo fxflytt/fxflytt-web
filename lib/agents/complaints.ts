@@ -68,10 +68,14 @@ export function bookingContext(b: Booking | null): string {
     b.offer?.lines?.length ? "rader: " + b.offer.lines.map((l) => l.label).join(", ") : "",
   ].filter(Boolean).join(" · ");
 }
-export async function assess(text: string, subject: string, b: Booking | null): Promise<Assessment> {
+export async function assess(text: string, subject: string, b: Booking | null, knowledge = ""): Promise<Assessment> {
   const a = await askJson<Assessment>({
     model: MODEL_WRITE, effort: "medium", schema: SCHEMA, maxTokens: 6000,
-    system: `${HOUSE_RULES}\n\nDu är klagomålsansvarig. Läs klagomålet, bedöm det och skriv ett svar som kontoret kan skicka efter granskning.`,
+    system: `${HOUSE_RULES}\n\nDu är klagomålsansvarig. Läs klagomålet, bedöm det och skriv ett svar som kontoret kan skicka efter granskning.
+Vid skada: visa förståelse, säg att vi är försäkrade hos Trygg-Hansa och att skador som uppstår när vi flyttar ersätts enligt våra villkor – utan att
+erkänna skuld eller lova ett belopp. Be kunden att inte slänga eller laga det skadade innan vi har sett det, och att svara på det här mejlet med bilder,
+en kort beskrivning och vilket datum flytten var (skriv inte "skicka till info@"). Vid flyttstäd: nämn 7 dagars städgaranti om den gäller.
+Nämn ingen uppgift ur en bokning om inte bokningen står som bekräftad i underlaget.` + (knowledge ? `\n\nFAKTA OM FX FLYTT:\n<foretaget>\n${knowledge}\n</foretaget>` : ""),
     user: `${quote("underlag", bookingContext(b))}\n\n${quote("mejl", `Ämne: ${subject}\n\n${text}`)}`,
   });
   return cleanAssessment(a);

@@ -17,4 +17,6 @@ python3 add-chat.py
 python3 add-consent.py
 python3 add-offert.py
 python3 add-seo.py
+# The AI team (Elsa, Maja, Oskar) reads the text of the service and terms pages from lib/assistant/sitefacts.json.
+node scripts/site-facts.mjs
 echo "site built"
