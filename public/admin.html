@@ -108,6 +108,9 @@
   .chips button.on{background:var(--navy);border-color:var(--navy);color:#fff}
   .chips.ltf{padding-top:0;margin-top:-4px}.chips.ltf button{font-size:12px;padding:5px 10px;border-style:dashed}.chips.ltf button.on{border-style:solid}
   .tag.lt{background:#eef0fb;color:#3d3fa8}
+  .ctab{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}.ctab td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}.ctab td:first-child{color:var(--muted);width:38%;padding-right:10px}.ctab td:last-child{white-space:pre-wrap;word-break:break-word}
+  .cex{display:flex;flex-wrap:wrap;gap:6px}.cex label{display:flex;flex:none;max-width:100%;white-space:nowrap;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:10px;padding:6px 10px;font-size:13.5px;font-weight:600;cursor:pointer}
+  .cedit{margin-top:12px;padding-top:4px;border-top:1px solid var(--line)}
   .selbox{position:absolute;left:2px;right:2px;background:rgba(255,122,26,.18);border:2px dashed var(--accent);border-radius:8px;z-index:3;font-size:12px;font-weight:800;color:#a34500;padding:2px 6px;pointer-events:none}
   .wk-col{touch-action:pan-y}
   .card.qn{max-width:560px;width:100%;max-height:92vh;overflow:auto}.qn .btns{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px}.qn .btns .btn{margin:0}.qn .seg{margin-bottom:6px}
@@ -374,7 +377,7 @@
   const tel=(p)=>'tel:'+String(p||'').replace(/[^\d+]/g,'').replace(/^0/,'+46');
   const root=$('#root');
   const S=window.FXSchedule;
-  let newPrefill=null, lastNav='', me=null;
+  let newPrefill=null, lastNav='', me=null, repriceAsk=false;
   function applyRole(){
     document.body.classList.toggle('office',!!me&&me.role!=='owner');
     $('#whoami').innerHTML=me?`<b style="color:#fff">${esc(me.name)}</b> · ${me.role==='owner'?'Ägare':'Kontor'}`:'';
@@ -1406,7 +1409,7 @@ FX Flytt</textarea>
     let b=all.find(x=>x.id===id);
     try{ b=await api('/api/admin/bookings?id='+id); const i=all.findIndex(x=>x.id===id); if(i>=0) all[i]=b; else all.unshift(b); }catch(e){ if(!b){ root.innerHTML=navBar('list')+`<main><div class="empty">Bokningen hittades inte.</div></main>`; bindNav(); return; } }
     const d=b.data||{}, o=b.offer;
-    const rows=[['Tjänst',d.size],['Från',d.from],['Till',d.to],['Avstånd',d.distanceKm?'ca '+d.distanceKm+' km':''],['Önskat datum',d.date],['Boyta',d.areaM2?d.areaM2+' m²':''],['Bostad',d.home],['Våning (från)',d.floorFrom],['Våning (till)',d.floorTo],['Tillval',(d.extras||[]).join(', ')],['Volym',d.volume?String(d.volume.m3).replace('.',',')+' m³':''],['Meddelande',d.message]];
+    const rows=[['Tjänst',d.size],['Från',d.from],['Till',d.to],['Avstånd',d.distanceKm?'ca '+d.distanceKm+' km':''],['Önskat datum',d.date],['Boyta',d.areaM2?d.areaM2+' m²':''],['Bostad',d.home],['Våning (från)',d.floorFrom],['Våning (till)',d.floorTo],['Önskemål',(d.extras||[]).join(', ')],['Volym',d.volume?String(d.volume.m3).replace('.',',')+' m³':''],['Meddelande',d.message]];
     const locked=b.status==='signed'||b.status==='done';
     // An offer (not booked yet) shows only what is needed to sell it – staff, vehicles, job sheet and boxes come when the customer has signed.
     const isOff=['new','sent','declined'].includes(b.status);
@@ -1420,6 +1423,9 @@ FX Flytt</textarea>
         <div class="muted">${esc(b.id)} · skapad ${esc(fmtTs(b.createdAt))} · ${b.source==='web'?'från hemsidan':'manuell'}</div>
         <div class="btns" style="margin-top:6px"><a class="btn sec" href="${esc(tel(d.phone))}">Ring ${esc(d.phone)}</a><a class="btn sec" href="sms:${esc(String(d.phone||'').replace(/\s/g,''))}">SMS</a></div>
         ${d.email?`<div class="muted" style="margin-top:8px">E-post: <a href="mailto:${esc(d.email)}">${esc(d.email)}</a></div>`:'<div class="warn">Kunden har ingen e-post – skicka länken via SMS.</div>'}
+        <div id="custv"><table class="ctab">${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table>
+          <button class="btn sec sm" id="cedit" style="margin-top:10px">✏️ Ändra kunduppgifter</button></div>
+        <div id="custe" hidden></div>
       </div>
       ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}"${b.signature.pnr?` · Personnr ${esc(b.signature.pnr)}`:''}${b.signature.orgnr?` · Org.nr ${esc(b.signature.orgnr)} (företag)`:''} ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
       ${b.status==='new'||b.status==='sent'?`<div class="card" id="sales"><h3>Försäljning <span class="sub">${esc(STAGES.find(x=>x[0]===stageOf(b))[1])}</span></h3>
@@ -1526,7 +1532,6 @@ FX Flytt</textarea>
             :(b.status==='new'||b.status==='sent')&&!b.signedAt?`<div style="display:flex;gap:8px"><input id="rc_in" placeholder="Väns kod, t.ex. ANNA-7K2Q" style="text-transform:uppercase"><button class="btn sec sm" id="rc_go">Använd</button></div><div class="muted" style="margin-top:4px">Om kunden har fått en kod av en vän.</div>`:''}
           ${showCode?(b.refCode?`<div style="margin-top:8px">Kundens kod: <b style="font-size:18px;letter-spacing:1px">${esc(b.refCode)}</b></div>${(b.data||{}).phone?`<a class="btn sec sm" style="display:inline-flex;margin-top:6px" href="sms:${esc(String(b.data.phone).replace(/[^\d+]/g,''))}?&body=${encodeURIComponent('Tack för att du flyttade med oss! Tipsa en vän: med koden '+b.refCode+' får din vän rabatt hos FX Flytt, och du får en belöning.')}">SMS:a koden till kunden</a>`:''}`:'<button class="btn sec sm" id="rc_mk" style="margin-top:6px">Skapa kod till kunden</button>'):''}
           ${rw.length?`<div class="calls">${rw.map(r=>`<div><a href="#${esc(r.bookingId)}"><b>${esc(r.name)}</b></a> bokade med koden · ${esc(fmtTs(r.at))} ${r.givenAt?`<span class="tag ok">Belöning given</span>`:`<button class="btn sm" data-rgive="${esc(r.bookingId)}">Belöning given</button>`}</div>`).join('')}</div>`:''}</div>`; })()}
-      <div class="card"><h3>Uppgifter från kunden</h3><table>${rows.filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</table></div>
       <div class="card"><h3>Status</h3><div class="btns">
         ${b.status!=='done'?'<button class="btn gray" data-s="done">Markera klar</button>':''}
         ${b.status!=='cancelled'?'<button class="btn red" data-s="cancelled">Avboka</button>':''}
@@ -1540,7 +1545,59 @@ FX Flytt</textarea>
     $('#back').onclick=()=>{ location.hash={cal:'kalender',today:'',team:'personal',stat:'statistik',offers:'offerter'}[view]??(['new','sent','declined'].includes(b.status)?'offerter':'bokningar'); };
     const msg=(el,t,ok)=>{ $(el).innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
     let lastConflicts=[];
-    const patch=async(body)=>{ try{ const nb=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; lastConflicts=S.conflicts(nb,all,res); updateCounts(); return true; }catch(e){ msg(body&&'crew' in body?'#msgp':'#msg',e.message,false); return false; } };
+    const patch=async(body)=>{ try{ const nb=await api('/api/admin/bookings?id='+b.id,{method:'PATCH',body:JSON.stringify(body)}); Object.assign(b,nb); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=nb; lastConflicts=S.conflicts(nb,all,res); updateCounts(); return true; }catch(e){ msg(body&&'crew' in body?'#msgp':body&&body.data?'#cmsg':'#msg',e.message,false); return false; } };
+    // ---- the customer's details: edit in place ----
+    const HOMES=['Lägenhet','Villa','Radhus','Parhus','Kontor','Förråd','Annat'];
+    const WISH=['Packning','Flyttstäd','Montering','Flyttkartonger','Pianoflytt','Bortforsling','Magasinering'];
+    const splitFloor=(t)=>{ const p=String(t||'').split(' · '), f=FLOORS.find(x=>x.toLowerCase()===String(p[0]||'').toLowerCase())||'', l=LIFT.find(x=>x.toLowerCase()===String(p[1]||'').toLowerCase())||'';
+      return {f,l,rest:p.slice((f?1:0)+(l?1:0)).join(' · ')}; };
+    const joinFloor=(f,l,rest)=>[f,l?l.toLowerCase():'',rest].filter(Boolean).join(' · ');
+    $('#cedit').onclick=()=>{
+      const ff=splitFloor(d.floorFrom), ft=splitFloor(d.floorTo), svcs=SVC.map(x=>x[1]), opt=(list,cur,blank)=>(blank?`<option value="">${blank}</option>`:'')+[...(cur&&!list.includes(cur)?[cur]:[]),...list].map(x=>`<option${x===cur?' selected':''}>${esc(x)}</option>`).join('');
+      $('#custe').innerHTML=`<div class="cedit">
+        <div class="row2"><div><label class="f" for="ce_name">Namn</label><input id="ce_name" value="${esc(d.name||'')}"></div><div><label class="f" for="ce_phone">Telefon</label><input id="ce_phone" type="tel" value="${esc(d.phone||'')}"></div></div>
+        <label class="f" for="ce_email">E-post</label><input id="ce_email" type="email" value="${esc(d.email||'')}">
+        <label class="f" for="ce_size">Tjänst</label><select id="ce_size">${opt(svcs,d.size||'','–')}</select>
+        <div class="row2"><div><label class="f" for="ce_m2">Boyta (m²)</label><input id="ce_m2" type="number" inputmode="numeric" min="1" value="${esc(d.areaM2||'')}"></div><div><label class="f" for="ce_home">Bostad</label><select id="ce_home">${opt(HOMES,d.home||'','–')}</select></div></div>
+        <label class="f" for="ce_from">Från</label><input id="ce_from" value="${esc(d.from||'')}" placeholder="Gata och ort">
+        <div class="row2"><div><label class="f" for="ce_ff">Våning (från)</label><select id="ce_ff">${opt(FLOORS,ff.f,'–')}</select></div><div><label class="f" for="ce_hf">Hiss (från)</label><select id="ce_hf">${opt(LIFT,ff.l,'–')}</select></div></div>
+        <label class="f" for="ce_to">Till</label><input id="ce_to" value="${esc(d.to||'')}" placeholder="Gata och ort">
+        <div class="row2"><div><label class="f" for="ce_ft">Våning (till)</label><select id="ce_ft">${opt(FLOORS,ft.f,'–')}</select></div><div><label class="f" for="ce_ht">Hiss (till)</label><select id="ce_ht">${opt(LIFT,ft.l,'–')}</select></div></div>
+        <div class="row2"><div><label class="f" for="ce_km">Avstånd (km, en väg)</label><input id="ce_km" type="number" inputmode="numeric" min="0" value="${d.distanceKm??''}"></div><div><label class="f" for="ce_date">Önskat datum</label><input id="ce_date" type="date" value="${esc(d.date||'')}"></div></div>
+        <label class="f">Önskemål</label><div class="cex">${[...new Set([...WISH,...(d.extras||[])])].map(x=>`<label><input type="checkbox" value="${esc(x)}"${(d.extras||[]).includes(x)?' checked':''}> ${esc(x)}</label>`).join('')}</div>
+        <div style="display:flex;gap:6px;margin-top:6px"><input id="ce_exn" placeholder="Annat önskemål, t.ex. Bärhjälp till förråd"><button class="btn gray sm" id="ce_exa" type="button" style="white-space:nowrap;flex:none">Lägg till</button></div>
+        <label class="f" for="ce_msg">Meddelande</label><textarea id="ce_msg" style="min-height:70px">${esc(d.message||'')}</textarea>
+        <div class="btns"><button class="btn gray" id="ce_x">Avbryt</button><button class="btn" id="ce_save">Spara</button></div><div id="cmsg"></div></div>`;
+      $('#custv').hidden=true; $('#custe').hidden=false; $('#ce_name').focus();
+      $('#ce_exa').onclick=()=>{ const t=$('#ce_exn').value.trim(); if(!t) return; const l=document.createElement('label'); l.innerHTML=`<input type="checkbox" value="${esc(t)}" checked> ${esc(t)}`; $('#custe .cex').appendChild(l); $('#ce_exn').value=''; };
+      $('#ce_x').onclick=()=>{ $('#custe').hidden=true; $('#custv').hidden=false; };
+      $('#ce_save').onclick=async()=>{
+        const v=(id)=>$('#'+id).value, was={m2:d.areaM2,km:d.distanceKm,size:d.size};
+        const data={name:v('ce_name'),phone:v('ce_phone'),email:v('ce_email'),size:v('ce_size'),areaM2:v('ce_m2'),home:v('ce_home'),from:v('ce_from'),to:v('ce_to'),
+          floorFrom:joinFloor(v('ce_ff'),v('ce_hf'),ff.rest),floorTo:joinFloor(v('ce_ft'),v('ce_ht'),ft.rest),distanceKm:v('ce_km'),date:v('ce_date'),message:v('ce_msg'),extras:[...$('#custe').querySelectorAll('.cex input:checked')].map(x=>x.value)};
+        $('#ce_save').disabled=true;
+        if(!(await patch({data}))){ $('#ce_save').disabled=false; return; }
+        const priceAffecting=String(was.m2||'')!==String(b.data.areaM2||'')||String(was.km??'')!==String(b.data.distanceKm??'')||was.size!==b.data.size;
+        if(priceAffecting&&!locked) repriceAsk=true;
+        notify('Kunduppgifterna är sparade ✓'); showDetail(b.id);
+      };
+    };
+    // ---- after a change of size, distance or service: offer to recalculate the price with the price list ----
+    if(repriceAsk&&!locked){ repriceAsk=false; const [svc,pkg]=(SVC.find(x=>x[1]===d.size)||[''])[0].split('|');
+      if((svc==='move'||svc==='cleaning')&&Number(d.areaM2)>0){
+        api('/api/price',{method:'POST',body:JSON.stringify({service:svc,pkg:pkg||undefined,areaM2:Number(d.areaM2),distanceKm:Number(d.distanceKm)||0})}).then(j=>{ const q=j.price; if(!q||!q.totalAfterRut||q.totalAfterRut===o?.total) return;
+          const box=document.createElement('div'); box.className='pinbox';
+          box.innerHTML=`<div class="card"><h3>Räkna om priset?</h3><div class="muted">Med de nya uppgifterna blir priset enligt prislistan:</div>
+            <div style="margin:10px 0">${q.lines.map(l=>`<div style="display:flex;justify-content:space-between"><span>${esc(l.label)}</span><b>${kr(l.amount)}</b></div>`).join('')}
+            <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:6px;padding-top:6px"><b>Totalt efter RUT</b><b>${kr(q.totalAfterRut)}</b></div></div>
+            <div class="muted">Nu i offerten: ${o?.total?kr(o.total):'inget pris'}.${b.status==='sent'?' Kunden har redan fått offerten – skicka den igen efteråt.':''}</div>
+            <div class="btns"><button class="btn gray" id="rp_no">Behåll priset</button><button class="btn" id="rp_ok">Använd ${kr(q.totalAfterRut)}</button></div></div>`;
+          document.body.appendChild(box);
+          box.querySelector('#rp_no').onclick=()=>box.remove();
+          box.querySelector('#rp_ok').onclick=async()=>{ box.remove(); if(await patch({total:q.totalAfterRut,lines:q.lines})){ notify('Priset är uppdaterat ✓'); showDetail(b.id); } };
+        }).catch(()=>{});
+      }
+    }
     root.querySelectorAll('[data-delph]').forEach(x=>x.onclick=async()=>{
       if(!confirm('Ta bort fotot?')) return;
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
