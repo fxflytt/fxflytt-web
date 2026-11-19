@@ -107,7 +107,8 @@ export async function notifyAll(n: Note, only?: (s: Sub) => boolean): Promise<nu
     const gone: string[] = [];
     let ok = 0;
     await Promise.all(subs.map(async (s) => {
-      try { await webpush.sendNotification({ endpoint: s.endpoint, keys: s.keys }, JSON.stringify(n), { TTL: 6 * 3600, timeout: 5000 }); ok++; }
+      // urgency "high": the phone wakes up for it at once (Android may hold "normal" ones while the screen is off).
+      try { await webpush.sendNotification({ endpoint: s.endpoint, keys: s.keys }, JSON.stringify(n), { TTL: 6 * 3600, timeout: 5000, urgency: "high" }); ok++; }
       catch (e) { const c = (e as { statusCode?: number }).statusCode; if (c === 404 || c === 410) gone.push(s.endpoint); }
     }));
     if (gone.length) await removeSub((s) => gone.includes(s.endpoint));
