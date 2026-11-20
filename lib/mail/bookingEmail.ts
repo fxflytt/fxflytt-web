@@ -76,8 +76,8 @@ export function signedCustomerEmail(b: Booking) {
   const html = shell(subject, { text: "BOKNINGEN ÄR KLAR", bg: "#e6f5ec", fg: GREEN },
     `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Tack ${esc(b.data.name.split(" ")[0])} – din flytt är bokad!</h1></td></tr>` +
     p(`Du signerade offerten ${esc(when)}. Vi hör av oss innan flyttdagen och bekräftar tiden.`) + summary(b) +
-    p(`<span style="color:${MUTED};font-size:13px">Ändra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen. Bokningsnummer: ${esc(b.id)}.</span>`));
-  const text = `Tack ${b.data.name}! Din flytt är bokad (${b.id}).\nDatum: ${fmtDate(b.date)}${b.time ? " kl. " + b.time : ""}\nPris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}\nSignerad: ${when}\n\nÄndra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen.\nFX Flytt AB · 076-300 07 23`;
+    p(`<span style="color:${MUTED};font-size:13px">Ändra datum kostnadsfritt fram till 2 dagar före och avboka kostnadsfritt fram till 6 dagar före flyttdagen. Bokningsnummer: ${esc(b.id)}.</span>`));
+  const text = `Tack ${b.data.name}! Din flytt är bokad (${b.id}).\nDatum: ${fmtDate(b.date)}${b.time ? " kl. " + b.time : ""}\nPris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}\nSignerad: ${when}\n\nÄndra datum kostnadsfritt fram till 2 dagar före och avboka kostnadsfritt fram till 6 dagar före flyttdagen.\nFX Flytt AB · 076-300 07 23`;
   return { subject, html, text };
 }
 

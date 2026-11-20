@@ -69,7 +69,7 @@ RUT-AVDRAG
 
 OFFERT, BOKNING OCH VILLKOR
 - Offerten är gratis och inte bindande. Begär den via formuläret på fxflytt.se eller ring.
-- Ändring och avbokning kostnadsfritt fram till 6 dagar före flyttdagen. Avbokning 5 dagar eller mindre före: 10 % av bokat pris.
+- Ändra datum kostnadsfritt fram till 2 dagar före flyttdagen; ändring senare än så: 10 % av bokat pris. Avbokning kostnadsfritt fram till 6 dagar före flyttdagen; avbokning 5 dagar eller mindre före: 10 % av bokat pris.
 - Skador: om något skadas under flytten ersätter FX Flytt skadan. Försäkrade hos Trygg-Hansa, ersättning upp till 10 miljoner kr.
 - FX Flytt AB har trafiktillstånd från Transportstyrelsen.
 - Inga dolda eller extra avgifter: priset i bokningsbekräftelsen gäller. Undantag: om kunden lägger till en tjänst eller har betydligt mer saker än angivet, kommer vi överens om nytt pris INNAN arbetet görs – aldrig i efterhand utan kundens godkännande.

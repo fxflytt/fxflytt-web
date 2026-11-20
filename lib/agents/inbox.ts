@@ -97,7 +97,7 @@ export function bookingBlock(l: Link, today: string): string {
   if (l.sure) {
     const b = l.sure, d = b.date ? daysTo(b.date, today) : null;
     return [`BOKNINGEN (bekräftad – ${l.note})`, bookingContext(b),
-      d != null ? `Dagar kvar till flyttdagen enligt bokningen (räknat av systemet): ${d}. Att FLYTTA datumet är alltid kostnadsfritt (kontorets regel). AVBOKNING är ${d >= 6 ? "KOSTNADSFRI (6 dagar eller mer kvar)" : d >= 0 ? "belagd med 10 % av bokat pris (5 dagar eller mindre kvar)" : "– flyttdagen har redan varit"}.` : "Bokningen har inget flyttdatum.",
+      d != null ? `Dagar kvar till flyttdagen enligt bokningen (räknat av systemet): ${d}. ÄNDRA DATUM är ${d >= 2 ? "KOSTNADSFRITT (2 dagar eller mer kvar)" : d >= 0 ? "belagt med 10 % av bokat pris (mindre än 2 dagar kvar)" : "– flyttdagen har redan varit"}. AVBOKNING är ${d >= 6 ? "KOSTNADSFRI (6 dagar eller mer kvar)" : d >= 0 ? "belagd med 10 % av bokat pris (5 dagar eller mindre kvar)" : "– flyttdagen har redan varit"}. Håll isär ändring och avbokning.` : "Bokningen har inget flyttdatum.",
       b.time ? `Bokad starttid: kl. ${b.time}.` : "Ingen starttid bokad än.",
       "Räkna alltid avgifter från bokningens datum, aldrig från vad kunden skriver. Säger kunden något som inte stämmer med bokningen (t.ex. 'flytten är om 4 dagar' när den är om 27): ta inte ut eller nämn någon avgift – fråga vänligt vilket datum det gäller."].join("\n");
   }
@@ -279,7 +279,7 @@ export async function syncInbox(o: {
         // The customer asks for another day: is it free in the calendar? (a full day → the office confirms it)
         const nd = b && t?.extracted.date && b.date && t.extracted.date !== b.date ? t.extracted.date : "";
         const nl = nd ? dayLoad(all, nd, o.vehicles ?? 1) : null;
-        const newDay = nd && nl ? `NYTT DATUM SOM KUNDEN VILL HA: ${nd} – ${nl.jobs} jobb bokade av ${nl.vehicles} bilar: ${nl.nearlyFull ? "dagen är NÄSTAN FULL – säg att kontoret bekräftar den nya dagen" : "det finns plats – säg att det går bra att flytta datumet utan kostnad och att kontoret bekräftar"}.` : "";
+        const newDay = nd && nl ? `NYTT DATUM SOM KUNDEN VILL HA: ${nd} – ${nl.jobs} jobb bokade av ${nl.vehicles} bilar: ${nl.nearlyFull ? "dagen är NÄSTAN FULL – säg att kontoret bekräftar den nya dagen" : "det finns plats – säg att det går bra och att kontoret bekräftar (kostnad enligt ÄNDRA DATUM ovan)"}.` : "";
         const mail: InMail = {
           id: "M" + randomBytes(5).toString("hex"), uid: m.uid, messageId: m.messageId, inReplyTo: m.inReplyTo, references: m.references.slice(-10),
           from: m.from, fromName: m.fromName, subject: m.subject, date: m.date, text: m.text, attachments: m.attachments,

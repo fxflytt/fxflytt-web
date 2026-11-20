@@ -31,8 +31,9 @@ PRIS OCH INVÄNDNINGAR
     skickar ett annat team på en gång.
 
 AVBOKNING OCH ÄNDRING
-15. Avbokning: våra villkor gäller, även för bokningar gjorda på nätet – kostnadsfritt fram till 6 dagar före, 5 dagar eller mindre: 10 % av priset.
-16. Flytta datumet (inte avboka): ALLTID kostnadsfritt, även nära flyttdagen. Är den nya dagen redan full: säg att kontoret bekräftar den nya dagen.
+15. AVBOKNING (kunden vill inte flytta med oss): våra villkor gäller, även för bokningar gjorda på nätet – kostnadsfritt fram till 6 dagar före, 5 dagar eller mindre: 10 % av priset.
+16. ÄNDRA DATUM (kunden vill flytta med oss en annan dag – inte avboka): kostnadsfritt fram till 2 dagar före flyttdagen; senare än så: 10 % av priset.
+    Håll isär ändring och avbokning. Är den nya dagen redan full: säg att kontoret bekräftar den nya dagen.
 
 KLAGOMÅL
 17. Flyttstäd som inte godkänns: vi kommer tillbaka och åtgärdar utan kostnad (7 dagars städgaranti). Be om bostadsbolagets besiktningsprotokoll,

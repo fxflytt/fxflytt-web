@@ -106,7 +106,7 @@ export const DECLINE_REASONS: Record<DeclineReason, string> = {
 };
 
 const K = { b: (id: string) => `fx:b:${id}`, idx: "fx:idx", upd: "fx:upd", t: (t: string) => `fx:t:${t}`, w: (t: string) => `fx:w:${t}` };
-export const TERMS_VERSION = "villkor-2026-11-12";
+export const TERMS_VERSION = "villkor-2026-11-20";
 
 function newId(now: number) {
   const d = new Date(now).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" }).replace(/-/g, "").slice(2);
