@@ -864,7 +864,9 @@ FX Flytt</textarea>
   async function showTeamAI(){
     root.innerHTML=navBar('inbox')+`<main>${inboxTabs()}<div id="tpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs();
     await loadTeam(); const t=aiTeam; if(!t.team?.length){ $('#tpane').innerHTML='<div class="err">Kunde inte läsa AI-teamet.</div>'; return; }
-    const A=t.auto||{}, mode=(on)=>on?'<span class="tag ok">Skickar själv</span>':'<span class="tag">Skriver utkast</span>';
+    const AP=t.autopilot!==false, A=t.auto||{}, mode=(on)=>!on?'<span class="tag">Skriver utkast</span>':AP?'<span class="tag ok">Skickar själv</span>':'<span class="tag wn">Pausad</span>';
+    const AUTOS={instant:'Direktsvar till nya förfrågningar',instantSms:'SMS till nya förfrågningar',reply:'Svar på enkla frågor',ack:'Bekräftelse av klagomål',followup:'Följ upp offerter',revive:'Väck förfallna offerter',calc:'Kalkyl-leads',winback:'Vinn tillbaka',upsell:'Merförsäljning',sms:'Uppföljning med SMS'};
+    const chosen=Object.keys(AUTOS).filter(k=>A[k]);
     const status={
       elsa:`${mailAll.filter(mailTodo).length} mejl att svara · ${t.inbox?.lastSync?'läste '+esc(ago(t.inbox.lastSync)):'har inte läst än'}${t.inbox?.on===false?' · <b>avstängd</b>':''}`,
       oskar:`${(t.plan?.counts?.sales)||0} kunder att kontakta i dag`,
@@ -873,7 +875,12 @@ FX Flytt</textarea>
     };
     const modes={elsa:mode(A.reply)+(A.request?' <span class="tag seen">Gör förfrågningar</span>':'')+(A.instant||A.instantSms?' <span class="tag seen">Svarar direkt</span>':''),oskar:mode(['followup','revive','calc','winback','upsell'].some(k=>A[k]))+(A.sms&&t.sms?' <span class="tag seen">📱 SMS</span>':''),maja:mode(A.ack),nils:'<span class="tag ok">Varje morgon</span>'};
     const P=t.plan||{items:[]};
-    $('#tpane').innerHTML=`${t.test?`<div class="warn">🧪 <b>Testläge är på.</b> Allt teamet skickar går till ${esc(t.test.to)}${t.test.phone?' och SMS till '+esc(t.test.phone):' (SMS skickas inte)'} – inte till kunderna. Stäng av i Inställningar → AI-teamet.</div>`:''}${!t.ai?'<div class="warn">AI är inte inställt (ANTHROPIC_API_KEY i Vercel) – teamet kan inte läsa eller skriva än.</div>':''}
+    const apCard=`<div class="card" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;border:2px solid ${AP&&chosen.length?'var(--green)':'var(--line2)'}">
+        <div style="font-size:34px">🤖</div>
+        <div style="flex:1;min-width:200px"><b style="font-size:18px">Autopilot: ${AP?'<span style="color:var(--green)">PÅ</span>':'<span style="color:var(--red)">AV</span>'}</b>
+          <div class="muted" style="margin-top:2px">${!chosen.length?'Inget är valt att skickas själv – teamet skriver bara utkast. Välj i Inställningar → AI-teamet (”Själv”).':AP?`Teamet skickar själv: ${chosen.map(k=>esc(AUTOS[k])).join(', ')}. Högst ${t.dailyMax} per dag${t.test?' – <b>testläge: allt går till kontoret</b>':''}.`:`Pausad – teamet skickar ingenting själv, bara utkast. Valt när den slås på: ${chosen.map(k=>esc(AUTOS[k])).join(', ')}.`}</div></div>
+        ${t.owner?`<button class="btn ${AP?'red':''} sm" id="t_ap" style="min-width:150px">${AP?'⏸ Stäng av':'▶ Slå på'}</button>`:''}</div>`;
+    $('#tpane').innerHTML=apCard+`${t.test?`<div class="warn">🧪 <b>Testläge är på.</b> Allt teamet skickar går till ${esc(t.test.to)}${t.test.phone?' och SMS till '+esc(t.test.phone):' (SMS skickas inte)'} – inte till kunderna. Stäng av i Inställningar → AI-teamet.</div>`:''}${!t.ai?'<div class="warn">AI är inte inställt (ANTHROPIC_API_KEY i Vercel) – teamet kan inte läsa eller skriva än.</div>':''}
       <div class="kpis" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">${t.team.map(a=>`<a class="kpi lt" href="#" data-ag="${a.id}" style="display:flex;flex-direction:column;gap:8px">
         <div style="display:flex;gap:12px;align-items:center">${avatar(a.id)}<div><b style="font-size:18px;display:block">${esc(a.name)}</b><small>${AGENT_ICON[a.id]} ${esc(a.role)}</small></div></div>
         <small style="color:var(--ink)">${status[a.id]}</small><div>${modes[a.id]}</div></a>`).join('')}</div>
@@ -894,6 +901,8 @@ FX Flytt</textarea>
     if($('#t_exam')){ api('/api/admin/aiteam?scenarios=1').then(drawExam).catch(()=>{});
       $('#t_exam_run').onclick=async(e)=>{ ibBusy(e.target,true,nm('elsa')+' svarar på 25 frågor… (ca 1–2 min)'); try{ drawExam(await api('/api/admin/aiteam?scenarios=1',{method:'POST',body:'{}'})); }catch(er){ notify(er.message); } finally{ ibBusy(e.target,false); } }; }
     root.querySelectorAll('[data-ag]').forEach(x=>x.onclick=(e)=>{ e.preventDefault(); inboxTab=AGENT_TAB[x.dataset.ag]; location.hash={mail:'inkorg',sales:'saljaren',klag:'klagomal',nils:'rapporter'}[inboxTab]; });
+    if($('#t_ap')) $('#t_ap').onclick=async(e)=>{ if(AP&&!confirm('Stänga av Autopilot? Teamet skickar då ingenting själv – bara utkast – tills du slår på den igen.')) return;
+      ibBusy(e.target,true,'Sparar…'); try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({aiAutopilot:!AP})}); notify(AP?'Autopilot avstängd – bara utkast':'Autopilot påslagen'); await loadTeam(); showTeamAI(); }catch(er){ ibBusy(e.target,false); notify(er.message); } };
     $('#t_plan').onclick=async(e)=>{ ibBusy(e.target,true,nm('nils')+' räknar…'); try{ await api('/api/admin/aiteam?plan=1',{method:'POST'}); showTeamAI(); }catch(er){ ibBusy(e.target,false); notify(er.message); } };
     if($('#t_set')) $('#t_set').onclick=()=>{ setTab='ai'; };
   }
