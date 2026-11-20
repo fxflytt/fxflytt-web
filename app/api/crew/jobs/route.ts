@@ -1,7 +1,7 @@
 // Crew app: the logged-in person's jobs (booked or done, 14 days back to 90 days ahead).
 // Each job links to its job sheet inside the app (/jobb/order?t=…). No prices, no customer e-mail.
 import { crewUser } from "@/lib/booking/crew.ts";
-import { listBookings, issueWorkToken, saveBooking } from "@/lib/booking/store.ts";
+import { bookingsBetween, issueWorkToken, saveBooking } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
 import { schedule } from "@/lib/booking/schedule.ts";
 import { listMsgs, isFor } from "@/lib/booking/messages.ts";
@@ -17,8 +17,9 @@ export async function GET(req: Request) {
   const me = await crewUser(req);
   if (!me) return Response.json({ error: "unauthorized" }, { status: 401 });
   await slaTick();
-  const [all, res] = await Promise.all([listBookings(), listResources()]);
-  const byId = new Map(res.map((r) => [r.id, r])), from = day(-14), to = day(90);
+  const from = day(-14), to = day(90);
+  const [all, res] = await Promise.all([bookingsBetween(from, to), listResources()]);   // only these days (date index)
+  const byId = new Map(res.map((r) => [r.id, r]));
   const mine = all.filter((b) => (b.crew || []).includes(me.id) && b.date && b.date >= from && b.date <= to && ["signed", "done", "cancelled"].includes(b.status));
   const jobs = [];
   for (const b of mine) {

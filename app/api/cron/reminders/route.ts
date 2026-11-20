@@ -24,14 +24,15 @@ export async function GET(req: Request) {
   if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) return new Response("unauthorized", { status: 401 });
   if (!kvConfigured()) return Response.json({ error: "storage" }, { status: 503 });
   const now = Date.now(), sent: string[] = [], failed: string[] = [];
-  for (const b of await listBookings()) {
+  const all = await listBookings();   // once – reminders, thank-you mails and the morning note all use it
+  for (const b of all) {
     if (!reminderDue(b, now)) continue;
     try { await sendReminder(b, "auto"); sent.push(b.id); }
     catch (e) { failed.push(`${b.id}: ${(e as Error).message}`); }
   }
   const settings = await getSettings(), today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" });
   const reviews: string[] = [];
-  if ((settings.reviewOn || settings.refOn) && mailConfigured()) for (const b of await listBookings(1000)) {
+  if ((settings.reviewOn || settings.refOn) && mailConfigured()) for (const b of all.slice(0, 1000)) {
     if (!reviewDue(b, settings, today)) continue;
     try {
       const ref = settings.refOn ? { code: await issueCode(b), kr: settings.refFriendKr, reward: settings.refReward } : null;
@@ -40,7 +41,6 @@ export async function GET(req: Request) {
     catch (e) { failed.push(`${b.id}: ${(e as Error).message}`); }
   }
   // Morning sales note to the office: calls to make today and requests nobody has answered.
-  const all = await listBookings();
   const calls = all.filter((b) => b.followUp && b.followUp.at.slice(0, 10) <= today && !["signed", "done", "cancelled", "declined"].includes(b.status)).length;
   const unanswered = all.filter((b) => b.status === "new" && b.source === "web" && !b.firstResponseAt).length;
   if (calls || unanswered) await notifyAll({ cat: "morning", title: "God morgon! Försäljning i dag", body: [calls ? `${calls} samtal att ringa` : "", unanswered ? `${unanswered} obesvarade förfrågningar` : ""].filter(Boolean).join(" · "), url: "/admin", tag: "morning" });

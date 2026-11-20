@@ -9,6 +9,7 @@ function run(c: string[]): unknown {
     case "GET": return S.get(a[0]) ?? null;
     case "MGET": return a.map((k) => S.get(k) ?? null);
     case "DEL": S.delete(a[0]); return 1;
+    case "ZREM": { const m = Z.get(a[0]); a.slice(1).forEach((x) => m?.delete(x)); return 1; }
     case "ZADD": { const m = Z.get(a[0]) ?? new Map(); m.set(a[2], Number(a[1])); Z.set(a[0], m); return 1; }
     case "ZREVRANGE": return [...(Z.get(a[0]) ?? new Map()).entries()].sort((x, y) => y[1] - x[1]).map((e) => e[0]);
   }

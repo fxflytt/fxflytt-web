@@ -13,6 +13,7 @@ function run(c: string[]): unknown {
     case "EXISTS": return S.has(a[0]) || Z.has(a[0]) || L.has(a[0]) ? 1 : 0;
     case "TYPE": return S.has(a[0]) ? "string" : Z.has(a[0]) ? "zset" : L.has(a[0]) ? "list" : "none";
     case "SCAN": return ["0", [...S.keys(), ...Z.keys(), ...L.keys()].filter((k) => k.startsWith("fx:"))];
+    case "ZREM": { const m = Z.get(a[0]); a.slice(1).forEach((x) => m?.delete(x)); return 1; }
     case "ZADD": { const m = Z.get(a[0]) ?? new Map(); const nx = a[1] === "NX"; const r = a.slice(nx ? 2 : 1);
       for (let i = 0; i < r.length; i += 2) if (!(nx && m.has(r[i + 1]))) m.set(r[i + 1], Number(r[i])); Z.set(a[0], m); return 1; }
     case "ZRANGE": return [...(Z.get(a[0]) ?? new Map()).entries()].sort((x, y) => x[1] - y[1]).flatMap(([m, s]) => [m, String(s)]);

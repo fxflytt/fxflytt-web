@@ -2,6 +2,9 @@
 //   fx:b:<id>    booking JSON
 //   fx:idx       sorted set of ids by creation time
 //   fx:upd       sorted set of ids by last change (the admin page fetches only what changed)
+//   fx:bydate    sorted set of ids by job date (score YYYYMMDD) – so the crew app, reminders and
+//                day views read only the days they need instead of every booking
+//                (built once from all bookings the first time it is used: fx:bydate:built)
 //   fx:t:<token> id, for the customer's offer link
 import { randomBytes, createHash } from "node:crypto";
 import { kv, kvPipe } from "./kv.ts";
@@ -122,7 +125,7 @@ export async function createBooking(source: Booking["source"], data: OfferData, 
     history: [{ at: now, what: source === "web" ? "Förfrågan från hemsidan" : "Skapad manuellt" }],
     ...extra,
   };
-  await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.idx, now, b.id], ["ZADD", K.upd, now, b.id]]);
+  await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.idx, now, b.id], ["ZADD", K.upd, now, b.id], dateIdx(b)]);
   return b;
 }
 
@@ -137,7 +140,7 @@ export async function saveBooking(b: Booking, what?: string, by?: string) {
   if (what) b.history.push(by ? { at: b.updatedAt, what, by } : { at: b.updatedAt, what });
   if (by && what && b.source === "web" && !b.firstResponseAt) b.firstResponseAt = b.updatedAt;
   if (b.history.length > 60) b.history = b.history.slice(-60);
-  await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.upd, b.updatedAt, b.id]]);
+  await kvPipe([["SET", K.b(b.id), JSON.stringify(b)], ["ZADD", K.upd, b.updatedAt, b.id], dateIdx(b)]);
 }
 
 // Loads bookings by id, a few hundred per request (one pipeline), skipping ids that no longer exist.
@@ -162,7 +165,7 @@ export async function deleteBooking(id: string): Promise<Booking | null> {
   if (!b) return null;
   const now = Date.now();
   await kvPipe([
-    ["DEL", K.b(id)], ["ZREM", K.idx, id], ["ZREM", K.upd, id], ["DEL", `fx:wp:${id}`],
+    ["DEL", K.b(id)], ["ZREM", K.idx, id], ["ZREM", K.upd, id], ["ZREM", BYDATE, id], ["DEL", `fx:wp:${id}`],
     ...(b.token ? [["DEL", K.t(b.token)]] : []), ...(b.workToken ? [["DEL", K.w(b.workToken)]] : []),
     ...(b.refCode ? [["DEL", "fx:ref:" + b.refCode]] : []),
     ["ZADD", "fx:gone", now, id], ["ZREMRANGEBYSCORE", "fx:gone", "-inf", now - 30 * 864e5],
@@ -171,6 +174,36 @@ export async function deleteBooking(id: string): Promise<Booking | null> {
 }
 export async function deletedSince(ts: number): Promise<string[]> {
   return (await kv<string[]>(["ZRANGEBYSCORE", "fx:gone", "(" + Math.floor(ts), "+inf"])) || [];
+}
+
+// ---- index by job date
+const BYDATE = "fx:bydate", BUILT = "fx:bydate:built";
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const dayScore = (d: string) => Number(d.replace(/-/g, ""));
+function dateIdx(b: Booking): (string | number)[] {
+  return b.date && DAY.test(b.date) ? ["ZADD", BYDATE, dayScore(b.date), b.id] : ["ZREM", BYDATE, b.id];
+}
+async function ensureDateIndex() {
+  if (await kv<string | null>(["GET", BUILT])) return;
+  const all = await listBookings();
+  const cmds = all.filter((b) => b.date && DAY.test(b.date)).map((b) => ["ZADD", BYDATE, dayScore(b.date!), b.id] as (string | number)[]);
+  for (let i = 0; i < cmds.length; i += 300) await kvPipe(cmds.slice(i, i + 300));
+  await kv(["SET", BUILT, String(Date.now())]);
+}
+/** Bookings whose job date is between `from` and `to` (YYYY-MM-DD, both included). */
+export async function bookingsBetween(from: string, to: string): Promise<Booking[]> {
+  if (!DAY.test(from) || !DAY.test(to)) return [];
+  await ensureDateIndex();
+  const ids = await kv<string[]>(["ZRANGEBYSCORE", BYDATE, dayScore(from), dayScore(to)]);
+  return (await loadMany(ids)).filter((b) => b.date && b.date >= from && b.date <= to);   // the booking itself decides
+}
+
+// The admin page loads the last 12 months first (fast), then the older bookings in the background.
+export async function bookingsCreatedSince(ts: number): Promise<Booking[]> {
+  return loadMany(await kv<string[]>(["ZREVRANGEBYSCORE", K.idx, "+inf", Math.floor(ts)]));
+}
+export async function bookingsCreatedBefore(ts: number): Promise<Booking[]> {
+  return loadMany(await kv<string[]>(["ZREVRANGEBYSCORE", K.idx, "(" + Math.floor(ts), "-inf"]));
 }
 
 // Bookings created or changed after `ts` (ms).

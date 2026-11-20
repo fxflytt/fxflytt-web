@@ -850,7 +850,7 @@ body.noscroll .mbar{display:none}
 <section id="om-oss" style="background:#fff">
   <div class="wrap about">
     <div>
-      <div class="art-img photo" style="margin-bottom:28px"><img src="/img/couple-1600.jpg" srcset="/img/couple-800.jpg 800w, /img/couple-1600.jpg 1600w" sizes="(max-width: 900px) 100vw, 560px" alt="Glatt par som just flyttat in, sitter bland flyttkartonger" loading="lazy" decoding="async" width="1600" height="900" style="width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:center 40%;display:block"></div>
+      <div class="art-img photo" style="margin-bottom:28px"><picture><source type="image/webp" srcset="/img/couple-800.webp 800w, /img/couple-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 560px"><img src="/img/couple-1600.jpg" srcset="/img/couple-800.jpg 800w, /img/couple-1600.jpg 1600w" sizes="(max-width: 900px) 100vw, 560px" alt="Glatt par som just flyttat in, sitter bland flyttkartonger" loading="lazy" decoding="async" width="1600" height="900" style="width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:center 40%;display:block"></picture></div>
       <span class="eyebrow">Om oss</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
       <p>FX Flytt är en flyttfirma med bas i Kungsör. Vi hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd, packning och bortforsling.</p>
@@ -981,8 +981,8 @@ body.noscroll .mbar{display:none}
       <span><a href="/integritetspolicy">Integritetspolicy</a> · <a href="/villkor">Villkor</a> · <a href="/radgivare">Flyttguider</a> · <a href="/en" lang="en">In English</a></span>
     </div>
   </div>
-<script src="/kontakt.js" defer></script>
-<script src="/ortkarta.js" defer></script>
+<script src="/kontakt.js?v=36b16b39" defer></script>
+<script src="/ortkarta.js?v=320c5aee" defer></script>
 </footer>
 
 <div class="mbar">
@@ -990,8 +990,8 @@ body.noscroll .mbar{display:none}
   <a href="#offert" class="btn btn-accent">Få offert</a>
 </div>
 
-<script src="/kubik.js"></script>
-<script src="/price-calc.js"></script>
+<script src="/kubik.js?v=65b68b05"></script>
+<script src="/price-calc.js?v=58f27774"></script>
 <script>window.FX_T0=Date.now(); // spam protection: robots post a form within a second (lib/spamGuard.ts)
 
 document.getElementById('yr').textContent = new Date().getFullYear();
@@ -1351,8 +1351,8 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   FXKubik.onChange(t=>{document.getElementById('vol-badge').textContent=String(t.m3).replace('.',',')+' m³';});
 })();
 </script>
-<script src="/fx-prices.js" defer></script>
-<script src="/chat-widget.js" defer></script>
-<script src="/fx-consent.js" defer></script>
+<script src="/fx-prices.js?v=51a9667a" defer></script>
+<script src="/chat-widget.js?v=7e22b1fc" defer></script>
+<script src="/fx-consent.js?v=93c80b42" defer></script>
 </body>
 </html>
