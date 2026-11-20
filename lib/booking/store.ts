@@ -44,6 +44,10 @@ export type Booking = {
   refRewards?: { bookingId: string; name: string; at: number; givenAt?: number; givenBy?: string }[];   // friends who booked
   referral?: { code: string; fromId: string; fromName: string; kr: number; rewardedAt?: number };     // booked with a friend's code
   slaAlertedAt?: number;
+  // Photos of the home sent by the customer ("Skicka bilder"), and the AI's reading of them.
+  photoToken?: string;
+  custPhotos?: { url: string; at: number }[];
+  photoAi?: { m3: number; m3Low: number; m3High: number; rooms: string; heavy: string[]; fragile: string[]; packing: string; notes: string; confidence: string; at: number; n: number; error?: string };
   version?: number; prevId?: string; nextId?: string;   // a new version of an offer (Version 2, 3 …) and the one it replaced
   noMarketing?: boolean;     // the customer said no to campaign e-mails
   campaigns?: { at: number; subject: string; by: string }[];

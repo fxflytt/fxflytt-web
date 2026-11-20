@@ -7,7 +7,7 @@
 import glob, json, os, re
 
 P = json.load(open("lib/pricing/prices.json", encoding="utf-8"))
-PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html"}
+PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html", "bilder.html"}
 km = P["km"]["pricePerKm"]
 VAL = {  # key -> value in the baked price list
     "h2": P["hourly"]["2"], "h3": P["hourly"]["3"], "h4": P["hourly"]["4"], "minh": P["hourly"]["minHours"],

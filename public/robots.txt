@@ -6,5 +6,6 @@ Disallow: /signera
 Disallow: /arbetsorder
 Disallow: /jobb
 Disallow: /offert
+Disallow: /bilder
 
 Sitemap: https://www.fxflytt.se/sitemap.xml
