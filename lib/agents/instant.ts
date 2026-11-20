@@ -3,6 +3,7 @@
 // turned them on (Inställningar → AI-teamet). If anything fails, the customer gets the standard receipt as before.
 import { askJson, MODEL_WRITE, HOUSE_RULES, quote, aiConfigured, type JsonSchema } from "./claude.ts";
 import { REPLY_RULES } from "./inbox.ts";
+import { CUSTOMER_TRUST } from "./playbook.ts";
 import { estimate, estimateText } from "./estimate.ts";
 import { knowledge } from "./knowledge.ts";
 import { getPrices } from "../pricing/current.ts";
@@ -57,7 +58,7 @@ export async function instantReply(id: string): Promise<void> {
         system: `${HOUSE_RULES}\n\nDu är ${elsa} i kundservice. En kund har just skickat en förfrågan från hemsidan. Skriv ett varmt, personligt svar direkt:
 tacka med förnamn, upprepa kort vad kunden vill (sträcka, datum, tjänst) så kunden ser att vi läst, säg när offerten kommer (står i underlaget) och att den
 signeras i mobilen. Har kunden räknat ett pris: säg att det är priset efter RUT om uppgifterna stämmer. Fråga bara om det som saknas för en exakt offert.
-Lova inget datum eller pris utöver underlaget.\n\n${REPLY_RULES}\n\nFAKTA OM FX FLYTT:\n<foretaget>\n${knowledge(P)}\n</foretaget>`,
+Lova inget datum eller pris utöver underlaget.\n\n${REPLY_RULES}\n\n${CUSTOMER_TRUST}\n\nFAKTA OM FX FLYTT:\n<foretaget>\n${knowledge(P)}\n</foretaget>`,
         user: quote("underlag", `${requestContext(b, when)}\n${price}`),
       });
       const lang = textLang(String(r.body || "")) === "en" || replyLang(String(r.body || "")) === "en" ? "en" : "sv";
