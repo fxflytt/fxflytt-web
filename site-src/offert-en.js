@@ -36,6 +36,8 @@
     "1 rok": "1-room flat", "2 rok": "2-room flat", "3 rok": "3-room flat", "4 rok": "4-room flat",
     "Villa / radhus": "House / terraced house", "Kontor / lokal": "Office / premises", "Villa": "House",
     "Gamla bostaden": "Old home", "Nya bostaden": "New home",
+    "Adress som ska städas": "Address to be cleaned", "Inglasad balkong / altan": "Glazed balcony / patio",
+    "Nej": "No", "Liten": "Small", "Mellan": "Medium", "Stor": "Large",
     "Våning": "Floor", "Bottenplan": "Ground floor", "10 tr eller högre": "10th floor or higher",
     "Hiss": "Lift", "Ingen hiss": "No lift", "Liten hiss (stora möbler får inte plats)": "Small lift (large furniture does not fit)", "Stor hiss": "Large lift",
     "Hur långt från lastbilen till porten?": "How far from the truck to the door?",
