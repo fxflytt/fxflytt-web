@@ -1111,6 +1111,8 @@ def _en_chrome(s):
     s, n = re.subn(r'(<nav class="drawer" id="drawer" aria-label=")Meny(">\n).*?(  <div class="d-cta">)', lambda m: m.group(1) + "Menu" + m.group(2) + items + m.group(3), s, count=1, flags=re.S); assert n
     i = s.index("<header"); j = s.index("</footer>")
     part = s[i:j]
+    # language switch: EN on Swedish pages becomes SV here (mark_active has added class="on" to the link on this page)
+    part, n = re.subn(r'<a href="en\.html"[^>]*class="lang-sw"[^>]*>EN</a>', '<a href="index.html" class="lang-sw" lang="sv" hreflang="sv" aria-label="SV – På svenska">SV</a>', part, count=1); assert n
     for a, b in [('aria-label="Meny"', 'aria-label="Menu"'), ('aria-label="FX Flytt – till startsidan"', 'aria-label="FX Flytt – home page (Swedish)"'),
                  ('aria-label="Ring FX Flytt: 076-300 07 23"', 'aria-label="Call FX Flytt: 076-300 07 23"'),
                  ('class="btn btn-accent nav-cta">Få offert</a>', 'class="btn btn-accent nav-cta">Get a quote</a>'),
@@ -1126,7 +1128,8 @@ def _en_chrome(s):
                  (">Pianoflytt<", ">Piano moves<"), (">Bli uppringd<", ">Call me back<"), (">Packning<", ">Packing<"),
                  (">Kontorsflytt<", ">Office moves<"), (">Bortforsling<", ">Waste removal<"),
                  (">Flyttfirma Kungsör<", ">Kungsör<"), (">Flyttfirma Örebro<", ">Örebro<"), (">Flyttfirma Eskilstuna<", ">Eskilstuna<"),
-                 (">Flyttfirma Västerås<", ">Västerås<"), (">Flyttfirma Katrineholm<", ">Katrineholm<"), (">Alla orter →<", ">All towns →<"),
+                 (">Flyttfirma Västerås<", ">Västerås<"), (">Flyttfirma Katrineholm<", ">Katrineholm<"),
+                 (">Flyttfirma Arboga<", ">Arboga<"), (">Flyttfirma Köping<", ">Köping<"), (">Flyttfirma Stockholm<", ">Stockholm<"), (">Flyttfirma Uppsala<", ">Uppsala<"), (">Alla orter →<", ">All towns →<"),
                  (">Om oss<", ">About us<"), ("Alla rättigheter förbehållna. · Godkänd för F-skatt · Flytt enligt", "All rights reserved. · Approved for F-tax · Moves under"),
                  (">Integritetspolicy<", ">Privacy policy<"), (">Villkor<", ">Terms<"), (">Flyttguider<", ">Moving guides<"),
                  ('<a href="en.html" lang="en">In English</a>', '<a href="index.html" lang="sv">På svenska</a>')]:

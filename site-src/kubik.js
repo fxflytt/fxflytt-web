@@ -123,7 +123,7 @@
         return '<details class="kb-room" data-room="' + c[0] + '"' + (full && c[0] === "vardagsrum" ? " open" : "") + '><summary><span class="kb-ic">' + c[2] + "</span>" + c[1] +
           '<span class="kb-rc" data-rc="' + c[0] + '"></span></summary>' +
           c[3].map(function (it) {
-            return '<div class="kb-row" data-name="' + esc(it[1].toLowerCase()) + '"><div>' + esc(it[1]) + "<small>ca " + fmt(it[2]) + " m³</small></div>" +
+            return '<div class="kb-row" data-name="' + esc(it[1].toLowerCase()) + '"><div>' + esc(it[1]) + " <small>ca " + fmt(it[2]) + " m³</small></div>" +
               '<div class="stp"><button type="button" data-id="' + it[0] + '" data-d="-1" aria-label="Minska ' + esc(it[1]) + '">−</button>' +
               '<output data-q="' + it[0] + '">0</output><button type="button" data-id="' + it[0] + '" data-d="1" aria-label="Öka ' + esc(it[1]) + '">+</button></div></div>';
           }).join("") + "</details>";
@@ -149,7 +149,7 @@
       state.custom.forEach(function (c) { per.egen = (per.egen || 0) + c.v * c.q; });
       root.querySelectorAll("[data-rc]").forEach(function (s) { var v = per[s.dataset.rc]; s.textContent = v ? fmt(v) + " m³" : ""; });
       root.querySelector(".kb-clist").innerHTML = state.custom.map(function (c, i) {
-        return '<div class="kb-row"><div>' + esc(c.l) + "<small>" + fmt(c.v) + " m³ ×" + c.q + '</small></div><button type="button" class="kb-x" data-del="' + i + '" aria-label="Ta bort">✕</button></div>';
+        return '<div class="kb-row"><div>' + esc(c.l) + " <small>" + fmt(c.v) + " m³ ×" + c.q + '</small></div><button type="button" class="kb-x" data-del="' + i + '" aria-label="Ta bort">✕</button></div>';
       }).join("");
       var area = +(document.getElementById("kvm") || {}).value || 0;
       var norm = root.querySelector('[data-k="norm"]');
