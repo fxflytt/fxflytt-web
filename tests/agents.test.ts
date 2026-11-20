@@ -496,3 +496,34 @@ test("säljmejlet har en dold förhandsrad, så Gmail inte visar \"FX FX Flytt D
   const m = personalOfferEmail(b, "Din flytt", "Hej Anna,\n\nTack för att du tittade på offerten.", "https://x/signera?t=1");
   assert.match(m.html, /<body[^>]*><div style="display:none[^>]*>Tack för att du tittade på offerten\./);
 });
+
+const scen = await import("../lib/agents/scenarios.ts");
+const { OFFICE_RULES } = await import("../lib/agents/officerules.ts");
+
+test("kontorets regler: med i det Elsa vet, och går före hemsidans text", async () => {
+  const k = (await import("../lib/agents/knowledge.ts")).knowledge(PRICES as never);
+  assert.ok(k.startsWith("KONTORETS REGLER"));
+  for (const w of ["ALDRIG emot kontanter", "Ingen handpenning", "röda dagar", "avfrostade", "trafiktillstånd", "ALLTID kostnadsfritt", "besiktningsprotokoll", "förrådshyra", "bilder på sakerna"])
+    assert.ok(OFFICE_RULES.includes(w), w);
+});
+
+test("flytta datum är gratis även nära flyttdagen; avbokning kostar 10 %", async () => {
+  const b = { ...(await store.createBooking("admin", { name: "A", phone: "1", email: "a@ex.se" })), status: "signed" as const, date: "2026-11-23", time: "08:00" };
+  const t = inbox.bookingBlock({ sure: b, maybe: null, note: "x" }, "2026-11-20");
+  assert.match(t, /Att FLYTTA datumet är alltid kostnadsfritt/); assert.match(t, /AVBOKNING är belagd med 10 %/); assert.match(t, /Bokad starttid: kl\. 08:00/);
+});
+
+test("Elsas prov: 24 scenarier, kontrollerna fungerar", async () => {
+  assert.equal(scen.SCENARIOS.length, 24);
+  assert.equal(new Set(scen.SCENARIOS.map((s) => s.id)).size, 24);
+  const s16 = scen.SCENARIOS.find((s) => s.id === "16")!;
+  assert.deepEqual(scen.check(s16, "Det går bra att flytta datumet utan kostnad."), []);
+  assert.equal(scen.check(s16, "Det kostar 10 % av priset.").length, 2);
+  const s5 = scen.SCENARIOS.find((s) => s.id === "5a")!;
+  assert.deepEqual(scen.check(s5, "Vi skickar en faktura efter jobbet med 10 dagars betalningstid. Kontanter tar vi inte emot."), []);
+  // A run through the (fake) AI: every scenario gets an answer and a result.
+  const r = await scen.runScenarios(PRICES as never, ["1a", "16", "21"]);
+  assert.deepEqual(r.map((x) => x.id), ["1a", "16", "21"]);
+  assert.ok(r.every((x) => x.reply && !x.error));
+  assert.match(claudeCalls.at(-1)!.system, /KONTORETS REGLER/);
+});

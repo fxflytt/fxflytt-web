@@ -15,6 +15,7 @@ import { listComplaints, updateComplaint, type Complaint } from "./complaints.ts
 import { aiConfigured } from "./claude.ts";
 import { estimateNote } from "./estimate.ts";
 import { knowledge } from "./knowledge.ts";
+import { OFFICE_RULES } from "./officerules.ts";
 import { salesCandidates, draftSales, draftSms, SALES_KINDS, type SalesKind, type Training } from "./sales.ts";
 import { teamMail, teamSms } from "./outbox.ts";
 import { winningExamples, dayLoad, skillsText, townProof } from "./playbook.ts";
@@ -53,6 +54,7 @@ async function syncOnce(minGapMs = 0): Promise<SyncResult> {
   const elsa = agentName(s, "elsa"), maja = agentName(s, "maja");
   return syncInbox({
     fetchNew, keepDays: s.mailKeepDays, minGapMs, facts: companyFacts(prices), knowledge: knowledge(prices), prices, names: { elsa, maja },
+    vehicles: (await listResources().catch(() => [])).filter((r) => r.kind === "vehicle" && r.active !== false).length || 1,
     after: (m, ctx) => afterMail(m, ctx, s, prices),
     notify: async (m) => {
       const complaint = m.category === "klagomal";
@@ -148,7 +150,7 @@ export async function salesTraining(b: Booking, kind: SalesKind | "", ctx?: { al
   const trust = [s.insured ? `Vi är försäkrade${s.insurer ? " (" + s.insurer + ")" : ""}` : "", s.fskatt ? "Godkänd för F-skatt" : "", s.orgNr ? "Org.nr " + s.orgNr : ""].filter(Boolean).join(". ");
   const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
   const proof = townProof(all, town(b.data.from)) || townProof(all, town(b.data.to));
-  return { facts: ctx?.facts || companyFacts(await getPrices()), notes: s.aiSalesNotes, examples: kind ? winningExamples(all, kind) : [], load: dayLoad(all, b.date, vehicles), trust,
+  return { facts: `${OFFICE_RULES}\n\n${ctx?.facts || companyFacts(await getPrices())}`, notes: s.aiSalesNotes, examples: kind ? winningExamples(all, kind) : [], load: dayLoad(all, b.date, vehicles), trust,
     skills: skillsText(kind || undefined, all), proof };
 }
 

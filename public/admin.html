@@ -882,7 +882,17 @@ FX Flytt</textarea>
           <button class="btn gray sm" id="t_plan" style="margin-top:10px">Gör om planen</button></div>
         <div class="card"><h3>Vad teamet har gjort <span class="sub">${t.sentToday||0} av ${t.dailyMax} automatiska mejl i dag</span></h3>
           ${(t.activity||[]).length?t.activity.slice(0,30).map(x=>`<div class="todo" style="align-items:flex-start">${avatar(x.agent,26)}<a ${x.bookingId?`href="#${esc(x.bookingId)}"`:''} style="cursor:${x.bookingId?'pointer':'default'}"><b style="font-weight:600;font-size:13.5px">${esc(nm(x.agent))}${x.auto?' <span class="tag ok" style="font-size:11px">själv</span>':''}</b><small>${esc(x.what)}</small></a><small class="muted" style="white-space:nowrap">${esc(ago(x.at))}</small></div>`).join(''):'<div class="muted">Inget än – teamet börjar när det kommer mejl, offerter och bokningar.</div>'}</div></div>
+      ${isOwner()?`<div class="card" id="t_exam"><h3>🧪 ${esc(nm('elsa'))}s prov <span class="sub" id="t_exam_s"></span></h3>
+        <div class="muted">Kontorets 24 kundfrågor (tid, betalning, montering, konkurrent, avbokning, magasinering …) körs genom ${esc(nm('elsa'))}s riktiga svarssteg. Inget skickas till någon. Kostar några kronor per körning. ✅ = svaret följer kontorets regel, ⚠️ = läs och säg till.</div>
+        <button class="btn sec sm" id="t_exam_run" style="margin-top:10px">Kör provet</button><div id="t_exam_list" style="margin-top:8px"></div></div>`:''}
       <div class="muted">${isOwner()?'Namn och vad teamet får göra själva ändrar du i <a href="#installningar" id="t_set">Inställningar → AI-teamet</a>. ':''}Allt som skickas syns i bokningens historik och här.</div>`;
+    const drawExam=(j)=>{ if(!$('#t_exam_list')) return; const r=j.results||[];
+      $('#t_exam_s').textContent=r.length?`${r.filter(x=>x.ok).length} av ${r.length} ✅ · ${ago(j.at)}`:'';
+      $('#t_exam_list').innerHTML=r.map(x=>`<details style="border-top:1px solid var(--line);padding:6px 0"><summary style="cursor:pointer"><b>${x.ok?'✅':'⚠️'} ${esc(x.id)}. ${esc(x.title)}</b>${x.problems.length?` <small class="muted">${esc(x.problems.join(' · '))}</small>`:''}${x.error?` <small style="color:var(--red)">${esc(x.error)}</small>`:''}</summary>
+        <div class="muted" style="margin:6px 0"><b>Kunden:</b> ${esc(x.ask)}</div><div class="muted" style="margin:6px 0"><b>Kontorets regel:</b> ${esc(x.expect)}</div>
+        <div style="white-space:pre-wrap;background:#f6f8fa;border-radius:12px;padding:10px 12px;font-size:14px">${esc(x.reply)||'<i>(inget svar)</i>'}</div>${x.note?`<div class="warn" style="margin-top:6px">📝 ${esc(x.note)}</div>`:''}</details>`).join(''); };
+    if($('#t_exam')){ api('/api/admin/aiteam?scenarios=1').then(drawExam).catch(()=>{});
+      $('#t_exam_run').onclick=async(e)=>{ ibBusy(e.target,true,nm('elsa')+' svarar på 24 frågor… (ca 1–2 min)'); try{ drawExam(await api('/api/admin/aiteam?scenarios=1',{method:'POST',body:'{}'})); }catch(er){ notify(er.message); } finally{ ibBusy(e.target,false); } }; }
     root.querySelectorAll('[data-ag]').forEach(x=>x.onclick=(e)=>{ e.preventDefault(); inboxTab=AGENT_TAB[x.dataset.ag]; location.hash={mail:'inkorg',sales:'saljaren',klag:'klagomal',nils:'rapporter'}[inboxTab]; });
     $('#t_plan').onclick=async(e)=>{ ibBusy(e.target,true,nm('nils')+' räknar…'); try{ await api('/api/admin/aiteam?plan=1',{method:'POST'}); showTeamAI(); }catch(er){ ibBusy(e.target,false); notify(er.message); } };
     if($('#t_set')) $('#t_set').onclick=()=>{ setTab='ai'; };
