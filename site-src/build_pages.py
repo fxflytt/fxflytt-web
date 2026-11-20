@@ -528,6 +528,7 @@ integritet = page("integritetspolicy.html",
       <li>När du signerar: namnet du skriver, tidpunkt, IP-adress och webbläsare – som bevis på att du har godkänt offerten och villkoren.</li>
       <li>Det du själv skriver i meddelanden till oss.</li>
       <li>Om du ber om priset på mejl i prisräknaren: namn, e-post, telefon (om du anger det) och dina val i räknaren.</li>
+      <li>Om du skickar bilder på ditt hem: bilderna. De används bara för att planera och prissätta din flytt.</li>
     </ul>
 
     <h2>3. Varför vi behandlar uppgifterna och med vilken rättslig grund</h2>
@@ -556,6 +557,7 @@ integritet = page("integritetspolicy.html",
     <h2 id="kakor">6. Kakor (cookies) och tredjepartstjänster</h2>
     <p><b>Google Analytics.</b> Om du godkänner det i cookie-rutan använder vi Google Analytics 4 (Google Ireland Ltd) för att se hur webbplatsen används, till exempel vilka sidor som besöks, hur många som skickar en offertförfrågan och hur många som klickar på vårt telefonnummer eller vår e-postadress. Då sätts kakorna <code>_ga</code> och <code>_ga_*</code> (lagras upp till 14 månader) och IP-adressen förkortas. Utan ditt godkännande sätts inga sådana kakor och inget skickas till Google Analytics. Ditt val sparas i din webbläsare. Du kan när som helst <a href="#kakor" onclick="window.fxCookieSettings&&window.fxCookieSettings();return false">ändra cookie-inställningar</a>.</p>
     <p>Utöver detta använder webbplatsen inga kakor för spårning eller marknadsföring. Typsnittet ligger på vår egen server. Adressförslag hämtas från Photon (Komoot), kartan från OpenStreetMap och kartverktyget från Cloudflare (cdnjs). Det innebär att din IP-adress skickas till dessa leverantörer när sidan laddas.</p>
+    <p><b>Bilder på ditt hem:</b> Skickar du bilder får en AI-tjänst (Claude från Anthropic) läsa dem för att uppskatta hur mycket som ska flyttas – en hjälp för oss när vi sätter priset. Bilderna sparas med din förfrågan och raderas med den. Ta inte bilder på personer, dokument eller annat du inte vill dela.</p>
     <p><b>Chattassistenten:</b> Om du skriver i chatten på webbplatsen skickas ditt meddelande till Anthropic (leverantör av AI-tjänsten Claude) för att ta fram ett svar. Skriv inte personnummer eller andra känsliga uppgifter i chatten. Om vi senare inför statistik eller annonsspårning ber vi om ditt samtycke först.</p>
 
     <h2>7. Dina rättigheter</h2>

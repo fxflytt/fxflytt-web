@@ -108,6 +108,8 @@
   .chips button.on{background:var(--navy);border-color:var(--navy);color:#fff}
   .chips.ltf{padding-top:0;margin-top:-4px}.chips.ltf button{font-size:12px;padding:5px 10px;border-style:dashed}.chips.ltf button.on{border-style:solid}
   .tag.lt{background:#eef0fb;color:#3d3fa8}
+  .cphi{position:relative}.cphi button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(13,42,63,.75);color:#fff;font-size:12px;cursor:pointer}
+  .aibox{margin-top:12px;background:#f4f7fb;border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px;font-size:14px}.aibox small{display:block;color:var(--muted);font-size:11.5px;font-weight:700}.aih{font-size:15px}
   .ctab{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}.ctab td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}.ctab td:first-child{color:var(--muted);width:38%;padding-right:10px}.ctab td:last-child{white-space:pre-wrap;word-break:break-word}
   .cex{display:flex;flex-wrap:wrap;gap:6px}.cex label{display:flex;flex:none;max-width:100%;white-space:nowrap;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:10px;padding:6px 10px;font-size:13.5px;font-weight:600;cursor:pointer}
   .cedit{margin-top:12px;padding-top:4px;border-top:1px solid var(--line)}
@@ -1413,6 +1415,7 @@ FX Flytt</textarea>
 
   // ---------- detail ----------
   async function showDetail(id,fresh){
+    view='detail';   // so the 30 s refresh does not draw another page over the open booking
     let b=fresh||all.find(x=>x.id===id);
     if(!fresh){
       if(b){
@@ -1447,6 +1450,19 @@ FX Flytt</textarea>
           <button class="btn sec sm" id="cedit" style="margin-top:10px">✏️ Ändra kunduppgifter</button></div>
         <div id="custe" hidden></div>
       </div>
+      ${(()=>{ const ph=b.custPhotos||[], ai=b.photoAi;
+        return `<div class="card" id="cph"><h3>📷 Bilder från kunden${ph.length?` <span class="sub">${ph.length} st</span>`:''}</h3>
+        ${ph.length?`<div class="dph">${ph.map(p=>`<div class="cphi"><a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="" loading="lazy"></a><button data-cphrm="${esc(p.url)}" aria-label="Ta bort bilden">✕</button></div>`).join('')}</div>`
+          :`<div class="muted">Kunden har inte skickat några bilder. Med bilder på hemmet blir priset säkrare – och AI:n uppskattar volymen.</div>`}
+        ${ph.length?(ai&&!ai.error?`<div class="aibox"><div class="aih">🤖 Uppskattning från bilderna: <b>ca ${ai.m3} m³</b> <span class="muted">(${ai.m3Low}–${ai.m3High} m³ · säkerhet ${esc(ai.confidence)})</span></div>
+              ${ai.rooms?`<div><small>Syns på bilderna</small>${esc(ai.rooms)}</div>`:''}
+              ${ai.heavy.length?`<div><small>Tungt / skrymmande</small>${ai.heavy.map(x=>`<span class="tag wn">${esc(x)}</span>`).join(' ')}</div>`:''}
+              ${ai.fragile.length?`<div><small>Ömtåligt</small>${ai.fragile.map(x=>`<span class="tag">${esc(x)}</span>`).join(' ')}</div>`:''}
+              ${ai.packing?`<div><small>Packning</small>${esc(ai.packing)}</div>`:''}
+              ${ai.notes?`<div><small>Att tänka på</small>${esc(ai.notes)}</div>`:''}
+              <div class="muted" style="font-size:12px">Läst ${esc(fmtTs(ai.at))} från ${ai.n} bilder – en hjälp, inte ett exakt mått.</div></div>`
+            :ai&&ai.error?`<div class="warn">AI:n kunde inte läsa bilderna: ${esc(ai.error)}</div>`:`<div class="muted" style="margin-top:8px">🤖 AI:n läser bilderna när kunden har tryckt Klar.</div>`):''}
+        <div class="btns">${ph.length?'<button class="btn gray sm" id="cph_ai">🤖 Låt AI läsa bilderna igen</button>':''}<button class="btn sec sm" id="cph_ask">📷 Be kunden om bilder</button></div><div id="cph_msg"></div></div>`; })()}
       ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}"${b.signature.pnr?` · Personnr ${esc(b.signature.pnr)}`:''}${b.signature.orgnr?` · Org.nr ${esc(b.signature.orgnr)} (företag)`:''} ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
       ${b.status==='new'||b.status==='sent'?`<div class="card" id="sales"><h3>Försäljning <span class="sub">${esc(STAGES.find(x=>x[0]===stageOf(b))[1])}</span></h3>
         ${b.source==='web'?`<div class="muted">${b.firstResponseAt?`Första svar efter <b>${esc(waitTxt(Math.max(1,Math.round((b.firstResponseAt-b.createdAt)/6e4))))}</b>`:`<span class="tag ${waitMin(b)>=60?'no':'wn'}">⏱ Ingen har svarat än – ${esc(waitTxt(waitMin(b)))}</span>`}</div>`:''}
@@ -1623,6 +1639,18 @@ FX Flytt</textarea>
       try{ await api('/api/admin/worklink?id='+b.id+'&url='+encodeURIComponent(x.dataset.delph),{method:'DELETE'}); showDetail(b.id); }catch(e){ notify(e.message); }
     });
     if($('#pkgch')) $('#pkgch').onchange=async()=>{ if(await patch({pkgChoiceOff:!$('#pkgch').checked})) notify($('#pkgch').checked?'Kunden får välja paket när du skickar ✓':'Paketval av'); };
+    // ---- the customer's photos ----
+    if($('#cph_ask')) $('#cph_ask').onclick=async()=>{ try{ const j=await api('/api/admin/photos?id='+b.id,{method:'POST',body:JSON.stringify({ask:true})});
+        const txt=`Hej ${(d.name||'').split(' ')[0]}! Skicka gärna några bilder på ditt hem (rummen, förrådet, tunga saker) så blir offerten säkrare: ${j.url}\n/FX Flytt`;
+        try{ await navigator.clipboard.writeText(j.url); }catch(_){}
+        $('#cph_msg').innerHTML=`<div class="okmsg">Länken är kopierad.</div><input readonly value="${esc(j.url)}" style="margin:6px 0">
+          <div class="btns"><a class="btn sm" href="sms:${esc(String(d.phone||'').replace(/\s/g,''))}?&body=${encodeURIComponent(txt)}">Skicka via SMS</a>${d.email?`<a class="btn sec sm" href="mailto:${esc(d.email)}?subject=${encodeURIComponent('Bilder på ditt hem – FX Flytt')}&body=${encodeURIComponent(txt)}">Skicka via e-post</a>`:''}</div>`;
+      }catch(e){ msg('#cph_msg',e.message,false); } };
+    if($('#cph_ai')) $('#cph_ai').onclick=async()=>{ const x=$('#cph_ai'); x.disabled=true; x.textContent='🤖 Läser bilderna…';
+      try{ const j=await api('/api/admin/photos?id='+b.id,{method:'POST',body:JSON.stringify({analyze:true})}); const i=all.findIndex(y=>y.id===b.id); if(i>=0) all[i]=j.booking; showDetail(b.id,j.booking); }
+      catch(e){ x.disabled=false; x.textContent='🤖 Låt AI läsa bilderna igen'; msg('#cph_msg',e.message,false); } };
+    root.querySelectorAll('[data-cphrm]').forEach(x=>x.onclick=async()=>{ if(!confirm('Ta bort bilden?')) return;
+      try{ const j=await api('/api/admin/photos?id='+b.id+'&url='+encodeURIComponent(x.dataset.cphrm),{method:'DELETE'}); const i=all.findIndex(y=>y.id===b.id); if(i>=0) all[i]=j.booking; showDetail(b.id,j.booking); }catch(e){ msg('#cph_msg',e.message,false); } });
     // ---- duplicates ----
     root.querySelectorAll('[data-merge]').forEach(x=>x.onclick=async()=>{ if(!confirm('Slå ihop den andra förfrågan med den här? Den andra tas bort.')) return;
       await salesAct(b,{merge:x.dataset.merge},'Sammanslagna ✓'); all=all.filter(y=>y.id!==x.dataset.merge); updateCounts(); if(location.hash.slice(1)===b.id) showDetail(b.id); });

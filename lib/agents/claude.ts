@@ -18,6 +18,7 @@ export type JsonSchema = { type: "object"; properties: Record<string, unknown>; 
 export async function askJson<T>(o: {
   model: string; effort: "low" | "medium" | "high"; system: string; user: string; schema: JsonSchema; maxTokens?: number;
   fetchImpl?: typeof fetch;
+  images?: { media_type: string; data: string }[];   // base64 photos, shown to the model before the text
 }): Promise<T> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new AiError("AI är inte inställt (ANTHROPIC_API_KEY saknas i Vercel).");
@@ -34,7 +35,9 @@ export async function askJson<T>(o: {
       max_tokens: o.maxTokens ?? 8000,
       system: [{ type: "text", text: o.system, cache_control: { type: "ephemeral" } }],
       // Personal numbers and card numbers never leave our server.
-      messages: [{ role: "user", content: redact(o.user) }],
+      messages: [{ role: "user", content: o.images?.length
+        ? [...o.images.map((im) => ({ type: "image", source: { type: "base64", media_type: im.media_type, data: im.data } })), { type: "text", text: redact(o.user) }]
+        : redact(o.user) }],
       output_config: { effort: o.effort, format: { type: "json_schema", schema: o.schema } },
       ...(strong ? { fallbacks: "default" } : {}),
     }),

@@ -1,7 +1,7 @@
 # Adds the "Få offert" pop-up (fx-offert.js) to every public page except the home page, which has the form itself.
 # City pages pre-fill their town; service pages pre-select their service. Run by build-site.sh.
 import glob, os, re, html
-SKIP = {"index.html", "offert.html", "admin.html", "signera.html", "arbetsorder.html", "jobb.html"}
+SKIP = {"index.html", "offert.html", "admin.html", "signera.html", "arbetsorder.html", "jobb.html", "bilder.html"}
 SVC = {"flyttstad.html": "cleaning|", "dodsbo.html": "other|", "utlandsflytt.html": "other|",
        "kontorsflytt.html": "other|", "magasinering.html": "other|", "pianoflytt.html": "other|", "flytthjalp.html": "hourly|", "bortforsling.html": "other|", "checklista-flyttstad.html": "cleaning|"}
 for f in glob.glob("public/*.html"):

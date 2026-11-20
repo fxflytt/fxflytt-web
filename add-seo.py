@@ -5,7 +5,7 @@ BASE = "https://www.fxflytt.se"
 def url_for(f):
     name = os.path.basename(f)[:-5]
     return BASE + "/" if name == "index" else f"{BASE}/{name}"
-PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html", "offert.html", "404.html"}  # booking system: no SEO, not in sitemap
+PRIVATE = {"admin.html", "signera.html", "arbetsorder.html", "jobb.html", "offert.html", "bilder.html", "404.html"}  # booking system: no SEO, not in sitemap
 pages = sorted(f for f in glob.glob("public/*.html") if os.path.basename(f) not in PRIVATE)
 CITIES = ["Kungsör","Örebro","Eskilstuna","Västerås","Katrineholm","Karlstad","Södertälje","Åkersberga","Norrtälje","Nyköping",
           "Norrköping","Linköping","Motala","Mjölby","Jönköping","Nässjö","Tranås","Västervik","Vimmerby","Ludvika",
@@ -63,4 +63,4 @@ def lastmod(f):
         return today
 items = "".join(f"  <url><loc>{url_for(f)}</loc><lastmod>{lastmod(f)}</lastmod></url>\n" for f in pages)
 open("public/sitemap.xml", "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + items + "</urlset>\n")
-open("public/robots.txt", "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /signera\nDisallow: /arbetsorder\nDisallow: /jobb\nDisallow: /offert\n\nSitemap: {BASE}/sitemap.xml\n")
+open("public/robots.txt", "w").write(f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\nDisallow: /signera\nDisallow: /arbetsorder\nDisallow: /jobb\nDisallow: /offert\nDisallow: /bilder\n\nSitemap: {BASE}/sitemap.xml\n")
