@@ -9,7 +9,7 @@
 // no to campaign e-mails get only the follow-up of their own offer.
 import { askJson, MODEL_WRITE, HOUSE_RULES, quote, type JsonSchema } from "./claude.ts";
 import { mobileE164, SMS_MAX } from "../sms/send.ts";
-import { SALES_PLAYBOOK, KIND_PLAYBOOK, skillsText, cleanSkills, type WinExample } from "./playbook.ts";
+import { SALES_PLAYBOOK, KIND_PLAYBOOK, CUSTOMER_TRUST, skillsText, cleanSkills, type WinExample } from "./playbook.ts";
 import { CALL_OUTCOMES, DECLINE_REASONS, type Booking, type DeclineReason } from "../booking/store.ts";
 
 export type SalesKind = "followup" | "revive" | "calc" | "winback" | "upsell";
@@ -103,7 +103,7 @@ export type Training = { facts?: string; notes?: string; examples?: WinExample[]
 
 export function trainingText(t: Training = {}, kind?: SalesKind): string {
   return [
-    SALES_PLAYBOOK, kind ? KIND_PLAYBOOK[kind] : "", t.skills || skillsText(kind),
+    SALES_PLAYBOOK, CUSTOMER_TRUST, kind ? KIND_PLAYBOOK[kind] : "", t.skills || skillsText(kind),
     t.proof ? `SANT SOCIALT BEVIS (får användas): ${t.proof}` : "",
     t.facts ? `FAKTA OM FX FLYTT (det enda du får påstå om priser, tjänster och villkor):\n<foretaget>\n${t.facts}\n</foretaget>` : "",
     t.trust ? `TRYGGHET SOM GÄLLER JUST NU: ${t.trust}` : "",

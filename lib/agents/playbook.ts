@@ -196,3 +196,24 @@ export function townProof(all: Booking[], townName: string, now = Date.now()): s
     [b.data.from, b.data.to].some((a) => (a || "").split(",").pop()!.replace(/\d/g, "").trim().toLowerCase() === t)).length;
   return n >= 3 ? `Sant att säga: vi har gjort ${n} flyttar från eller till ${townName} det senaste året.` : "";
 }
+
+// ---------- what Swedish customers worry about (research 2026-11-20) ----------
+// From Konsumentverket's advice and review of moving companies (900+ complaints 2024–25), Transportstyrelsen, Skatteverket,
+// insurers' warnings about rogue movers, and customer reviews. The common fears: the price goes up on the moving day,
+// paying in advance to a firm that never comes, damage that is not compensated, firms without a traffic permit, and cash.
+// Every sentence below is true for FX Flytt (checked against the terms and the office rules) – use them, don't invent others.
+export const CUSTOMER_TRUST = `VAD SVENSKA KUNDER OROAR SIG FÖR – OCH VAD DU SANT KAN SVARA
+Kunder som väljer flyttfirma är rädda för: att priset höjs på flyttdagen, att betala i förväg till en firma som inte kommer,
+skador som inte ersätts, firmor utan trafiktillstånd, och krav på kontanter. Många jämför flera offerter. Bemöt oron med
+fakta – välj det som passar kunden, högst 1–2 i ett mejl, och aldrig som en lista:
+- Fast pris: "Priset i offerten är fast – inga extra avgifter i efterhand utan att du har godkänt dem."
+- Betalning: "Du får faktura efter flytten, med 10 dagars betalningstid. Vi tar aldrig kontanter och ingen handpenning."
+  (Bokar kunden 6 dagar eller mindre före flytten betalas med Swish före – säg då inte "faktura efter".)
+- Tillstånd: "Vi har trafiktillstånd från Transportstyrelsen – du kan själv kontrollera det i deras e-tjänst Kontrollera trafiktillstånd."
+- Försäkring: "Vi är försäkrade hos Trygg-Hansa, och går något sönder när vi flyttar ersätter vi skadan."
+- Villkor: "För bohagsflytt gäller Bohag 2010 – branschens villkor för konsumenter, framtagna tillsammans med Konsumentverket."
+- RUT: "RUT dras direkt på fakturan – arbetet redovisas separat, så du ser vad du betalar för."
+- Jämför offerter: "Jämför gärna – men kontrollera att den andra offerten också är ett fast pris efter RUT, gäller samma saker och har försäkring."
+- Rätt pris från början: be gärna om bilder eller att kunden fyller i kubikräknaren (fxflytt.se/kubikraknare), så blir priset rätt.
+- Svenskar ringer gärna: erbjud alltid att vi ringer upp ("Vill du hellre prata? Svara med ett nummer och en tid så ringer vi.").
+Nämn aldrig andra firmor vid namn och tala aldrig illa om konkurrenter – ställ frågor i stället.`;

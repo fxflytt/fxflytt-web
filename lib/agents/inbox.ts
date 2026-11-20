@@ -12,7 +12,7 @@ import { listBookings, type Booking } from "../booking/store.ts";
 import { askJson, MODEL_FAST, MODEL_WRITE, HOUSE_RULES, quote, aiConfigured, type JsonSchema } from "./claude.ts";
 import { addComplaint, assess, bookingContext, type Assessment } from "./complaints.ts";
 import type { RawMail } from "../mail/imap.ts";
-import { dayLoad } from "./playbook.ts";
+import { dayLoad, CUSTOMER_TRUST } from "./playbook.ts";
 import { extraCheck, extraText, VOLUMES, type AddItem, type ExtraCheck } from "./volume.ts";
 import { estimate as priceEstimate, estimateText, CALC_URL, NO_PRICE, type Estimate, type Service } from "./estimate.ts";
 
@@ -210,7 +210,7 @@ export async function writeReply(m: Pick<InMail, "from" | "fromName" | "subject"
     svc && NO_PRICE.includes(svc) ? "Inget prisförslag: piano, kontor och utlandsflytt prissätts i en offert." : "Inget prisförslag (boytan saknas) – fråga efter boytan om kunden vill ha pris.";
   const r = await askJson<{ draft: string; note: string }>({
     model: MODEL_WRITE, effort: "medium", schema: REPLY_SCHEMA, maxTokens: 8000,
-    system: `${HOUSE_RULES}\n\nDu är ${c.name || "Elsa"} i kundservice på FX Flytt och skriver ett svar på ett mejl till info@. Kontoret läser svaret innan det skickas.\n\n${REPLY_RULES}` +
+    system: `${HOUSE_RULES}\n\nDu är ${c.name || "Elsa"} i kundservice på FX Flytt och skriver ett svar på ett mejl till info@. Kontoret läser svaret innan det skickas.\n\n${REPLY_RULES}\n\n${CUSTOMER_TRUST}` +
       (c.knowledge ? `\n\nFAKTA OM FX FLYTT (det enda du får påstå om priser, tjänster och villkor):\n<foretaget>\n${c.knowledge}\n</foretaget>` : ""),
     user: `I dag är det ${c.today} (${new Date(c.today + "T12:00:00Z").toLocaleDateString("sv-SE", { weekday: "long", timeZone: "UTC" })}).\n` +
       quote("underlag", `${bookingBlock(c.link, c.today)}\n\n${price}${c.extra ? `\n\n${extraText(c.extra)}` : ""}${c.newDay ? `\n\n${c.newDay}` : ""}`) + `\n\n${quote("mejl", `Från: ${m.fromName} <${m.from}>\nÄmne: ${m.subject}\n\n${m.text.slice(0, 8000)}`)}` +

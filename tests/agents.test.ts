@@ -527,3 +527,12 @@ test("Elsas prov: 25 scenarier, kontrollerna fungerar", async () => {
   assert.ok(r.every((x) => x.reply && !x.error));
   assert.match(claudeCalls.at(-1)!.system, /KONTORETS REGLER/);
 });
+
+test("svenska kunders oro: med i Elsas och Oskars instruktioner, och bara sanna påståenden", async () => {
+  const { CUSTOMER_TRUST } = await import("../lib/agents/playbook.ts");
+  for (const w of ["trafiktillstånd", "Trygg-Hansa", "Bohag 2010", "aldrig kontanter", "Swish före", "ringer upp"]) assert.ok(CUSTOMER_TRUST.includes(w), w);
+  assert.ok(!/förskott/i.test(CUSTOMER_TRUST.split("\n").filter((l) => l.startsWith("- Betalning")).join("")) || CUSTOMER_TRUST.includes("Swish före"));
+  await inbox.writeReply({ from: "a@ex.se", fromName: "A", subject: "Fråga", text: "Varför ska jag välja er?", draft: "", extracted: undefined }, { link: { sure: null, maybe: null, note: "" }, today: "2026-11-20" });
+  assert.match(claudeCalls.at(-1)!.system, /VAD SVENSKA KUNDER OROAR SIG FÖR/);
+  assert.match(sales.trainingText({}, "followup"), /VAD SVENSKA KUNDER OROAR SIG FÖR/);
+});
