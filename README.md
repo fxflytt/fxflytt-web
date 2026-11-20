@@ -29,7 +29,8 @@ Mejl de skickar själva är undertecknade med namnet och "digital assistent", r�
 - **Oskars träning** (`lib/agents/playbook.ts`): säljmetod för svenska kunder (trygghet, ett litet nästa steg, invändningar, ämnesrader – aldrig falsk brådska eller påhittade rabatter), företagsfakta, hur full kundens flyttdag faktiskt är, ägarens egen **Säljstil** (Inställningar → AI-teamet) och mejl som ledde till en signerad bokning inom 14 dagar (den text som faktiskt skickades). Resultat per sorts mejl visas i AI-team → Oskar.
 - **Oskars säljfärdigheter** (`SALES_SKILLS` i `lib/agents/playbook.ts`): 12 tekniker (spegla kunden, ta bort risken, ett litet ja, två bra val, jämför paketen, måla flyttdagen, förstå–andra–fann, fråga om behovet, ge en utväg, sant socialt bevis, P.S., värde före pris). Oskar väljer 1–3 per mejl; systemet mäter vilka som leder till bokning och rekommenderar de bästa per sorts mejl. Socialt bevis bara från riktiga utförda jobb i kundens ort.
 - **Varför vi förlorar** (AI-team → Nils, `lib/agents/lost.ts`): vunna mot förlorade offerter – skäl, orter, storlek, pris, svarstid, uppföljning – med AI-förklaring och vad ni ska ändra.
-- Daglig körning: `/api/cron/agents` (vercel.json). Inkorgen läses också var 5:e minut när adminen är öppen.
+- **Testläge** (Inställningar → AI-teamet, `lib/agents/outbox.ts`): allt AI-teamet skickar – svar, direktsvar, bekräftelser, säljmejl och SMS – går till en testadress/testnummer i stället för till kunden, märkt med vem det skulle ha gått till.
+- Daglig körning: `/api/cron/agents` (läser hela inkorgen, inte bara 10 mejl). (vercel.json). Inkorgen läses också var 5:e minut när adminen är öppen.
 - Modeller (`lib/agents/claude.ts`): `claude-haiku-5-5` sorterar mejl; `claude-opus-5-5` skriver säljmejl, klagomålssvar, ringmanus och veckorapporten.
 
 ## Ta bort chattassistenten

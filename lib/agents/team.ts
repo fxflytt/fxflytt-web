@@ -47,3 +47,13 @@ export const aiSignature = (name: string, role: string, lang: "sv" | "en" = "sv"
   : `Vänliga hälsningar\n${name}, ${role.toLowerCase()} på FX Flytt\n(Digital assistent – en kollega på kontoret läser också ditt mejl. Ring 076-300 07 23 om något är bråttom.)`;
 /** English when the reply is written in English (the AI answers in the customer's language). */
 export const replyLang = (text: string): "sv" | "en" => (/\b(best regards|kind regards|thank you|we can help)\b/i.test(text) && !/vänliga hälsningar/i.test(text) ? "en" : "sv");
+
+/** The language a customer wrote in: English or Swedish (a simple word count – good enough to pick the greeting). */
+export function textLang(text: string): "sv" | "en" {
+  const w = String(text || "").toLowerCase().match(/[a-zåäö]+/g) || [];
+  const EN = new Set(["the", "and", "you", "my", "is", "was", "we", "have", "with", "please", "our", "your", "it", "to", "of", "hi", "hello", "thanks"]);
+  const SV = new Set(["och", "jag", "att", "det", "är", "vi", "har", "med", "inte", "för", "en", "ett", "hej", "tack", "min", "mitt", "på", "som"]);
+  let en = 0, sv = 0;
+  for (const x of w) { if (EN.has(x)) en++; if (SV.has(x)) sv++; }
+  return en > sv ? "en" : "sv";
+}

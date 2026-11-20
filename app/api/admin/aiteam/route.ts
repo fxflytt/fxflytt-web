@@ -23,7 +23,7 @@ export async function GET(req: Request) {
   if (!plan || plan.date !== today() || Date.now() - plan.madeAt > 30 * 6e4) plan = await makePlan();
   const [activity, sent, state] = await Promise.all([listActivity(60), sentToday(), getState()]);
   const team = (Object.keys(AGENTS) as AgentId[]).map((id) => ({ id, name: agentName(s, id), ...AGENTS[id] }));
-  return Response.json({ team, auto: s.aiAuto, dailyMax: s.aiDailyMax, sentToday: sent, plan, activity, inbox: { on: s.aiInboxOn, lastSync: state.lastSync, lastError: state.lastError }, report: s.aiReportOn, ai: aiConfigured(), mail: mailConfigured(), sms: smsConfigured() });
+  return Response.json({ team, auto: s.aiAuto, dailyMax: s.aiDailyMax, sentToday: sent, plan, activity, inbox: { on: s.aiInboxOn, lastSync: state.lastSync, lastError: state.lastError }, report: s.aiReportOn, ai: aiConfigured(), mail: mailConfigured(), sms: smsConfigured(), test: s.aiTestMode ? { to: s.aiTestTo || "info@fxflytt.se", phone: s.aiTestPhone } : null });
 }
 
 export async function POST(req: Request) {
