@@ -82,6 +82,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdro
 .steps-bar i{flex:1;height:5px;border-radius:5px;background:var(--line)}
 .steps-bar i.on{background:var(--accent)}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.calc>.fgrid{align-content:start}
 .full{grid-column:1/-1}
 label.f{display:block;font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:5px}
 input,select,textarea{width:100%;font:inherit;font-size:.95rem;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fbfcfd;color:var(--ink);transition:.15s}
@@ -555,6 +556,7 @@ body.noscroll .mbar{display:none}
 
 <section>
   <div class="wrap" style="max-width:860px">
+    <style>#kubik-full{min-height:1850px}@media(max-width:420px){#kubik-full{min-height:1960px}}</style>
     <div id="kubik-full" style="border:1.5px solid var(--line);border-radius:16px;overflow:hidden;background:#fff"></div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
       <a href="/#offert" class="btn btn-accent">Begär offert med min lista →</a>

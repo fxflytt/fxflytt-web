@@ -770,6 +770,7 @@ kubik = page("kubikraknare.html",
  """
 <section>
   <div class="wrap" style="max-width:860px">
+    <style>#kubik-full{min-height:1850px}@media(max-width:420px){#kubik-full{min-height:1960px}}</style>
     <div id="kubik-full" style="border:1.5px solid var(--line);border-radius:16px;overflow:hidden;background:#fff"></div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
       <a href="index.html#offert" class="btn btn-accent">Begär offert med min lista →</a>
