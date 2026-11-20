@@ -3,7 +3,7 @@
 import glob
 LINE = '<script src="/fx-consent.js" defer></script>\n'
 for f in glob.glob("public/*.html"):
-    if f.endswith(("admin.html", "signera.html", "arbetsorder.html", "jobb.html")):
+    if f.endswith(("admin.html", "signera.html", "arbetsorder.html", "jobb.html", "bilder.html")):
         continue  # booking system pages: no analytics
     text = open(f, encoding="utf-8").read()
     if "fx-consent.js" not in text:

@@ -593,6 +593,11 @@ html.embed #qform>h2{display:none}
         <h3 id="done-h">Nästan klart!</h3>
         <p class="hint" id="done-p">Skicka din förfrågan till oss via e-post – eller ring så tar vi den direkt.</p>
         <pre id="summary"></pre>
+        <div id="photobox" style="display:none;background:#fff7ef;border:1px solid #ffd6a8;border-radius:14px;padding:14px 16px;margin:12px 0;text-align:left">
+          <b id="photo-h">📷 Skicka bilder på ditt hem</b>
+          <p class="hint" id="photo-p" style="margin:4px 0 10px">Några bilder på rummen, förrådet och tunga saker – då blir offerten säkrare och snabbare. Det tar en minut.</p>
+          <a id="photobtn" class="btn btn-accent" href="#">Skicka bilder</a>
+        </div>
         <div class="row">
           <a id="mailbtn" class="btn btn-accent" href="#">Skicka via e-post</a>
           <a href="tel:+46763000723" class="btn btn-ghost">Ring 076-300 07 23</a>
@@ -1065,6 +1070,9 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       const ok=!!(j&&j.ok);
       next.disabled=false; show(cur);
       showDone(ok);
+      if(ok&&j.photoUrl){ const en=window.FX_LANG==='en'; document.getElementById('photobtn').href=j.photoUrl+(en?'&lang=en':'');
+        if(en){ document.getElementById('photo-h').textContent='📷 Send photos of your home'; document.getElementById('photo-p').textContent='A few photos of the rooms, storage and heavy items make the quote more accurate. It takes a minute.'; document.getElementById('photobtn').textContent='Send photos'; }
+        document.getElementById('photobox').style.display='block'; }
       if(ok&&j.confirmed) document.getElementById('done-p').textContent='Vi har skickat en bekräftelse till din e-post och återkommer inom 24 timmar. Brådskande? Ring oss direkt.';
       if(ok && window.gtag) try{ gtag('event','generate_lead',{value:window.fxPrice?window.fxPrice.total:undefined,currency:'SEK'}); }catch(_){}
     });

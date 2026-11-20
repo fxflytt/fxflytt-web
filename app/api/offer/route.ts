@@ -8,6 +8,7 @@ import { createBooking, saveBooking } from "@/lib/booking/store.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
 import { applyCode } from "@/lib/booking/referral.ts";
 import { getSettings } from "@/lib/booking/settings.ts";
+import { photoLink } from "@/lib/booking/custphotos.ts";
 import { after } from "next/server";
 import { instantOn, instantReply } from "@/lib/agents/instant.ts";
 
@@ -58,10 +59,11 @@ export async function POST(req: Request) {
   if (!data.name || !data.phone) return Response.json({ error: "Namn och telefon behövs." }, { status: 400 });
   if (!EMAIL_RE.test(data.email || "")) data.email = "";
   // Save it in the booking system too (if storage is set up). A failure here must not lose the e-mail.
-  let adminUrl: string | undefined, createdId = "";
+  let adminUrl: string | undefined, createdId = "", photoUrl = "";
   if (kvConfigured()) {
     try {
       const b = await createBooking("web", data); createdId = b.id; adminUrl = `${process.env.SITE_URL || "https://www.fxflytt.se"}/admin#${b.id}`;
+      photoUrl = await photoLink(b); await saveBooking(b);   // the customer can send photos of the home
       const code = str((d as Record<string, unknown>).refCode, 20);
       if (code) { try { await saveBooking(b, await applyCode(b, code, await getSettings())); } catch (e) { await saveBooking(b, `Rabattkod ${code} gick inte att använda: ${(e as Error).message}`); } }
       const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
@@ -87,12 +89,12 @@ export async function POST(req: Request) {
   let confirmed = false;
   if (createdId && await instantOn().catch(() => false)) {
     after(() => instantReply(createdId).catch((e) => console.error("instant", (e as Error).message)));
-    return Response.json({ ok: true, confirmed: !!data.email });
+    return Response.json({ ok: true, confirmed: !!data.email, photoUrl });
   }
   // Confirmation to the customer. A failure here must not fail the request – we already have it.
   if (data.email) {
     try {
-      const c = customerConfirmation(data);
+      const c = customerConfirmation(data, photoUrl);
       await sendMail(
         { host: process.env.SMTP_HOST || "mail.inleed.com", port: Number(process.env.SMTP_PORT || 465), user, pass },
         { from: user, to: data.email, replyTo: TO, subject: c.subject, text: c.text, html: c.html },
@@ -103,7 +105,7 @@ export async function POST(req: Request) {
       console.error("confirmation mail failed", lastError);
     }
   }
-  return Response.json({ ok: true, confirmed });
+  return Response.json({ ok: true, confirmed, photoUrl });
 }
 
 export async function GET() {

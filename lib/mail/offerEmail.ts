@@ -131,7 +131,7 @@ export function offerEmail(d: OfferData, sentAt: Date, adminUrl?: string) {
 }
 
 // Automatic confirmation sent to the customer (only when they gave an e-mail address).
-export function customerConfirmation(d: OfferData) {
+export function customerConfirmation(d: OfferData, photoUrl = "") {
   const first = (d.name.split(/\s+/)[0] || "").slice(0, 40);
   const subject = "Tack! Vi har tagit emot din förfrågan – FX Flytt";
   // Short receipt: the price comes later in the offer that the customer signs.
@@ -149,6 +149,10 @@ export function customerConfirmation(d: OfferData) {
     <p style="margin:0;color:${MUTED};font-size:15px;line-height:22px">Vi har tagit emot din förfrågan och återkommer inom 24 timmar med en offert som du kan läsa och signera direkt i mobilen.</p>
   </td></tr>
   ${section("", summary)}
+  ${photoUrl ? `<tr><td style="padding:0 28px 18px"><div style="background:#f6f8fa;border:1px solid ${LINE};border-radius:12px;padding:14px 16px">
+    <b style="color:${INK};font-size:15px">📷 Skicka bilder på ditt hem</b>
+    <p style="margin:6px 0 10px;color:${MUTED};font-size:14px;line-height:20px">Ta några bilder på rummen, förrådet och tunga saker – då blir offerten säkrare och snabbare. Det tar en minut.</p>
+    <a href="${esc(photoUrl)}" style="display:inline-block;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;background:${NAVY};color:#fff">Skicka bilder</a></div></td></tr>` : ""}
   <tr><td style="padding:0 28px 24px">
     <a href="tel:+46763000723" style="display:inline-block;padding:12px 20px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;background:${ACCENT};color:#fff">Ring oss: 076-300 07 23</a>
   </td></tr>
@@ -163,6 +167,7 @@ export function customerConfirmation(d: OfferData) {
   const text =
     `Tack${first ? " " + first : ""}!\n\nVi har tagit emot din förfrågan och återkommer inom 24 timmar med en offert som du kan läsa och signera direkt i mobilen.\n\n` +
     (d.size ? `Tjänst: ${d.size}\n` : "") + (d.date ? `Önskat datum: ${fmtDate(d.date)}\n` : "") +
+    (photoUrl ? `\nSkicka gärna bilder på ditt hem – då blir offerten säkrare: ${photoUrl}\n` : "") +
     `\nFrågor? Ring 076-300 07 23 eller svara på det här mejlet.\n\nVänliga hälsningar\nFX Flytt\nDrottninggatan 1, 736 31 Kungsör`;
   return { subject, html, text };
 }
