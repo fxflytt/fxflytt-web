@@ -1866,6 +1866,7 @@ FX Flytt</textarea>
       <div class="row2" id="w_area"><div><label class="f">Boyta (m²)</label><input id="n_m2" type="number" inputmode="numeric" min="1"></div><div id="w_km"><label class="f">Avstånd (km, en väg)</label><input id="n_km" type="number" inputmode="numeric" min="0"></div></div>
       <div class="row2" id="w_hours" hidden><div><label class="f">Antal personer</label><select id="n_crew"><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div><div><label class="f" id="l_hours">Timmar</label><input id="n_h" type="number" inputmode="numeric" min="1" value="3"></div></div>
       <div class="row2" id="w_more"><div><label class="f">Flyttkartonger</label><select id="n_box"><option value="none">Inga</option><option value="rent">Hyra (50 st)</option><option value="buy">Köpa (50 st)</option></select></div><div id="w_xc"><label class="f">Flyttstäd som tillval</label><select id="n_xc"><option value="">Nej</option><option value="1">Ja</option></select></div></div>
+      <div id="w_glas"><label class="f">Inglasad balkong / altan</label><select id="n_glas"><option value="none">Nej</option><option value="liten">Liten</option><option value="mellan">Mellan</option><option value="stor">Stor</option></select></div>
       <div id="calc"></div>
       <label class="f">Pris efter RUT (kr)</label><input id="n_total" type="number" inputmode="numeric">
       <div class="muted" id="totinfo"></div>
@@ -1957,12 +1958,14 @@ FX Flytt</textarea>
       $('#l_hours').textContent=pkg==='deluxe'?'Timmar packning/montering':'Timmar (minst 3)';
       $('#w_more').hidden=svc==='other'||svc==='cleaning';
       $('#w_xc').hidden=!(svc==='move'&&pkg==='bas');
+      const withClean=svc==='cleaning'||(svc==='move'&&(pkg==='premium'||pkg==='deluxe'||v('n_xc')==='1'));
+      $('#w_glas').hidden=!withClean;
       calc=null; let msg='';
       if(svc!=='other'&&window.fxComputePrice&&window.FX_PRICES){
         const m2=Number(v('n_m2')), km=v('n_km')===''?null:Number(v('n_km'));
         if(svc==='hourly'||m2>0){
           try{
-            const r=window.fxComputePrice({service:svc,pkg:pkg||undefined,areaM2:m2||undefined,distanceKm:km,crew:Number(v('n_crew')),hours:Number(v('n_h'))||3,boxes:svc==='cleaning'?'none':v('n_box'),extraCleaning:v('n_xc')==='1'},window.FX_PRICES);
+            const r=window.fxComputePrice({service:svc,pkg:pkg||undefined,areaM2:m2||undefined,distanceKm:km,crew:Number(v('n_crew')),hours:Number(v('n_h'))||3,boxes:svc==='cleaning'?'none':v('n_box'),extraCleaning:v('n_xc')==='1',glazing:withClean?v('n_glas'):'none'},window.FX_PRICES);
             if(r.onRequest) msg=`<div class="warn">${esc(r.onRequest)} – skriv priset själv.</div>`;
             else { calc=r; msg=`<div class="dbox">${r.lines.map(l=>`<div style="display:flex;justify-content:space-between;gap:8px"><span>${esc(l.label)}</span><b style="white-space:nowrap">${kr(l.amount)}</b></div>`).join('')}<div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:6px;padding-top:6px"><span>Totalt efter RUT</span><b>${kr(r.totalAfterRut)}</b></div>${km==null&&svc==='move'?'<div class="muted">Avstånd saknas – under 15 km är gratis.</div>':''}</div>`; }
           }catch(e){ msg=`<div class="err">${esc(e.message)}</div>`; }
@@ -1973,7 +1976,7 @@ FX Flytt</textarea>
       const t=Number(v('n_total'));
       $('#totinfo').textContent=calc&&t&&t!==calc.totalAfterRut?`Eget pris – kunden ser bara totalen (prislistan ger ${kr(calc.totalAfterRut)}).`:(calc?'Kunden ser raderna ovan i offerten.':'');
     };
-    ['n_svc','n_m2','n_km','n_crew','n_h','n_box','n_xc'].forEach(id=>{ $('#'+id).oninput=run; $('#'+id).onchange=run; });
+    ['n_svc','n_m2','n_km','n_crew','n_h','n_box','n_xc','n_glas'].forEach(id=>{ $('#'+id).oninput=run; $('#'+id).onchange=run; });
     $('#n_total').oninput=()=>{ manual=$('#n_total').value!==''; run(); };
     run();
     let saved=null;
@@ -2380,7 +2383,7 @@ FX Flytt</textarea>
   SET_TABS.push(['prices','Priser',true]);
   SETTINGS.prices=async(el)=>{
     let data; try{ data=await api('/api/admin/prices'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
-    const clone=(p)=>JSON.parse(JSON.stringify({moveFixed:p.moveFixed,cleaning:p.cleaning,hourly:p.hourly,km:p.km,boxes:p.boxes}));
+    const clone=(p)=>JSON.parse(JSON.stringify({moveFixed:p.moveFixed,cleaning:p.cleaning,hourly:p.hourly,km:p.km,boxes:p.boxes,glazing:p.glazing||{liten:250,mellan:500,stor:750}}));
     let cur=data.current, f=clone(cur);
     const n=(v)=>Number(v);
     // what changed compared with the prices in use: [label, old, new]
@@ -2389,6 +2392,7 @@ FX Flytt</textarea>
       [['2','2 personer, kr/tim'],['3','3 personer, kr/tim'],['4','4 personer, kr/tim'],['minHours','Minsta antal timmar']].forEach(([k,l])=>add(l,c.hourly[k],f.hourly[k]));
       add('Kr per km och flyttbil',c.km.pricePerKm,f.km.pricePerKm); add('Gratis under km',c.km.freeBelowKm,f.km.freeBelowKm);
       add('Kartonger, antal',c.boxes.qty,f.boxes.qty); add('Kartonger, köp',c.boxes.buy,f.boxes.buy); add('Kartonger, hyra',c.boxes.rent,f.boxes.rent);
+      [['liten','Inglasning liten'],['mellan','Inglasning mellan'],['stor','Inglasning stor']].forEach(([k,l])=>add(l,c.glazing[k],f.glazing[k]));
       const tbl=(name,a,b,cars)=>{ const len=Math.max(a.length,b.length);
         for(let i=0;i<len;i++){ const x=a[i], y=b[i];
           if(!x) d.push([`${name}: ny rad upp till ${y[0]} m²`,'–',`${kr(y[1])}${cars?' · '+y[2]+' bil':''}`]);
@@ -2413,6 +2417,7 @@ FX Flytt</textarea>
             <div class="row2">${fld('4 personer + 2 bilar','hourly.4',f.hourly['4'],c.hourly['4'])}${fld('Minst antal timmar','hourly.minHours',f.hourly.minHours,c.hourly.minHours)}</div></div>
           <div class="card"><h3>Körsträcka (fast pris)</h3><div class="row2">${fld('Kr per km och flyttbil','km.pricePerKm',f.km.pricePerKm,c.km.pricePerKm)}${fld('Gratis under (km)','km.freeBelowKm',f.km.freeBelowKm,c.km.freeBelowKm)}</div></div>
           <div class="card"><h3>Flyttkartonger</h3><div class="row3">${fld('Antal','boxes.qty',f.boxes.qty,c.boxes.qty)}${fld('Köpa (kr)','boxes.buy',f.boxes.buy,c.boxes.buy)}${fld('Hyra (kr)','boxes.rent',f.boxes.rent,c.boxes.rent)}</div></div>
+          <div class="card"><h3>Inglasad balkong / altan <span class="sub">vid flyttstäd, paketrabatt gäller</span></h3><div class="row3">${fld('Liten (kr)','glazing.liten',f.glazing.liten,(c.glazing||{}).liten)}${fld('Mellan (kr)','glazing.mellan',f.glazing.mellan,(c.glazing||{}).mellan)}${fld('Stor (kr)','glazing.stor',f.glazing.stor,(c.glazing||{}).stor)}</div></div>
           <div class="card"><h3>Flyttstäd – fast pris efter boyta</h3>${tblHtml('cleaning',f.cleaning,false)}</div>
         </div><div>
           <div class="card"><h3>Flytt – fast pris efter boyta</h3><div class="muted" style="margin-bottom:6px">Boytan avrundas uppåt till närmaste rad. Över sista raden: offert.</div>${tblHtml('moveFixed',f.moveFixed,true)}</div>

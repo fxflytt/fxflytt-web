@@ -131,3 +131,19 @@ test("körsträckan räknas per flyttbil (ägarens beslut 2026-11-18)", () => {
   // hourly: no km cost
   assert.equal(computePrice({ service: "hourly", crew: 4, hours: 3, distanceKm: 500 } as any, P).totalAfterRut, 3 * 1199);
 });
+
+test("inglasad balkong/altan vid flyttstäd, med paketrabatt (ägarens beslut 2026-11-20)", () => {
+  const amt = (q: any) => (q.lines.find((l: any) => l.label.startsWith("Inglasad")) || {}).amount;
+  // only cleaning, 60 m²: 3 100 + 500
+  assert.equal(computePrice({ service: "cleaning", areaM2: 60, glazing: "mellan" } as any, P).totalAfterRut, 3100 + 500);
+  assert.equal(amt(computePrice({ service: "cleaning", areaM2: 60, glazing: "liten" } as any, P)), 250);
+  assert.equal(amt(computePrice({ service: "cleaning", areaM2: 60, glazing: "stor" } as any, P)), 750);
+  // Premium: the 10 % discount also applies to it
+  const pr = computePrice({ service: "move", pkg: "premium", areaM2: 60, distanceKm: 0, glazing: "stor" } as any, P);
+  assert.equal(pr.totalAfterRut, Math.round((3950 + 3100 + 750) * 0.9));
+  // Bas without cleaning: not charged
+  assert.equal(amt(computePrice({ service: "move", pkg: "bas", areaM2: 60, distanceKm: 0, glazing: "stor" } as any, P)), undefined);
+  // Bas with cleaning as an extra: charged
+  assert.equal(amt(computePrice({ service: "move", pkg: "bas", areaM2: 60, distanceKm: 0, extraCleaning: true, glazing: "liten" } as any, P)), 250);
+  assert.throws(() => computePrice({ service: "cleaning", areaM2: 60, glazing: "jättestor" } as any, P));
+});

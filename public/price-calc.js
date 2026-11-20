@@ -33,7 +33,8 @@ function num(v, field, min, max) {
 
 /**
  * @param {{service:"move"|"hourly"|"cleaning", areaM2?:number, distanceKm?:number|null, pkg?:"bas"|"premium"|"deluxe",
- *          crew?:2|3|4, hours?:number, boxes?:"none"|"buy"|"rent", volumeM3?:number|null, extraCleaning?:boolean}} input
+ *          crew?:2|3|4, hours?:number, boxes?:"none"|"buy"|"rent", volumeM3?:number|null, extraCleaning?:boolean,
+ *          glazing?:"none"|"liten"|"mellan"|"stor"}} input
  * @param {any} P  prices.json
  */
 function computePrice(input, P) {
@@ -87,6 +88,11 @@ function computePrice(input, P) {
       const row = pick(P.cleaning, m2);
       if (!row) onRequest = onRequest || `Flyttstäd över ${P.cleaning[P.cleaning.length - 1][0]} m² – pris enligt offert`;
       else lines.push({ label: extraCleaning ? `Flyttstäd ${m2} m² (tillval)` : `Flyttstäd ${m2} m²`, amount: row[1], discounted: true });
+      // Glazed balcony / patio: fixed extra whenever there is cleaning; the package discount applies to it too (owner 2026-11-20).
+      const glz = input.glazing ?? "none";
+      if (!["none", "liten", "mellan", "stor"].includes(glz)) throw new PriceError("glazing", "ogiltigt val för inglasad balkong");
+      const GL = P.glazing || { liten: 250, mellan: 500, stor: 750 };
+      if (row && glz !== "none") lines.push({ label: `Inglasad balkong/altan (${glz})`, amount: GL[glz], discounted: true });
     }
 
     if (pkg && pkg.discountPct > 0 && !onRequest) {
@@ -117,6 +123,6 @@ function computePrice(input, P) {
   };
 }
 
-window.FX_PRICES={"version": "2026-11-12-prislista-v3", "note": "Alla belopp i SEK inkl. moms, EFTER RUT-avdrag, enligt FX Flytt AB:s prislista 2026-11-11. Fördelning arbete/transport för RUT på fakturan granskas av revisor före lansering.", "moveFixed": [[30, 2800, 1], [40, 3000, 1], [50, 3550, 1], [60, 3950, 1], [70, 4700, 2], [80, 5000, 2], [90, 5625, 2], [100, 6250, 2], [110, 6875, 2], [120, 7500, 3], [130, 8250, 3], [140, 8750, 3], [150, 9375, 3], [160, 10000, 3], [170, 10500, 3], [180, 11000, 3], [190, 11700, 4], [200, 12200, 4], [220, 13100, 4], [240, 14700, 4]], "cleaning": [[30, 2000], [50, 2600], [70, 3100], [90, 3650], [100, 4000], [120, 4500], [140, 4800], [150, 5100], [170, 5950], [190, 6300], [200, 6600], [220, 6950], [240, 7550], [260, 7950], [280, 8500], [300, 9200]], "km": {"pricePerKm": 12, "freeBelowKm": 15}, "hourly": {"2": 595, "3": 849, "4": 1199, "minHours": 3}, "packages": {"bas": {"cleaning": false, "discountPct": 0, "hours": false}, "premium": {"cleaning": true, "discountPct": 10, "hours": false}, "deluxe": {"cleaning": true, "discountPct": 20, "hours": true}}, "boxes": {"buy": 2000, "rent": 750, "qty": 50}, "truckM3": 20};
+window.FX_PRICES={"version": "2026-11-12-prislista-v3", "note": "Alla belopp i SEK inkl. moms, EFTER RUT-avdrag, enligt FX Flytt AB:s prislista 2026-11-11. Fördelning arbete/transport för RUT på fakturan granskas av revisor före lansering.", "moveFixed": [[30, 2800, 1], [40, 3000, 1], [50, 3550, 1], [60, 3950, 1], [70, 4700, 2], [80, 5000, 2], [90, 5625, 2], [100, 6250, 2], [110, 6875, 2], [120, 7500, 3], [130, 8250, 3], [140, 8750, 3], [150, 9375, 3], [160, 10000, 3], [170, 10500, 3], [180, 11000, 3], [190, 11700, 4], [200, 12200, 4], [220, 13100, 4], [240, 14700, 4]], "cleaning": [[30, 2000], [50, 2600], [70, 3100], [90, 3650], [100, 4000], [120, 4500], [140, 4800], [150, 5100], [170, 5950], [190, 6300], [200, 6600], [220, 6950], [240, 7550], [260, 7950], [280, 8500], [300, 9200]], "km": {"pricePerKm": 12, "freeBelowKm": 15}, "hourly": {"2": 595, "3": 849, "4": 1199, "minHours": 3}, "packages": {"bas": {"cleaning": false, "discountPct": 0, "hours": false}, "premium": {"cleaning": true, "discountPct": 10, "hours": false}, "deluxe": {"cleaning": true, "discountPct": 20, "hours": true}}, "boxes": {"buy": 2000, "rent": 750, "qty": 50}, "truckM3": 20, "glazing": {"liten": 250, "mellan": 500, "stor": 750}};
 window.fxComputePrice=computePrice;
 })();

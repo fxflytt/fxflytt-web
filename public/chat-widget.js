@@ -20,9 +20,9 @@
 
   // Built-in answers, used when the AI isn't connected yet or can't be reached.
   var FAQ = [
-    { k: ["pris", "kost", "kosta", "timpris", "price", "سعر", "كلف"], a: "Vi har fasta priser efter boyta, efter RUT-avdrag: flytt från 2 800 kr (upp till 30 m²) och flyttstäd från 2 000 kr. Från 15 km mellan adresserna tillkommer 12 kr/km. Per timme: 2 flyttare 595 kr/tim, minst 3 timmar. Räkna ut ditt exakta pris i prisräknaren på startsidan." },
+    { k: ["pris", "kost", "kosta", "timpris", "price", "سعر", "كلف"], a: "Vi har fasta priser efter boyta, efter RUT-avdrag: flytt från 2 800 kr (upp till 30 m²) och flyttstäd från 2 000 kr. Från 15 km mellan adresserna tillkommer 12 kr/km per flyttbil. Per timme: 2 flyttare 595 kr/tim, minst 3 timmar. Räkna ut ditt exakta pris i prisräknaren på startsidan." },
     { k: ["rut", "avdrag", "skatteverket", "خصم"], a: "RUT ger 50 % avdrag på arbetskostnaden för flytt och flyttstäd (inte lastbil, körsträcka eller material). Vi drar av det direkt på fakturan och sköter ansökan hos Skatteverket." },
-    { k: ["ort", "stad", "område", "var ", "örebro", "eskilstuna", "västerås", "katrineholm", "kungsör", "مدين"], a: "Vi flyttar i Kungsör, Örebro, Eskilstuna, Västerås och Katrineholm – och längre sträckor i hela Sverige efter offert." },
+    { k: ["ort", "stad", "område", "var ", "örebro", "eskilstuna", "västerås", "katrineholm", "kungsör", "مدين"], a: "Vi flyttar i 28 orter i Mellansverige – bland annat Kungsör, Arboga, Köping, Örebro, Eskilstuna, Västerås, Katrineholm, Uppsala och Stockholm – och längre sträckor i hela Sverige. Alla orter: fxflytt.se/flyttfirma" },
     { k: ["försäkr", "skada", "sönder", "trafiktillstånd", "tillstånd", "تأمين", "insurance"], a: "Om något skadas under flytten ersätter vi det. FX Flytt AB är försäkrat hos Trygg-Hansa med ersättning upp till 10 miljoner kronor och har trafiktillstånd från Transportstyrelsen." },
     { k: ["avbok", "ändra", "omboka", "cancel", "إلغ"], a: "Du kan ändra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen. Avbokar du 5 dagar eller mindre före debiteras 10 % av priset." },
     { k: ["städ", "flyttstäd", "clean", "تنظيف"], a: "Ja, vi gör flyttstäd enligt checklista – fönster och balkong ingår. Fast pris från 2 000 kr efter RUT-avdrag. Bokar du flytt och städ tillsammans får du 10 % rabatt (Premium)." },

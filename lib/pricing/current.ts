@@ -14,7 +14,7 @@ export async function getPrices(): Promise<Prices> {
   if (cache && Date.now() - cache.at < 30_000) return cache.p;
   try {
     const s = await kv<string | null>(["GET", KEY]);
-    const p = s ? (JSON.parse(s) as Prices) : DEFAULT_PRICES;
+    const p = s ? ({ ...DEFAULT_PRICES, ...(JSON.parse(s) as Prices) } as Prices) : DEFAULT_PRICES;   // new price items (e.g. glazing) get their default
     cache = { at: Date.now(), p };
     return p;
   } catch { return cache?.p || DEFAULT_PRICES; }
@@ -44,6 +44,7 @@ export function validatePrices(d: Record<string, unknown>, base: Prices = DEFAUL
     });
   };
   const h = (d.hourly || {}) as Record<string, unknown>, k = (d.km || {}) as Record<string, unknown>, b = (d.boxes || {}) as Record<string, unknown>;
+  const g = (d.glazing || base.glazing || DEFAULT.glazing) as Record<string, unknown>;
   return {
     ...base,
     version: "admin-" + new Date().toISOString().slice(0, 16).replace("T", " "),
@@ -52,6 +53,7 @@ export function validatePrices(d: Record<string, unknown>, base: Prices = DEFAUL
     km: { pricePerKm: int(k.pricePerKm, 0, 100, "Pris per km"), freeBelowKm: int(k.freeBelowKm, 0, 200, "Gratis under km") },
     hourly: { "2": int(h["2"], 100, 10000, "2 personer"), "3": int(h["3"], 100, 10000, "3 personer"), "4": int(h["4"], 100, 10000, "4 personer"), minHours: int(h.minHours, 1, 10, "Minsta antal timmar") },
     boxes: { buy: int(b.buy, 0, 50000, "Kartonger köp"), rent: int(b.rent, 0, 50000, "Kartonger hyra"), qty: int(b.qty, 1, 500, "Antal kartonger") },
+    glazing: { liten: int(g.liten, 0, 20000, "Inglasning liten"), mellan: int(g.mellan, 0, 20000, "Inglasning mellan"), stor: int(g.stor, 0, 20000, "Inglasning stor") },
   };
 }
 

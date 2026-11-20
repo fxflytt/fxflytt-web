@@ -307,7 +307,7 @@ paket = page("paket.html",
       <div><h3>Flytt – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Flyttbilar</th><th>Pris</th></tr></thead><tbody data-fxp-table="move">{move_tbl}</tbody></table>
         <p class="small">Över 240 m²: pris enligt offert. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km: 0 kr. 15 km eller mer: 12 kr/km per flyttbil för hela sträckan – till exempel 66 km × 12 kr = 792 kr. Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt. Exempel 60 m², 66 km med Premium: (3 950 + 3 100 + 792 kr) − 10 % = 7 058 kr. Våning och hiss påverkar inte priset.</p></div>
       <div><h3>Flyttstäd – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody data-fxp-table="clean">{clean_tbl}</tbody></table>
-        <p class="small">Fönster och balkong ingår. Över 300 m²: pris enligt offert.</p></div>
+        <p class="small">Fönster och balkong ingår. Inglasad balkong eller altan tillkommer: liten {PL['glazing']['liten']} kr, mellan {PL['glazing']['mellan']} kr, stor {PL['glazing']['stor']} kr. Över 300 m²: pris enligt offert.</p></div>
     </div>
     <div class="pl-grid" style="margin-top:28px">
       <div><h3>Per timme</h3><table class="cmp"><tbody>
@@ -858,7 +858,7 @@ flyttstad = page("flyttstad.html",
   <div class="wrap" style="max-width:640px">
     <div class="center"><span class="eyebrow">Priser</span><h2>Fast pris efter boyta</h2><p class="lead">Inkl. moms efter RUT-avdrag. Samma pris i alla orter.</p></div>
     <table class="cmp" style="margin-top:24px"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody data-fxp-table="clean">{clean_tbl}</tbody></table>
-    <p style="color:var(--muted);font-size:.9rem;margin-top:10px">Över 300 m²: pris enligt offert. <a href="index.html#prisraknare">Räkna ut ditt pris</a></p>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:10px">Fönster och balkong ingår. Inglasad balkong eller altan tillkommer: liten {PL['glazing']['liten']} kr, mellan {PL['glazing']['mellan']} kr, stor {PL['glazing']['stor']} kr (efter RUT, paketrabatten gäller). Över 300 m²: pris enligt offert. <a href="index.html#prisraknare">Räkna ut ditt pris</a></p>
   </div>
 </section>
 <section>

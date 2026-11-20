@@ -739,6 +739,8 @@ html.embed #qform>h2{display:none}
             <option value="premium">Premium – flytt + flyttstäd (−10 %)</option>
             <option value="deluxe">Deluxe – flytt + flyttstäd + packning/montering (−20 %)</option>
           </select></div>
+        <div class="full" id="c-glas-wrap" style="display:none"><label class="f" for="c-glas">Inglasad balkong / altan</label>
+          <select id="c-glas"><option value="none">Nej</option><option value="liten">Liten</option><option value="mellan">Mellan</option><option value="stor">Stor</option></select></div>
         <div class="c-hourly c-deluxe"><label class="f" for="c-crew">Antal personer</label>
           <select id="c-crew"><option value="2">2 personer – 595 kr/tim</option><option value="3">3 personer – 849 kr/tim</option><option value="4">4 personer – 1 199 kr/tim</option></select></div>
         <div class="c-hourly c-deluxe"><label class="f" for="c-h">Antal timmar (minst 3)</label><input id="c-h" type="number" value="3" min="3" max="48" inputmode="numeric"></div>
@@ -1103,10 +1105,14 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     vis();
     if(!window.fxComputePrice) return;
     const s=$('c-svc').value;
+    // Glazed balcony / patio costs extra whenever cleaning is part of the job
+    const withClean=s==='cleaning'||(s==='move'&&($('c-pkg').value!=='bas'||fxExtras().includes('Flyttstäd')));
+    $('c-glas-wrap').style.display=withClean?'':'none';
     const inp={service:s,areaM2:Math.max(1,+$('c-kvm').value||1),distanceKm:Math.max(0,+$('c-km').value||0),
       pkg:$('c-pkg').value,crew:+$('c-crew').value,hours:Math.max(3,+$('c-h').value||3),boxes:$('c-box').value,
       volumeM3:(s==='move'&&window.fxVolume&&window.fxVolume.m3>0)?window.fxVolume.m3:null,
-      extraCleaning:s==='move'&&fxExtras().includes('Flyttstäd')};
+      extraCleaning:s==='move'&&fxExtras().includes('Flyttstäd'),
+      glazing:withClean?$('c-glas').value:'none'};
     window.fxCalcInput=inp;
     let q; try{ q=window.fxComputePrice(inp,window.FX_PRICES); }catch(e){ $('c-res').textContent='–'; $('c-det').textContent=e.message; return; }
     if(q.totalAfterRut==null){
@@ -1157,7 +1163,10 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     calc();
   }));
   $('f-box').addEventListener('change',()=>{ $('c-box').value=$('f-box').value; calc(); });
-  ['c-svc','c-kvm','c-km','c-pkg','c-crew','c-h','c-box'].forEach(id=>$(id).addEventListener('input',calc));
+  ['c-svc','c-kvm','c-km','c-pkg','c-crew','c-h','c-box','c-glas'].forEach(id=>$(id).addEventListener('input',calc));
+  // the quote form's question (Nej/Liten/Mellan/Stor) sets the calculator, so the price sent with the request includes it
+  const GLAS={Nej:'none',Liten:'liten',Mellan:'mellan',Stor:'stor'};
+  if($('glas')) $('glas').addEventListener('change',()=>{ $('c-glas').value=GLAS[$('glas').value]||'none'; calc(); });
   window.addEventListener('fx-volume',calc);
   document.querySelectorAll('a[data-pkg]').forEach(a=>a.addEventListener('click',()=>{$('c-svc').value='move';$('c-pkg').value=a.dataset.pkg;calc();}));
   window.addEventListener('fx-distance',()=>{ if(window.fxDistance){ $('c-km').value=window.fxDistance; calc(); } });
