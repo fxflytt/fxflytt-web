@@ -8,7 +8,7 @@ import { estimate, estimateText } from "./estimate.ts";
 import { knowledge } from "./knowledge.ts";
 import { getPrices } from "../pricing/current.ts";
 import { teamMail, teamSms } from "./outbox.ts";
-import { getSettings } from "../booking/settings.ts";
+import { getSettings, autoOn } from "../booking/settings.ts";
 import { getBooking, saveBooking, type Booking } from "../booking/store.ts";
 import { send, mailConfigured, COMPANY_TO } from "../mail/send.ts";
 import { customerConfirmation } from "../mail/offerEmail.ts";
@@ -46,7 +46,7 @@ export async function instantReply(id: string): Promise<void> {
   if (!b) return;
   const elsa = agentName(s, "elsa"), when = nextAnswer();
   let personal = false;
-  if (s.aiAuto.instant && b.data.email && aiConfigured() && mailConfigured() && await takeQuota(s.aiDailyMax)) {
+  if (autoOn(s, "instant") && b.data.email && aiConfigured() && mailConfigured() && await takeQuota(s.aiDailyMax)) {
     try {
       // Same knowledge and rules as Elsa's e-mail replies: the website pages, the checklist, and the price engine.
       const P = await getPrices();
@@ -78,7 +78,7 @@ Lova inget datum eller pris utöver underlaget.\n\n${REPLY_RULES}\n\n${CUSTOMER_
   if (!personal && b.data.email && mailConfigured()) {
     try { await send(b.data.email, customerConfirmation(b.data), COMPANY_TO); } catch (e) { console.error("confirmation mail failed", (e as Error).message); }
   }
-  if (s.aiAuto.instantSms && smsConfigured() && mobileE164(b.data.phone) && await takeQuota(s.aiDailyMax)) {
+  if (autoOn(s, "instantSms") && smsConfigured() && mobileE164(b.data.phone) && await takeQuota(s.aiDailyMax)) {
     const first = (b.data.name.split(/\s+/)[0] || "").slice(0, 30);
     const text = `Hej ${first}! Tack för din förfrågan till FX Flytt. Du får din offert ${when} och kan signera den direkt i mobilen.\n${smsFooter}`;
     try {
@@ -94,5 +94,5 @@ Lova inget datum eller pris utöver underlaget.\n\n${REPLY_RULES}\n\n${CUSTOMER_
 /** Whether a new web request should be answered by instantReply (so /api/offer skips its own receipt). */
 export async function instantOn(): Promise<boolean> {
   const s = await getSettings();
-  return s.aiAuto.instant || s.aiAuto.instantSms;
+  return autoOn(s, "instant") || autoOn(s, "instantSms");
 }

@@ -536,3 +536,16 @@ test("svenska kunders oro: med i Elsas och Oskars instruktioner, och bara sanna 
   assert.match(claudeCalls.at(-1)!.system, /VAD SVENSKA KUNDER OROAR SIG FÖR/);
   assert.match(sales.trainingText({}, "followup"), /VAD SVENSKA KUNDER OROAR SIG FÖR/);
 });
+
+test("Autopilot: huvudbrytaren stänger av allt som skickas själv, valen finns kvar", async () => {
+  const { autoOn } = settings;
+  let s = await settings.updateSettings({ aiAuto: { reply: true, followup: true, instant: true }, aiAutopilot: true });
+  assert.equal(autoOn(s, "reply"), true); assert.equal(autoOn(s, "followup"), true); assert.equal(autoOn(s, "ack"), false);
+  s = await settings.updateSettings({ aiAutopilot: false });
+  assert.equal(autoOn(s, "reply"), false); assert.equal(autoOn(s, "followup"), false); assert.equal(autoOn(s, "instant"), false);
+  assert.equal(s.aiAuto.reply, true);                     // the choices are kept for when it is switched on again
+  const { instantOn } = await import("../lib/agents/instant.ts");
+  assert.equal(await instantOn(), false);                 // website requests get the standard receipt while it is off
+  s = await settings.updateSettings({ aiAutopilot: true, aiAuto: { reply: false, followup: false, instant: false } });
+  assert.equal(autoOn(s, "reply"), false);
+});

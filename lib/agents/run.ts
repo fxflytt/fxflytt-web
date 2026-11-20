@@ -3,7 +3,7 @@
 //   Maja  – complaints: confirm at once that the complaint has arrived (if allowed)
 //   Oskar – sales e-mails by himself (each kind only if allowed), within the daily limit
 //   Nils  – today's plan and the weekly report
-import { getSettings, type Settings } from "../booking/settings.ts";
+import { getSettings, autoOn, type Settings } from "../booking/settings.ts";
 import { notifyAll } from "../booking/push.ts";
 import { listBookings, createBooking, saveBooking, getBooking, type Booking } from "../booking/store.ts";
 import { send, mailConfigured, COMPANY_TO } from "../mail/send.ts";
@@ -88,7 +88,7 @@ async function afterMail(m: InMail, ctx: { booking: Booking | null; complaint: C
     }
   }
   // Simple questions: Elsa answers by herself (only if the owner allowed it, and only what the AI marked as safe).
-  if (s.aiAuto.reply && m.autoSafe && m.draft && m.status === "new" && ["offert", "bokning", "ovrigt"].includes(m.category) && m.priority !== "high"
+  if (autoOn(s, "reply") && m.autoSafe && m.draft && m.status === "new" && ["offert", "bokning", "ovrigt"].includes(m.category) && m.priority !== "high"
       && !/no-?reply|mailer-daemon|notifications?@/i.test(m.from) && mailConfigured() && await takeQuota(s.aiDailyMax)) {
     const text = m.draft.replace(/\n*(Vänliga hälsningar|Med vänliga hälsningar|Best regards|Kind regards)[\s\S]*$/i, "").trim() + "\n\n" + aiSignature(elsa, AGENTS.elsa.role, replyLang(m.draft));
     try {
@@ -109,7 +109,7 @@ async function afterMail(m: InMail, ctx: { booking: Booking | null; complaint: C
   const c = ctx.complaint;
   if (c) {
     await logActivity({ agent: "maja", what: `Tog emot klagomål från ${c.name || c.email} – allvar ${c.severity === "high" ? "hög" : c.severity === "low" ? "låg" : "medel"}`, complaintId: c.id, bookingId: c.bookingId });
-    if (s.aiAuto.ack && c.email && mailConfigured() && await takeQuota(s.aiDailyMax)) {
+    if (autoOn(s, "ack") && c.email && mailConfigured() && await takeQuota(s.aiDailyMax)) {
       const maja = agentName(s, "maja");
       const when = new Date(c.deadline + "T12:00:00Z").toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
       const en = textLang(m.text) === "en", first = (c.name || "").split(" ")[0] || "";
@@ -167,10 +167,10 @@ export async function sendSalesSms(kind: SalesKind, b: Booking, text: string, by
 /** Oskar sends the e-mails the owner allowed him to send by himself, best chance first, within the daily limit. */
 export async function runSalesAuto(): Promise<{ sent: string[]; failed: string[] }> {
   const s = await getSettings(), out = { sent: [] as string[], failed: [] as string[] };
-  const kinds = (Object.keys(SALES_KINDS) as SalesKind[]).filter((k) => s.aiAuto[k]);
+  const kinds = (Object.keys(SALES_KINDS) as SalesKind[]).filter((k) => autoOn(s, k));
   if (!kinds.length || !aiConfigured() || !mailConfigured()) return out;
   const oskar = agentName(s, "oskar");
-  const smsOk = s.aiAuto.sms && smsConfigured();
+  const smsOk = autoOn(s, "sms") && smsConfigured();
   const all = await listBookings(2000), facts = companyFacts(await getPrices());
   const vehicles = (await listResources().catch(() => [])).filter((r) => r.kind === "vehicle" && (r as { active?: boolean }).active !== false).length;
   const list = salesCandidates(all).filter((c) => kinds.includes(c.kind) && (c.channel === "email" || smsOk)).slice(0, 12);

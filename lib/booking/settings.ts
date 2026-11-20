@@ -28,6 +28,7 @@ export type Settings = {
   mailKeepDays: number;     // e-mails copied into the admin are deleted after this many days (GDPR)
   aiNames: AiNames;         // the AI colleagues' names (lib/agents/team.ts)
   aiAuto: AiAuto;           // what they may send by themselves – everything is off until the owner turns it on
+  aiAutopilot: boolean;     // the main switch (AI-team → Översikt): off = nothing is sent by itself, whatever aiAuto says
   aiDailyMax: number;       // at most this many e-mails sent by the AI team per day
   aiSalesNotes: string;
   aiTestMode: boolean;      // Testläge: what the AI team sends goes to aiTestTo / aiTestPhone instead of the customer
@@ -48,7 +49,7 @@ export const AI_AUTO_DEFAULT: AiAuto = { request: true, reply: false, ack: false
 export const AI_NAMES_DEFAULT: AiNames = { elsa: "Elsa", oskar: "Oskar", maja: "Maja", nils: "Nils" };
 // What the customer sees about the company in the offer.
 export const trustView = (s: Settings) => (s.orgNr || s.fskatt || s.insured ? { orgNr: s.orgNr, fskatt: s.fskatt, insured: s.insured, insurer: s.insurer } : null);
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "", aiInboxOn: true, aiReportOn: true, aiReportTo: "", mailKeepDays: 180, aiNames: AI_NAMES_DEFAULT, aiAuto: AI_AUTO_DEFAULT, aiDailyMax: 15, aiSalesNotes: "", aiTestMode: false, aiTestTo: "", aiTestPhone: "" };
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "", aiInboxOn: true, aiReportOn: true, aiReportTo: "", mailKeepDays: 180, aiNames: AI_NAMES_DEFAULT, aiAuto: AI_AUTO_DEFAULT, aiAutopilot: true, aiDailyMax: 15, aiSalesNotes: "", aiTestMode: false, aiTestTo: "", aiTestPhone: "" };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
@@ -105,6 +106,7 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
   if ("aiTestTo" in d) { const t = String(d.aiTestTo || "").trim().toLowerCase().slice(0, 200); if (t && !/^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/.test(t)) throw new Error("Ogiltig e-postadress för testläget."); cur.aiTestTo = t; }
   if ("aiTestPhone" in d) { const t = String(d.aiTestPhone || "").trim().slice(0, 30); if (t && !/^(\+46|0046|46|0)?7[02369][\d\s-]{7,12}$/.test(t)) throw new Error("Testnumret måste vara ett svenskt mobilnummer."); cur.aiTestPhone = t; }
   if ("aiSalesNotes" in d) cur.aiSalesNotes = String(d.aiSalesNotes || "").replace(/\r/g, "").trim().slice(0, 2000);
+  if ("aiAutopilot" in d) cur.aiAutopilot = d.aiAutopilot === true;
   if ("aiDailyMax" in d) { const n = Math.round(Number(d.aiDailyMax)); if (!(n >= 0 && n <= 100)) throw new Error("Max mejl per dag: 0–100."); cur.aiDailyMax = n; }
   if (cur.clockOn && !cur.office) throw new Error("Ange kontorets position först.");
   await kv(["SET", KEY, JSON.stringify(cur)]);
@@ -118,3 +120,6 @@ export function reviewDue(b: { status: string; date?: string; reviewSentAt?: num
   const days = Math.round((Date.parse(today + "T12:00:00Z") - Date.parse(b.date + "T12:00:00Z")) / 864e5);
   return days >= s.reviewDelayDays && days <= 14;
 }
+
+/** May the AI team send this by itself? Only when the main Autopilot switch is on AND the task is turned on. */
+export const autoOn = (s: Pick<Settings, "aiAutopilot" | "aiAuto">, k: keyof AiAuto) => s.aiAutopilot !== false && s.aiAuto[k] === true;
