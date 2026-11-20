@@ -16,7 +16,7 @@ import { aiConfigured } from "./claude.ts";
 import { estimateNote } from "./estimate.ts";
 import { knowledge } from "./knowledge.ts";
 import { salesCandidates, draftSales, draftSms, SALES_KINDS, type SalesKind, type Training } from "./sales.ts";
-import { winningExamples, dayLoad } from "./playbook.ts";
+import { winningExamples, dayLoad, skillsText, townProof } from "./playbook.ts";
 import { listResources } from "../booking/team.ts";
 import { sendSms, smsConfigured, smsFooter } from "../sms/send.ts";
 import { dailyPlan, type DayPlan } from "./plan.ts";
@@ -105,10 +105,10 @@ export function salesLink(kind: SalesKind, b: Booking): { url: string; label: st
   if (kind === "upsell") return { url: `mailto:info@fxflytt.se?subject=${encodeURIComponent("Lägg till i min flytt " + b.id)}`, label: "Lägg till i min flytt", badge: "DIN FLYTT" };
   return { url: `${SITE}/#offert`, label: "Få en offert", badge: "FX FLYTT" };
 }
-export async function sendSales(kind: SalesKind, b: Booking, subject: string, body: string, by: string, auto = false) {
+export async function sendSales(kind: SalesKind, b: Booking, subject: string, body: string, by: string, auto = false, skills: string[] = []) {
   const l = salesLink(kind, b);
   await send(b.data.email!, personalOfferEmail(b, subject, body, l.url, l.label, l.badge), COMPANY_TO, { fromName: "FX Flytt" });
-  b.closings = [...(b.closings || []), { at: Date.now(), subject, by, kind, body: body.slice(0, 2000), ...(auto ? { auto: true } : {}) }].slice(-12);
+  b.closings = [...(b.closings || []), { at: Date.now(), subject, by, kind, body: body.slice(0, 2000), ...(skills.length ? { skills } : {}), ...(auto ? { auto: true } : {}) }].slice(-12);
   await saveBooking(b, `${SALES_KINDS[kind].label}: mejl skickat "${subject}"${auto ? " (automatiskt)" : ""}`, by);
 }
 
@@ -118,7 +118,10 @@ export async function salesTraining(b: Booking, kind: SalesKind | "", ctx?: { al
   const all = ctx?.all || await listBookings(2000);
   const vehicles = ctx?.vehicles ?? (await listResources().catch(() => [])).filter((r) => r.kind === "vehicle" && (r as { active?: boolean }).active !== false).length;
   const trust = [s.insured ? `Vi är försäkrade${s.insurer ? " (" + s.insurer + ")" : ""}` : "", s.fskatt ? "Godkänd för F-skatt" : "", s.orgNr ? "Org.nr " + s.orgNr : ""].filter(Boolean).join(". ");
-  return { facts: ctx?.facts || companyFacts(await getPrices()), notes: s.aiSalesNotes, examples: kind ? winningExamples(all, kind) : [], load: dayLoad(all, b.date, vehicles), trust };
+  const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
+  const proof = townProof(all, town(b.data.from)) || townProof(all, town(b.data.to));
+  return { facts: ctx?.facts || companyFacts(await getPrices()), notes: s.aiSalesNotes, examples: kind ? winningExamples(all, kind) : [], load: dayLoad(all, b.date, vehicles), trust,
+    skills: skillsText(kind || undefined, all), proof };
 }
 
 /** An SMS about the offer: the text, the link to the offer, and our phone number. */
@@ -151,7 +154,7 @@ export async function runSalesAuto(): Promise<{ sent: string[]; failed: string[]
         out.sent.push(c.b.id); continue;
       }
       const d = await draftSales(c.kind, c.b, today(), { name: oskar, signature: aiSignature(oskar, AGENTS.oskar.role), training: await salesTraining(c.b, c.kind, { all, vehicles, s, facts }) });
-      await sendSales(c.kind, c.b, d.subject, d.body, aiBy(s, "oskar"), true);
+      await sendSales(c.kind, c.b, d.subject, d.body, aiBy(s, "oskar"), true, d.skills);
       await logActivity({ agent: "oskar", what: `${SALES_KINDS[c.kind].label}: skickade "${d.subject}" till ${c.b.data.name}${d.tip ? " · Tips: " + d.tip : ""}`, bookingId: c.b.id, auto: true });
       out.sent.push(c.b.id);
     } catch (e) { out.failed.push(`${c.b.id}: ${(e as Error).message}`); }

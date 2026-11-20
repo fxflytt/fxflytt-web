@@ -12,7 +12,7 @@ import { aiConfigured } from "@/lib/agents/claude.ts";
 import { draftSales, draftSms, salesCandidates, callScript, SALES_KINDS, type SalesKind } from "@/lib/agents/sales.ts";
 import { smsConfigured, mobileE164 } from "@/lib/sms/send.ts";
 import { sendSales, sendSalesSms, salesTraining } from "@/lib/agents/run.ts";
-import { salesResults, winningExamples } from "@/lib/agents/playbook.ts";
+import { salesResults, winningExamples, skillResults, cleanSkills, SALES_SKILLS } from "@/lib/agents/playbook.ts";
 import { agentName, logActivity } from "@/lib/agents/team.ts";
 
 export const runtime = "nodejs";
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   const all = await listBookings(2000);
   const list = salesCandidates(all).slice(0, 40).map(({ b, score, kind, why, channel }) => ({
     id: b.id, name: b.data.name, total: b.offer?.total || 0, views: b.views || 0, lastViewAt: b.lastViewAt, sentAt: b.sentAt, date: b.date, score, kind, why, channel }));
-  return Response.json({ list, kinds: SALES_KINDS, ai: aiConfigured(), sms: smsConfigured(), results: salesResults(all, Date.now() - 90 * 864e5), learned: winningExamples(all, "", 500).length, notes: !!(await getSettings()).aiSalesNotes });
+  return Response.json({ list, kinds: SALES_KINDS, ai: aiConfigured(), sms: smsConfigured(), results: salesResults(all, Date.now() - 90 * 864e5), skills: skillResults(all, Date.now() - 180 * 864e5), skillCount: SALES_SKILLS.length, learned: winningExamples(all, "", 500).length, notes: !!(await getSettings()).aiSalesNotes });
 }
 
 export async function POST(req: Request) {
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     const body = typeof d.body === "string" ? d.body.trim().slice(0, 4000) : "";
     if (!subject || !body) return err("Ämne och text behövs.");
     if (!mailConfigured()) return err("E-post är inte inställd.", 503);
-    try { await sendSales(kind, b, subject, body, u.name); }
+    try { await sendSales(kind, b, subject, body, u.name, false, cleanSkills(d.skills)); }
     catch (e) { return err("Kunde inte skicka: " + (e as Error).message, 502); }
     return Response.json(b);
   }

@@ -9,7 +9,7 @@
 // no to campaign e-mails get only the follow-up of their own offer.
 import { askJson, MODEL_WRITE, HOUSE_RULES, quote, type JsonSchema } from "./claude.ts";
 import { mobileE164, SMS_MAX } from "../sms/send.ts";
-import { SALES_PLAYBOOK, KIND_PLAYBOOK, type WinExample } from "./playbook.ts";
+import { SALES_PLAYBOOK, KIND_PLAYBOOK, skillsText, cleanSkills, type WinExample } from "./playbook.ts";
 import { CALL_OUTCOMES, DECLINE_REASONS, type Booking, type DeclineReason } from "../booking/store.ts";
 
 export type SalesKind = "followup" | "revive" | "calc" | "winback" | "upsell";
@@ -20,7 +20,7 @@ export const SALES_KINDS: Record<SalesKind, { label: string; why: string }> = {
   winback: { label: "Vinn tillbaka", why: "Tackade nej" },
   upsell: { label: "Merförsäljning", why: "Bokad – erbjud flyttstäd, packning eller kartonger" },
 };
-export type Closing = { subject: string; body: string; tip: string };
+export type Closing = { subject: string; body: string; tip: string; skills: string[] };
 export type Candidate = { b: Booking; kind: SalesKind; score: number; why: string; channel: "email" | "sms" };
 
 const DAY = 864e5;
@@ -99,11 +99,12 @@ export function salesContext(b: Booking, today: string): string {
 
 // What Oskar knows besides the customer's own booking (see lib/agents/playbook.ts): real facts about the company,
 // the owner's own sales notes, how full the customer's moving day really is, and e-mails that led to signed bookings.
-export type Training = { facts?: string; notes?: string; examples?: WinExample[]; load?: { jobs: number; vehicles: number; nearlyFull: boolean } | null; trust?: string };
+export type Training = { facts?: string; notes?: string; examples?: WinExample[]; load?: { jobs: number; vehicles: number; nearlyFull: boolean } | null; trust?: string; skills?: string; proof?: string };
 
 export function trainingText(t: Training = {}, kind?: SalesKind): string {
   return [
-    SALES_PLAYBOOK, kind ? KIND_PLAYBOOK[kind] : "",
+    SALES_PLAYBOOK, kind ? KIND_PLAYBOOK[kind] : "", t.skills || skillsText(kind),
+    t.proof ? `SANT SOCIALT BEVIS (får användas): ${t.proof}` : "",
     t.facts ? `FAKTA OM FX FLYTT (det enda du får påstå om priser, tjänster och villkor):\n<foretaget>\n${t.facts}\n</foretaget>` : "",
     t.trust ? `TRYGGHET SOM GÄLLER JUST NU: ${t.trust}` : "",
     t.notes ? `ÄGARENS EGEN SÄLJSTIL (följ den, den går före det allmänna ovan):\n<agarens_stil>\n${t.notes}\n</agarens_stil>` : "",
@@ -116,10 +117,11 @@ const loadLine = (t: Training) => !t.load ? "" : t.load.nearlyFull
   : `Kalendern för kundens flyttdag: ${t.load.jobs} jobb bokade av ${t.load.vehicles} bilar – det finns plats (säg INTE att dagen är full).`;
 
 const SCHEMA: JsonSchema = {
-  type: "object", additionalProperties: false, required: ["subject", "body", "tip"],
+  type: "object", additionalProperties: false, required: ["subject", "body", "tip", "skills"],
   properties: {
     subject: { type: "string", description: "Kort, personlig ämnesrad på svenska, utan utropstecken och utan ordet 'påminnelse'." },
     body: { type: "string", description: "Mejlet till kunden, 50–110 ord, stycken avskilda med tom rad. En knapp läggs till automatiskt under texten – skriv inte ut någon länk." },
+    skills: { type: "array", items: { type: "string" }, description: "Id för de 1–3 säljfärdigheter du använde (ur listan i träningen)." },
     tip: { type: "string", description: "Ett kort tips till säljaren på kontoret (syns inte för kunden), t.ex. 'Ring i eftermiddag – hon öppnade offerten tre gånger i går'." },
   },
 };
@@ -139,7 +141,7 @@ Lova aldrig rabatt eller nytt pris – tycker du att en rabatt skulle hjälpa, s
     user: quote("underlag", [salesContext(b, today), loadLine(t)].filter(Boolean).join("\n")) + (o.hint ? `\n\nSäljarens önskemål om mejlet:\n${quote("instruktion", o.hint.slice(0, 800))}` : ""),
   });
   const s = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
-  return { subject: s(r.subject, 140) || `Din flytt med FX Flytt – ${b.id}`, body: s(r.body, 3000), tip: s(r.tip, 400) };
+  return { subject: s(r.subject, 140) || `Din flytt med FX Flytt – ${b.id}`, body: s(r.body, 3000), tip: s(r.tip, 400), skills: cleanSkills(r.skills) };
 }
 /** The old name, used for the follow-up. */
 export const draftClosing = (b: Booking, today: string, hint = "", training?: Training) => draftSales("followup", b, today, { hint, training });

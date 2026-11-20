@@ -40,7 +40,7 @@ function fakeClaude(body: Record<string, unknown>) {
   } else if (system.includes("klagomålsansvarig")) {
     out = { category: "damage", severity: "high", summary: "Spegel trasig", nextStep: "Ring kunden", draft: "Hej, vi beklagar…" };
   } else if (system.includes("säljare på FX Flytt") || system.includes("bästa säljare")) {
-    out = { subject: "Din flytt till Arboga", body: "Hej Lisa!\n\nVi håller datumet åt dig.", tip: "Ring henne i eftermiddag" };
+    out = { subject: "Din flytt till Arboga", body: "Hej Lisa!\n\nVi håller datumet åt dig.", tip: "Ring henne i eftermiddag", skills: ["spegla", "litet_ja", "hittepa"] };
   } else if (system.includes("försäljningsanalytiker")) {
     out = { headline: "Bra vecka", summary: "Fler signerade.", good: ["a"], watch: ["b"], actions: ["1", "2", "3"] };
   } else out = { draft: "Nytt utkast" };
@@ -400,4 +400,26 @@ test("signaturen följer kundens språk", () => {
   assert.equal(team.replyLang("Hi John,\n\nYes, we can help you in English.\n\nBest regards\nFX Flytt"), "en");
   assert.equal(team.replyLang("Hej!\n\nVänliga hälsningar\nFX Flytt"), "sv");
   assert.match(team.aiSignature("Elsa", "Kundservice", "en"), /^Best regards\nElsa, FX Flytt customer service/);
+});
+
+test("Oskars säljfärdigheter: väljs per kund, mäts mot bokningar, bara sant socialt bevis", async () => {
+  const now = Date.now(), day = 864e5;
+  // The skills he used are kept (unknown ids dropped).
+  const b = { ...(await store.createBooking("admin", { name: "Lisa Lind", phone: "1", email: "l@ex.se" })), status: "sent" as const, token: "t", sentAt: now - 2 * day };
+  const d = await sales.draftSales("followup", b, "2026-11-18");
+  assert.deepEqual(d.skills, ["spegla", "litet_ja"]);
+  assert.match(claudeCalls.at(-1)!.system, /DINA SÄLJFÄRDIGHETER[\s\S]*litet_ja – Ett litet ja/);
+  assert.ok(!/utvag – Ge en utväg/.test(claudeCalls.at(-1)!.system));            // "give an out" is not for a normal follow-up
+  // Results per skill.
+  const B = (p: Record<string, unknown>) => ({ id: "FX1", createdAt: 0, updatedAt: 0, status: "signed", source: "web", data: { name: "A", phone: "1" }, history: [], ...p }) as never;
+  const all = [
+    B({ signedAt: now - day, closings: [{ at: now - 3 * day, subject: "a", by: "x", kind: "followup", skills: ["spegla", "riskfritt"] }] }),
+    B({ status: "sent", closings: [{ at: now - 3 * day, subject: "b", by: "x", kind: "followup", skills: ["spegla"] }] }),
+  ];
+  const r = Object.fromEntries(pb.skillResults(all).map((x) => [x.id, [x.used, x.won, x.rate]]));
+  assert.deepEqual(r, { riskfritt: [1, 1, 100], spegla: [2, 1, 50] });
+  // Social proof only from real finished jobs (at least 3).
+  const done = (to: string) => B({ status: "done", date: new Date(now - 30 * day).toISOString().slice(0, 10), data: { name: "x", phone: "1", from: "Gatan 1, 731 30 Köping", to } });
+  assert.equal(pb.townProof([done("Arboga"), done("Arboga")], "Köping"), "");
+  assert.match(pb.townProof([done("Arboga"), done("Arboga"), done("Västerås")], "Köping"), /3 flyttar från eller till Köping/);
 });
