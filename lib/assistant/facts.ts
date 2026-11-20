@@ -52,6 +52,7 @@ ${f.packing}
 - Tidsåtgång: en 2:a tar oftast 4–5 timmar med två flyttare (beror på mängd, våning och avstånd).
 - Kontorsflytt: även kvällar och helger enligt överenskommelse.
 ${f.cleaning}
+- Inglasad balkong eller altan vid flyttstäd (även i Premium och Deluxe): liten ${n(P.glazing?.liten ?? 250)} kr, mellan ${n(P.glazing?.mellan ?? 500)} kr, stor ${n(P.glazing?.stor ?? 750)} kr efter RUT. Paketrabatten gäller även på detta. Vanlig (ej inglasad) balkong ingår.
 ${f.boxes}
 - FlexFlytt / flexibelt datum med rabatt: erbjuds INTE. Om kunden frågar: säg att vi inte har det, men hänvisa till paketrabatterna (Premium −10 %, Deluxe −20 %).
 

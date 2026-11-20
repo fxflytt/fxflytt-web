@@ -13,7 +13,7 @@ import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 export const runtime = "nodejs";
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 const str = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
-const ALLOWED = ["service", "areaM2", "distanceKm", "pkg", "crew", "hours", "boxes", "volumeM3", "extraCleaning"];
+const ALLOWED = ["service", "areaM2", "distanceKm", "pkg", "crew", "hours", "boxes", "volumeM3", "extraCleaning", "glazing"];
 const SVC: Record<string, string> = { "move|bas": "Bara flytt – Bas", "move|premium": "Flytt + flyttstäd – Premium, 10 % rabatt", "move|deluxe": "Flytt + flyttstäd + packning – Deluxe, 20 % rabatt", "hourly|": "Flytt per timme", "cleaning|": "Bara flyttstäd" };
 
 export async function POST(req: Request) {

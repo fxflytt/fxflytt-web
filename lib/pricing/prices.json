@@ -201,5 +201,10 @@
     "rent": 750,
     "qty": 50
   },
-  "truckM3": 20
+  "truckM3": 20,
+  "glazing": {
+    "liten": 250,
+    "mellan": 500,
+    "stor": 750
+  }
 }

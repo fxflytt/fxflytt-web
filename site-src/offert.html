@@ -47,6 +47,9 @@ header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdro
 .btn-ghost:hover{background:var(--navy);color:#fff}
 .btn-phone{background:var(--navy);color:#fff;padding:10px 18px;font-size:.92rem}
 .btn-phone:hover{background:var(--navy-2)}
+.lang-sw{flex:none;font-weight:800;font-size:.82rem;letter-spacing:.04em;color:var(--navy);text-decoration:none;border:1.5px solid var(--line);border-radius:999px;padding:7px 11px;line-height:1}
+.lang-sw:hover{border-color:var(--navy)}
+@media(max-width:359px){.lang-sw{padding:6px 7px;font-size:.72rem}.nav .logo>div:last-child{white-space:nowrap}}
 @media(max-width:900px){.menu{display:none}}
 
 /* Hero */
@@ -451,6 +454,7 @@ html.embed #qform>h2{display:none}
       <li><a href="om-oss.html">Om oss</a></li>
       <li><a href="radgivare.html">Rådgivare</a></li>
     </ul>
+    <a href="en.html" class="lang-sw" lang="en" hreflang="en" aria-label="EN – In English">EN</a>
     <a href="tel:+46763000723" class="btn btn-phone" aria-label="Ring FX Flytt: 076-300 07 23"><svg width="18" height="18" aria-hidden="true"><use href="#i-phone"/></svg><span class="txt">076-300 07 23</span></a>
     <a href="#offert" class="btn btn-accent nav-cta">Få offert</a>
   </div>
@@ -495,10 +499,10 @@ html.embed #qform>h2{display:none}
 
         <div class="form-step active" data-step="1">
           <div class="fgrid">
-            <div class="full"><label class="f" for="from">Utflyttningsadress</label><div class="ac"><input id="from" name="Från" placeholder="Börja skriva adress eller ort…" autocomplete="off" required><svg class="pinico"><use href="#i-pin"/></svg><ul class="ac-list" role="listbox"></ul></div></div>
-            <div class="full"><label class="f" for="to">Inflyttningsadress</label><div class="ac"><input id="to" name="Till" placeholder="Börja skriva adress eller ort…" autocomplete="off" required><svg class="pinico"><use href="#i-pin"/></svg><ul class="ac-list" role="listbox"></ul></div></div>
-            <div class="full route" id="route"><svg><use href="#i-truck"/></svg><span id="route-txt"></span></div>
-            <div class="full" id="map"></div>
+            <div class="full"><label class="f" for="from" id="from-lbl">Utflyttningsadress</label><div class="ac"><input id="from" name="Från" placeholder="Börja skriva adress eller ort…" autocomplete="off" required><svg class="pinico"><use href="#i-pin"/></svg><ul class="ac-list" role="listbox"></ul></div></div>
+            <div class="full mv-only"><label class="f" for="to">Inflyttningsadress</label><div class="ac"><input id="to" name="Till" placeholder="Börja skriva adress eller ort…" autocomplete="off" required><svg class="pinico"><use href="#i-pin"/></svg><ul class="ac-list" role="listbox"></ul></div></div>
+            <div class="full route mv-only" id="route"><svg><use href="#i-truck"/></svg><span id="route-txt"></span></div>
+            <div class="full mv-only" id="map"></div>
             <div class="full"><label class="f" for="fsvc">Vad behöver du?</label>
               <select id="fsvc" name="Tjänst" required>
                 <option value="move|bas">Bara flytt – Bas</option>
@@ -523,36 +527,38 @@ html.embed #qform>h2{display:none}
               <select id="typ" name="Bostad">
                 <option>1 rok</option><option selected>2 rok</option><option>3 rok</option><option>4 rok</option><option>Villa / radhus</option><option>Kontor / lokal</option>
               </select></div>
-            <div class="full" style="font-weight:700;margin-top:6px">Gamla bostaden</div>
-            <div><label class="f" for="vf">Våning</label>
+            <div class="full mv-only" style="font-weight:700;margin-top:6px">Gamla bostaden</div>
+            <div class="mv-only"><label class="f" for="vf">Våning</label>
               <select id="vf" name="Våning från"><option>Bottenplan</option><option>1 tr</option><option>2 tr</option><option>3 tr</option><option>4 tr</option><option>5 tr</option><option>6 tr</option><option>7 tr</option><option>8 tr</option><option>9 tr</option><option>10 tr eller högre</option></select></div>
-            <div><label class="f" for="hf">Hiss</label>
+            <div class="mv-only"><label class="f" for="hf">Hiss</label>
               <select id="hf" name="Hiss från"><option>Ingen hiss</option><option>Liten hiss (stora möbler får inte plats)</option><option>Stor hiss</option></select></div>
-            <div class="full"><label class="f" for="bf">Hur långt från lastbilen till porten?</label>
+            <div class="full mv-only"><label class="f" for="bf">Hur långt från lastbilen till porten?</label>
               <select id="bf" name="Bärsträcka från"><option>Under 10 m</option><option>10–30 m</option><option>Över 30 m</option></select></div>
-            <div class="full" style="font-weight:700;margin-top:6px">Nya bostaden</div>
-            <div><label class="f" for="vt">Våning</label>
+            <div class="full mv-only" style="font-weight:700;margin-top:6px">Nya bostaden</div>
+            <div class="mv-only"><label class="f" for="vt">Våning</label>
               <select id="vt" name="Våning till"><option>Bottenplan</option><option>1 tr</option><option>2 tr</option><option>3 tr</option><option>4 tr</option><option>5 tr</option><option>6 tr</option><option>7 tr</option><option>8 tr</option><option>9 tr</option><option>10 tr eller högre</option></select></div>
-            <div><label class="f" for="ht">Hiss</label>
+            <div class="mv-only"><label class="f" for="ht">Hiss</label>
               <select id="ht" name="Hiss till"><option>Ingen hiss</option><option>Liten hiss (stora möbler får inte plats)</option><option>Stor hiss</option></select></div>
-            <div class="full"><label class="f" for="bt">Hur långt från lastbilen till porten?</label>
+            <div class="full mv-only"><label class="f" for="bt">Hur långt från lastbilen till porten?</label>
               <select id="bt" name="Bärsträcka till"><option>Under 10 m</option><option>10–30 m</option><option>Över 30 m</option></select></div>
-            <p class="full" style="margin:0;font-size:.85rem;color:var(--muted)">Våning och hiss påverkar inte priset – vi använder uppgifterna för att skicka rätt antal flyttare.</p>
+            <p class="full mv-only" style="margin:0;font-size:.85rem;color:var(--muted)">Våning och hiss påverkar inte priset – vi använder uppgifterna för att skicka rätt antal flyttare.</p>
+            <div class="full cl-only" style="display:none"><label class="f" for="glas">Inglasad balkong / altan</label>
+              <select id="glas" name="Inglasad balkong/altan"><option>Nej</option><option>Liten</option><option>Mellan</option><option>Stor</option></select></div>
             <div class="full">
               <label class="f">Tillval</label>
               <div class="checks">
-                <label class="chk"><input type="checkbox" name="Tillval" value="Packning">Packning</label>
+                <label class="chk mv-only"><input type="checkbox" name="Tillval" value="Packning">Packning</label>
                 <label class="chk"><input type="checkbox" name="Tillval" value="Flyttstäd">Flyttstäd</label>
-                <label class="chk"><input type="checkbox" name="Tillval" value="Montering">Ned-/montering</label>
-                <label class="chk"><input type="checkbox" name="Tillval" value="Flyttkartonger">Flyttkartonger</label>
-                <label class="chk"><input type="checkbox" name="Tillval" value="Pianoflytt">Piano / tunga föremål</label>
+                <label class="chk mv-only"><input type="checkbox" name="Tillval" value="Montering">Ned-/montering</label>
+                <label class="chk mv-only"><input type="checkbox" name="Tillval" value="Flyttkartonger">Flyttkartonger</label>
+                <label class="chk mv-only"><input type="checkbox" name="Tillval" value="Pianoflytt">Piano / tunga föremål</label>
                 <label class="chk"><input type="checkbox" name="Tillval" value="Bortforsling">Bortforsling</label>
               </div>
               <div id="f-box-wrap" style="display:none;margin-top:8px"><label class="f" for="f-box">Flyttkartonger (50 st, leverans ingår)</label>
                 <select id="f-box"><option value="buy">Köpa – 2 000 kr</option><option value="rent">Hyra – 750 kr</option></select></div>
               <div id="f-extras-note" aria-live="polite" style="display:none;margin-top:10px;padding:10px 12px;border-radius:10px;background:#f1f6fb;font-size:.88rem;line-height:1.45;color:#1d3247"></div>
             </div>
-            <div class="full">
+            <div class="full mv-only">
               <details class="vol" id="vol">
                 <summary><span>Räkna ut volym – kubikräknare (valfritt)</span><span class="vol-badge" id="vol-badge">0 m³</span></summary>
                 <div id="kubik"></div>
@@ -733,6 +739,8 @@ html.embed #qform>h2{display:none}
             <option value="premium">Premium – flytt + flyttstäd (−10 %)</option>
             <option value="deluxe">Deluxe – flytt + flyttstäd + packning/montering (−20 %)</option>
           </select></div>
+        <div class="full" id="c-glas-wrap" style="display:none"><label class="f" for="c-glas">Inglasad balkong / altan</label>
+          <select id="c-glas"><option value="none">Nej</option><option value="liten">Liten</option><option value="mellan">Mellan</option><option value="stor">Stor</option></select></div>
         <div class="c-hourly c-deluxe"><label class="f" for="c-crew">Antal personer</label>
           <select id="c-crew"><option value="2">2 personer – 595 kr/tim</option><option value="3">3 personer – 849 kr/tim</option><option value="4">4 personer – 1 199 kr/tim</option></select></div>
         <div class="c-hourly c-deluxe"><label class="f" for="c-h">Antal timmar (minst 3)</label><input id="c-h" type="number" value="3" min="3" max="48" inputmode="numeric"></div>
@@ -956,7 +964,7 @@ html.embed #qform>h2{display:none}
         <p style="margin-top:14px;max-width:300px">Flytt, flyttstäd och bortforsling i Mellansverige – från Kungsör till 28 orter.</p>
       </div>
       <div><h2 class="fh">Tjänster</h2><ul><li><a href="bohagsflytt.html">Bohagsflytt</a></li><li><a href="flytthjalp.html">Flytthjälp per timme</a></li><li><a href="flyttstad.html">Flyttstäd</a></li><li><a href="packning.html">Packning</a></li><li><a href="kontorsflytt.html">Kontorsflytt</a></li><li><a href="pianoflytt.html">Pianoflytt</a></li><li><a href="magasinering.html">Magasinering</a></li><li><a href="bortforsling.html">Bortforsling</a></li><li><a href="dodsbo.html">Dödsbo</a></li><li><a href="utlandsflytt.html">Utlandsflytt</a></li><li><a href="vad-kostar-flytt.html">Vad kostar en flytt?</a></li><li><a href="kubikraknare.html">Kubikräknare</a></li><li><a href="rut-avdrag.html">RUT-avdrag</a></li><li><a href="#ring-mig" data-callback>Bli uppringd</a></li></ul></div>
-      <div><h2 class="fh">Orter</h2><ul><li><a href="flyttfirma-kungsor.html">Flyttfirma Kungsör</a></li><li><a href="flyttfirma-orebro.html">Flyttfirma Örebro</a></li><li><a href="flyttfirma-eskilstuna.html">Flyttfirma Eskilstuna</a></li><li><a href="flyttfirma-vasteras.html">Flyttfirma Västerås</a></li><li><a href="flyttfirma-katrineholm.html">Flyttfirma Katrineholm</a></li><li><a href="flyttfirma.html">Alla orter →</a></li></ul></div>
+      <div><h2 class="fh">Orter</h2><ul><li><a href="flyttfirma-kungsor.html">Flyttfirma Kungsör</a></li><li><a href="flyttfirma-arboga.html">Flyttfirma Arboga</a></li><li><a href="flyttfirma-koping.html">Flyttfirma Köping</a></li><li><a href="flyttfirma-orebro.html">Flyttfirma Örebro</a></li><li><a href="flyttfirma-eskilstuna.html">Flyttfirma Eskilstuna</a></li><li><a href="flyttfirma-vasteras.html">Flyttfirma Västerås</a></li><li><a href="flyttfirma-katrineholm.html">Flyttfirma Katrineholm</a></li><li><a href="flyttfirma-stockholm.html">Flyttfirma Stockholm</a></li><li><a href="flyttfirma-uppsala.html">Flyttfirma Uppsala</a></li><li><a href="flyttfirma.html">Alla orter →</a></li></ul></div>
       <div><h2 class="fh">Kontakt</h2><ul><li><a href="om-oss.html">Om oss</a></li><li><a href="tel:+46763000723">076-300 07 23</a></li><li><a href="mailto:info@fxflytt.se">info@fxflytt.se</a></li><li>Drottninggatan 1, 736 31 Kungsör</li></ul></div>
     </div>
     <div class="f-bottom">
@@ -1008,6 +1016,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     const seen = {};
     form.querySelectorAll('input,select,textarea').forEach(el=>{
       if(!el.name) return;
+      const box=el.closest('.mv-only,.cl-only'); if(box && box.style.display==='none') return;   // not asked for this service
       if(el.type==='checkbox'){ if(el.checked){(seen[el.name]=seen[el.name]||[]).push(el.value);} return; }
       // Lists: the option's own text (e.g. "Bara flytt – Bas"), not its code ("move|bas"); in Swedish also on the English form.
       const o = el.tagName==='SELECT' ? el.selectedOptions[0] : null;
@@ -1038,11 +1047,13 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     };
     next.disabled = true; next.textContent = 'Skickar…';
     const v = id => (document.getElementById(id)||{}).value || '';
+    const cleanOnly = v('fsvc')==='cleaning|', glasAsked = document.getElementById('glas') && document.getElementById('glas').closest('.cl-only').style.display!=='none';
     const data = {
       name:v('name'), phone:v('tel'), email:v('email'), from:v('from'), to:v('to'),
       distanceKm: window.fxDistance ? Number(window.fxDistance) : undefined,
       size:(o=>o?(o.dataset.sv||o.text):'')(document.getElementById('fsvc').selectedOptions[0]), areaM2:v('kvm'), home:v('typ'), date:v('date'),
-      floorFrom:[v('vf'),v('hf'),'bärsträcka '+v('bf')].join(' · '), floorTo:[v('vt'),v('ht'),'bärsträcka '+v('bt')].join(' · '), message:(window.FX_LANG==='en'?'[Kunden använde engelska formuläret – svara på engelska] ':'')+v('msg'),
+      floorFrom:cleanOnly?undefined:[v('vf'),v('hf'),'bärsträcka '+v('bf')].join(' · '), floorTo:cleanOnly?undefined:[v('vt'),v('ht'),'bärsträcka '+v('bt')].join(' · '),
+      message:((window.FX_LANG==='en'?'[Kunden använde engelska formuläret – svara på engelska] ':'')+(glasAsked?'Inglasad balkong/altan: '+v('glas')+'. ':'')+v('msg')).trim(),
       extras:[...form.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value),
       price: v('fsvc').startsWith('other') ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined,
       refCode: v('refc').trim() || undefined
@@ -1094,10 +1105,14 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     vis();
     if(!window.fxComputePrice) return;
     const s=$('c-svc').value;
+    // Glazed balcony / patio costs extra whenever cleaning is part of the job
+    const withClean=s==='cleaning'||(s==='move'&&($('c-pkg').value!=='bas'||fxExtras().includes('Flyttstäd')));
+    $('c-glas-wrap').style.display=withClean?'':'none';
     const inp={service:s,areaM2:Math.max(1,+$('c-kvm').value||1),distanceKm:Math.max(0,+$('c-km').value||0),
       pkg:$('c-pkg').value,crew:+$('c-crew').value,hours:Math.max(3,+$('c-h').value||3),boxes:$('c-box').value,
       volumeM3:(s==='move'&&window.fxVolume&&window.fxVolume.m3>0)?window.fxVolume.m3:null,
-      extraCleaning:s==='move'&&fxExtras().includes('Flyttstäd')};
+      extraCleaning:s==='move'&&fxExtras().includes('Flyttstäd'),
+      glazing:withClean?$('c-glas').value:'none'};
     window.fxCalcInput=inp;
     let q; try{ q=window.fxComputePrice(inp,window.FX_PRICES); }catch(e){ $('c-res').textContent='–'; $('c-det').textContent=e.message; return; }
     if(q.totalAfterRut==null){
@@ -1148,7 +1163,10 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     calc();
   }));
   $('f-box').addEventListener('change',()=>{ $('c-box').value=$('f-box').value; calc(); });
-  ['c-svc','c-kvm','c-km','c-pkg','c-crew','c-h','c-box'].forEach(id=>$(id).addEventListener('input',calc));
+  ['c-svc','c-kvm','c-km','c-pkg','c-crew','c-h','c-box','c-glas'].forEach(id=>$(id).addEventListener('input',calc));
+  // the quote form's question (Nej/Liten/Mellan/Stor) sets the calculator, so the price sent with the request includes it
+  const GLAS={Nej:'none',Liten:'liten',Mellan:'mellan',Stor:'stor'};
+  if($('glas')) $('glas').addEventListener('change',()=>{ $('c-glas').value=GLAS[$('glas').value]||'none'; calc(); });
   window.addEventListener('fx-volume',calc);
   document.querySelectorAll('a[data-pkg]').forEach(a=>a.addEventListener('click',()=>{$('c-svc').value='move';$('c-pkg').value=a.dataset.pkg;calc();}));
   window.addEventListener('fx-distance',()=>{ if(window.fxDistance){ $('c-km').value=window.fxDistance; calc(); } });
@@ -1181,6 +1199,20 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       const lab=cb.closest('label'); if(lab) lab.style.display=h?'none':''; if(h&&cb.checked){ cb.checked=false; cb.dispatchEvent(new Event('change',{bubbles:true})); } }
   }
   fsvc.addEventListener('change',hideIncluded); hideIncluded();
+  // "Bara flyttstäd": one address (the home to clean), no floors/lift, no moving extras, no volume.
+  function cleaningMode(){
+    const cl=fsvc.value==='cleaning|';
+    document.querySelectorAll('#qform .mv-only').forEach(el=>{
+      el.style.display=cl?'none':'';
+      if(cl) el.querySelectorAll('input[type=checkbox]:checked').forEach(cb=>{ cb.checked=false; cb.dispatchEvent(new Event('change',{bubbles:true})); });
+    });
+    $('to').required=!cl;
+    $('from-lbl').textContent=cl?'Adress som ska städas':'Utflyttningsadress';
+    const withClean=cl||fsvc.value==='move|premium'||fsvc.value==='move|deluxe'||!!document.querySelector('input[name="Tillval"][value="Flyttstäd"]:checked');
+    document.querySelectorAll('#qform .cl-only').forEach(el=>{ el.style.display=withClean?'':'none'; });
+  }
+  fsvc.addEventListener('change',cleaningMode); cleaningMode();
+  document.querySelectorAll('input[name="Tillval"]').forEach(cb=>cb.addEventListener('change',cleaningMode));
   fsvc.addEventListener('change',formToCalc); fkvm.addEventListener('input',formToCalc);
   $('c-book').addEventListener('click',()=>{
     const svc=$('c-svc').value, pkg=svc==='move'?$('c-pkg').value:'';

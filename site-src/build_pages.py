@@ -307,7 +307,7 @@ paket = page("paket.html",
       <div><h3>Flytt – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Flyttbilar</th><th>Pris</th></tr></thead><tbody data-fxp-table="move">{move_tbl}</tbody></table>
         <p class="small">Över 240 m²: pris enligt offert. Körsträckan räknas en väg, mellan gamla och nya adressen (vägavstånd). Under 15 km: 0 kr. 15 km eller mer: 12 kr/km per flyttbil för hela sträckan – till exempel 66 km × 12 kr = 792 kr. Paketrabatten (Premium −10 %, Deluxe −20 %) dras på flytt, flyttstäd och körsträcka. Kartonger och packningstimmar har ingen rabatt. Exempel 60 m², 66 km med Premium: (3 950 + 3 100 + 792 kr) − 10 % = 7 058 kr. Våning och hiss påverkar inte priset.</p></div>
       <div><h3>Flyttstäd – fast pris</h3><table class="cmp"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody data-fxp-table="clean">{clean_tbl}</tbody></table>
-        <p class="small">Fönster och balkong ingår. Över 300 m²: pris enligt offert.</p></div>
+        <p class="small">Fönster och balkong ingår. Inglasad balkong eller altan tillkommer: liten {PL['glazing']['liten']} kr, mellan {PL['glazing']['mellan']} kr, stor {PL['glazing']['stor']} kr. Över 300 m²: pris enligt offert.</p></div>
     </div>
     <div class="pl-grid" style="margin-top:28px">
       <div><h3>Per timme</h3><table class="cmp"><tbody>
@@ -858,7 +858,7 @@ flyttstad = page("flyttstad.html",
   <div class="wrap" style="max-width:640px">
     <div class="center"><span class="eyebrow">Priser</span><h2>Fast pris efter boyta</h2><p class="lead">Inkl. moms efter RUT-avdrag. Samma pris i alla orter.</p></div>
     <table class="cmp" style="margin-top:24px"><thead><tr><th>Boyta</th><th>Pris</th></tr></thead><tbody data-fxp-table="clean">{clean_tbl}</tbody></table>
-    <p style="color:var(--muted);font-size:.9rem;margin-top:10px">Över 300 m²: pris enligt offert. <a href="index.html#prisraknare">Räkna ut ditt pris</a></p>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:10px">Fönster och balkong ingår. Inglasad balkong eller altan tillkommer: liten {PL['glazing']['liten']} kr, mellan {PL['glazing']['mellan']} kr, stor {PL['glazing']['stor']} kr (efter RUT, paketrabatten gäller). Över 300 m²: pris enligt offert. <a href="index.html#prisraknare">Räkna ut ditt pris</a></p>
   </div>
 </section>
 <section>
@@ -1111,6 +1111,8 @@ def _en_chrome(s):
     s, n = re.subn(r'(<nav class="drawer" id="drawer" aria-label=")Meny(">\n).*?(  <div class="d-cta">)', lambda m: m.group(1) + "Menu" + m.group(2) + items + m.group(3), s, count=1, flags=re.S); assert n
     i = s.index("<header"); j = s.index("</footer>")
     part = s[i:j]
+    # language switch: EN on Swedish pages becomes SV here (mark_active has added class="on" to the link on this page)
+    part, n = re.subn(r'<a href="en\.html"[^>]*class="lang-sw"[^>]*>EN</a>', '<a href="index.html" class="lang-sw" lang="sv" hreflang="sv" aria-label="SV – På svenska">SV</a>', part, count=1); assert n
     for a, b in [('aria-label="Meny"', 'aria-label="Menu"'), ('aria-label="FX Flytt – till startsidan"', 'aria-label="FX Flytt – home page (Swedish)"'),
                  ('aria-label="Ring FX Flytt: 076-300 07 23"', 'aria-label="Call FX Flytt: 076-300 07 23"'),
                  ('class="btn btn-accent nav-cta">Få offert</a>', 'class="btn btn-accent nav-cta">Get a quote</a>'),
@@ -1126,7 +1128,8 @@ def _en_chrome(s):
                  (">Pianoflytt<", ">Piano moves<"), (">Bli uppringd<", ">Call me back<"), (">Packning<", ">Packing<"),
                  (">Kontorsflytt<", ">Office moves<"), (">Bortforsling<", ">Waste removal<"),
                  (">Flyttfirma Kungsör<", ">Kungsör<"), (">Flyttfirma Örebro<", ">Örebro<"), (">Flyttfirma Eskilstuna<", ">Eskilstuna<"),
-                 (">Flyttfirma Västerås<", ">Västerås<"), (">Flyttfirma Katrineholm<", ">Katrineholm<"), (">Alla orter →<", ">All towns →<"),
+                 (">Flyttfirma Västerås<", ">Västerås<"), (">Flyttfirma Katrineholm<", ">Katrineholm<"),
+                 (">Flyttfirma Arboga<", ">Arboga<"), (">Flyttfirma Köping<", ">Köping<"), (">Flyttfirma Stockholm<", ">Stockholm<"), (">Flyttfirma Uppsala<", ">Uppsala<"), (">Alla orter →<", ">All towns →<"),
                  (">Om oss<", ">About us<"), ("Alla rättigheter förbehållna. · Godkänd för F-skatt · Flytt enligt", "All rights reserved. · Approved for F-tax · Moves under"),
                  (">Integritetspolicy<", ">Privacy policy<"), (">Villkor<", ">Terms<"), (">Flyttguider<", ">Moving guides<"),
                  ('<a href="en.html" lang="en">In English</a>', '<a href="index.html" lang="sv">På svenska</a>')]:

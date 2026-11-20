@@ -7,12 +7,22 @@
   window.__fxChat = true;
 
   var PHONE = "076-300 07 23", TEL = "tel:+46763000723";
+  // On the English page (fxflytt.se/en) the bubble itself is in English; the assistant answers in the visitor's language anyway.
+  var EN = document.documentElement.lang === "en";
+  var L = EN ? {
+    open: "Open the chat – ask a question", dialog: "Chat with FX Flytt", sub: "Ask a question – we answer right away", close: "Close",
+    ph: "Type your question…", inp: "Your question", send: "Send",
+    note: "Automatic answers may be approximate. Do not share your personal identity number here.",
+    hi: "Hi! 👋 I am FX Flytt's assistant. How can I help you?",
+    quick: ["What does a move cost?", "How does the RUT deduction work?", "Which towns do you move in?", "How do I book?"],
+    other: function () { return "Good question! Call us on " + PHONE + " (we speak English) and we will help you right away, or use the quote form."; }
+  } : null;
 
   // Built-in answers, used when the AI isn't connected yet or can't be reached.
   var FAQ = [
-    { k: ["pris", "kost", "kosta", "timpris", "price", "سعر", "كلف"], a: "Vi har fasta priser efter boyta, efter RUT-avdrag: flytt från 2 800 kr (upp till 30 m²) och flyttstäd från 2 000 kr. Från 15 km mellan adresserna tillkommer 12 kr/km. Per timme: 2 flyttare 595 kr/tim, minst 3 timmar. Räkna ut ditt exakta pris i prisräknaren på startsidan." },
+    { k: ["pris", "kost", "kosta", "timpris", "price", "سعر", "كلف"], a: "Vi har fasta priser efter boyta, efter RUT-avdrag: flytt från 2 800 kr (upp till 30 m²) och flyttstäd från 2 000 kr. Från 15 km mellan adresserna tillkommer 12 kr/km per flyttbil. Per timme: 2 flyttare 595 kr/tim, minst 3 timmar. Räkna ut ditt exakta pris i prisräknaren på startsidan." },
     { k: ["rut", "avdrag", "skatteverket", "خصم"], a: "RUT ger 50 % avdrag på arbetskostnaden för flytt och flyttstäd (inte lastbil, körsträcka eller material). Vi drar av det direkt på fakturan och sköter ansökan hos Skatteverket." },
-    { k: ["ort", "stad", "område", "var ", "örebro", "eskilstuna", "västerås", "katrineholm", "kungsör", "مدين"], a: "Vi flyttar i Kungsör, Örebro, Eskilstuna, Västerås och Katrineholm – och längre sträckor i hela Sverige efter offert." },
+    { k: ["ort", "stad", "område", "var ", "örebro", "eskilstuna", "västerås", "katrineholm", "kungsör", "مدين"], a: "Vi flyttar i 28 orter i Mellansverige – bland annat Kungsör, Arboga, Köping, Örebro, Eskilstuna, Västerås, Katrineholm, Uppsala och Stockholm – och längre sträckor i hela Sverige. Alla orter: fxflytt.se/flyttfirma" },
     { k: ["försäkr", "skada", "sönder", "trafiktillstånd", "tillstånd", "تأمين", "insurance"], a: "Om något skadas under flytten ersätter vi det. FX Flytt AB är försäkrat hos Trygg-Hansa med ersättning upp till 10 miljoner kronor och har trafiktillstånd från Transportstyrelsen." },
     { k: ["avbok", "ändra", "omboka", "cancel", "إلغ"], a: "Du kan ändra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen. Avbokar du 5 dagar eller mindre före debiteras 10 % av priset." },
     { k: ["städ", "flyttstäd", "clean", "تنظيف"], a: "Ja, vi gör flyttstäd enligt checklista – fönster och balkong ingår. Fast pris från 2 000 kr efter RUT-avdrag. Bokar du flytt och städ tillsammans får du 10 % rabatt (Premium)." },
@@ -46,15 +56,15 @@
   var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
 
   var btn = document.createElement("button");
-  btn.className = "fxc-btn"; btn.setAttribute("aria-label", "Öppna chatten – ställ en fråga");
+  btn.className = "fxc-btn"; btn.setAttribute("aria-label", EN ? L.open : "Öppna chatten – ställ en fråga");
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
 
   var panel = document.createElement("div");
-  panel.className = "fxc-panel"; panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", "Chatt med FX Flytt");
-  panel.innerHTML = '<div class="fxc-head"><div><b>FX Flytt</b><small>Ställ en fråga – vi svarar direkt</small></div><button class="fxc-x" aria-label="Stäng">×</button></div>'
+  panel.className = "fxc-panel"; panel.setAttribute("role", "dialog"); panel.setAttribute("aria-label", EN ? L.dialog : "Chatt med FX Flytt");
+  panel.innerHTML = '<div class="fxc-head"><div><b>FX Flytt</b><small>' + (EN ? L.sub : 'Ställ en fråga – vi svarar direkt') + '</small></div><button class="fxc-x" aria-label="' + (EN ? L.close : 'Stäng') + '">×</button></div>'
     + '<div class="fxc-msgs" aria-live="polite"></div>'
-    + '<form class="fxc-form"><input maxlength="1000" placeholder="Skriv din fråga…" aria-label="Din fråga"><button type="submit">Skicka</button></form>'
-    + '<div class="fxc-note">Automatiska svar kan vara ungefärliga. Dela inte personnummer här.</div>';
+    + '<form class="fxc-form"><input maxlength="1000" placeholder="' + (EN ? L.ph : 'Skriv din fråga…') + '" aria-label="' + (EN ? L.inp : 'Din fråga') + '"><button type="submit">' + (EN ? L.send : 'Skicka') + '</button></form>'
+    + '<div class="fxc-note">' + (EN ? L.note : 'Automatiska svar kan vara ungefärliga. Dela inte personnummer här.') + '</div>';
   document.body.appendChild(btn); document.body.appendChild(panel);
 
   var msgsEl = panel.querySelector(".fxc-msgs"), form = panel.querySelector("form"), input = form.querySelector("input");
@@ -68,6 +78,7 @@
     return d;
   }
   function faq(q) {
+    if (EN) return L.other();             // the built-in answers are Swedish – on the English page, point to phone and form
     var t = q.toLowerCase();
     for (var i = 0; i < FAQ.length; i++) for (var j = 0; j < FAQ[i].k.length; j++) if (t.indexOf(FAQ[i].k[j]) > -1) return FAQ[i].a;
     return "Bra fråga! Ring oss på " + PHONE + " så hjälper vi dig direkt, eller fyll i offertformuläret.";
@@ -98,9 +109,9 @@
   function open() {
     panel.classList.add("open");
     if (!msgsEl.children.length) {
-      add("bot", "Hej! 👋 Jag är FX Flytts assistent. Vad kan jag hjälpa dig med?");
+      add("bot", EN ? L.hi : "Hej! 👋 Jag är FX Flytts assistent. Vad kan jag hjälpa dig med?");
       var q = document.createElement("div"); q.className = "fxc-quick";
-      QUICK.forEach(function (t) { var b = document.createElement("button"); b.type = "button"; b.textContent = t; b.onclick = function () { q.remove(); send(t); }; q.appendChild(b); });
+      (EN ? L.quick : QUICK).forEach(function (t) { var b = document.createElement("button"); b.type = "button"; b.textContent = t; b.onclick = function () { q.remove(); send(t); }; q.appendChild(b); });
       msgsEl.appendChild(q);
     }
     setTimeout(function () { input.focus(); }, 50);
