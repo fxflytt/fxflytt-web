@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) return new Response("unauthorized", { status: 401 });
   if (!kvConfigured()) return Response.json({ error: "storage" }, { status: 503 });
   const out: Record<string, unknown> = {};
-  try { const r = await runInboxSync(); out.inbox = { ...r, urgent: r.urgent.length }; } catch (e) { out.inbox = { error: (e as Error).message }; }
+  try { const r = await runInboxSync(0, 20); out.inbox = { ...r, urgent: r.urgent.length }; } catch (e) { out.inbox = { error: (e as Error).message }; }
   try { out.sales = await runSalesAuto(); } catch (e) { out.sales = { error: (e as Error).message }; }
   try { const p = await makePlan(); out.plan = p.items.length; } catch (e) { out.plan = { error: (e as Error).message }; }
   const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" });

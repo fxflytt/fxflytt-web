@@ -423,3 +423,26 @@ test("Oskars säljfärdigheter: väljs per kund, mäts mot bokningar, bara sant 
   assert.equal(pb.townProof([done("Arboga"), done("Arboga")], "Köping"), "");
   assert.match(pb.townProof([done("Arboga"), done("Arboga"), done("Västerås")], "Köping"), /3 flyttar från eller till Köping/);
 });
+
+const outbox = await import("../lib/agents/outbox.ts");
+
+test("testläge: mejlet märks med vem det skulle ha gått till, och kunden får inget", () => {
+  const m = outbox.testMail("kund@ex.se", { subject: "Din flytt", text: "Hej!", html: "<!DOCTYPE html><html><body style=\"x\"><p>Hej!</p></body></html>" });
+  assert.equal(m.subject, "[TEST → kund@ex.se] Din flytt");
+  assert.match(m.text, /^TESTLÄGE – det här mejlet skulle ha skickats till kund@ex\.se/);
+  assert.match(m.html, /<body style="x"><div style="[^"]*dashed[^"]*">TESTLÄGE/);
+});
+
+test("testläge sparas i inställningarna, med kontroll av adress och nummer", async () => {
+  const s = await settings.updateSettings({ aiTestMode: true, aiTestTo: "Test@Ex.se", aiTestPhone: "070-123 45 67" });
+  assert.equal(s.aiTestMode, true); assert.equal(s.aiTestTo, "test@ex.se"); assert.equal(s.aiTestPhone, "070-123 45 67");
+  await assert.rejects(settings.updateSettings({ aiTestTo: "inte en adress" }), /Ogiltig/);
+  await assert.rejects(settings.updateSettings({ aiTestPhone: "08-123 456" }), /mobilnummer/);
+  await settings.updateSettings({ aiTestMode: false });
+});
+
+test("Majas bekräftelse följer kundens språk", () => {
+  assert.equal(team.textLang("Hi, the movers broke my table and I am not happy with it. Please call me."), "en");
+  assert.equal(team.textLang("Hej, ni har repat vårt bord och jag är inte nöjd med det."), "sv");
+  assert.equal(team.textLang(""), "sv");
+});

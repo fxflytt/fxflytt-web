@@ -16,11 +16,12 @@ import { aiConfigured } from "./claude.ts";
 import { estimateNote } from "./estimate.ts";
 import { knowledge } from "./knowledge.ts";
 import { salesCandidates, draftSales, draftSms, SALES_KINDS, type SalesKind, type Training } from "./sales.ts";
+import { teamMail, teamSms } from "./outbox.ts";
 import { winningExamples, dayLoad, skillsText, townProof } from "./playbook.ts";
 import { listResources } from "../booking/team.ts";
 import { sendSms, smsConfigured, smsFooter } from "../sms/send.ts";
 import { dailyPlan, type DayPlan } from "./plan.ts";
-import { AGENTS, agentName, aiBy, aiSignature, replyLang, logActivity, takeQuota } from "./team.ts";
+import { AGENTS, agentName, aiBy, aiSignature, replyLang, textLang, logActivity, takeQuota } from "./team.ts";
 import { kv } from "../booking/kv.ts";
 import { lastWeek, weekNumbers, analyse, saveReport, getReport, reportEmail, type WeekReport } from "./weekly.ts";
 
@@ -30,7 +31,20 @@ const kr = (n: number) => Math.round(n).toLocaleString("sv-SE").replace(/ | /g,
 const saveSent = async (raw: string) => { try { const { saveToSent } = await import("../mail/imap.ts"); await saveToSent(raw); } catch { /* best effort */ } };
 
 // ---------- Elsa (and Maja's receipt) ----------
-export async function runInboxSync(minGapMs = 0): Promise<SyncResult> {
+/**
+ * Reads new e-mail. `rounds` > 1 (the morning job) keeps going until the inbox is empty or about 3½ minutes have passed,
+ * so a night's e-mail is all sorted in the morning – not only the first 10.
+ */
+export async function runInboxSync(minGapMs = 0, rounds = 1): Promise<SyncResult> {
+  const t0 = Date.now();
+  let r = await syncOnce(minGapMs);
+  for (let i = 1; i < rounds && r.more && !r.error && !r.skipped && Date.now() - t0 < 210_000; i++) {
+    const n = await syncOnce(0);
+    r = { ...n, read: r.read + n.read, saved: r.saved + n.saved, complaints: r.complaints + n.complaints, urgent: [...r.urgent, ...n.urgent] };
+  }
+  return r;
+}
+async function syncOnce(minGapMs = 0): Promise<SyncResult> {
   const s = await getSettings();
   if (!s.aiInboxOn) return { skipped: "off", read: 0, saved: 0, complaints: 0, urgent: [], more: false };
   if (!mailConfigured()) return { skipped: "no-mail", read: 0, saved: 0, complaints: 0, urgent: [], more: false };
@@ -76,7 +90,14 @@ async function afterMail(m: InMail, ctx: { booking: Booking | null; complaint: C
       && !/no-?reply|mailer-daemon|notifications?@/i.test(m.from) && mailConfigured() && await takeQuota(s.aiDailyMax)) {
     const text = m.draft.replace(/\n*(Vänliga hälsningar|Med vänliga hälsningar|Best regards|Kind regards)[\s\S]*$/i, "").trim() + "\n\n" + aiSignature(elsa, AGENTS.elsa.role, replyLang(m.draft));
     try {
-      await saveSent(await send(m.from, replyEmail(m, text), undefined, { inReplyTo: m.messageId || undefined, references: m.references, fromName: `${elsa} · FX Flytt` }));
+      const o = await teamMail(m.from, replyEmail(m, text), undefined, { inReplyTo: m.messageId || undefined, references: m.references, fromName: `${elsa} · FX Flytt` }, s);
+      if (o.test) {
+        // Test mode: the reply went to the office – the e-mail stays in "Att svara" so a person still answers the customer.
+        m.note = `TESTLÄGE: ${elsa} skulle ha svarat själv – svaret gick till ${s.aiTestTo || COMPANY_TO}, inte till kunden.`;
+        await logActivity({ agent: "elsa", what: `TEST: svar till ${m.fromName || m.from} gick till kontoret`, mailId: m.id, auto: true });
+        return;
+      }
+      await saveSent(o.raw);
       m.answers = [{ at: Date.now(), by: aiBy(s, "elsa"), text }]; m.status = "answered"; m.autoReplied = true; m.draft = "";
       if (m.bookingId) { const b = await getBooking(m.bookingId); if (b) await saveBooking(b, `${aiBy(s, "elsa")} svarade på e-post: "${m.subject.slice(0, 60)}"`); }
       await logActivity({ agent: "elsa", what: `Svarade ${m.fromName || m.from} själv: "${m.subject.slice(0, 60)}"`, mailId: m.id, bookingId: m.bookingId, auto: true });
@@ -89,9 +110,15 @@ async function afterMail(m: InMail, ctx: { booking: Booking | null; complaint: C
     if (s.aiAuto.ack && c.email && mailConfigured() && await takeQuota(s.aiDailyMax)) {
       const maja = agentName(s, "maja");
       const when = new Date(c.deadline + "T12:00:00Z").toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
-      const text = `Hej ${(c.name || "").split(" ")[0] || ""}!\n\nTack för att du hörde av dig. Vi har tagit emot ditt ärende och tar det på allvar. En kollega går igenom det och du får svar senast ${when}.\n\nHar du bilder eller annat som visar vad som hänt får du gärna svara på det här mejlet med dem.\n\n${aiSignature(maja, AGENTS.maja.role)}`;
+      const en = textLang(m.text) === "en", first = (c.name || "").split(" ")[0] || "";
+      const whenEn = new Date(c.deadline + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+      const text = en
+        ? `Hi ${first},\n\nThank you for getting in touch. We have received your message and take it seriously. A colleague is looking into it, and you will hear from us no later than ${whenEn}.\n\nIf you have photos or anything else that shows what happened, just reply to this e-mail with them.\n\n${aiSignature(maja, AGENTS.maja.role, "en")}`
+        : `Hej ${first}!\n\nTack för att du hörde av dig. Vi har tagit emot ditt ärende och tar det på allvar. En kollega går igenom det och du får svar senast ${when}.\n\nHar du bilder eller annat som visar vad som hänt får du gärna svara på det här mejlet med dem.\n\n${aiSignature(maja, AGENTS.maja.role)}`;
       try {
-        await saveSent(await send(c.email, replyEmail(m, text), undefined, { inReplyTo: m.messageId || undefined, references: m.references, fromName: `${maja} · FX Flytt` }));
+        const o = await teamMail(c.email, replyEmail(m, text), undefined, { inReplyTo: m.messageId || undefined, references: m.references, fromName: `${maja} · FX Flytt` }, s);
+        if (o.test) { await updateComplaint(c.id, () => `TESTLÄGE: ${maja}s bekräftelse gick till kontoret, inte till kunden`, aiBy(s, "maja")); return; }
+        await saveSent(o.raw);
         await updateComplaint(c.id, () => `${aiBy(s, "maja")} bekräftade att klagomålet kommit in (svar senast ${c.deadline})`, aiBy(s, "maja"));
         await logActivity({ agent: "maja", what: `Bekräftade till ${c.name || c.email} att klagomålet kommit in`, complaintId: c.id, auto: true });
       } catch { /* the office answers anyway */ }
@@ -107,7 +134,8 @@ export function salesLink(kind: SalesKind, b: Booking): { url: string; label: st
 }
 export async function sendSales(kind: SalesKind, b: Booking, subject: string, body: string, by: string, auto = false, skills: string[] = []) {
   const l = salesLink(kind, b);
-  await send(b.data.email!, personalOfferEmail(b, subject, body, l.url, l.label, l.badge), COMPANY_TO, { fromName: "FX Flytt" });
+  const test = (await teamMail(b.data.email!, personalOfferEmail(b, subject, body, l.url, l.label, l.badge), COMPANY_TO, { fromName: "FX Flytt" })).test;
+  if (test) { await saveBooking(b, `TESTLÄGE: säljmejlet "${subject}" gick till kontoret, inte till kunden`, by); return; }
   b.closings = [...(b.closings || []), { at: Date.now(), subject, by, kind, body: body.slice(0, 2000), ...(skills.length ? { skills } : {}), ...(auto ? { auto: true } : {}) }].slice(-12);
   await saveBooking(b, `${SALES_KINDS[kind].label}: mejl skickat "${subject}"${auto ? " (automatiskt)" : ""}`, by);
 }
@@ -128,7 +156,7 @@ export async function salesTraining(b: Booking, kind: SalesKind | "", ctx?: { al
 export async function sendSalesSms(kind: SalesKind, b: Booking, text: string, by: string, auto = false) {
   const link = (kind === "followup" || kind === "revive") && b.token ? `${SITE}/signera?t=${b.token}` : "";
   const msg = [text.trim(), link, smsFooter].filter(Boolean).join("\n");
-  await sendSms(b.data.phone, msg);
+  if ((await teamSms(b.data.phone, msg)).test) { await saveBooking(b, `TESTLÄGE: SMS:et gick inte till kunden: "${text.slice(0, 80)}"`, by); return; }
   b.sms = [...(b.sms || []), { at: Date.now(), by, text: msg, ...(auto ? { auto: true } : {}) }].slice(-20);
   b.closings = [...(b.closings || []), { at: Date.now(), subject: "SMS: " + text.slice(0, 60), by, kind, sms: true, ...(auto ? { auto: true } : {}) }].slice(-12);
   await saveBooking(b, `${SALES_KINDS[kind].label}: SMS skickat${auto ? " (automatiskt)" : ""}: "${text.slice(0, 80)}"`, by);
