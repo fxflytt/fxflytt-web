@@ -12,6 +12,7 @@ import { listBookings, type Booking } from "../booking/store.ts";
 import { askJson, MODEL_FAST, MODEL_WRITE, HOUSE_RULES, quote, aiConfigured, type JsonSchema } from "./claude.ts";
 import { addComplaint, assess, bookingContext, type Assessment } from "./complaints.ts";
 import type { RawMail } from "../mail/imap.ts";
+import { extraCheck, extraText, VOLUMES, type AddItem, type ExtraCheck } from "./volume.ts";
 import { estimate as priceEstimate, estimateText, CALC_URL, NO_PRICE, type Estimate, type Service } from "./estimate.ts";
 
 export type MCat = "offert" | "bokning" | "klagomal" | "faktura" | "jobb" | "leverantor" | "spam" | "ovrigt";
@@ -20,7 +21,7 @@ export const M_CATS: Record<MCat, string> = {
   jobb: "Söker jobb", leverantor: "Leverantör / reklam", spam: "Skräppost", ovrigt: "Övrigt",
 };
 export type MStatus = "new" | "answered" | "done";
-export type Extracted = { name: string; phone: string; from: string; to: string; date: string; size: string; areaM2?: number; service?: Service };
+export type Extracted = { name: string; phone: string; from: string; to: string; date: string; size: string; areaM2?: number; service?: Service; addItems?: AddItem[] };
 export type InMail = {
   id: string; uid: number; messageId: string; inReplyTo: string; references: string[];
   from: string; fromName: string; subject: string; date: number; text: string; attachments: string[];
@@ -70,9 +71,12 @@ export async function listMails(limit = 200): Promise<InMail[]> {
 export type Link = { sure: Booking | null; maybe: Booking | null; note: string };
 const firstName = (s?: string) => String(s || "").trim().split(/\s+/)[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-export function linkBooking(m: Pick<RawMail, "from" | "fromName" | "subject" | "text">, e: Partial<Extracted> | undefined, all: Booking[]): Link {
+export function linkBooking(m: Pick<RawMail, "from" | "fromName" | "subject" | "text"> & { refs?: RawMail["refs"] }, e: Partial<Extracted> | undefined, all: Booking[]): Link {
   const idm = (m.subject + "\n" + m.text).match(BOOKING_ID);
   if (idm) { const b = all.find((x) => x.id === idm[0]); if (b) return { sure: b, maybe: null, note: `Bokningsnummer ${b.id} står i mejlet.` }; }
+  // The customer answers an e-mail we sent about the offer: our offer link (or booking number) is in the quoted part.
+  for (const t of m.refs?.tokens || []) { const b = all.find((x) => x.token === t); if (b && (b.data.email || "").toLowerCase() === m.from) return { sure: b, maybe: null, note: "Kunden svarar på vårt mejl om offerten (länken till offerten finns i mejlet)." }; }
+  for (const id of m.refs?.ids || []) { const b = all.find((x) => x.id === id); if (b && (b.data.email || "").toLowerCase() === m.from) return { sure: b, maybe: null, note: `Kunden svarar på vårt mejl om ${b.id}.` }; }
   if (!m.from) return { sure: null, maybe: null, note: "" };
   const same = all.filter((b) => (b.data.email || "").toLowerCase() === m.from);
   const b = same.find((x) => !["declined", "cancelled"].includes(x.status)) || same[0];
@@ -96,7 +100,8 @@ export function bookingBlock(l: Link, today: string): string {
       "Räkna alltid avgifter från bokningens datum, aldrig från vad kunden skriver. Säger kunden något som inte stämmer med bokningen (t.ex. 'flytten är om 4 dagar' när den är om 27): ta inte ut eller nämn någon avgift – fråga vänligt vilket datum det gäller."].join("\n");
   }
   // The AI never sees the unconfirmed booking's details – then it cannot leak them. The office sees them in the note.
-  if (l.maybe) return `INGEN BEKRÄFTAD BOKNING. Avsändarens e-postadress finns på en tidigare bokning, men namn och datum bekräftar inte att mejlet gäller den – det kan vara någon annan.\nNämn INGET ur bokningar i svaret (inget bokningsnummer, datum, ort, pris eller namn). Gäller mejlet en bokad flytt (ändring, avbokning, fråga): be om bokningsnumret (står i bokningsbekräftelsen) och nämn inga avgifter. Skriv osäkerheten i anteckningen till kontoret.`;
+  if (l.maybe) return `INGEN BEKRÄFTAD BOKNING. Avsändarens e-postadress finns på en tidigare bokning, men namn och datum bekräftar inte att mejlet gäller den – det kan vara någon annan.\nNämn INGET ur bokningar i svaret (inget bokningsnummer, datum, ort, pris eller namn). Gäller mejlet en bokad flytt (ändring, avbokning, fråga): be om bokningsnumret (står i bokningsbekräftelsen) och nämn inga avgifter.
+Ser mejlet ut att vara ett svar på en offert eller bokning (t.ex. "Re: Din offert", "Din flytt från …", frågor "inför en bokning"): be INTE om boyta, adresser och våning igen som om kunden vore ny – svara på frågorna och säg att vi tittar på kundens offert. Skriv osäkerheten i anteckningen till kontoret.`;
   return "Ingen bokning hittad för avsändaren.";
 }
 
@@ -112,13 +117,18 @@ const TRIAGE_SCHEMA: JsonSchema = {
     needsReply: { type: "boolean", description: "false för skräppost, reklam, nyhetsbrev, automatiska kvitton och mejl som bara säger tack." },
     autoSafe: { type: "boolean", description: "true BARA om svaret kan skickas utan att en människa läser det: kunden ställer en enkel fråga som besvaras helt med fakta i <foretaget>, eller vill ha offert och svaret bara tackar och ber om saknade uppgifter. false vid klagomål, pengar, faktura, ändring eller avbokning av en bokning, datum som måste bekräftas, arg kund, eller om du är minsta osäker." },
     extracted: {
-      type: "object", additionalProperties: false, required: ["name", "phone", "from", "to", "date", "size", "areaM2", "service"],
+      type: "object", additionalProperties: false, required: ["name", "phone", "from", "to", "date", "size", "areaM2", "service", "addItems"],
       description: "Uppgifter för en flyttförfrågan, tom sträng när de inte står i mejlet.",
       properties: {
         name: { type: "string" }, phone: { type: "string" }, from: { type: "string", description: "Adress eller ort man flyttar från" },
         to: { type: "string", description: "Adress eller ort man flyttar till" }, date: { type: "string", description: "Datum som YYYY-MM-DD om det går att avgöra – räkna ut relativa datum ('nästa fredag', 'om 4 dagar') från dagens datum – annars tomt" },
         size: { type: "string", description: "T.ex. '2 rok, 60 m²'" },
         areaM2: { type: "number", description: "Boytan i m² som ett tal (t.ex. 60), eller 0 om den inte står i mejlet. Gissa inte." },
+        addItems: { type: "array", description: "Saker kunden vill ha med UTÖVER det offerten/bokningen redan gäller ('jag har 70 kartonger', 'vi tar med en soffa till', 'kan ni ta en tvättmaskin också'). Tom lista om inget. Kartonger kunden vill KÖPA hör inte hit.",
+          items: { type: "object", additionalProperties: false, required: ["id", "qty", "label", "m3"], properties: {
+            id: { type: "string", enum: [...Object.keys(VOLUMES), "other"], description: "Föremål ur kubikräknaren, eller other" },
+            qty: { type: "number" }, label: { type: "string", description: "Vad det är, med kundens ord" },
+            m3: { type: "number", description: "Bara för other: uppskattad volym i m³ per styck, annars 0" } } } },
         service: { type: "string", enum: SERVICES, description: "Vad kunden vill ha: move = flytt, cleaning = bara flyttstäd, move_cleaning = flytt + städ, packing, piano (piano/kassaskåp/tunga lyft), office (kontor/företag), abroad (utomlands), storage (magasinering), other." },
       },
     },
@@ -150,6 +160,7 @@ export function cleanTriage(t: Partial<Triage>): Triage {
       date: /^\d{4}-\d{2}-\d{2}$/.test(e.date || "") ? e.date! : "", size: str(e.size, 80),
       ...(Number(e.areaM2) >= 10 && Number(e.areaM2) <= 400 ? { areaM2: Math.round(Number(e.areaM2)) } : {}),
       ...(e.service && SERVICES.includes(e.service) ? { service: e.service } : {}),
+      ...(Array.isArray(e.addItems) && e.addItems.length ? { addItems: e.addItems.slice(0, 20).map((x) => ({ id: str(x?.id, 30), qty: Number(x?.qty) || 1, label: str(x?.label, 80), m3: Number(x?.m3) || 0 })) } : {}),
     },
   };
 }
@@ -176,6 +187,11 @@ export const REPLY_RULES = `SÅ SKRIVER DU SVARET
   Be kunden att inte slänga eller laga det skadade innan vi har sett det, och att svara på det här mejlet med bilder (skriv inte "skicka till info@").
   Erkänn inte skuld och lova inget belopp.
 - "Ring mig" utan uppgifter: fråga när det passar att vi ringer, och gärna sträckan och boytan så att samtalet går snabbt.
+- Tillägg (kunden vill ha med mer än offerten gäller: kartonger, möbler, vitvaror): följ BESLUT i underlaget. Finns inget beslut,
+  lova aldrig att det ingår – säg att vi tittar på hur mycket plats det tar och återkommer om priset påverkas.
+- Kan en fråga betyda två saker, förklara kort båda (t.ex. "ingår kartonger – jag behöver 70": vill kunden KÖPA kartonger, eller har kunden
+  redan 70 packade kartonger som ska med?). Svara på båda kort och fråga vilket som gäller.
+- Frågar kunden om något som kan läggas till (flyttstäd, packning, kartonger): erbjud att lägga till det i offerten – "svara bara på mejlet".
 - Lägg det kontoret behöver veta (osäker koppling till bokning, något som måste kollas) i anteckningen till kontoret, inte i svaret.`;
 
 const REPLY_SCHEMA: JsonSchema = {
@@ -185,7 +201,7 @@ const REPLY_SCHEMA: JsonSchema = {
     note: { type: "string", description: "Kort anteckning till kontoret (syns aldrig för kunden), t.ex. osäker bokningskoppling eller något att kontrollera. Tom sträng om inget." },
   },
 };
-export type ReplyCtx = { link: Link; estimate?: Estimate | null; knowledge?: string; name?: string; today: string; hint?: string };
+export type ReplyCtx = { link: Link; estimate?: Estimate | null; extra?: ExtraCheck | null; knowledge?: string; name?: string; today: string; hint?: string };
 export async function writeReply(m: Pick<InMail, "from" | "fromName" | "subject" | "text" | "draft" | "extracted">, c: ReplyCtx): Promise<{ draft: string; note: string }> {
   const svc = m.extracted?.service;
   const price = c.estimate ? `PRISFÖRSLAG (räknat med prismotorn, samma som prisräknaren på hemsidan):\n${estimateText(c.estimate)}` :
@@ -195,7 +211,7 @@ export async function writeReply(m: Pick<InMail, "from" | "fromName" | "subject"
     system: `${HOUSE_RULES}\n\nDu är ${c.name || "Elsa"} i kundservice på FX Flytt och skriver ett svar på ett mejl till info@. Kontoret läser svaret innan det skickas.\n\n${REPLY_RULES}` +
       (c.knowledge ? `\n\nFAKTA OM FX FLYTT (det enda du får påstå om priser, tjänster och villkor):\n<foretaget>\n${c.knowledge}\n</foretaget>` : ""),
     user: `I dag är det ${c.today} (${new Date(c.today + "T12:00:00Z").toLocaleDateString("sv-SE", { weekday: "long", timeZone: "UTC" })}).\n` +
-      quote("underlag", `${bookingBlock(c.link, c.today)}\n\n${price}`) + `\n\n${quote("mejl", `Från: ${m.fromName} <${m.from}>\nÄmne: ${m.subject}\n\n${m.text.slice(0, 8000)}`)}` +
+      quote("underlag", `${bookingBlock(c.link, c.today)}\n\n${price}${c.extra ? `\n\n${extraText(c.extra)}` : ""}`) + `\n\n${quote("mejl", `Från: ${m.fromName} <${m.from}>\nÄmne: ${m.subject}\n\n${m.text.slice(0, 8000)}`)}` +
       (m.draft && c.hint ? `\n\nTidigare utkast:\n${quote("utkast", m.draft)}` : "") +
       (c.hint ? `\n\nKontorets instruktion för svaret (följ den, men lova inget utöver den):\n${quote("instruktion", c.hint.slice(0, 1000))}` : ""),
   });
@@ -256,7 +272,8 @@ export async function syncInbox(o: {
         if (aiConfigured()) { try { t = await triage(m, first, today, o.facts, o.names?.elsa); } catch (e) { aiError = (e as Error).message.slice(0, 200); } }
         const link = t ? linkBooking(m, t.extracted, all) : first;
         const b = link.sure;
-        const est = t && o.prices ? priceEstimate(t.extracted, o.prices, m.text) : null;
+        const est = t && o.prices && !b ? priceEstimate(t.extracted, o.prices, m.text) : null;
+        const extra = b && t?.extracted.addItems?.length ? extraCheck(b, t.extracted.addItems, (o.prices as { truckM3?: number } | undefined)?.truckM3 || 20) : null;
         const mail: InMail = {
           id: "M" + randomBytes(5).toString("hex"), uid: m.uid, messageId: m.messageId, inReplyTo: m.inReplyTo, references: m.references.slice(-10),
           from: m.from, fromName: m.fromName, subject: m.subject, date: m.date, text: m.text, attachments: m.attachments,
@@ -280,8 +297,9 @@ export async function syncInbox(o: {
           if (a?.draft) mail.draft = a.draft;
           if (a?.severity === "high") mail.priority = "high";
         } else if (t && mail.status === "new" && aiConfigured()) {
-          try { const r = await writeReply(mail, { link, estimate: est, knowledge: o.knowledge, name: o.names?.elsa, today }); mail.draft = r.draft; if (r.note) mail.note = r.note; }
+          try { const r = await writeReply(mail, { link, estimate: est, extra, knowledge: o.knowledge, name: o.names?.elsa, today }); mail.draft = r.draft; if (r.note) mail.note = r.note; }
           catch (e) { mail.aiError = "Kunde inte skriva svaret: " + (e as Error).message.slice(0, 160); }
+          if (extra && !extra.free) mail.note = [mail.note, `Tillägg ca ${String(extra.add).replace(".", ",")} m³ (${extra.lines.join("; ")}). ${extra.reason} Kontrollera om priset ska ändras.`].filter(Boolean).join(" · ");
         }
         if (link.maybe && !mail.note) mail.note = link.note;
         await saveMail(mail, o.keepDays); res.saved++;

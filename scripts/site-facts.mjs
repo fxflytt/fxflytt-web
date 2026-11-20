@@ -20,5 +20,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const out = {};
   for (const p of PAGES) { try { out[p] = pageText(readFileSync(`site-src/${p}.html`, "utf8")); } catch { /* page removed */ } }
   writeFileSync("lib/assistant/sitefacts.json", JSON.stringify(out, null, 1) + "\n");
+  // Volumes per item from the cubic calculator (site-src/kubik.js), so the AI team counts m³ like the website does.
+  const vol = {};
+  for (const m of readFileSync("site-src/kubik.js", "utf8").matchAll(/\["([a-z0-9]+)", "([^"]+)", ([\d.]+)\]/g)) vol[m[1]] = [m[2], Number(m[3])];
+  writeFileSync("lib/assistant/volumes.json", JSON.stringify(vol, null, 1) + "\n");
+  console.log("volumes:", Object.keys(vol).length);
   console.log("sitefacts:", Object.entries(out).map(([k, v]) => `${k} ${v.length}`).join(", "));
 }

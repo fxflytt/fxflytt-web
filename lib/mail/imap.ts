@@ -8,6 +8,8 @@ export type RawMail = {
   uid: number; messageId: string; inReplyTo: string; references: string[];
   from: string; fromName: string; to: string; subject: string; date: number;
   text: string; attachments: string[];
+  // Booking numbers and offer links anywhere in the e-mail, also in the quoted part (the customer answering our e-mail).
+  refs?: { ids: string[]; tokens: string[] };
 };
 
 const conf = () => ({
@@ -36,6 +38,13 @@ export function cleanText(text: string): string {
     out.push(l);
   }
   return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/** Booking numbers (FX…) and offer links (/signera?t=…) in the whole e-mail, quoted part included. */
+export function refsOf(all: string): { ids: string[]; tokens: string[] } {
+  const ids = [...new Set(all.match(/\bFX\d{6}-[0-9A-F]{6}\b/g) || [])].slice(0, 5);
+  const tokens = [...new Set([...all.matchAll(/signera\?t=([A-Za-z0-9_-]{8,})/g)].map((m) => m[1]))].slice(0, 5);
+  return { ids, tokens };
 }
 
 /**
@@ -75,6 +84,7 @@ export async function fetchNew(state: { uidValidity?: string; lastUid?: number }
           subject: (p.subject || "(ingen rubrik)").slice(0, 300),
           date: (p.date || (m.internalDate instanceof Date ? m.internalDate : new Date())).getTime(),
           text: cleanText(raw).slice(0, 12_000),
+          refs: refsOf(`${p.subject || ""}\n${p.text || ""}\n${typeof p.html === "string" ? p.html : ""}`),
           attachments: p.attachments.filter((a) => a.contentDisposition === "attachment" || !a.related).map((a) => a.filename || a.contentType).slice(0, 10),
         });
       }

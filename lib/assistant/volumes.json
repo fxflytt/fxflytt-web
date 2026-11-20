@@ -1,0 +1,362 @@
+{
+ "sofa3": [
+  "Soffa 3-sits",
+  2
+ ],
+ "sofa2": [
+  "Soffa 2-sits",
+  1.5
+ ],
+ "sofacorner": [
+  "Hörnsoffa / divansoffa",
+  3
+ ],
+ "armchair": [
+  "Fåtölj",
+  0.8
+ ],
+ "footstool": [
+  "Fotpall / puff",
+  0.2
+ ],
+ "coffeetable": [
+  "Soffbord",
+  0.3
+ ],
+ "tvbench": [
+  "TV-bänk",
+  0.5
+ ],
+ "tv": [
+  "TV",
+  0.2
+ ],
+ "bookshelf": [
+  "Bokhylla",
+  0.8
+ ],
+ "shelf": [
+  "Vägghylla",
+  0.2
+ ],
+ "cabinet": [
+  "Vitrinskåp / skänk",
+  1
+ ],
+ "lamp": [
+  "Golvlampa",
+  0.2
+ ],
+ "rug": [
+  "Matta",
+  0.1
+ ],
+ "plant": [
+  "Stor växt",
+  0.3
+ ],
+ "painting": [
+  "Tavla / spegel",
+  0.05
+ ],
+ "bed2": [
+  "Dubbelsäng 160–180 cm",
+  1.6
+ ],
+ "bed1": [
+  "Enkelsäng 90 cm",
+  0.8
+ ],
+ "bed120": [
+  "Säng 120–140 cm",
+  1.2
+ ],
+ "mattress": [
+  "Extra madrass / bäddmadrass",
+  0.4
+ ],
+ "wardrobe2": [
+  "Garderob 2 dörrar",
+  1.5
+ ],
+ "wardrobe1": [
+  "Garderob 1 dörr",
+  0.8
+ ],
+ "dresser": [
+  "Byrå",
+  0.6
+ ],
+ "nightstand": [
+  "Sängbord",
+  0.15
+ ],
+ "vanity": [
+  "Sminkbord",
+  0.4
+ ],
+ "mirror": [
+  "Helkroppsspegel",
+  0.1
+ ],
+ "crib": [
+  "Spjälsäng",
+  0.6
+ ],
+ "kidsbed": [
+  "Barnsäng",
+  0.7
+ ],
+ "bunkbed": [
+  "Våningssäng",
+  1.5
+ ],
+ "changing": [
+  "Skötbord",
+  0.4
+ ],
+ "toybox": [
+  "Leksakslåda / hylla",
+  0.3
+ ],
+ "kidsdesk": [
+  "Barnskrivbord",
+  0.4
+ ],
+ "fridgebig": [
+  "Kyl/frys (hög)",
+  1
+ ],
+ "fridge": [
+  "Kylskåp",
+  0.8
+ ],
+ "freezer": [
+  "Frys",
+  0.6
+ ],
+ "dishwasher": [
+  "Diskmaskin",
+  0.4
+ ],
+ "stove": [
+  "Spis",
+  0.5
+ ],
+ "microwave": [
+  "Mikrovågsugn",
+  0.1
+ ],
+ "kitchentable": [
+  "Köksbord",
+  0.6
+ ],
+ "kitchenchair": [
+  "Köksstol",
+  0.15
+ ],
+ "barstool": [
+  "Barstol",
+  0.15
+ ],
+ "pantry": [
+  "Köksskåp / skafferi",
+  0.8
+ ],
+ "diningtable": [
+  "Matbord (6 pers)",
+  1
+ ],
+ "diningtablebig": [
+  "Stort matbord (8+ pers)",
+  1.5
+ ],
+ "chair": [
+  "Stol",
+  0.15
+ ],
+ "sideboard": [
+  "Skänk / sideboard",
+  0.8
+ ],
+ "display": [
+  "Vitrinskåp",
+  1
+ ],
+ "desk": [
+  "Skrivbord",
+  0.6
+ ],
+ "officechair": [
+  "Kontorsstol",
+  0.3
+ ],
+ "filecab": [
+  "Arkivskåp / hurts",
+  0.3
+ ],
+ "computer": [
+  "Dator + skärm",
+  0.1
+ ],
+ "printer": [
+  "Skrivare",
+  0.1
+ ],
+ "bookcase": [
+  "Bokhylla (stor)",
+  1
+ ],
+ "shoerack": [
+  "Skohylla",
+  0.2
+ ],
+ "hallcab": [
+  "Hallmöbel / byrå",
+  0.4
+ ],
+ "coatrack": [
+  "Klädhängare",
+  0.2
+ ],
+ "hallmirror": [
+  "Spegel",
+  0.05
+ ],
+ "washer": [
+  "Tvättmaskin",
+  0.5
+ ],
+ "dryer": [
+  "Torktumlare",
+  0.5
+ ],
+ "dryingcab": [
+  "Torkskåp",
+  0.6
+ ],
+ "bathcab": [
+  "Badrumsskåp",
+  0.2
+ ],
+ "laundry": [
+  "Tvättkorg",
+  0.1
+ ],
+ "outdoortable": [
+  "Utebord",
+  0.6
+ ],
+ "outdoorchair": [
+  "Utestol",
+  0.2
+ ],
+ "sunbed": [
+  "Solsäng",
+  0.4
+ ],
+ "grill": [
+  "Grill",
+  0.5
+ ],
+ "parasol": [
+  "Parasoll",
+  0.1
+ ],
+ "planter": [
+  "Blomlåda / kruka",
+  0.1
+ ],
+ "outdoorsofa": [
+  "Utesoffa",
+  1.2
+ ],
+ "bike": [
+  "Cykel",
+  0.5
+ ],
+ "kidsbike": [
+  "Barncykel",
+  0.3
+ ],
+ "stroller": [
+  "Barnvagn",
+  0.5
+ ],
+ "mower": [
+  "Gräsklippare",
+  0.4
+ ],
+ "toolbox": [
+  "Verktyg / verktygslåda",
+  0.1
+ ],
+ "workbench": [
+  "Arbetsbänk",
+  0.6
+ ],
+ "storageshelf": [
+  "Förrådshylla",
+  0.5
+ ],
+ "skis": [
+  "Skidor / sportutrustning",
+  0.2
+ ],
+ "tires": [
+  "Däck (4 st)",
+  0.4
+ ],
+ "suitcase": [
+  "Resväska",
+  0.15
+ ],
+ "xmas": [
+  "Julpynt-låda",
+  0.1
+ ],
+ "box": [
+  "Flyttkartong (standard)",
+  0.06
+ ],
+ "boxbig": [
+  "Stor kartong / garderobskartong",
+  0.15
+ ],
+ "bag": [
+  "Säck med kläder / textil",
+  0.1
+ ],
+ "piano": [
+  "Piano",
+  1.5
+ ],
+ "safe": [
+  "Kassaskåp",
+  0.4
+ ],
+ "aquarium": [
+  "Akvarium",
+  0.4
+ ],
+ "treadmill": [
+  "Löpband",
+  1
+ ],
+ "exbike": [
+  "Motionscykel",
+  0.5
+ ],
+ "motorbike": [
+  "Motorcykel / moped",
+  1.5
+ ],
+ "moped": [
+  "Elsparkcykel",
+  0.2
+ ],
+ "gamingchair": [
+  "Massagestol",
+  0.8
+ ]
+}
