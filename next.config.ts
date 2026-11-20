@@ -41,6 +41,9 @@ const config: NextConfig = {
       { source: "/fonts/:file*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       // Photos: kept a week, then checked again (the names stay the same when a photo is replaced).
       { source: "/img/:file*", headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }] },
+      // Scripts loaded with a version number (/kubik.js?v=…, added by add-version.py) never change: keep them a year.
+      // Without the number (old pages, scripts loaded by other scripts) the normal short caching applies.
+      { source: "/:file([\\w.-]+\\.js)", has: [{ type: "query", key: "v" }], headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
     ];
   },
 };

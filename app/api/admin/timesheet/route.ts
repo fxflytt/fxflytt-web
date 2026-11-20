@@ -3,7 +3,7 @@
 //   POST { items: [{ rid, date, start, end, breakMin, note? }] }   approve (or re-approve with a correction)
 //   DELETE ?rid=&date=                   undo an approval
 import { requireUser } from "@/lib/booking/auth.ts";
-import { listBookings } from "@/lib/booking/store.ts";
+import { bookingsBetween } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
 import { shiftsOf } from "@/lib/booking/clock.ts";
 import { getSettings } from "@/lib/booking/settings.ts";
@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   const q = new URL(req.url).searchParams, from = q.get("from") || "", to = q.get("to") || "";
   if (!DATE.test(from) || !DATE.test(to) || to < from || addDay(from, 62) < to) return err("Ogiltig period.");
   const months = new Set<string>(); for (let d = from; d <= to; d = addDay(d)) months.add(d.slice(0, 7));
-  const [all, res, shifts, approved, s] = await Promise.all([listBookings(), listResources(), Promise.all([...months].map(shiftsOf)).then((x) => x.flat()), approvedBetween(from, to), getSettings()]);
+  const [all, res, shifts, approved, s] = await Promise.all([bookingsBetween(from, to), listResources(), Promise.all([...months].map(shiftsOf)).then((x) => x.flat()), approvedBetween(from, to), getSettings()]);
   const rule = { breakAfterH: s.breakAfterH, breakMin: s.breakMin };
   return Response.json({ rows: buildRows(all, res, shifts, approved, from, to, rule, s.clockOn), rule, clockOn: s.clockOn });
 }

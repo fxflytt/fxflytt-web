@@ -47,6 +47,10 @@
   .tag{font-size:11.5px;font-weight:800;border-radius:999px;padding:2px 9px;background:#eef2f5;color:#4a5a67}
   .tag.ok{background:#e6f5ec;color:var(--green)}.tag.run{background:#fff1e6;color:#c2560a}.tag.no{background:#fdecec;color:var(--red)}.tag.note{background:#fff8d6;color:#7a5b00}
   .job.off{opacity:.7}.job.off .m b{text-decoration:line-through}
+  /* Skeleton while loading: grey cards in the shape of the content instead of a blank page */
+  .sk{display:grid;gap:10px;padding:6px 0}.sk i{display:block;height:68px;border-radius:14px;background:linear-gradient(90deg,#e9eef2 25%,#f6f8fa 50%,#e9eef2 75%);background-size:200% 100%;animation:skm 1.2s linear infinite}
+  .sk i:first-child{height:34px;width:46%}.sk i:nth-child(3n){height:92px}
+  @keyframes skm{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.sk i{animation:none}}
   .empty{text-align:center;color:var(--muted);padding:44px 16px;background:#fff;border:1px dashed var(--line2);border-radius:16px}
   .banner{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid #ffd6a8;border-radius:14px;padding:12px 14px;margin-bottom:12px;box-shadow:var(--sh)}
   .banner div{flex:1;font-size:13.5px}.banner b{display:block;font-size:14.5px}
@@ -99,11 +103,11 @@
 </style>
 </head>
 <body>
-<div class="top" id="top" hidden><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"><span class="sp"></span>
+<div class="top" id="top" hidden><img src="/fxflytt-logo-vit.svg" alt="FX Flytt" width="372" height="120" style="width:auto"><span class="sp"></span>
   <button class="ib" id="bell" aria-label="Notiser"><svg class="i" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button>
   <button class="ib" id="out" aria-label="Logga ut"><svg class="i" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/></svg></button>
 </div>
-<div id="root"></div>
+<div id="root"><main><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></main></div>
 <nav class="bnav" id="bnav" hidden></nav>
 <script>
 (function(){
@@ -123,7 +127,7 @@
 
   function showLogin(msg){
     $('#top').hidden=true; $('#bnav').hidden=true; document.body.classList.remove('in'); clearInterval(timer);
-    root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><h1>Personalappen</h1>
+    root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt" width="372" height="120" style="width:auto"></div><h1>Personalappen</h1>
       <form class="card" id="f"><label for="ph">Mobilnummer</label><input id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="070-123 45 67">
       <label for="pin">Kod (6 siffror)</label><input id="pin" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*">
       <button class="btn" id="go" style="margin-top:18px">Logga in</button><div class="err" id="err">${esc(msg||'')}</div></form>

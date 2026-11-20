@@ -2,7 +2,8 @@
 // Needs SMTP_USER and SMTP_PASS in the Vercel environment (never in the code).
 import { sendMail } from "@/lib/mail/smtp.ts";
 import { offerEmail, customerConfirmation, type OfferData } from "@/lib/mail/offerEmail.ts";
-import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
+import { clientIp } from "@/lib/rateLimit.ts";
+import { guard, suspectNote } from "@/lib/spamGuard.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { createBooking, saveBooking } from "@/lib/booking/store.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
@@ -21,9 +22,6 @@ let lastError = "";
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max).trim() : "");
 
 export async function POST(req: Request) {
-  if (rateLimited("offer:" + clientIp(req), 5, 10 * 60_000)) {
-    return Response.json({ error: "För många förfrågningar. Ring oss gärna på 076-300 07 23." }, { status: 429 });
-  }
   const user = process.env.SMTP_USER, pass = process.env.SMTP_PASS;
   if (!user || !pass) return Response.json({ error: "not-configured" }, { status: 503 });
 
@@ -57,6 +55,12 @@ export async function POST(req: Request) {
     } : undefined,
   };
   if (!data.name || !data.phone) return Response.json({ error: "Namn och telefon behövs." }, { status: 400 });
+  // Robots: time trap, limits per device, per phone number and for the whole site (lib/spamGuard.ts).
+  const g = await guard("offer", clientIp(req), body.ft, data.phone);
+  if (g.action === "drop") return Response.json({ ok: true });
+  if (g.action === "block") return Response.json({ error: g.error }, { status: 429 });
+  if (g.suspicious) data.message = suspectNote(g.reason) + (data.message || "");
+  if (g.alert) after(() => notifyAll({ cat: "new", title: "⚠️ Ovanligt många förfrågningar", body: "Fler än 30 förfrågningar från hemsidan den senaste timmen – kan vara spam. De markeras med \"Möjlig spam\".", url: "/admin" }).then(() => {}, () => {}));
   if (!EMAIL_RE.test(data.email || "")) data.email = "";
   // Save it in the booking system too (if storage is set up). A failure here must not lose the e-mail.
   let adminUrl: string | undefined, createdId = "", photoUrl = "";
@@ -67,7 +71,7 @@ export async function POST(req: Request) {
       const code = str((d as Record<string, unknown>).refCode, 20);
       if (code) { try { await saveBooking(b, await applyCode(b, code, await getSettings())); } catch (e) { await saveBooking(b, `Rabattkod ${code} gick inte att använda: ${(e as Error).message}`); } }
       const town = (a?: string) => (a || "").split(",").pop()!.replace(/\d/g, "").trim();
-      await notifyAll({ cat: "new", title: "Ny förfrågan: " + data.name, body: [[data.from, data.to].filter(Boolean).map(town).join(" → "), data.size, data.price ? data.price.total.toLocaleString("sv-SE") + " kr" : ""].filter(Boolean).join(" · ") || "Från hemsidan", url: "/admin#" + b.id, tag: b.id });
+      await notifyAll({ cat: "new", title: (g.suspicious ? "⚠️ " : "") + "Ny förfrågan: " + data.name, body: [[data.from, data.to].filter(Boolean).map(town).join(" → "), data.size, data.price ? data.price.total.toLocaleString("sv-SE") + " kr" : ""].filter(Boolean).join(" · ") || "Från hemsidan", url: "/admin#" + b.id, tag: b.id });
     }
     catch (e) { console.error("booking save failed", (e as Error).message); }
   }

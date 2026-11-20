@@ -10,9 +10,12 @@ function run(c: string[]): unknown {
     case "GET": return db.get(a[0]) ?? null;
     case "DEL": db.delete(a[0]); return 1;
     case "MGET": return a.map((k) => db.get(k) ?? null);
+    case "ZREM": { const m = z.get(a[0]); a.slice(1).forEach((x) => m?.delete(x)); return 1; }
+    case "ZREMRANGEBYSCORE": { const m = z.get(a[0]); const hi = Number(a[2]); if (m) for (const [k, v] of [...m]) if (v <= hi) m.delete(k); return 1; }
     case "ZADD": { const m = z.get(a[0]) ?? new Map(); m.set(a[2], Number(a[1])); z.set(a[0], m); return 1; }
     case "ZREVRANGE": { const m = z.get(a[0]) ?? new Map(); const l = [...m.entries()].sort((x, y) => y[1] - x[1]).map((e) => e[0]); const e = Number(a[2]); return l.slice(Number(a[1]), e < 0 ? l.length + e + 1 : e + 1); }
-    case "ZRANGEBYSCORE": { const m = z.get(a[0]) ?? new Map(); const lo = a[1].startsWith("(") ? Number(a[1].slice(1)) + 1e-9 : Number(a[1]); return [...m.entries()].filter((e) => e[1] >= lo).sort((x, y) => x[1] - y[1]).map((e) => e[0]); }
+    case "ZRANGEBYSCORE": { const m = z.get(a[0]) ?? new Map(); const lo = a[1].startsWith("(") ? Number(a[1].slice(1)) + 1e-9 : Number(a[1]); const hi = a[2] === undefined || a[2] === "+inf" ? Infinity : Number(a[2]); return [...m.entries()].filter((e) => e[1] >= lo && e[1] <= hi).sort((x, y) => x[1] - y[1]).map((e) => e[0]); }
+    case "ZREVRANGEBYSCORE": { const m = z.get(a[0]) ?? new Map(); const hi = a[1] === "+inf" ? Infinity : a[1].startsWith("(") ? Number(a[1].slice(1)) - 1e-9 : Number(a[1]); const lo = a[2] === "-inf" ? -Infinity : Number(a[2]); return [...m.entries()].filter((e) => e[1] <= hi && e[1] >= lo).sort((x, y) => y[1] - x[1]).map((e) => e[0]); }
   }
   throw new Error("cmd " + cmd);
 }
@@ -199,4 +202,33 @@ test("fler än 400 bokningar listas, och bara ändrade hämtas med since", async
     const changed = await store.bookingsChangedSince(mark);
     assert.deepEqual(changed.map((x) => x.id).sort(), [b.id, nb.id].sort());
   } finally { Date.now = realNow; }
+});
+
+test("index efter jobbdatum: bara de dagar som behövs, följer ändringar och borttagning", async () => {
+  const a = await store.createBooking("web", { ...data, date: "2026-12-01" });
+  const b = await store.createBooking("web", { ...data, date: "2026-12-10" });
+  const c = await store.createBooking("web", { ...data, date: "" });          // no date yet
+  assert.deepEqual((await store.bookingsBetween("2026-12-01", "2026-12-05")).map((x) => x.id), [a.id]);
+  b.date = "2026-12-03"; await store.saveBooking(b, "Nytt datum");
+  assert.deepEqual((await store.bookingsBetween("2026-12-01", "2026-12-05")).map((x) => x.id).sort(), [a.id, b.id].sort());
+  c.date = "2026-12-04"; await store.saveBooking(c, "Datum satt");
+  b.date = undefined; await store.saveBooking(b, "Datum borttaget");
+  assert.deepEqual((await store.bookingsBetween("2026-12-01", "2026-12-05")).map((x) => x.id).sort(), [a.id, c.id].sort());
+  await store.deleteBooking(a.id);
+  assert.deepEqual((await store.bookingsBetween("2026-12-01", "2026-12-05")).map((x) => x.id), [c.id]);
+});
+
+test("index efter jobbdatum byggs första gången av befintliga bokningar", async () => {
+  const a = await store.createBooking("web", { ...data, date: "2027-01-15" });
+  z.delete("fx:bydate"); db.delete("fx:bydate:built");                        // as before this version
+  assert.deepEqual((await store.bookingsBetween("2027-01-01", "2027-01-31")).map((x) => x.id), [a.id]);
+  assert.ok(db.get("fx:bydate:built"));
+});
+
+test("adminsidan: senaste 12 månaderna först, äldre sedan", async () => {
+  const a = await store.createBooking("web", data), b = await store.createBooking("web", data);
+  z.get("fx:idx")!.set(a.id, Date.now() - 400 * 864e5);                      // created over a year ago
+  const cut = Date.now() - 365 * 864e5;
+  assert.deepEqual((await store.bookingsCreatedSince(cut)).map((x) => x.id), [b.id]);
+  assert.deepEqual((await store.bookingsCreatedBefore(cut)).map((x) => x.id), [a.id]);
 });

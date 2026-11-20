@@ -134,6 +134,10 @@
   .warn{background:#fff4e5;border:1px solid #ffd6a8;color:#8a4b00;border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
   .okmsg{background:#e6f5ec;border:1px solid #bfe5cf;color:var(--green);border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0;font-weight:600}
   .err{color:var(--red);font-weight:600;font-size:14px;margin-top:8px}
+  /* Skeleton while loading: grey cards in the shape of the content instead of a blank page */
+  .sk{display:grid;gap:10px;padding:6px 0}.sk i{display:block;height:68px;border-radius:14px;background:linear-gradient(90deg,#e9eef2 25%,#f6f8fa 50%,#e9eef2 75%);background-size:200% 100%;animation:skm 1.2s linear infinite}
+  .sk i:first-child{height:34px;width:46%}.sk i:nth-child(3n){height:92px}
+  @keyframes skm{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.sk i{animation:none}}
   .empty{text-align:center;color:var(--muted);padding:34px 10px}
   .back{display:inline-flex;align-items:center;gap:4px;background:none;border:0;color:var(--navy);font:inherit;font-weight:700;font-size:14px;padding:0 0 12px;cursor:pointer}
   .dbox{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;background:#fafcfd}
@@ -332,7 +336,7 @@
 </head>
 <body class="out">
 <nav id="side" aria-label="Meny">
-  <a class="brand" href="#"><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"></a>
+  <a class="brand" href="#"><img src="/fxflytt-logo-vit.svg" alt="FX Flytt" width="372" height="120" style="width:auto"></a>
   <a class="nav" href="#" data-v="today"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>Idag</a>
   <a class="nav" href="#offerter" data-v="offers"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 14l2 2 4-4"/></svg>Offerter<span class="ct" id="ctNew" hidden></span></a>
   <a class="nav" href="#ai" data-v="inbox"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9.5 15.5h5M3 12v3M21 12v3"/></svg>AI-team<span class="ct" id="ctMail" hidden></span></a>
@@ -353,10 +357,10 @@
   <div id="root"></div>
 </div>
 <div id="npanel" hidden></div><div id="toast" hidden></div>
-<script src="/price-calc.js"></script>
-<script src="/fx-schedule.js"></script>
-<script src="/fx-lead.js"></script>
-<script src="/fx-prices.js" defer></script>
+<script src="/price-calc.js?v=58f27774"></script>
+<script src="/fx-schedule.js?v=adef649d"></script>
+<script src="/fx-lead.js?v=34fe9fb8"></script>
+<script src="/fx-prices.js?v=51a9667a" defer></script>
 <script>
 (function(){
   const $=(s,el=document)=>el.querySelector(s);
@@ -401,13 +405,13 @@
   // ---------- login ----------
   async function start(){
     const s=await fetch('/api/admin/login').then(r=>r.json()).catch(()=>({}));
-    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); await load(); route(); startNotices(); healPush(); Promise.all([loadMail(),loadKlag(),loadTeam()]).catch(()=>{}).then(()=>autoSyncMail()); }
+    if(s.admin){ me=s.user; document.body.classList.remove('out'); applyRole(); root.innerHTML='<main><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></main>'; await load(); route(); startNotices(); healPush(); Promise.all([loadMail(),loadKlag(),loadTeam()]).catch(()=>{}).then(()=>autoSyncMail()); }
     else showLogin(s.setup);
   }
   function showLogin(setup){
     document.body.classList.add('out'); view='login';
     const miss=setup?[!setup.password&&'Lösenord (ADMIN_PASSWORD)',!setup.storage&&'Lagring (Upstash Redis)',!setup.mail&&'E-post (SMTP)'].filter(Boolean):[];
-    root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt"></div><div class="card"><h3 style="font-size:20px">Logga in i admin</h3>
+    root.innerHTML=`<div class="login"><div class="logo"><img src="/fxflytt-logo.svg" alt="FX Flytt" width="372" height="120" style="width:auto"></div><div class="card"><h3 style="font-size:20px">Logga in i admin</h3>
       ${miss.length?`<div class="warn">Saknas i Vercel: ${esc(miss.join(', '))}</div>`:''}
       <label class="f" for="un">E-post <span class="muted" style="font-weight:500">(eller användarnamn för personal)</span></label><input id="un" type="text" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="info@fxflytt.se">
       <label class="f" for="pw">Lösenord</label><input id="pw" type="password" autocomplete="current-password">
@@ -425,7 +429,8 @@
   // First time: every booking. After that (every 30 s): only bookings changed since the last time.
   let syncedAt=0;
   async function load(){
-    const [j,t,ab,fl_,dm_,nt_]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'')),api('/api/admin/team').catch(()=>({resources:res})),api('/api/admin/absence').catch(()=>({absences:absAll})),api('/api/admin/fleet').catch(()=>fleet),api('/api/admin/damage').catch(()=>({damages:dmgAll})),api('/api/admin/notes').catch(()=>feed)]);
+    const first=!syncedAt;
+    const [j,t,ab,fl_,dm_,nt_]=await Promise.all([api('/api/admin/bookings'+(syncedAt?'?since='+syncedAt:'?part=recent')),api('/api/admin/team').catch(()=>({resources:res})),api('/api/admin/absence').catch(()=>({absences:absAll})),api('/api/admin/fleet').catch(()=>fleet),api('/api/admin/damage').catch(()=>({damages:dmgAll})),api('/api/admin/notes').catch(()=>feed)]);
     feed=nt_||feed;
     absAll=ab.absences||[]; fleet=fl_; dmgAll=dm_.damages||[];
     if(j.partial){ for(const b of j.bookings||[]){ const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=b; else all.unshift(b); }
@@ -433,6 +438,17 @@
     else all=j.bookings||[];
     load.changed=!!(j.partial&&((j.bookings||[]).length||(j.deleted||[]).length));
     syncedAt=j.now||Date.now(); res=t.resources||[]; updateBell(); updateCounts();
+    if(first&&j.partOf==='recent') loadOlder(j.cut);
+  }
+  // Bookings created more than 12 months ago come a moment later, so the page opens fast even with many bookings.
+  // Search, statistics and the calendar get them as soon as they are here.
+  let olderLoaded=false;
+  async function loadOlder(cut){
+    try{ const j=await api('/api/admin/bookings?part=older&cut='+cut); const have=new Set(all.map(b=>b.id));
+      const add=(j.bookings||[]).filter(b=>!have.has(b.id)); olderLoaded=true;
+      if(!add.length) return; all=all.concat(add); updateCounts();
+      if((view==='list'||view==='offers')&&document.activeElement?.id!=='q') showList(); else if(view==='stat') showStats(); else if(view==='cal'&&!dragging) showCal();
+    }catch(_){ setTimeout(()=>loadOlder(cut),15000); }
   }
   // Sidebar badges: new requests, and booked jobs in the next 14 days that have nobody assigned.
   const needsCrew=(b)=>b.status==='signed'&&b.date&&b.date>=today()&&b.date<=addDays(today(),14)&&!(b.crew||[]).length;
@@ -712,7 +728,7 @@ FX Flytt</textarea>
   const bindInboxTabs=()=>root.querySelectorAll('#ibtabs button').forEach(x=>x.onclick=()=>{ inboxTab=x.dataset.k; mailOpen=null; klagOpen=null; location.hash={team:'ai',mail:'inkorg',klag:'klagomal',sales:'saljaren',nils:'rapporter'}[inboxTab]; });
   async function showInbox(){
     view='inbox';
-    if(!mailAll.length&&!showInbox.loaded){ showInbox.loaded=true; root.innerHTML=navBar('inbox')+`<main><div class="empty">Laddar…</div></main>`; try{ await Promise.all([loadMail(),loadKlag(),loadTeam()]); }catch(e){ root.innerHTML=navBar('inbox')+`<main><div class="err">${esc(e.message)}</div></main>`; return; } autoSyncMail(); }
+    if(!mailAll.length&&!showInbox.loaded){ showInbox.loaded=true; root.innerHTML=navBar('inbox')+`<main><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></main>`; try{ await Promise.all([loadMail(),loadKlag(),loadTeam()]); }catch(e){ root.innerHTML=navBar('inbox')+`<main><div class="err">${esc(e.message)}</div></main>`; return; } autoSyncMail(); }
     if(inboxTab==='team') return showTeamAI();
     if(inboxTab==='nils') return showWeekly(true);
     if(inboxTab==='klag') return showKlag();
@@ -862,7 +878,7 @@ FX Flytt</textarea>
   const AGENT_ICON={elsa:'✉',oskar:'🎯',maja:'🤝',nils:'📊'}, AGENT_TAB={elsa:'mail',oskar:'sales',maja:'klag',nils:'nils'}, AGENT_COLOR={elsa:'#1f5fae',oskar:'#e8650a',maja:'#1f8a4c',nils:'#6b4fbb'};
   const avatar=(id,size=44)=>`<span style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;background:${AGENT_COLOR[id]};color:#fff;font-weight:800;font-size:${Math.round(size*.42)}px">${esc((nm(id)||'?')[0])}</span>`;
   async function showTeamAI(){
-    root.innerHTML=navBar('inbox')+`<main>${inboxTabs()}<div id="tpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs();
+    root.innerHTML=navBar('inbox')+`<main>${inboxTabs()}<div id="tpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`; bindInboxTabs();
     await loadTeam(); const t=aiTeam; if(!t.team?.length){ $('#tpane').innerHTML='<div class="err">Kunde inte läsa AI-teamet.</div>'; return; }
     const AP=t.autopilot!==false, A=t.auto||{}, mode=(on)=>!on?'<span class="tag">Skriver utkast</span>':AP?'<span class="tag ok">Skickar själv</span>':'<span class="tag wn">Pausad</span>';
     const AUTOS={instant:'Direktsvar till nya förfrågningar',instantSms:'SMS till nya förfrågningar',reply:'Svar på enkla frågor',ack:'Bekräftelse av klagomål',followup:'Följ upp offerter',revive:'Väck förfallna offerter',calc:'Kalkyl-leads',winback:'Vinn tillbaka',upsell:'Merförsäljning',sms:'Uppföljning med SMS'};
@@ -910,7 +926,7 @@ FX Flytt</textarea>
   // Oskar: customers worth an e-mail today, in five groups. He writes it in the customer's offer/booking – the office sends it.
   const SK={followup:['🎯','Följ upp offert'],revive:['🔁','Väck förfallen offert'],calc:['🧮','Kalkyl-leads'],winback:['↩','Vinn tillbaka'],upsell:['➕','Merförsäljning']};
   async function showSeller(){
-    root.innerHTML=navBar('inbox',nm('oskar')+' · Sälj')+`<main>${inboxTabs()}<div id="slpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs();
+    root.innerHTML=navBar('inbox',nm('oskar')+' · Sälj')+`<main>${inboxTabs()}<div id="slpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`; bindInboxTabs();
     let j; try{ j=await api('/api/admin/closing'); }catch(e){ $('#slpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     const A=aiTeam.auto||{};
     const groups=Object.keys(SK).map(k=>[k,j.list.filter(x=>x.kind===k)]).filter(([,l])=>l.length);
@@ -992,7 +1008,7 @@ FX Flytt</textarea>
   const nilsSeg=()=>`<div style="margin:-4px 0 14px"><div class="seg" id="nseg">${[['week','📊 Veckorapport'],['lost','🔍 Varför vi förlorar']].map(([k,l])=>`<button data-k="${k}" class="${nilsView===k?'on':''}">${l}</button>`).join('')}</div></div>`;
   const bindNilsSeg=()=>root.querySelectorAll('#nseg button').forEach(x=>x.onclick=()=>{ nilsView=x.dataset.k; showWeekly(true); });
   async function showLost(){
-    root.innerHTML=navBar('inbox',nm('nils')+' · Varför vi förlorar')+`<main>${inboxTabs()}${nilsSeg()}<div id="lpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs(); bindNilsSeg();
+    root.innerHTML=navBar('inbox',nm('nils')+' · Varför vi förlorar')+`<main>${inboxTabs()}${nilsSeg()}<div id="lpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`; bindInboxTabs(); bindNilsSeg();
     let j; try{ j=await api('/api/admin/lost'); }catch(e){ $('#lpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     const r=j.report, n=r?.numbers, a=r?.analysis;
     const li=(l)=>l&&l.length?`<ul style="margin:6px 0 0;padding-left:20px">${l.map(x=>`<li style="margin:5px 0">${esc(x)}</li>`).join('')}</ul>`:'<div class="muted">–</div>';
@@ -1020,8 +1036,8 @@ FX Flytt</textarea>
   async function showWeekly(inAi){
     showWeekly.inAi=!!inAi;
     if(inAi&&nilsView==='lost') return showLost();
-    if(inAi){ root.innerHTML=navBar('inbox',nm('nils')+' · Rapporter')+`<main>${inboxTabs()}${nilsSeg()}<div class="card" style="display:flex;gap:12px;align-items:center">${avatar('nils')}<div><b>${esc(nm('nils'))}, analytiker</b><div class="muted">Varje morgon gör jag dagens plan (se Översikt), och varje måndag skriver jag veckorapporten: siffrorna räknas exakt av systemet, jag skriver vad de betyder och tre saker att göra.</div></div></div><div id="wpane"><div class="empty">Laddar…</div></div></main>`; bindInboxTabs(); bindNilsSeg(); }
-    else { view='stat'; root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="wpane"><div class="empty">Laddar…</div></div></main>`; bindStatTabs(); }
+    if(inAi){ root.innerHTML=navBar('inbox',nm('nils')+' · Rapporter')+`<main>${inboxTabs()}${nilsSeg()}<div class="card" style="display:flex;gap:12px;align-items:center">${avatar('nils')}<div><b>${esc(nm('nils'))}, analytiker</b><div class="muted">Varje morgon gör jag dagens plan (se Översikt), och varje måndag skriver jag veckorapporten: siffrorna räknas exakt av systemet, jag skriver vad de betyder och tre saker att göra.</div></div></div><div id="wpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`; bindInboxTabs(); bindNilsSeg(); }
+    else { view='stat'; root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="wpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`; bindStatTabs(); }
     let j; try{ j=await api('/api/admin/weekly'+(showWeekly.week?'?week='+showWeekly.week:'')); }catch(e){ $('#wpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     const r=j.report, n=r?.numbers, a=r?.analysis;
     const li=(l)=>l&&l.length?`<ul style="margin:6px 0 0;padding-left:20px">${l.map(x=>`<li style="margin:4px 0">${esc(x)}</li>`).join('')}</ul>`:'<div class="muted">–</div>';
@@ -1446,7 +1462,7 @@ FX Flytt</textarea>
           if(location.hash.slice(1)!==id) return; const ae=document.activeElement; if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
           if(nb.updatedAt!==upd||(nb.photos||[]).length) showDetail(id,nb); }).catch(()=>{});
       } else {
-        root.innerHTML=navBar('list','')+'<main><div class="empty">Laddar…</div></main>';
+        root.innerHTML=navBar('list','')+'<main><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></main>';
         try{ b=await api('/api/admin/bookings?id='+id); all.unshift(b); }catch(e){ root.innerHTML=navBar('list')+`<main><div class="empty">Bokningen hittades inte.</div></main>`; bindNav(); return; }
         if(location.hash.slice(1)!==id) return;
       }
@@ -2144,7 +2160,7 @@ FX Flytt</textarea>
 
   async function showMoney(){
     view='stat';
-    root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="mpane"><div class="empty">Laddar…</div></div></main>`; bindStatTabs();
+    root.innerHTML=navBar('stat')+`<main>${statTabs()}<div id="mpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`; bindStatTabs();
     let r; try{ r=await api('/api/admin/report?type=money'); }catch(e){ $('#mpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     if(view!=='stat'||statTab!=='money') return;
     const max=Math.max(1,...r.months.map(m=>m.booked));
@@ -2167,7 +2183,7 @@ FX Flytt</textarea>
       <div class="calbar"><div class="cnav"><button id="hprev" aria-label="Föregående månad">‹</button><button id="hnow">Denna månad</button><button id="hnext" aria-label="Nästa månad">›</button></div>
         <b class="ctitle">${esc(monthName(hoursMonth))}</b>
         <a class="btn sec sm" style="margin-left:auto" href="/api/admin/report?type=hours&month=${hoursMonth}&format=csv">⬇ Ladda ner till Excel</a></div>
-      <div id="hpane"><div class="empty">Laddar…</div></div></main>`;
+      <div id="hpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`;
     bindStatTabs();
     const step=(k)=>{ const [y,m]=hoursMonth.split('-').map(Number); hoursMonth=new Date(Date.UTC(y,m-1+k,1)).toISOString().slice(0,7); openHours=null; showHours(); };
     $('#hprev').onclick=()=>step(-1); $('#hnext').onclick=()=>step(1); $('#hnow').onclick=()=>{ hoursMonth=today().slice(0,7); showHours(); };
@@ -2301,7 +2317,7 @@ FX Flytt</textarea>
     view='set';
     const tabs=SET_TABS.filter(t=>!t[2]||isOwner());
     if(!tabs.some(t=>t[0]===setTab)) setTab=tabs[0]?.[0];
-    root.innerHTML=navBar('set')+`<main style="max-width:980px"><div class="seg" id="stabs" style="margin-bottom:16px">${tabs.map(([k,l])=>`<button data-k="${k}" class="${k===setTab?'on':''}">${l}</button>`).join('')}</div><div id="spane"><div class="empty">Laddar…</div></div></main>`;
+    root.innerHTML=navBar('set')+`<main style="max-width:980px"><div class="seg" id="stabs" style="margin-bottom:16px">${tabs.map(([k,l])=>`<button data-k="${k}" class="${k===setTab?'on':''}">${l}</button>`).join('')}</div><div id="spane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`;
     root.querySelectorAll('#stabs button').forEach(x=>x.onclick=()=>{ setTab=x.dataset.k; showSettings(); });
     { const on=$('#stabs .on'), bar=$('#stabs'); if(on) bar.scrollLeft=on.offsetLeft-(bar.clientWidth-on.offsetWidth)/2; }
     const fn=SETTINGS[setTab]; if(fn) await fn($('#spane')); else $('#spane').innerHTML='<div class="card empty">Inga inställningar för din roll.</div>';
@@ -2598,7 +2614,7 @@ FX Flytt</textarea>
   async function showMsgAdmin(){
     view='team';
     const people=res.filter(r=>r.kind==='person'&&r.active);
-    root.innerHTML=navBar('team')+`<main><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px">${teamSeg()}</div><div id="mpane"><div class="empty">Laddar…</div></div></main>`;
+    root.innerHTML=navBar('team')+`<main><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px">${teamSeg()}</div><div id="mpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`;
     bindTeamSeg();
     let msgs=[]; try{ msgs=(await api('/api/admin/messages')).messages; }catch(e){ $('#mpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
     if(view!=='team'||teamKind!=='msg') return;
@@ -2951,7 +2967,7 @@ FX Flytt</textarea>
     root.innerHTML=navBar('stat')+`<main>${statTabs()}
       <div class="calbar"><div class="cnav"><button id="tprev" aria-label="Föregående vecka">‹</button><button id="tnow">Denna vecka</button><button id="tnext" aria-label="Nästa vecka">›</button></div>
         <b class="ctitle">v. ${isoWeek(tsWeek)} · ${esc(dfmt(tsWeek,{day:'numeric',month:'short'}))} – ${esc(dfmt(we,{day:'numeric',month:'short'}))}</b></div>
-      <div id="tpane"><div class="empty">Laddar…</div></div></main>`;
+      <div id="tpane"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div></main>`;
     bindStatTabs();
     $('#tprev').onclick=()=>{ tsWeek=addDays(tsWeek,-7); showTimesheets(); }; $('#tnext').onclick=()=>{ tsWeek=addDays(tsWeek,7); showTimesheets(); }; $('#tnow').onclick=()=>{ tsWeek=weekStart(today()); showTimesheets(); };
     try{ tsData=await api(`/api/admin/timesheet?from=${tsWeek}&to=${we}`); }catch(e){ $('#tpane').innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }

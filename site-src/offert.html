@@ -849,7 +849,7 @@ html.embed #qform>h2{display:none}
 <section id="om-oss" style="background:#fff">
   <div class="wrap about">
     <div>
-      <div class="art-img photo" style="margin-bottom:28px"><img src="/img/couple-1600.jpg" srcset="/img/couple-800.jpg 800w, /img/couple-1600.jpg 1600w" sizes="(max-width: 900px) 100vw, 560px" alt="Glatt par som just flyttat in, sitter bland flyttkartonger" loading="lazy" decoding="async" width="1600" height="900" style="width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:center 40%;display:block"></div>
+      <div class="art-img photo" style="margin-bottom:28px"><picture><source type="image/webp" srcset="/img/couple-800.webp 800w, /img/couple-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 560px"><img src="/img/couple-1600.jpg" srcset="/img/couple-800.jpg 800w, /img/couple-1600.jpg 1600w" sizes="(max-width: 900px) 100vw, 560px" alt="Glatt par som just flyttat in, sitter bland flyttkartonger" loading="lazy" decoding="async" width="1600" height="900" style="width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:center 40%;display:block"></picture></div>
       <span class="eyebrow">Om oss</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
       <p>FX Flytt är en flyttfirma med bas i Kungsör. Vi hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd, packning och bortforsling.</p>
@@ -991,7 +991,8 @@ html.embed #qform>h2{display:none}
 
 <script src="/kubik.js"></script>
 <script src="/price-calc.js"></script>
-<script>
+<script>window.FX_T0=Date.now(); // spam protection: robots post a form within a second (lib/spamGuard.ts)
+
 document.getElementById('yr').textContent = new Date().getFullYear();
 
 /* ---- Multi-step form ---- */
@@ -1066,7 +1067,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       price: v('fsvc').startsWith('other') ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined,
       refCode: v('refc').trim() || undefined
     };
-    fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data, website:v('website')})}).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
+    fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data, website:v('website'), ft:Date.now()-(window.FX_T0||0)})}).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
       const ok=!!(j&&j.ok);
       next.disabled=false; show(cur);
       showDone(ok);
@@ -1106,7 +1107,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   $('c-mail').addEventListener('submit',async(e)=>{ e.preventDefault(); const m=$('cm-msg'), b=$('cm-send');
     if(!$('cm-ok').checked){ m.style.color='#ffb37a'; m.textContent='Kryssa i rutan om att vi får kontakta dig.'; return; }
     b.disabled=true; m.textContent='';
-    try{ const r=await fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('cm-name').value,email:$('cm-email').value,phone:$('cm-phone').value,website:$('cm-web').value,consent:true,input:window.fxCalcInput})});
+    try{ const r=await fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('cm-name').value,email:$('cm-email').value,phone:$('cm-phone').value,website:$('cm-web').value,consent:true,ft:Date.now()-(window.FX_T0||0),input:window.fxCalcInput})});
       const j=await r.json().catch(()=>({}));
       if(!r.ok) throw new Error(j.error||'Något gick fel.');
       $('c-mail').innerHTML='<div class="c-mail-msg" style="color:#8ee0b0">✓ Klart! Priset är skickat till '+$('cm-email').value.replace(/[<>&"]/g,'')+'. Kolla även skräpposten.</div>';

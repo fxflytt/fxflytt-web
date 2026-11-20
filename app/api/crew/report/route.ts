@@ -5,7 +5,7 @@
 //   POST ?photo=1&fuel=<id> | ?photo=1&damage=<id>   (image body) – only on my own report, the same day
 import { crewUser } from "@/lib/booking/crew.ts";
 import { listResources } from "@/lib/booking/team.ts";
-import { listBookings, getBooking, saveBooking } from "@/lib/booking/store.ts";
+import { bookingsBetween, getBooking, saveBooking } from "@/lib/booking/store.ts";
 import { getFleet, addLog, setLogPhoto } from "@/lib/booking/fleet.ts";
 import { listDamages, addDamage, addDamagePhoto } from "@/lib/booking/damage.ts";
 import { storePhoto, MAX_BYTES } from "@/lib/booking/photos.ts";
@@ -18,7 +18,7 @@ const day = (n = 0) => new Date(Date.now() + n * 864e5).toLocaleDateString("sv-S
 
 async function myJobs(rid: string) {
   const from = day(-14), to = day(0);
-  return (await listBookings()).filter((b) => (b.crew || []).includes(rid) && b.date && b.date >= from && b.date <= to && ["signed", "done"].includes(b.status))
+  return (await bookingsBetween(from, to)).filter((b) => (b.crew || []).includes(rid) && b.date && b.date >= from && b.date <= to && ["signed", "done"].includes(b.status))
     .sort((a, b) => (b.date! + (b.time || "")).localeCompare(a.date! + (a.time || "")));
 }
 

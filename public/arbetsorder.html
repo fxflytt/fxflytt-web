@@ -47,6 +47,10 @@
   .crew div{border:1px solid var(--line);border-radius:10px;padding:8px 11px}.crew small{display:block;color:var(--muted);font-size:12.5px}
   .vol{columns:2;column-gap:20px;font-size:13.5px;margin:0;padding-left:18px}
   .paper{display:none}
+  /* Skeleton while loading: grey cards in the shape of the content instead of a blank page */
+  .sk{display:grid;gap:10px;padding:6px 0}.sk i{display:block;height:68px;border-radius:14px;background:linear-gradient(90deg,#e9eef2 25%,#f6f8fa 50%,#e9eef2 75%);background-size:200% 100%;animation:skm 1.2s linear infinite}
+  .sk i:first-child{height:34px;width:46%}.sk i:nth-child(3n){height:92px}
+  @keyframes skm{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.sk i{animation:none}}
   .empty{text-align:center;color:var(--muted);padding:60px 16px;font-size:16px}
   .worksec h2{margin:0 0 4px;font-size:18px;color:var(--navy)}
   .bigbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;border-radius:14px;padding:16px;font:inherit;font-size:18px;font-weight:800;color:#fff;background:var(--green);cursor:pointer;margin-top:10px}
@@ -84,8 +88,8 @@
 </style>
 </head>
 <body>
-<div class="bar"><a id="back" href="/jobb" hidden>‹ Mina jobb</a><img src="/fxflytt-logo-vit.svg" alt="FX Flytt"><b id="ttl">Arbetsorder</b><button id="pr" hidden>Skriv ut</button></div>
-<div class="wrap" id="root"><div class="empty">Laddar…</div></div>
+<div class="bar"><a id="back" href="/jobb" hidden>‹ Mina jobb</a><img src="/fxflytt-logo-vit.svg" alt="FX Flytt" width="372" height="120" style="width:auto"><b id="ttl">Arbetsorder</b><button id="pr" hidden>Skriv ut</button></div>
+<div class="wrap" id="root"><div class="sk" aria-busy="true" aria-label="Laddar…"><i></i><i></i><i></i><i></i><i></i></div></div>
 <script>
 (function(){
   const $=(s)=>document.querySelector(s);

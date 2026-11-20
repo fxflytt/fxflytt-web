@@ -1,7 +1,7 @@
 // Admin: list (GET), one booking (GET ?id=), create (POST), update (PATCH ?id=), delete (DELETE ?id=, owner).
 import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
-import { listBookings, bookingsChangedSince, deletedSince, deleteBooking, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status } from "@/lib/booking/store.ts";
+import { listBookings, bookingsChangedSince, deletedSince, deleteBooking, getBooking, saveBooking, createBooking, cleanBoxes, STATUSES, type Status, bookingsCreatedSince, bookingsCreatedBefore } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
 import { notifyAll } from "@/lib/booking/push.ts";
 import { slaTick } from "@/lib/booking/sla.ts";
@@ -26,6 +26,10 @@ export async function GET(req: Request) {
   const now = Date.now(), since = Number(new URL(req.url).searchParams.get("since"));
   if (since > 0) await slaTick();
   if (since > 0) return Response.json({ bookings: await bookingsChangedSince(since - 5000), deleted: await deletedSince(since - 5000), now, partial: true });
+  // ?part=recent: created the last 12 months (the page opens fast) · ?part=older: the rest, loaded in the background.
+  const part = new URL(req.url).searchParams.get("part"), cut = Number(new URL(req.url).searchParams.get("cut")) || now - 365 * 864e5;
+  if (part === "recent") return Response.json({ bookings: await bookingsCreatedSince(cut), now, cut, partOf: "recent" });
+  if (part === "older") return Response.json({ bookings: await bookingsCreatedBefore(cut), now, cut, partOf: "older" });
   return Response.json({ bookings: await listBookings(), now });
 }
 

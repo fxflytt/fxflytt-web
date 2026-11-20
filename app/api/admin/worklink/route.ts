@@ -4,7 +4,7 @@
 //   DELETE ?id=…&url=…    → removes a photo the crew uploaded by mistake
 import { requireUser } from "@/lib/booking/auth.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
-import { getBooking, saveBooking, listBookings, issueWorkToken, workView } from "@/lib/booking/store.ts";
+import { getBooking, saveBooking, bookingsBetween, issueWorkToken, workView } from "@/lib/booking/store.ts";
 import { listResources } from "@/lib/booking/team.ts";
 import { removePhoto } from "@/lib/booking/work.ts";
 
@@ -30,7 +30,7 @@ export async function GET(req: Request) {
   if (!kvConfigured()) return noStorage();
   const date = new URL(req.url).searchParams.get("date") || "";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return Response.json({ error: "Ogiltigt datum." }, { status: 400 });
-  const [all, res] = await Promise.all([listBookings(), listResources()]);
+  const [all, res] = await Promise.all([bookingsBetween(date, date), listResources()]);
   const jobs = all.filter((b) => b.date === date && (b.status === "signed" || b.status === "done"))
     .sort((a, b) => (a.time || "99").localeCompare(b.time || "99")).map((b) => workView(b, res));
   return Response.json({ jobs });
