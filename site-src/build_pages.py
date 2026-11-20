@@ -213,7 +213,7 @@ from extra_cities import EXTRA
 CITY += [(c["slug"], c["name"], c["lead"].split(". ")[0].rstrip(".") + ".") for c in EXTRA]
 cards = "".join(f'<a class="city-card" href="flyttfirma-{s}.html"><h3><svg><use href="#i-pin"/></svg>Flyttfirma {n}</h3><p>{t}</p><span class="go">Läs mer →</span></a>' for s,n,t in CITY)
 flyttfirma = page("flyttfirma.html",
- "Flyttfirma i Mellansverige – 28 orter | FX Flytt",
+ "Flyttfirma i Mellansverige – 30 orter | FX Flytt",
  "FX Flytt flyttar i Kungsör, Örebro, Eskilstuna, Västerås, Linköping, Norrköping, Jönköping, Karlstad och fler orter – fasta priser efter boyta.",
  "Flyttfirma", "Din flyttfirma i <span>Mellansverige</span>",
  "Vårt kontor ligger i Kungsör, och vi har flyttbilar på flera orter. Vi flyttar i hela Mellansverige – och längre sträckor i hela Sverige. Välj din ort och läs mer.",
@@ -1118,13 +1118,13 @@ def _en_chrome(s):
                  ('class="btn btn-accent nav-cta">Få offert</a>', 'class="btn btn-accent nav-cta">Get a quote</a>'),
                  ('class="btn btn-accent">Få gratis offert</a>', 'class="btn btn-accent">Get a free quote</a>'),
                  ('class="btn btn-ghost">Ring 076-300 07 23</a>', 'class="btn btn-ghost">Call 076-300 07 23</a>'),
-                 ("Flytt, flyttstäd och bortforsling i Mellansverige – från Kungsör till 28 orter.", "Removals, move-out cleaning and waste removal in central Sweden – from Kungsör to 28 towns."),
+                 ("Flytt, flyttstäd och bortforsling i Mellansverige – från Kungsör till 30 orter.", "Removals, move-out cleaning and waste removal in central Sweden – from Kungsör to 30 towns."),
                  ('<h2 class="fh">Tjänster</h2>', '<h2 class="fh">Services <small style="font-weight:400">(in Swedish)</small></h2>'),
                  ('<h2 class="fh">Orter</h2>', '<h2 class="fh">Towns <small style="font-weight:400">(in Swedish)</small></h2>'),
                  ('<h2 class="fh">Kontakt</h2>', '<h2 class="fh">Contact</h2>'),
                  (">Bohagsflytt<", ">Home removals<"), (">Vad kostar en flytt?<", ">What does a move cost?<"), (">Flytthjälp per timme<", ">Moving help by the hour<"),
                  (">Flyttstäd<", ">Move-out cleaning<"), (">Kubikräknare<", ">Volume calculator<"), (">Dödsbo<", ">Estate clearance<"),
-                 (">Utlandsflytt<", ">International moves<"), (">RUT-avdrag<", ">RUT deduction<"), (">Magasinering<", ">Storage<"),
+                 (">Utlandsflytt<", ">International moves<"), (">Flytt mellan städer<", ">Moves between towns<"), (">RUT-avdrag<", ">RUT deduction<"), (">Magasinering<", ">Storage<"),
                  (">Pianoflytt<", ">Piano moves<"), (">Bli uppringd<", ">Call me back<"), (">Packning<", ">Packing<"),
                  (">Kontorsflytt<", ">Office moves<"), (">Bortforsling<", ">Waste removal<"),
                  (">Flyttfirma Kungsör<", ">Kungsör<"), (">Flyttfirma Örebro<", ">Örebro<"), (">Flyttfirma Eskilstuna<", ">Eskilstuna<"),
@@ -1140,9 +1140,9 @@ def _en_chrome(s):
 _en_rows = "".join(f"<tr><th scope='row'>{({'1 rok':'1-room flat','2 rok':'2-room flat','3 rok':'3-room flat','4 rok':'4-room flat','Villa':'House'})[h['name']]} (approx. {h['m2']} m²)</th><td>{h['bas']:,} SEK</td><td><b>{h['premium']:,} SEK</b></td></tr>".replace(",", " ") for h in H)
 english = lang_page("en.html", "en", False,
  "Moving company in central Sweden – FX Flytt (English)",
- f"Removals and move-out cleaning at fixed prices in 28 towns in central Sweden, including Stockholm and Uppsala. 2-room flat from {f"{H[1]['bas']:,}".replace(",", " ")} SEK after RUT.",
+ f"Removals and move-out cleaning at fixed prices in 30 towns in central Sweden, including Stockholm and Uppsala. 2-room flat from {f"{H[1]['bas']:,}".replace(",", " ")} SEK after RUT.",
  "In English", "Moving in Sweden? <span>We make it simple.</span>",
- "FX Flytt is a moving company based in Kungsör, serving 28 towns in central Sweden – including Stockholm, Uppsala and the Mälaren region. Fixed prices, insured moves and one contact person from quote to the last box.",
+ "FX Flytt is a moving company based in Kungsör, serving 30 towns in central Sweden – including Stockholm, Uppsala and the Mälaren region. Fixed prices, insured moves and one contact person from quote to the last box.",
  f"""
 <section>
   <div class="wrap" style="max-width:860px">
@@ -1245,7 +1245,7 @@ notfound = page("404.html",
       <a class="city-card" href="index.html"><h3>Startsidan</h3><p>Räkna ut ditt pris och begär gratis offert.</p></a>
       <a class="city-card" href="tjanster.html"><h3>Våra tjänster</h3><p>Flytt, flyttstäd, packning, magasinering och mer.</p></a>
       <a class="city-card" href="paket.html"><h3>Priser och paket</h3><p>Bas, Premium och Deluxe – fasta priser efter RUT.</p></a>
-      <a class="city-card" href="flyttfirma.html"><h3>Våra orter</h3><p>28 orter i Mellansverige.</p></a>
+      <a class="city-card" href="flyttfirma.html"><h3>Våra orter</h3><p>30 orter i Mellansverige.</p></a>
       <a class="city-card" href="vad-kostar-flytt.html"><h3>Vad kostar en flytt?</h3><p>Prisexempel för olika bostäder.</p></a>
       <a class="city-card" href="en.html" lang="en"><h3>In English</h3><p>Information and quotes in English.</p></a>
     </div>
@@ -1339,3 +1339,42 @@ husdjur = service_page("flytta-med-husdjur.html",
 
 for f, s in [("checklista-flyttstad.html", checklista), ("flytta-med-husdjur.html", husdjur)]:
     open(f, "w", encoding="utf-8").write(s); print("wrote", f)
+
+# ---------------------------------------------------------------- Added 2026-11-20: Flytt mellan städer (longer moves / distansflytt)
+_LR = [("Kungsör", "Stockholm", 60), ("Örebro", "Uppsala", 60), ("Västerås", "Karlstad", 60), ("Eskilstuna", "Jönköping", 60), ("Kungsör", "Stockholm", 100)]
+import json as _jj, math as _mm, re as _rr
+_TT = _jj.loads(_rr.search(r"const TOWNS=(\[\[.*?\]\]);", SRC, _rr.S).group(1)); _PP = {t[0]: (t[2], t[3]) for t in _TT}
+def _road(a, b):   # same as the price calculator: straight line × 1,25
+    (la1, lo1), (la2, lo2) = _PP[a], _PP[b]; r = _mm.pi / 180
+    h = _mm.sin((la2-la1)*r/2)**2 + _mm.cos(la1*r)*_mm.cos(la2*r)*_mm.sin((lo2-lo1)*r/2)**2
+    return max(1, round(2*6371*_mm.asin(_mm.sqrt(h))*1.25))
+_lp = _jj.loads(_sp.check_output(["node", "long_prices.mjs", _jj.dumps([[_road(a, b), m2] for a, b, m2 in _LR])]))
+_lr_rows = "".join(f"<tr><th scope='row'>{a} → {b}, {m2} m²</th><td>ca {p['km']} km</td><td>{p['cars']} {'bil' if p['cars'] == 1 else 'bilar'}</td><td>{_kr(p['kmCost'])}</td><td>{_kr(p['bas'])}</td><td><b>{_kr(p['premium'])}</b></td></tr>"
+                   for (a, b, m2), p in zip(_LR, _lp))
+mellan = service_page("flytt-mellan-stader.html",
+ "Flytt mellan städer – pris och körsträcka | FX Flytt",
+ f"Flytt mellan städer och distansflytt till fast pris: boytan plus {G['perKm']} kr/km per flyttbil från {G['freeKm']} km. Se exempel med riktiga priser och räkna ut ditt pris direkt.",
+ "Flytt mellan städer", "Flytt mellan städer – <span>fast pris hela vägen</span>",
+ "Ska du flytta till en annan stad? Du får ett fast pris innan flytten – boytan plus körsträckan – och samma team kör hela vägen.",
+ [("Så räknas priset", _ul([
+    "<b>Fast pris efter boyta</b> – samma prislista som för en flytt inom orten.",
+    f"<b>Körsträcka: {G['perKm']} kr/km per flyttbil</b> för hela sträckan, när adresserna ligger {G['freeKm']} km eller mer från varandra. Varje bil kör hela vägen, så två bilar betyder dubbel körsträcka.",
+    "<b>Avståndet räknas en väg</b>, mellan din gamla och nya adress – inte tur och retur och inte från vårt kontor.",
+    "<b>Antal bilar</b> beror på boytan – eller på volymen, om du har mer saker än boytan brukar rymma.",
+    "Med <b>Premium</b> (flytt + flyttstäd) får du 10 % rabatt och med <b>Deluxe</b> 20 % – även på körsträckan."])),
+  ("Exempel med riktiga priser", f'''<p style="color:var(--muted);margin-bottom:12px">Inkl. moms efter RUT-avdrag. Avstånden är ungefärliga mellan orternas centrum – i prisräknaren och offerten räknas de på dina riktiga adresser.</p>
+    <div class="cmp-scroll"><table class="cmp ex"><thead><tr><th>Flytt</th><th>Avstånd</th><th>Bilar</th><th>Körsträcka</th><th>Bas</th><th class="hot">Premium</th></tr></thead><tbody>{_lr_rows}</tbody></table></div>
+    <p class="cmp-note">Premium = flytt + flyttstäd med 10 % rabatt. <a href="index.html#prisraknare">Räkna ut ditt eget pris</a> · <a href="vad-kostar-flytt.html">Fler prisexempel</a></p>'''),
+  ("Så går en längre flytt till", _how([("Begär offert", "Berätta adresser, boyta och datum – eller räkna ut priset själv i prisräknaren."),
+                                         ("Fast pris", "Du får ett tydligt pris innan flytten, med körsträckan inräknad."),
+                                         ("Flyttdagen", "Vi lastar, kör hela vägen och ställer in allt på plats i nya hemmet.")])),
+  ("Bra att veta", _ul(["Packa ordentligt och märk kartongerna rum för rum – en längre resa kräver kartonger som tål staplingen.",
+    "Värdesaker, viktiga dokument och mediciner tar du med själv.",
+    "Berätta om det finns förråd, garage eller vind som också ska med, så räcker bilarna från början.",
+    "Flyttar du utomlands? Läs om <a href=\"utlandsflytt.html\">utlandsflytt</a>."]))],
+ [("Vad kostar en flytt mellan två städer?", f"Fast pris efter boyta plus {G['perKm']} kr/km per flyttbil för hela sträckan, en väg. Till exempel Kungsör–Stockholm, 60 m²: ca {_kr(_lp[0]['bas'])} efter RUT."),
+  ("Räknas körsträckan tur och retur?", "Nej, bara en väg – mellan din gamla och nya adress. Vår resa till dig betalar du inte för."),
+  ("Varför räknas körsträckan per flyttbil?", "Varje bil kör hela vägen. En större bostad som behöver två bilar får därför dubbel körsträcka."),
+  ("Får jag RUT-avdrag på körsträckan?", "Nej, RUT gäller arbetskostnaden. Körsträckan ger inte avdrag – priserna ovan är redan efter avdraget på arbetet."),
+  ("Flyttar ni i hela Sverige?", "Ja. Vi har 30 orter i Mellansverige och kör längre flyttar i hela Sverige.")])
+open("flytt-mellan-stader.html", "w", encoding="utf-8").write(mellan); print("wrote flytt-mellan-stader.html")
