@@ -1,6 +1,7 @@
 /* FX Flytt – snabbkontakt "Bli uppringd". Inline form in #snabbkontakt and a pop-up for any [data-callback] link. */
 (function () {
   "use strict";
+  var T0 = Date.now();   // spam protection: robots post within a second (lib/spamGuard.ts)
   var TOPICS = ["Flytt", "Flyttstäd", "Flytt + flyttstäd", "Packning / montering", "Kontorsflytt", "Bortforsling", "Magasinering", "Dödsbo", "Utlandsflytt", "Annat"];
   var TIMES = ["Så snart som möjligt", "Förmiddag (07–12)", "Eftermiddag (12–17)", "Kväll (17–19)"];
   var n = 0;
@@ -33,7 +34,7 @@
       err.hidden = true; btn.disabled = true; btn.textContent = "Skickar…";
       fetch("/api/kontakt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         name: g("name"), phone: phone, email: g("email"), topic: g("topic"), when: g("when"), message: g("message"), website: g("website"),
-        page: location.pathname
+        page: location.pathname, ft: Date.now() - T0
       }) }).then(function (r) { return r.ok ? r.json() : r.json().catch(function () { return {}; }).then(function (j) { throw new Error(j.error || "fel"); }); })
         .then(function () {
           f.hidden = true; root.querySelector(".cb-done").hidden = false;

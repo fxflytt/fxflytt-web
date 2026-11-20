@@ -54,6 +54,11 @@ five city pages. The site has since grown past that scope; this document describ
 - Upstash Redis (`lib/booking/kv.ts`) for bookings, staff, vehicles and settings. `db/schema.sql` (Supabase) is not in use.
 - Vercel Blob for photos, SMTP for email, Vercel cron for daily reminders.
 
+**Spam protection** (`lib/spamGuard.ts`, 2026-11-20) for the quote form, "Bli uppringd" and "Få priset på mejl":
+hidden honeypot field; time trap (posted within 3 s → ignored; no time stamp → marked "Möjlig spam");
+max 5 per device per 10 min and 1 per phone number per hour (counters in Upstash); more than 30 requests in an
+hour on the whole site → marked "Möjlig spam" and one push notice. Emergency: Vercel → Firewall → Attack Challenge Mode.
+
 **Quality**
 - `npm test` – 83 tests (pricing, RUT, bookings, schedule, staff, clock, fleet, referral, backup, chat, SMTP).
 - Dependency versions are pinned exactly in `package.json`.
