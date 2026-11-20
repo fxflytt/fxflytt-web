@@ -793,14 +793,14 @@ FX Flytt</textarea>
     root.innerHTML=navBar('inbox','Klagomål')+`<main>${inboxTabs()}
       <div class="ostat"><span>⚠ <b>${klagAll.filter(c=>c.status!=='closed').length}</b> öppna</span><span><b>${klagAll.filter(c=>c.status!=='closed'&&c.severity==='high').length}</b> allvarliga</span>${klagAll.some(late)?`<span style="color:var(--red)"><b>${klagAll.filter(late).length}</b> försenade svar</span>`:''}</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><div class="chips" style="margin:0">${Object.entries(F).map(([k,[l]])=>`<button data-f="${k}" class="${k===klagFilter?'on':''}">${l}</button>`).join('')}</div><button class="btn sm" id="k_new" style="margin-left:auto">+ Nytt klagomål</button></div>
-      <div class="card" style="padding:6px 18px">${list.length?list.map(c=>`<div class="todo" data-k="${esc(c.id)}" style="cursor:pointer"><a>
+      <div class="card" style="padding:6px 18px">${list.length?list.map(c=>`<div class="todo" data-kid="${esc(c.id)}" style="cursor:pointer"><a>
         <b>${esc(c.name||c.email||'Okänd kund')} <span class="tag ${KSEV[c.severity][1]}">${KSEV[c.severity][0]}</span> <span class="tag">${esc(KCAT[c.category]||c.category)}</span>${c.status==='closed'?' <span class="tag ok">Avslutad</span>':c.status==='handling'?' <span class="tag seen">Hanteras</span>':''}</b>
         <small>${esc(c.summary||c.subject)}</small></a>
         <small style="white-space:nowrap;${late(c)?'color:var(--red);font-weight:700':''}" class="muted">${c.status==='closed'?esc(ago(c.updatedAt)):'Svara senast '+esc(fmtDate(c.deadline))}</small></div>`).join(''):'<div class="empty">Inga klagomål här.</div>'}</div>
       <div class="muted" style="margin-top:8px">Klagomål i info@ hamnar här av sig själva. ${esc(nm('maja'))} bedömer hur allvarligt det är och skriver ett svar – men lovar aldrig ersättning. Allvarliga svaras inom en arbetsdag, övriga inom tre.</div></main>`;
     bindInboxTabs();
     root.querySelectorAll('.chips [data-f]').forEach(x=>x.onclick=()=>{ klagFilter=x.dataset.f; showKlag(); });
-    root.querySelectorAll('[data-k]').forEach(x=>x.onclick=()=>{ klagOpen=x.dataset.k; showKlag(); });
+    root.querySelectorAll('[data-kid]').forEach(x=>x.onclick=()=>{ klagOpen=x.dataset.kid; showKlag(); });
     $('#k_new').onclick=()=>{ klagNew=true; showKlag(); };
   }
   function showKlagNew(){
