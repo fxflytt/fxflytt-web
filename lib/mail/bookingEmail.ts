@@ -11,9 +11,10 @@ export const fmtDate = (d?: string) =>
     : "Enligt överenskommelse";
 const telHref = (p: string) => "tel:" + p.replace(/[^\d+]/g, "").replace(/^0/, "+46");
 
-function shell(title: string, badge: { text: string; bg: string; fg: string }, inner: string) {
+// `pre` is the hidden preview line the mail app shows under the subject (otherwise Gmail shows "FX FX Flytt DIN OFFERT …").
+function shell(title: string, badge: { text: string; bg: string; fg: string }, inner: string, pre = "") {
   return `<!DOCTYPE html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title></head>
-<body style="margin:0;padding:0;background:${BG};font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+<body style="margin:0;padding:0;background:${BG};font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">${(pre || title) ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">${esc((pre || title).slice(0, 140))}&#8199;&#65279;&#847;&#8199;&#65279;&#847;</div>` : ""}
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${BG}"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid ${LINE}">
   <tr><td style="background:${NAVY};padding:20px 28px">
@@ -75,8 +76,8 @@ export function signedCustomerEmail(b: Booking) {
   const html = shell(subject, { text: "BOKNINGEN ÄR KLAR", bg: "#e6f5ec", fg: GREEN },
     `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Tack ${esc(b.data.name.split(" ")[0])} – din flytt är bokad!</h1></td></tr>` +
     p(`Du signerade offerten ${esc(when)}. Vi hör av oss innan flyttdagen och bekräftar tiden.`) + summary(b) +
-    p(`<span style="color:${MUTED};font-size:13px">Ändra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen. Bokningsnummer: ${esc(b.id)}.</span>`));
-  const text = `Tack ${b.data.name}! Din flytt är bokad (${b.id}).\nDatum: ${fmtDate(b.date)}${b.time ? " kl. " + b.time : ""}\nPris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}\nSignerad: ${when}\n\nÄndra datum eller avboka kostnadsfritt fram till 6 dagar före flyttdagen.\nFX Flytt AB · 076-300 07 23`;
+    p(`<span style="color:${MUTED};font-size:13px">Ändra datum kostnadsfritt fram till 2 dagar före och avboka kostnadsfritt fram till 6 dagar före flyttdagen. Bokningsnummer: ${esc(b.id)}.</span>`));
+  const text = `Tack ${b.data.name}! Din flytt är bokad (${b.id}).\nDatum: ${fmtDate(b.date)}${b.time ? " kl. " + b.time : ""}\nPris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}\nSignerad: ${when}\n\nÄndra datum kostnadsfritt fram till 2 dagar före och avboka kostnadsfritt fram till 6 dagar före flyttdagen.\nFX Flytt AB · 076-300 07 23`;
   return { subject, html, text };
 }
 
@@ -190,7 +191,7 @@ export function campaignEmail(b: Booking, subject: string, body: string, offerUr
 export function personalOfferEmail(b: Booking, subject: string, body: string, offerUrl: string, label = "Se och signera offerten", badge = "DIN OFFERT") {
   const paras = body.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
   const html = shell(subject, { text: badge, bg: "#fff1e6", fg: "#c2560a" },
-    paras.map((x) => p(esc(x).replace(/\n/g, "<br>"))).join("") + (b.offer ? summary(b) : "") + button(offerUrl, label));
+    paras.map((x) => p(esc(x).replace(/\n/g, "<br>"))).join("") + (b.offer ? summary(b) : "") + button(offerUrl, label), (paras[1] || paras[0] || "").replace(/\s+/g, " "));
   const text = `${paras.join("\n\n")}\n\n${label}: ${offerUrl}\n\nFX Flytt AB · 076-300 07 23`;
   return { subject, html, text };
 }

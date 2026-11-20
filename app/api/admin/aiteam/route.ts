@@ -10,14 +10,22 @@ import { AGENTS, agentName, listActivity, sentToday, type AgentId } from "@/lib/
 import { getPlan, makePlan } from "@/lib/agents/run.ts";
 import { getState } from "@/lib/agents/inbox.ts";
 import { smsConfigured } from "@/lib/sms/send.ts";
+import { kv } from "@/lib/booking/kv.ts";
+import { getPrices } from "@/lib/pricing/current.ts";
+import { runScenarios } from "@/lib/agents/scenarios.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 const today = () => new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" });
 
 export async function GET(req: Request) {
   const u = await requireUser(req); if (u instanceof Response) return u;
   if (!kvConfigured()) return Response.json({ error: "Lagring saknas." }, { status: 503 });
+  if (new URL(req.url).searchParams.get("scenarios")) {
+    const v = await kv<string | null>(["GET", "fx:scen"]);
+    return Response.json(v ? JSON.parse(v) : { at: 0, results: [] });
+  }
   const s = await getSettings();
   let plan = await getPlan();
   if (!plan || plan.date !== today() || Date.now() - plan.madeAt > 30 * 6e4) plan = await makePlan();
@@ -28,5 +36,15 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const u = await requireUser(req); if (u instanceof Response) return u;
+  // "Testa Elsa": the owner's scenarios through the real reply step. Nothing is sent. Owner only (it costs a few kronor).
+  if (new URL(req.url).searchParams.get("scenarios")) {
+    if (u.role !== "owner") return Response.json({ error: "Bara ägaren kan köra provet." }, { status: 403 });
+    if (!aiConfigured()) return Response.json({ error: "AI är inte inställt (ANTHROPIC_API_KEY)." }, { status: 503 });
+    const ids = ((await req.json().catch(() => ({}))) as { ids?: unknown }).ids;
+    const results = await runScenarios(await getPrices(), Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : undefined, agentName(await getSettings(), "elsa"));
+    const out = { at: Date.now(), by: u.name, results };
+    await kv(["SET", "fx:scen", JSON.stringify(out)]);
+    return Response.json(out);
+  }
   return Response.json(await makePlan());
 }

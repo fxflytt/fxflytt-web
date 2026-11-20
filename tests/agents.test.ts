@@ -446,3 +446,84 @@ test("Majas bekräftelse följer kundens språk", () => {
   assert.equal(team.textLang("Hej, ni har repat vårt bord och jag är inte nöjd med det."), "sv");
   assert.equal(team.textLang(""), "sv");
 });
+
+const vol = await import("../lib/agents/volume.ts");
+const { refsOf } = await import("../lib/mail/imap.ts");
+
+test("tillägg: ägarens regel – gratis upp till 2 m³ bara om det ryms i bokade bilar", () => {
+  const B = (data: Record<string, unknown>, lines: string[] = []) => ({ id: "FX1", createdAt: 0, updatedAt: 0, status: "sent", source: "web", history: [],
+    data: { name: "A", phone: "1", ...data }, offer: { total: 1, lines: lines.map((label) => ({ label, amount: 1 })) } }) as never;
+  // Customer sent a list of 10 m³ (one truck): 5 boxes extra is fine.
+  const small = vol.extraCheck(B({ volume: { m3: 10, items: 0, list: [] } }, ["Flytt 40 m² (1 flyttbil)"]), [{ id: "box", qty: 5 }])!;
+  assert.equal(small.add, 0.3); assert.equal(small.free, true);
+  // 10 m³ + 2 m³ of furniture: still free.
+  assert.equal(vol.extraCheck(B({ volume: { m3: 10, items: 0, list: [] } }, ["Flytt 40 m² (1 flyttbil)"]), [{ id: "sofa3", qty: 1 }])!.free, true);
+  // Already 20 m³ on one 20 m³ truck: even one box is not promised free.
+  const full = vol.extraCheck(B({ volume: { m3: 20, items: 0, list: [] } }, ["Flytt 60 m² (1 flyttbil)"]), [{ id: "box", qty: 1 }])!;
+  assert.equal(full.free, false); assert.match(full.reason, /nästan full/);
+  // 70 boxes = 4.2 m³: more than 2 m³ → the office checks.
+  const many = vol.extraCheck(B({ areaM2: "40" }, ["Flytt 40 m² (1 flyttbil)"]), [{ id: "box", qty: 70 }])!;
+  assert.equal(many.add, 4.2); assert.equal(many.free, false); assert.match(vol.extraText(many), /lova INTE att det ingår/);
+  // Unknown thing: the AI's own estimate is used.
+  assert.equal(vol.itemsM3([{ id: "other", qty: 2, label: "Hundbur", m3: 0.3 }]).m3, 0.6);
+});
+
+test("svar på vårt mejl kopplas till offerten, även när namnet inte stämmer", async () => {
+  const b = { ...(await store.createBooking("admin", { name: "Anna Test", phone: "1", email: "ammar@ex.se" })), status: "sent" as const, token: "tok12345678" };
+  const refs = refsOf("Hej! Ingår kartonger?\n\n> Se och signera offerten: https://www.fxflytt.se/signera?t=tok12345678");
+  assert.deepEqual(refs.tokens, ["tok12345678"]);
+  const l = inbox.linkBooking({ from: "ammar@ex.se", fromName: "Ammar", subject: "Re: Din flytt från Sundsvall till Örebro", text: "Ingår kartonger?", refs }, { name: "Ammar", date: "" } as never, [b]);
+  assert.equal(l.sure?.id, b.id); assert.match(l.note, /svarar på vårt mejl/);
+  // Someone else forwarding the link does not get the booking.
+  assert.equal(inbox.linkBooking({ from: "other@ex.se", fromName: "X", subject: "Fwd", text: "", refs }, undefined, [b]).sure, null);
+  // Not confirmed but looks like a reply to an offer: Elsa must not ask for everything again.
+  assert.match(inbox.bookingBlock({ sure: null, maybe: b, note: "" }, "2026-11-20"), /be INTE om boyta, adresser och våning igen/);
+});
+
+test("Elsas svar får beslutet om tillägget och regeln om frågor med två betydelser", async () => {
+  const b = { ...(await store.createBooking("admin", { name: "Ammar", phone: "1", email: "a@ex.se", areaM2: "40" })), status: "sent" as const, offer: { total: 4000, lines: [{ label: "Flytt 40 m² (1 flyttbil)", amount: 4000 }] } };
+  const extra = vol.extraCheck(b, [{ id: "box", qty: 70 }]);
+  await inbox.writeReply({ from: "a@ex.se", fromName: "Ammar", subject: "Re: offert", text: "Ingår flyttkartonger? Jag behöver omkring 70.", draft: "", extracted: undefined },
+    { link: { sure: b, maybe: null, note: "" }, extra, today: "2026-11-20" });
+  const call = claudeCalls.at(-1)!;
+  assert.match(call.user, /TILLÄGG .*70 × Flyttkartong \(standard\)/); assert.match(call.user, /lova INTE att det ingår/);
+  assert.match(call.system, /Kan en fråga betyda två saker/); assert.match(call.system, /erbjud att lägga till det i offerten/);
+});
+
+test("säljmejlet har en dold förhandsrad, så Gmail inte visar \"FX FX Flytt DIN OFFERT\"", async () => {
+  const { personalOfferEmail } = await import("../lib/mail/bookingEmail.ts");
+  const b = await store.createBooking("admin", { name: "Anna", phone: "1", email: "a@ex.se" });
+  const m = personalOfferEmail(b, "Din flytt", "Hej Anna,\n\nTack för att du tittade på offerten.", "https://x/signera?t=1");
+  assert.match(m.html, /<body[^>]*><div style="display:none[^>]*>Tack för att du tittade på offerten\./);
+});
+
+const scen = await import("../lib/agents/scenarios.ts");
+const { OFFICE_RULES } = await import("../lib/agents/officerules.ts");
+
+test("kontorets regler: med i det Elsa vet, och går före hemsidans text", async () => {
+  const k = (await import("../lib/agents/knowledge.ts")).knowledge(PRICES as never);
+  assert.ok(k.startsWith("KONTORETS REGLER"));
+  for (const w of ["ALDRIG emot kontanter", "Ingen handpenning", "röda dagar", "avfrostade", "trafiktillstånd", "Håll isär ändring och avbokning", "besiktningsprotokoll", "förrådshyra", "bilder på sakerna"])
+    assert.ok(OFFICE_RULES.includes(w), w);
+});
+
+test("ändra datum gratis till 2 dagar före, avbokning till 6 dagar före", async () => {
+  const b = { ...(await store.createBooking("admin", { name: "A", phone: "1", email: "a@ex.se" })), status: "signed" as const, date: "2026-11-23", time: "08:00" };
+  const t = inbox.bookingBlock({ sure: b, maybe: null, note: "x" }, "2026-11-20");
+  assert.match(t, /ÄNDRA DATUM är KOSTNADSFRITT \(2 dagar eller mer kvar\)/); assert.match(t, /AVBOKNING är belagd med 10 %/); assert.match(t, /Bokad starttid: kl\. 08:00/);
+});
+
+test("Elsas prov: 25 scenarier, kontrollerna fungerar", async () => {
+  assert.equal(scen.SCENARIOS.length, 25);
+  assert.equal(new Set(scen.SCENARIOS.map((s) => s.id)).size, 25);
+  const s16 = scen.SCENARIOS.find((s) => s.id === "16a")!;
+  assert.deepEqual(scen.check(s16, "Det går bra att flytta datumet utan kostnad."), []);
+  assert.equal(scen.check(s16, "Det kostar 10 % av priset.").length, 2);
+  const s5 = scen.SCENARIOS.find((s) => s.id === "5a")!;
+  assert.deepEqual(scen.check(s5, "Vi skickar en faktura efter jobbet med 10 dagars betalningstid. Kontanter tar vi inte emot."), []);
+  // A run through the (fake) AI: every scenario gets an answer and a result.
+  const r = await scen.runScenarios(PRICES as never, ["1a", "16a", "21"]);
+  assert.deepEqual(r.map((x) => x.id), ["1a", "16a", "21"]);
+  assert.ok(r.every((x) => x.reply && !x.error));
+  assert.match(claudeCalls.at(-1)!.system, /KONTORETS REGLER/);
+});
