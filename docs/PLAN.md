@@ -19,7 +19,7 @@ five city pages. The site has since grown past that scope; this document describ
 
 **Public website** (plain HTML in `public/`, built from `site-src/` with `./build-site.sh`)
 - Home page with quote form and price calculator, 5 menu pages (tjänster, flyttfirma, paket, om oss, rådgivare),
-  28 city pages (each with its own "Bra att veta" text in `site-src/city_local.py` and a
+  30 city pages (each with its own "Bra att veta" text in `site-src/city_local.py` and a
   route table with real prices to the 4 nearest cities), flyttstäd, dödsbo, utlandsflytt, RUT-avdrag, kubikräknare, integritetspolicy, villkor.
 - Prices from `lib/pricing/prices.json`; the owner can change them in admin and `public/fx-prices.js` shows the current ones.
 - SEO: unique titles/descriptions, canonical clean addresses (308 from `.html`), Open Graph image, MovingCompany +
@@ -32,6 +32,7 @@ five city pages. The site has since grown past that scope; this document describ
   (`site-src/offert-en.js`, `/offert?lang=en`). What is sent to the office stays in Swedish, with a note that the
   customer used the English form. The confirmation e-mail and the chat bubble are still Swedish.
 - Own "Sidan finns inte" page for unknown addresses (`site-src/404.html`, shown by `app/not-found.tsx`); hreflang links between `/` and `/en`.
+- City pages Surahammar and Lindesberg (30 towns) and the page `/flytt-mellan-stader` (longer moves, km per truck) – 2026-11-20.
 - Guides `/checklista-flyttstad` (printable) and `/flytta-med-husdjur` (2026-11-18), linked from Rådgivare.
 - The chat assistant can work out distance and an approximate price between two towns (tool `rakna_flytt`,
   `lib/assistant/distance.ts`; town list `lib/assistant/towns.json`, exported from the home page by the build).

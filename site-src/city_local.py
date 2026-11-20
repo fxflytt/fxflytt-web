@@ -77,6 +77,12 @@ LOCAL = {
  "karlskoga": [
   "Många flyttar till Karlskoga för jobbet, och då är datumet ofta det viktigaste – berätta när du måste vara på plats, så planerar vi flyttdagen efter det.",
   "Runt staden finns landsbygd och sjönära boende, där vägen fram kan vara smal eller grusad. Flyttar du mellan Karlskoga och Örebro eller Mälardalen räknas körsträckan bara på avståndet mellan dina två adresser."],
+ "surahammar": [
+  "Många flyttar i Surahammar är korta – inom kommunen eller till Västerås och Köping. Under 15 km mellan adresserna ingår körsträckan i priset.",
+  "I villor och hus på landet finns ofta förråd, garage och uthus som också ska tömmas. Gå igenom alla utrymmen innan du begär offert, så räknar vi med rätt bil från början."],
+ "lindesberg": [
+  "Lindesbergs kommun är stor, och avståndet mellan till exempel Storå och Fellingsbro kan vara långt. Skriv båda adresserna så exakt som möjligt, så blir körsträckan och priset rätt från början.",
+  "I de äldre trähusen i centrum kan trapporna vara smala och hiss saknas. Berätta om våning och bärsträcka, så skickar vi rätt antal flyttare."],
  "strangnas": [
   "Flyttar du hit från Stockholmsområdet är det ofta en längre flytt, och då lönar det sig att packa ordentligt och märka kartongerna rum för rum – så går både lastning och uppackning snabbare.",
   "I Mariefred finns många äldre hus med branta trappor, medan Strängnäs och Åkers styckebruk har både lägenheter och nya villaområden. Berätta om trappor, hiss och parkering, så planerar vi rätt."],

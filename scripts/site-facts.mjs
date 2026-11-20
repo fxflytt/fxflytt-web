@@ -2,7 +2,7 @@
 // (Elsa, Maja, Oskar) answers from exactly what the website says. Run by build-site.sh after every rebuild.
 import { readFileSync, writeFileSync } from "node:fs";
 
-const PAGES = ["villkor", "paket", "flyttstad", "utlandsflytt", "pianoflytt", "kontorsflytt", "packning", "magasinering", "bortforsling", "dodsbo", "rut-avdrag", "flytta-med-husdjur"];
+const PAGES = ["villkor", "paket", "flyttstad", "utlandsflytt", "pianoflytt", "kontorsflytt", "packning", "magasinering", "bortforsling", "dodsbo", "rut-avdrag", "flytta-med-husdjur", "flytt-mellan-stader"];
 const MAX = 7000;
 const ENT = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#39;": "'", "&nbsp;": " ", "&ndash;": "–", "&mdash;": "—", "&rsaquo;": "›", "&times;": "×" };
 

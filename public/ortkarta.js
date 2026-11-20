@@ -22,7 +22,9 @@
     ["strangnas", "Strängnäs", 59.3774, 17.0312],
     ["enkoping", "Enköping", 59.6361, 17.0777],
     ["uppsala", "Uppsala", 59.8586, 17.6389],
-    ["stockholm", "Stockholm", 59.3293, 18.0686]
+    ["stockholm", "Stockholm", 59.3293, 18.0686],
+    ["surahammar", "Surahammar", 59.709, 16.221],
+    ["lindesberg", "Lindesberg", 59.594, 15.227]
   ];
   var TRUCK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4h14v11H1zM15 8h4l3 3v4h-7z"/><circle cx="5.5" cy="17.5" r="2"/><circle cx="18.5" cy="17.5" r="2"/></svg>';
 
