@@ -51,6 +51,12 @@ export type Booking = {
   photoToken?: string;
   custPhotos?: { url: string; at: number }[];
   photoAi?: { m3: number; m3Low: number; m3High: number; rooms: string; heavy: string[]; fragile: string[]; packing: string; notes: string; confidence: string; at: number; n: number; error?: string };
+  // The offer: how long the price holds, a personal greeting from the seller, the customer's questions.
+  validUntil?: string;       // last day the customer can sign (YYYY-MM-DD); unset = no end date
+  renewAskedAt?: number;     // the customer asked for a new offer after it ran out
+  intro?: Intro;             // personal message at the top of the offer (with a copy of the seller's profile)
+  qa?: QA[];                 // questions the customer asked in the offer, and our answers
+  photoInOffer?: boolean;    // false = do not show the customer's photos and the AI estimate in the offer
   version?: number; prevId?: string; nextId?: string;   // a new version of an offer (Version 2, 3 …) and the one it replaced
   noMarketing?: boolean;     // the customer said no to campaign e-mails
   campaigns?: { at: number; subject: string; by: string }[];
@@ -82,6 +88,11 @@ export type Booking = {
 };
 
 export type Extra = { id: string; label: string; price: number };
+export type Intro = { text: string; uid: string; name: string; title?: string; phone?: string; photo?: string; at: number };
+export type QA = { id: string; q: string; at: number; a?: string; aAt?: number; aBy?: string; via?: string };
+const stockholmDay = (t = Date.now()) => new Date(t).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" });
+/** The offer has run out: it was sent, has an end date, and that day has passed. */
+export const isExpired = (b: Pick<Booking, "status" | "validUntil">, today = stockholmDay()) => b.status === "sent" && !!b.validUntil && b.validUntil < today;
 export type CallOutcome = "answered" | "noanswer" | "callback" | "notinterested" | "contacted";
 export const CALL_OUTCOMES: Record<CallOutcome, string> = { answered: "Pratade med kunden", noanswer: "Inget svar", callback: "Ringer tillbaka / vill fundera", notinterested: "Inte intresserad", contacted: "Kontaktad" };
 export type Call = { at: number; by: string; outcome: CallOutcome; note: string };
@@ -278,6 +289,11 @@ export function publicView(b: Booking) {
     packages: b.status === "sent" && b.packages ? b.packages.map((p) => ({ id: p.id, name: p.name, desc: p.desc, total: p.total, lines: p.lines })) : null,
     pkg: b.packages ? (b.packages.find((p) => p.total === b.offer?.total && JSON.stringify(p.lines) === JSON.stringify(b.offer?.lines))?.id || null) : null,
     addonsChosen: (b.extras || []).filter((e) => b.extrasChosen?.includes(e.id)),
+    validUntil: b.status === "sent" ? b.validUntil || null : null, expired: isExpired(b), renewAsked: !!b.renewAskedAt,
+    intro: b.intro && b.status !== "declined" ? { text: b.intro.text, name: b.intro.name, title: b.intro.title || "", phone: b.intro.phone || "", photo: b.intro.photo || "" } : null,
+    qa: (b.qa || []).map((x) => ({ q: x.q, at: x.at, a: x.a || "", aAt: x.aAt || null, aBy: x.aBy || "" })),
+    photos: b.photoInOffer !== false && b.custPhotos?.length && b.photoAi && !b.photoAi.error && b.status !== "declined"
+      ? { urls: b.custPhotos.slice(0, 6).map((p) => p.url), n: b.custPhotos.length, m3: b.photoAi.m3, heavy: b.photoAi.heavy.slice(0, 6), fragile: b.photoAi.fragile.slice(0, 6) } : null,
   };
 }
 
@@ -296,6 +312,7 @@ export function applyDiscount(b: Booking, pct: number) {
 // at least 20 h after sending and "three days" at least 68 h after.
 export function reminderDue(b: Booking, now = Date.now()): 0 | 1 | 2 {
   if (b.status !== "sent" || !b.sentAt || !b.token || !b.data.email) return 0;
+  if (isExpired(b, new Date(now).toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm" }))) return 0;   // no reminder about an offer that has run out
   if (b.date && b.date < new Date(now).toISOString().slice(0, 10)) return 0;
   const n = b.reminders?.length || 0, age = now - b.sentAt;
   if (n === 0 && age >= 20 * 3_600_000) return 1;

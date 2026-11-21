@@ -58,6 +58,26 @@
   .ok{background:#e6f5ec;border-color:#bfe5cf}
   .ok h1{color:var(--green)}
   a{color:var(--navy)}
+  /* The seller's greeting, the end date, the customer's photos, questions and the PDF */
+  .intro{display:flex;gap:14px;align-items:flex-start}
+  .intro .av{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;background:#e9eef2;border:3px solid #fff;box-shadow:0 0 0 2px var(--accent)}
+  .intro .av.ini{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;color:var(--navy)}
+  .intro p{margin:0 0 8px;white-space:pre-wrap;font-size:15.5px}
+  .intro .who{font-weight:800;color:var(--navy);font-size:15px}.intro .who small{display:block;font-weight:600;color:var(--muted);font-size:13px}
+  .intro .who a{font-weight:700}
+  .valid{display:flex;gap:10px;align-items:center;background:#fff8f2;border:1px solid #ffd9bd;border-radius:12px;padding:10px 14px;margin-top:12px;font-size:14.5px}
+  .valid b{color:#b5520a}.valid.soon{background:#fff1e6;border-color:#ff7a1a}
+  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.pgrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.chips span{font-size:13px;background:#eef3f7;border-radius:999px;padding:4px 10px;font-weight:600;color:var(--navy)}
+  .qa{display:grid;gap:8px;margin:10px 0}
+  .qa .q,.qa .a{border-radius:14px;padding:10px 13px;font-size:15px;white-space:pre-wrap;max-width:88%}
+  .qa .q{background:#eef3f7;justify-self:end;border-bottom-right-radius:4px}
+  .qa .a{background:#fff3e8;border-bottom-left-radius:4px}.qa small{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:2px}
+  .qa .wait{font-size:13px;color:var(--muted);justify-self:end}
+  #qtxt{width:100%;padding:12px;border:1.5px solid #c9d5df;border-radius:12px;font:inherit;font-size:16px;resize:vertical}
+  .btn.sec{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+  .pdfbtn{display:inline-flex;gap:6px;align-items:center;margin-top:12px;font-weight:700;font-size:14.5px;text-decoration:none;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;background:#fff}
+  @media print{header,.steps,#qa-card,#sign-card,.pdfbtn,#pvbar{display:none!important}body{background:#fff}.card{border:0;padding:8px 0;margin:0 0 6px}.price{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
@@ -89,6 +109,52 @@
       ${(o.notIncluded||[]).length?`<div class="note">Ingår inte i priset:</div>${o.notIncluded.map(x=>`<div class="row">• ${esc(x)}</div>`).join('')}`:''}
       <div style="color:#b9c7d3;font-size:12px;margin-top:10px">Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året.</div></div>`;
   }
+  // Countdown to the end of the last valid day (Swedish time).
+  function validBox(v){
+    if(!v.validUntil) return '';
+    const end=new Date(v.validUntil+'T23:59:59+01:00').getTime(), left=end-Date.now(), d=Math.floor(left/864e5), h=Math.floor(left%864e5/36e5);
+    const when=new Date(v.validUntil+'T12:00:00Z').toLocaleDateString('sv-SE',{weekday:'long',day:'numeric',month:'long',timeZone:'UTC'});
+    const soon=left<2*864e5, rest=left<=0?'':d>=1?` – ${d} ${d===1?'dag':'dagar'}${soon&&h?` och ${h} tim`:''} kvar`:` – ${Math.max(1,h)} tim kvar`;
+    return `<div class="valid${soon?' soon':''}"><span style="font-size:20px">⏳</span><span>Priset gäller till och med <b>${esc(when)}</b>${esc(rest)}</span></div>`;
+  }
+  function introCard(v,first){
+    const i=v.intro;
+    if(!i) return `<div class="card"><h1>Hej ${first}!</h1><p class="muted">Här är din offert från FX Flytt (${esc(v.id)}). Kontrollera uppgifterna och signera – då är flytten bokad.</p>${validBox(v)}${pdfBtn()}</div>`;
+    const ini=esc((i.name||'FX').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase());
+    const tel=i.phone?i.phone.replace(/[^\d+]/g,'').replace(/^0/,'+46'):'';
+    return `<div class="card"><div class="intro">${i.photo?`<img class="av" src="${esc(i.photo)}" alt="">`:`<div class="av ini">${ini}</div>`}<div style="min-width:0;flex:1"><p>${esc(i.text)}</p>
+      <div class="who">${esc(i.name)}${i.title?`<small>${esc(i.title)}, FX Flytt</small>`:'<small>FX Flytt</small>'}${i.phone?`<a href="tel:${esc(tel)}">📞 ${esc(i.phone)}</a>`:''}</div></div></div>
+      <p class="muted" style="margin:12px 0 0">Offert ${esc(v.id)} · kontrollera uppgifterna nedan och signera – då är flytten bokad.</p>${validBox(v)}${pdfBtn()}</div>`;
+  }
+  const pdfBtn=()=>t?`<a class="pdfbtn" href="/api/offert-pdf?t=${encodeURIComponent(t)}" target="_blank" rel="noopener">📄 Ladda ner som PDF</a>`:'';
+  function photosCard(v){
+    const p=v.photos; if(!p) return '';
+    return `<div class="card"><h2 style="margin:0 0 2px;font-size:20px">📷 Vi har tittat på dina bilder</h2><p class="muted" style="margin:0">Tack för bilderna (${p.n} st). Så här har vi räknat:</p>
+      <div class="pgrid">${p.urls.map(u=>`<img src="${esc(u)}" alt="" loading="lazy">`).join('')}</div>
+      <div><b>Ca ${esc(p.m3)} m³</b> att flytta</div>
+      ${p.heavy.length?`<div class="muted" style="margin-top:8px">Tunga saker vi tar med extra folk eller verktyg för:</div><div class="chips">${p.heavy.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}
+      ${p.fragile.length?`<div class="muted" style="margin-top:8px">Ömtåligt som vi skyddar extra:</div><div class="chips">${p.fragile.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}</div>`;
+  }
+  function qaCard(v){
+    const fmt=(t)=>new Date(t).toLocaleString('sv-SE',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    const list=(v.qa||[]).map(x=>`<div class="q"><small>Du · ${esc(fmt(x.at))}</small>${esc(x.q)}</div>${x.a?`<div class="a"><small>${esc(x.aBy||'FX Flytt')} · ${esc(fmt(x.aAt))}</small>${esc(x.a)}</div>`:'<div class="wait">Vi svarar så snart vi kan – oftast samma dag.</div>'}`).join('');
+    return `<div class="card" id="qa-card"><h2 style="margin:0 0 2px;font-size:20px">Har du en fråga?</h2><p class="muted" style="margin:0">Skriv här så svarar vi i offerten${v.intro?'':''} – du får ett mejl när svaret finns.</p>
+      ${list?`<div class="qa">${list}</div>`:''}
+      <textarea id="qtxt" rows="3" maxlength="1000" placeholder="T.ex. Kan ni ta med en soffa till återvinningen?" style="margin-top:10px"></textarea>
+      <button class="btn sec" id="qsend" style="margin-top:8px">Skicka frågan</button><div class="err" id="qerr"></div></div>`;
+  }
+  function bindQa(){
+    const b=$('#qsend'); if(!b) return;
+    b.onclick=async()=>{
+      if(PREVIEW){ $('#qerr').textContent='Det här är en förhandsgranskning.'; return; }
+      const text=$('#qtxt').value.trim(); if(text.length<3){ $('#qerr').textContent='Skriv din fråga.'; return; }
+      b.disabled=true; b.textContent='Skickar…'; $('#qerr').textContent='';
+      try{ const r=await fetch('/api/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t,action:'ask',text})}); const j=await r.json().catch(()=>({}));
+        if(!r.ok) throw new Error(j.error||'Något gick fel.');
+        const y=window.scrollY; render(j.view); window.scrollTo(0,y); const c=$('#qa-card'); if(c) c.scrollIntoView({block:'center'});
+      }catch(e){ $('#qerr').textContent=e.message; b.disabled=false; b.textContent='Skicka frågan'; }
+    };
+  }
   let pkgSel=null;
   // The offer as shown: with the package the customer has picked.
   const curOffer=(v)=>{ const p=(v.packages||[]).find(x=>x.id===pkgSel); return p?{...v.offer,total:p.total,lines:p.lines}:v.offer; };
@@ -98,22 +164,34 @@
     if(v.packages&&!pkgSel) pkgSel=v.pkg||v.packages[0].id;
     if(v.status==='signed'||v.status==='done'){
       app.innerHTML=`<div class="card ok"><h1>Din flytt är bokad ✓</h1><p>Signerad av <b>${esc(v.signedName)}</b> ${esc(new Date(v.signedAt).toLocaleString('sv-SE',{dateStyle:'long',timeStyle:'short'}))}.</p><p class="muted">Bokningsnummer ${esc(v.id)}. En bekräftelse har skickats till din e-post. Vi hör av oss innan flyttdagen.</p></div>`+
-        `<div class="card">${details(v)}</div><div class="card">${price(v.offer,v.discount,v.addonsChosen)}</div>`+COMPANY;
+        `<div class="card">${details(v)}</div><div class="card">${price(v.offer,v.discount,v.addonsChosen)}${pdfBtn()}</div>`+COMPANY;
       return;
     }
     if(v.status==='declined'){
       app.innerHTML=`<div class="card"><h1>Tack för ditt svar</h1><p>Du har tackat nej till offerten. Ändrat dig eller vill du ha ett nytt förslag? Ring oss på <a href="tel:+46763000723">076-300 07 23</a>.</p></div>`+COMPANY;
       return;
     }
+    if(v.expired){
+      app.innerHTML=`<div class="card"><h1>Offerten har gått ut</h1><p>Hej ${first}! Priset gällde till och med ${esc(new Date(v.validUntil+'T12:00:00Z').toLocaleDateString('sv-SE',{day:'numeric',month:'long',timeZone:'UTC'}))}.
+        ${v.renewAsked?'<b>Tack – vi har fått din förfrågan och skickar en ny offert så snart vi kan.</b>':'Vill du fortfarande flytta med oss? Tryck nedan så skickar vi en ny offert – oftast samma dag.'}</p>
+        ${v.renewAsked?'':'<button class="btn" id="renew">Skicka en ny offert till mig</button><div class="err" id="err"></div>'}
+        <p class="muted" style="margin:12px 0 0">Eller ring oss på <a href="tel:+46763000723">076-300 07 23</a>.</p></div>`+
+        `<div class="card" style="opacity:.75">${details(v)}</div>`+qaCard(v)+COMPANY;
+      bindQa();
+      if($('#renew')) $('#renew').onclick=async()=>{ if(PREVIEW){ $('#err').textContent='Det här är en förhandsgranskning.'; return; } $('#renew').disabled=true;
+        try{ const r=await fetch('/api/booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t,action:'renew'})}); const j=await r.json(); render(j.view); }catch(_){ $('#renew').disabled=false; $('#err').textContent='Något gick fel – ring oss.'; } };
+      return;
+    }
     app.innerHTML=steps(v.status)+
-      `<div class="card"><h1>Hej ${first}!</h1><p class="muted">Här är din offert från FX Flytt (${esc(v.id)}). Kontrollera uppgifterna och signera – då är flytten bokad.</p></div>`+
-      `<div class="card">${details(v)}</div>`+
+      introCard(v,first)+
+      `<div class="card">${details(v)}</div>`+photosCard(v)+
       (v.packages?`<div class="card"><h2 style="margin:0 0 2px;font-size:20px">Välj paket</h2><p class="muted" style="margin:0">Du kan byta paket här innan du signerar – priset uppdateras direkt.</p>
         <div class="pkgs">${v.packages.map(p=>`<button type="button" class="pkg${p.id===pkgSel?' on':''}" data-pkg="${esc(p.id)}">${p.id==='premium'?'<span class="pop">Populärast</span>':''}<b>${esc(p.name)}</b><small>${esc(p.desc)}</small><div class="pp">${kr(p.total)}</div><div class="df" data-df="${esc(p.id)}"></div></button>`).join('')}</div></div>`:'')+
       `<div class="card" id="pricecard">${price(curOffer(v),v.discount)}</div>`+
       ((v.addons||[]).length&&v.offer?`<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Lägg till i din flytt</h2><p class="muted" style="margin:0 0 6px">Kryssa i det du vill ha – priset uppdateras direkt. Priserna gäller efter RUT-avdrag.</p>
         ${v.addons.map(a=>`<label class="ad"><input type="checkbox" class="addon" value="${esc(a.id)}" data-p="${a.price}"><span>${esc(a.label)}</span><b>+${kr(a.price)}</b></label>`).join('')}</div>`:'')+
-      `<div class="card"><h2 style="margin:0 0 4px;font-size:20px">Signera och boka</h2>
+      qaCard(v)+
+      `<div class="card" id="sign-card"><h2 style="margin:0 0 4px;font-size:20px">Signera och boka</h2>
         <label class="f" for="nm">Ditt för- och efternamn</label>
         <input id="nm" type="text" autocomplete="name" value="${esc(v.name||'')}">
         <div class="kind"><label><input type="radio" name="kind" value="private" checked> Privatperson</label><label><input type="radio" name="kind" value="company"> Företag</label></div>
@@ -135,6 +213,7 @@
         </div></div>`+COMPANY;
     document.querySelectorAll('input[name=kind]').forEach(r=>r.onchange=()=>{const c=kind()==='company';$('#pnrL').textContent=c?'Organisationsnummer':'Personnummer (för RUT-avdraget)';$('#pnr').placeholder=c?'XXXXXX-XXXX':'ÅÅÅÅMMDD-XXXX';$('#pnr').value='';});
     $('#sign').onclick=()=>act('sign');
+    bindQa();
     const totals=()=>{
       const o=curOffer(v), cleanIn=pkgSel&&pkgSel!=='bas';
       document.querySelectorAll('.addon').forEach(c=>{ const cl=/flyttstäd/i.test(c.parentElement.textContent); c.closest('.ad').hidden=cl&&cleanIn; if(cl&&cleanIn) c.checked=false; });

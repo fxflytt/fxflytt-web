@@ -1,5 +1,5 @@
 // E-mails for the booking flow: offer link to the customer, and confirmations after signing.
-import { DECLINE_REASONS, type Booking } from "../booking/store.ts";
+import { DECLINE_REASONS, type Booking, type QA } from "../booking/store.ts";
 
 const NAVY = "#0d2a3f", ACCENT = "#ff7a1a", INK = "#14212b", MUTED = "#5b6b78", LINE = "#e3e8ed", BG = "#f5f7f9", GREEN = "#1f8a4c";
 const esc = (s: unknown) =>
@@ -38,6 +38,10 @@ const p = (html: string) => `<tr><td style="padding:6px 28px;color:${INK};font-s
 const button = (href: string, label: string) =>
   `<tr><td style="padding:14px 28px 18px"><a href="${esc(href)}" style="display:inline-block;padding:15px 26px;border-radius:999px;background:${ACCENT};color:#fff;font-size:16px;font-weight:800;text-decoration:none">${esc(label)}</a></td></tr>`;
 
+const shortD = (d: string) => new Date(d + "T12:00:00Z").toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const validLine = (b: Booking) => (b.validUntil ? p(`<b>Priset gäller till och med ${esc(shortD(b.validUntil))}.</b>`) : "");
+const validText = (b: Booking) => (b.validUntil ? `\nPriset gäller till och med ${shortD(b.validUntil)}.` : "");
+const pdfLink = (url: string) => url.replace("/signera?t=", "/api/offert-pdf?t=");
 const chosenExtras = (b: Booking) => (b.extras || []).filter((e) => b.extrasChosen?.includes(e.id));
 
 function summary(b: Booking) {
@@ -64,9 +68,10 @@ export function offerLinkEmail(b: Booking, url: string) {
   const html = shell(subject, { text: "DIN OFFERT", bg: "#fff1e6", fg: "#c2560a" },
     `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Hej ${esc(b.data.name.split(" ")[0])}!</h1></td></tr>` +
     p("Här är din offert för flytten. Öppna den, kontrollera uppgifterna och signera direkt i mobilen – då är flytten bokad.") +
-    summary(b) + button(url, "Se och signera offerten") +
+    summary(b) + validLine(b) + button(url, "Se och signera offerten") +
+    p(`<a href="${esc(pdfLink(url))}" style="color:${NAVY};font-size:14px">Ladda ner offerten som PDF</a>`) +
     p(`<span style="color:${MUTED};font-size:13px">Länken är personlig. Priset efter RUT gäller om du har rätt till RUT-avdrag och utrymme kvar för året.</span>`));
-  const text = `Hej ${b.data.name}!\n\nHär är din offert från FX Flytt (${b.id}).\nDatum: ${fmtDate(b.date)}\nPris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}\n\nSe och signera offerten här:\n${url}\n\nFrågor? Ring 076-300 07 23.\nFX Flytt AB`;
+  const text = `Hej ${b.data.name}!\n\nHär är din offert från FX Flytt (${b.id}).\nDatum: ${fmtDate(b.date)}\nPris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}${validText(b)}\n\nSe och signera offerten här:\n${url}\n\nSom PDF: ${pdfLink(url)}\n\nFrågor? Ring 076-300 07 23.\nFX Flytt AB`;
   return { subject, html, text };
 }
 
@@ -104,9 +109,9 @@ export function reminderEmail(b: Booking, url: string, n: number) {
     p(n >= 2
       ? "Vi vill bara påminna om din offert. Vill du boka flytten räcker det att öppna offerten och signera i mobilen – det tar en minut."
       : "Har du hunnit titta på din offert? Öppna den, kontrollera uppgifterna och signera direkt i mobilen – då är flytten bokad.") +
-    summary(b) + button(url, "Se och signera offerten") +
+    summary(b) + validLine(b) + button(url, "Se och signera offerten") +
     p(`<span style="color:${MUTED};font-size:13px">Har du frågor eller vill ändra något? Ring oss eller svara på det här mejlet. Vill du inte ha offerten kan du tacka nej via länken.</span>`));
-  const text = `Hej ${b.data.name}!\n\nEn påminnelse om din offert från FX Flytt (${b.id}).\nDatum: ${fmtDate(b.date)}\nPris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}\n\nSe och signera här:\n${url}\n\nFrågor? Ring 076-300 07 23.\nFX Flytt AB`;
+  const text = `Hej ${b.data.name}!\n\nEn påminnelse om din offert från FX Flytt (${b.id}).\nDatum: ${fmtDate(b.date)}\nPris efter RUT: ${b.offer ? kr(b.offer.total) : "–"}${validText(b)}\n\nSe och signera här:\n${url}\n\nFrågor? Ring 076-300 07 23.\nFX Flytt AB`;
   return { subject, html, text };
 }
 
@@ -193,5 +198,30 @@ export function personalOfferEmail(b: Booking, subject: string, body: string, of
   const html = shell(subject, { text: badge, bg: "#fff1e6", fg: "#c2560a" },
     paras.map((x) => p(esc(x).replace(/\n/g, "<br>"))).join("") + (b.offer ? summary(b) : "") + button(offerUrl, label), (paras[1] || paras[0] || "").replace(/\s+/g, " "));
   const text = `${paras.join("\n\n")}\n\n${label}: ${offerUrl}\n\nFX Flytt AB · 076-300 07 23`;
+  return { subject, html, text };
+}
+
+// Our answer to a question the customer asked in the offer.
+export function answerEmail(b: Booking, x: QA, url: string) {
+  const first = b.data.name.split(" ")[0];
+  const subject = `Svar på din fråga om offerten – FX Flytt ${b.id}`;
+  const quoteBox = (who: string, t: string, bg: string) => `<tr><td style="padding:6px 28px"><div style="background:${bg};border-radius:12px;padding:12px 16px"><div style="color:${MUTED};font-size:12px;font-weight:700">${esc(who)}</div><div style="color:${INK};font-size:15px;line-height:22px;white-space:pre-wrap">${esc(t)}</div></div></td></tr>`;
+  const html = shell(subject, { text: "SVAR PÅ DIN FRÅGA", bg: "#eaf2fb", fg: NAVY },
+    `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">Hej ${esc(first)}!</h1></td></tr>` +
+    quoteBox("Din fråga", x.q, BG) + quoteBox(`Svar från ${x.aBy || "FX Flytt"}`, x.a || "", "#fff7ef") +
+    (url ? button(url, "Öppna offerten") : "") + validLine(b), `Svar från ${x.aBy || "FX Flytt"}: ${(x.a || "").slice(0, 100)}`);
+  const text = `Hej ${b.data.name}!\n\nDin fråga:\n${x.q}\n\nSvar från ${x.aBy || "FX Flytt"}:\n${x.a}\n${url ? "\nÖppna offerten: " + url + "\n" : ""}${validText(b)}\n\nFX Flytt AB · 076-300 07 23`;
+  return { subject, html, text };
+}
+
+// To the office: the customer asked something in the offer, or wants a new offer after it ran out.
+export function questionNoticeEmail(b: Booking, what: "question" | "renew", q: string, adminUrl: string) {
+  const subject = what === "renew" ? `NY OFFERT ÖNSKAS: ${b.data.name} (gick ut)` : `FRÅGA I OFFERTEN: ${b.data.name}`;
+  const html = shell(subject, { text: what === "renew" ? "KUNDEN VILL HA EN NY OFFERT" : "KUNDEN HAR EN FRÅGA", bg: "#fff1e6", fg: "#c2560a" },
+    `<tr><td style="padding:10px 28px 0"><h1 style="margin:0;font-size:24px;color:${INK}">${esc(b.data.name)}</h1></td></tr>` +
+    p(`<a href="${esc(telHref(b.data.phone))}" style="color:${NAVY};font-weight:700">${esc(b.data.phone)}</a>${b.data.email ? " · " + esc(b.data.email) : ""}`) +
+    (q ? p(`<div style="background:${BG};border-radius:12px;padding:12px 16px;white-space:pre-wrap">${esc(q)}</div>`) : "") +
+    summary(b) + button(adminUrl, what === "renew" ? "Öppna och skicka nytt datum" : "Öppna och svara"));
+  const text = `${subject}\n\n${q ? q + "\n\n" : ""}${b.data.phone}${b.data.email ? " · " + b.data.email : ""}\n\nSvara här: ${adminUrl}`;
   return { subject, html, text };
 }
