@@ -5,6 +5,8 @@ import { requireUser } from "@/lib/booking/auth.ts";
 import { getBooking, saveBooking, issueToken } from "@/lib/booking/store.ts";
 import { packagesFor } from "@/lib/booking/packages.ts";
 import { getPrices } from "@/lib/pricing/current.ts";
+import { getSettings } from "@/lib/booking/settings.ts";
+import { validFor, ensureIntro } from "@/lib/booking/offerplus.ts";
 import { offerLinkEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
 
@@ -20,6 +22,10 @@ export async function POST(req: Request) {
   if (b.status === "signed" || b.status === "done") return Response.json({ error: "Offerten är redan signerad." }, { status: 400 });
   // Let the customer choose Bas / Premium / Deluxe (fixed-price moves made with the price list).
   b.packages = b.pkgChoiceOff ? undefined : (packagesFor(b, await getPrices()) || undefined);
+  // End date and the seller's greeting (from the template, when the offer has none yet).
+  const st = await getSettings();
+  b.validUntil = validFor(b, st.offerValidDays); b.renewAskedAt = undefined;
+  await ensureIntro(b, st, u.id, u.name).catch((e) => console.error("intro", e));
   const token = await issueToken(b);
   const url = `${SITE}/signera?t=${token}`;
   if (new URL(req.url).searchParams.get("preview") === "1") { await saveBooking(b); return Response.json({ ok: true, url: url + "&preview=1" }); }

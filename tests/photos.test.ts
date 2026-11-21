@@ -7,6 +7,7 @@ function run(c: string[]): unknown {
   switch (cmd) {
     case "SET": S.set(a[0], a[1]); return "OK";
     case "GET": return S.get(a[0]) ?? null;
+    case "ZREM": { Z.get(a[0])?.delete(a[1]); return 1; }
     case "ZADD": { const m = Z.get(a[0]) ?? new Map(); m.set(a[2], Number(a[1])); Z.set(a[0], m); return 1; }
   }
   throw new Error("cmd " + cmd);

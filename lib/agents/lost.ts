@@ -31,7 +31,7 @@ export type LostNumbers = {
 };
 
 const isLost = (b: Booking, now: number) => (b.status === "declined" && !b.nextId && !/^Ersatt av version/.test(b.decline?.text || ""))
-  || (b.status === "sent" && !b.signedAt && ((b.sentAt && now - b.sentAt > 14 * DAY) || (b.date && b.date <= new Date(now).toISOString().slice(0, 10))));
+  || (b.status === "sent" && !b.signedAt && ((b.sentAt && now - b.sentAt > 14 * DAY) || (b.validUntil && b.validUntil < new Date(now).toISOString().slice(0, 10)) || (b.date && b.date <= new Date(now).toISOString().slice(0, 10))));
 
 export function lostNumbers(all: Booking[], days: number, now = Date.now()): LostNumbers {
   const since = now - days * DAY;
@@ -40,7 +40,7 @@ export function lostNumbers(all: Booking[], days: number, now = Date.now()): Los
   const noAnswer = L.filter((b) => b.status === "sent").length;
   const reasons = new Map<string, number>();
   for (const b of L) {
-    const r = b.status === "sent" ? "Svarade aldrig" : DECLINE_REASONS[(b.decline?.reason || "other") as DeclineReason] || "Annat";
+    const r = b.status === "sent" ? (b.validUntil && b.validUntil < new Date(now).toISOString().slice(0, 10) ? "Offerten gick ut utan svar" : "Svarade aldrig") : DECLINE_REASONS[(b.decline?.reason || "other") as DeclineReason] || "Annat";
     reasons.set(r, (reasons.get(r) || 0) + 1);
   }
   const group = (key: (b: Booking) => string | null, min = 2): Group[] => {

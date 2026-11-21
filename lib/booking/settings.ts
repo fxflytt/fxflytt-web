@@ -33,6 +33,10 @@ export type Settings = {
   aiSalesNotes: string;
   aiTestMode: boolean;      // Testläge: what the AI team sends goes to aiTestTo / aiTestPhone instead of the customer
   aiTestTo: string;         // test e-mail (empty = info@)
+  // The offer: how many days the price holds (0 = no end date), and the seller's personal greeting at the top.
+  offerValidDays: number;
+  introOn: boolean;
+  introTpl: string;         // {förnamn} {från} {till} {datum} {säljare} are filled in
   aiTestPhone: string;      // test mobile for SMS (empty = SMS are not sent in test mode)     // the owner's own words on how FX Flytt sells – Oskar follows them (lib/agents/playbook.ts)
 };
 export type AiNames = { elsa: string; oskar: string; maja: string; nils: string };
@@ -49,7 +53,8 @@ export const AI_AUTO_DEFAULT: AiAuto = { request: true, reply: false, ack: false
 export const AI_NAMES_DEFAULT: AiNames = { elsa: "Elsa", oskar: "Oskar", maja: "Maja", nils: "Nils" };
 // What the customer sees about the company in the offer.
 export const trustView = (s: Settings) => (s.orgNr || s.fskatt || s.insured ? { orgNr: s.orgNr, fskatt: s.fskatt, insured: s.insured, insurer: s.insurer } : null);
-export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "", aiInboxOn: true, aiReportOn: true, aiReportTo: "", mailKeepDays: 180, aiNames: AI_NAMES_DEFAULT, aiAuto: AI_AUTO_DEFAULT, aiAutopilot: true, aiDailyMax: 15, aiSalesNotes: "", aiTestMode: false, aiTestTo: "", aiTestPhone: "" };
+export const INTRO_TPL = "Hej {förnamn}!\nTack för att du hörde av dig. Jag har gått igenom din flytt från {från} till {till} och räknat fram priset nedan. Har du frågor eller vill ändra något – ring mig eller skriv en fråga här i offerten, så hjälper jag dig.";
+export const DEFAULTS: Settings = { reviewOn: false, reviewUrl: "", reviewDelayDays: 1, clockOn: false, office: null, clockRadiusM: 500, salesGoal: 0, refOn: false, refFriendKr: 300, refReward: "300 kr presentkort när din vän har flyttat med oss", breakAfterH: 5, breakMin: 30, slaMin: 10, orgNr: "", fskatt: false, insured: false, insurer: "", aiInboxOn: true, aiReportOn: true, aiReportTo: "", mailKeepDays: 180, aiNames: AI_NAMES_DEFAULT, aiAuto: AI_AUTO_DEFAULT, aiAutopilot: true, aiDailyMax: 15, aiSalesNotes: "", aiTestMode: false, aiTestTo: "", aiTestPhone: "", offerValidDays: 7, introOn: true, introTpl: INTRO_TPL };
 const KEY = "fx:settings";
 
 export async function getSettings(): Promise<Settings> {
@@ -108,6 +113,9 @@ export async function updateSettings(d: Record<string, unknown>): Promise<Settin
   if ("aiSalesNotes" in d) cur.aiSalesNotes = String(d.aiSalesNotes || "").replace(/\r/g, "").trim().slice(0, 2000);
   if ("aiAutopilot" in d) cur.aiAutopilot = d.aiAutopilot === true;
   if ("aiDailyMax" in d) { const n = Math.round(Number(d.aiDailyMax)); if (!(n >= 0 && n <= 100)) throw new Error("Max mejl per dag: 0–100."); cur.aiDailyMax = n; }
+  if ("offerValidDays" in d) { const n = Math.round(Number(d.offerValidDays)); if (!(n >= 0 && n <= 60)) throw new Error("Offerten gäller: 0–60 dagar."); cur.offerValidDays = n; }
+  if ("introOn" in d) cur.introOn = d.introOn === true;
+  if ("introTpl" in d) { const t = String(d.introTpl || "").replace(/\r/g, "").trim().slice(0, 800); cur.introTpl = t || INTRO_TPL; }
   if (cur.clockOn && !cur.office) throw new Error("Ange kontorets position först.");
   await kv(["SET", KEY, JSON.stringify(cur)]);
   return cur;

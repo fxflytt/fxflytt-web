@@ -1,12 +1,13 @@
 // Customer side of the offer: view (GET ?t=) and sign or decline (POST {t, action, name, accept}).
-import { bookingByToken, publicView, saveBooking, offerHash, applyExtras, TERMS_VERSION, DECLINE_REASONS, type DeclineReason } from "@/lib/booking/store.ts";
+import { bookingByToken, publicView, saveBooking, offerHash, applyExtras, isExpired, TERMS_VERSION, DECLINE_REASONS, type DeclineReason } from "@/lib/booking/store.ts";
+import { addQuestion } from "@/lib/booking/offerplus.ts";
 import { isAdmin } from "@/lib/booking/auth.ts";
 import { SIZE_LABEL, type PkgId } from "@/lib/booking/packages.ts";
 import { rewardOnSign } from "@/lib/booking/referral.ts";
 import { notifyAll, recordNote } from "@/lib/booking/push.ts";
 import { kvConfigured } from "@/lib/booking/kv.ts";
 import { getSettings, trustView } from "@/lib/booking/settings.ts";
-import { signedCustomerEmail, companyNoticeEmail } from "@/lib/mail/bookingEmail.ts";
+import { signedCustomerEmail, companyNoticeEmail, questionNoticeEmail } from "@/lib/mail/bookingEmail.ts";
 import { send, mailConfigured, COMPANY_TO } from "@/lib/mail/send.ts";
 import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 import { normPnr, normOrgnr } from "@/lib/booking/pnr.ts";
@@ -42,6 +43,28 @@ export async function POST(req: Request) {
   if (b.status === "signed" || b.status === "done") return Response.json({ error: "Offerten är redan signerad.", view: publicView(b) }, { status: 409 });
   const adminUrl = `${SITE}/admin#${b.id}`;
 
+  // A question about the offer: saved in the offer, the office gets a notice and answers from the admin page.
+  if (body.action === "ask") {
+    if (rateLimited("bask:" + ip, 6, 60 * 60_000)) return Response.json({ error: "Du har skickat många frågor – ring oss på 076-300 07 23." }, { status: 429 });
+    let x;
+    try { x = addQuestion(b, body.text); } catch (e) { return Response.json({ error: (e as Error).message }, { status: 400 }); }
+    await saveBooking(b, "Kunden frågade: " + x.q.slice(0, 160));
+    await notifyAll({ cat: "question", title: "❓ " + b.data.name + " har en fråga", body: x.q.slice(0, 140), url: "/admin#" + b.id, tag: "q-" + b.id });
+    if (mailConfigured()) await send(COMPANY_TO, questionNoticeEmail(b, "question", x.q, adminUrl), b.data.email || undefined).catch(() => {});
+    return Response.json({ ok: true, view: publicView(b) });
+  }
+  // The offer ran out: the customer asks for a new one (the office sets a new end date or sends a new version).
+  if (body.action === "renew") {
+    if (!isExpired(b)) return Response.json({ ok: true, view: publicView(b) });
+    if (!b.renewAskedAt) {
+      b.renewAskedAt = Date.now();
+      await saveBooking(b, "Kunden vill ha en ny offert (den gamla gick ut)");
+      await notifyAll({ cat: "question", title: "🔁 " + b.data.name + " vill ha en ny offert", body: "Offerten gick ut " + b.validUntil, url: "/admin#" + b.id, tag: "r-" + b.id });
+      if (mailConfigured()) await send(COMPANY_TO, questionNoticeEmail(b, "renew", "", adminUrl), b.data.email || undefined).catch(() => {});
+    }
+    return Response.json({ ok: true, view: publicView(b) });
+  }
+
   if (body.action === "decline") {
     b.status = "declined"; b.declinedAt = Date.now();
     const reason = typeof body.reason === "string" && body.reason in DECLINE_REASONS ? (body.reason as DeclineReason) : undefined;
@@ -53,6 +76,7 @@ export async function POST(req: Request) {
     return Response.json({ ok: true, view: publicView(b) });
   }
 
+  if (isExpired(b)) return Response.json({ error: "Offerten har gått ut. Be om en ny offert så hör vi av oss.", view: publicView(b) }, { status: 409 });
   const name = typeof body.name === "string" ? body.name.trim().slice(0, 120) : "";
   if (name.length < 3) return Response.json({ error: "Skriv ditt för- och efternamn." }, { status: 400 });
   const isCompany = body.kind === "company";

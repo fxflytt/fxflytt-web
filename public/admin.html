@@ -109,6 +109,19 @@
   .chips.ltf{padding-top:0;margin-top:-4px}.chips.ltf button{font-size:12px;padding:5px 10px;border-style:dashed}.chips.ltf button.on{border-style:solid}
   .tag.lt{background:#eef0fb;color:#3d3fa8}
   .cphi{position:relative}.cphi button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(13,42,63,.75);color:#fff;font-size:12px;cursor:pointer}
+  .pav{width:84px;height:84px;border-radius:50%;overflow:hidden;background:#e9eef2;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:var(--navy);flex:none;box-shadow:0 0 0 3px var(--accent)}.pav img{width:100%;height:100%;object-fit:cover}
+  .olost{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-6px 0 12px;font-size:13.5px}.olost a{font-weight:700;margin-left:auto}
+  .offx{margin:12px 0 10px;padding-top:12px;border-top:1px dashed var(--line)}
+  .ibox textarea{min-height:110px}
+  .iwho{display:flex;gap:10px;align-items:center;margin-bottom:8px}.iwho img,.iwho .iini{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;background:#e9eef2;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--navy)}
+  .iwho small{display:block;color:var(--muted);font-size:12.5px}
+  .aqa{display:grid;gap:8px}.aqa .q,.aqa .a{border-radius:12px;padding:9px 12px;white-space:pre-wrap;font-size:14.5px}.aqa .q{background:#eef3f7;margin-right:12%}.aqa .a{background:#fff3e8;margin-left:12%}
+  .aqa small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}.qform{margin-left:12%;display:grid;gap:6px}
+  .padv{margin-top:14px;background:#f4f7fb;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+  .pts{display:grid;gap:4px;margin-top:8px}
+  .pt{display:grid;grid-template-columns:92px 1fr 44px auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font:inherit;font-size:13.5px;cursor:pointer;text-align:left;color:var(--ink)}
+  .pt .pp{font-weight:800}.pt .bar{height:8px;background:#e8edf2;border-radius:99px;overflow:hidden}.pt .bar i{display:block;height:100%;background:var(--navy)}
+  .pt .pc{font-weight:800;text-align:right}.pt.cur{border-color:var(--navy)}.pt.best .bar i{background:var(--green)}.pt.sel{box-shadow:0 0 0 2px var(--accent)}
   .aibox{margin-top:12px;background:#f4f7fb;border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px;font-size:14px}.aibox small{display:block;color:var(--muted);font-size:11.5px;font-weight:700}.aih{font-size:15px}
   .ctab{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}.ctab td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}.ctab td:first-child{color:var(--muted);width:38%;padding-right:10px}.ctab td:last-child{white-space:pre-wrap;word-break:break-word}
   .cex{display:flex;flex-wrap:wrap;gap:6px}.cex label{display:flex;flex:none;max-width:100%;white-space:nowrap;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:10px;padding:6px 10px;font-size:13.5px;font-weight:600;cursor:pointer}
@@ -523,6 +536,7 @@
     if(id==='offerter'){ listSec='offers'; return showList(); }
     if(id==='ai'){ inboxTab='team'; return showInbox(); }
     if(id==='rapporter'){ inboxTab='nils'; return showInbox(); }
+    if(id==='forlorade'){ inboxTab='nils'; nilsView='lost'; return showInbox(); }
     // Coming from the menu or a link: show the list, not the e-mail/complaint that was open last time (unless a button asked for it).
     if(id==='inkorg'){ inboxTab='mail'; if(!ibKeep) mailOpen=null; ibKeep=false; return showInbox(); }
     if(id==='klagomal'){ inboxTab='klag'; if(!ibKeep){ klagOpen=null; klagNew=false; } ibKeep=false; return showInbox(); }
@@ -572,7 +586,9 @@
     return Math.max(5,Math.min(90,Math.round(p/5)*5));
   }
   const chanceTag=(b)=>{ const c=winChance(b); return c==null?'':`<span class="tag ${c>=60?'ok':c>=30?'wn':''}" title="Chans att vinna – räknas från om kunden öppnat offerten, hur ofta och senaste samtalet">🎯 ${c}%</span>`; };
-  const isExpired=(b)=>b.status==='sent'&&((b.sentAt&&Date.now()-b.sentAt>EXPIRE_DAYS*864e5)||(b.date&&b.date<=today()));
+  const isExpired=(b)=>b.status==='sent'&&((b.sentAt&&Date.now()-b.sentAt>EXPIRE_DAYS*864e5)||(b.date&&b.date<=today())||(b.validUntil&&b.validUntil<today()));
+  const openQ=(b)=>(b.qa||[]).filter(x=>!x.a).length;
+  const dm=(d)=>Number(d.slice(8,10))+'/'+Number(d.slice(5,7));
   const boxesLeft=(b)=>b.boxes?b.boxes.qty-b.boxes.returned:0;
   const rentsBoxes=(b)=>(b.offer?.lines||[]).some(l=>/kartong.*hyr/i.test(l.label))||(b.extras||[]).some(e=>b.extrasChosen?.includes(e.id)&&/kartong.*hyr/i.test(e.label))||(b.data?.extras||[]).some(x=>/kartong/i.test(x));
   // Offerter: requests and offers that are not booked yet. Bokningar: what the customer has said yes to.
@@ -612,7 +628,11 @@
     { const L=leadTags(b), lt=L.filter(k=>k!=='move'||L.length===1); if(lt.length&&['new','sent'].includes(b.status)) t.push(...lt.map(k=>`<span class="tag lt">${LTAG[k]}</span>`)); }
     if(['sent','declined'].includes(b.status)||b.views) t.push(b.views?`<span class="tag seen">👁 ${b.views}× · ${esc(ago(b.lastViewAt))}</span>`:(b.status==='sent'?'<span class="tag">Ej öppnad</span>':''));
     if(b.reminders?.length) t.push(`<span class="tag">🔔 ${b.reminders.length} påminnelse${b.reminders.length>1?'r':''}</span>`);
-    if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
+    if(openQ(b)) t.push(`<span class="tag no">❓ ${openQ(b)} ${openQ(b)===1?'fråga':'frågor'} att svara på</span>`);
+    if(b.renewAskedAt&&b.status==='sent') t.push('<span class="tag no">🔁 Vill ha en ny offert</span>');
+    if(b.status==='sent'&&b.validUntil&&b.validUntil>=today()&&b.validUntil<=addDays(today(),1)) t.push(`<span class="tag wn">⏳ Går ut ${b.validUntil===today()?'i dag':'i morgon'}</span>`);
+    if(isExpired(b)&&b.validUntil&&b.validUntil<today()&&!(b.date&&b.date<=today())) t.push(`<span class="tag no">⌛ Gick ut ${esc(dm(b.validUntil))}</span>`);
+    else if(isExpired(b)) t.push(`<span class="tag no">⏰ Förfallen${b.date&&b.date<=today()?(b.date<today()?' – flyttdagen har passerat':' – flyttdagen är i dag'):' – inget svar på '+Math.floor((Date.now()-b.sentAt)/864e5)+' dagar'}</span>`);
     if(b.referral) t.push(`<span class="tag ok">🎁 Kod ${esc(b.referral.code)}</span>`);
     if(dupsOf(b).length) t.push('<span class="tag no">⚠ Dubblett</span>');
     { const c=chanceTag(b); if(c) t.push(c); }
@@ -1486,6 +1506,10 @@ FX Flytt</textarea>
           <button class="btn sec sm" id="cedit" style="margin-top:10px">✏️ Ändra kunduppgifter</button></div>
         <div id="custe" hidden></div>
       </div>
+      ${(b.qa||[]).length?`<div class="card" id="qa"${openQ(b)?' style="border-color:#f3b7b7"':''}><h3>❓ Frågor från kunden <span class="sub">${openQ(b)?openQ(b)+' obesvarad'+(openQ(b)>1?'e':''):'alla besvarade'}</span></h3>
+        <div class="aqa">${b.qa.map(x=>`<div class="q"><small>${esc((d.name||'').split(' ')[0])} · ${esc(fmtTs(x.at))}</small>${esc(x.q)}</div>
+          ${x.a?`<div class="a"><small>${esc(x.aBy||'')} · ${esc(fmtTs(x.aAt))}${x.via?' · skickat via '+esc(x.via):''}</small>${esc(x.a)}</div>`
+          :`<div class="qform"><textarea id="qa_${esc(x.id)}" rows="3" placeholder="Skriv ditt svar – kunden får det ${d.email?'på e-post':'via SMS'} och ser det i offerten"></textarea><button class="btn sm" data-qans="${esc(x.id)}">Skicka svaret</button></div>`}`).join('')}</div><div id="qa_msg"></div></div>`:''}
       ${(()=>{ const ph=b.custPhotos||[], ai=b.photoAi;
         return `<div class="card" id="cph"><h3>📷 Bilder från kunden${ph.length?` <span class="sub">${ph.length} st</span>`:''}</h3>
         ${ph.length?`<div class="dph">${ph.map(p=>`<div class="cphi"><a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="" loading="lazy"></a><button data-cphrm="${esc(p.url)}" aria-label="Ta bort bilden">✕</button></div>`).join('')}</div>`
@@ -1496,7 +1520,8 @@ FX Flytt</textarea>
               ${ai.fragile.length?`<div><small>Ömtåligt</small>${ai.fragile.map(x=>`<span class="tag">${esc(x)}</span>`).join(' ')}</div>`:''}
               ${ai.packing?`<div><small>Packning</small>${esc(ai.packing)}</div>`:''}
               ${ai.notes?`<div><small>Att tänka på</small>${esc(ai.notes)}</div>`:''}
-              <div class="muted" style="font-size:12px">Läst ${esc(fmtTs(ai.at))} från ${ai.n} bilder – en hjälp, inte ett exakt mått.</div></div>`
+              <div class="muted" style="font-size:12px">Läst ${esc(fmtTs(ai.at))} från ${ai.n} bilder – en hjälp, inte ett exakt mått.</div></div>
+              ${isOff?`<label class="pkgsw" style="margin-top:10px"><input type="checkbox" id="cph_show"${b.photoInOffer===false?'':' checked'}> Visa bilderna och ca ${ai.m3} m³ i offerten<small>Kunden ser att vi har tittat på bilderna – det gör priset trovärdigt.</small></label>`:''}`
             :ai&&ai.error?`<div class="warn">AI:n kunde inte läsa bilderna: ${esc(ai.error)}</div>`:`<div class="muted" style="margin-top:8px">🤖 AI:n läser bilderna när kunden har tryckt Klar.</div>`):''}
         <div class="btns">${ph.length?'<button class="btn gray sm" id="cph_ai">🤖 Låt AI läsa bilderna igen</button>':''}<button class="btn sec sm" id="cph_ask">📷 Be kunden om bilder</button></div><div id="cph_msg"></div></div>`; })()}
       ${b.signature?`<div class="okmsg">Signerad av "${esc(b.signature.name)}"${b.signature.pnr?` · Personnr ${esc(b.signature.pnr)}`:''}${b.signature.orgnr?` · Org.nr ${esc(b.signature.orgnr)} (företag)`:''} ${esc(fmtTs(b.signature.at))} (IP ${esc(b.signature.ip)})</div>`:''}
@@ -1558,7 +1583,7 @@ FX Flytt</textarea>
         ${o?.notIncluded?.length?`<div class="warn"><b>Ingår inte i priset:</b><br>${o.notIncluded.map(esc).join('<br>')}</div>`:''}
         <label class="f" for="cn">Text till kunden (syns i offerten)</label><textarea id="cn" placeholder="T.ex. Inkl. 4 timmar montering">${esc(o?.customerNote||'')}</textarea>
         <label class="f" for="an">Intern anteckning (syns bara här)</label><textarea id="an">${esc(b.adminNote||'')}</textarea>
-        <button class="btn sec" id="save">Spara</button><div id="msg"></div></div>
+        <button class="btn sec" id="save">Spara</button><div id="msg"></div>${isOff&&!locked&&o?.total>0?'<div id="padv"></div>':''}</div>
       <div class="card"><h3>Offert</h3>
         ${!locked&&o&&!o.custom&&!b.discount&&/\b(Bas|Premium|Deluxe)\b/.test(d.size||'')&&Number(d.areaM2)>0?`<label class="pkgsw"><input type="checkbox" id="pkgch"${b.pkgChoiceOff?'':' checked'}> Låt kunden välja paket (Bas / Premium / Deluxe) i offerten<small>Priserna räknas när du skickar. Premium och Deluxe säljer ofta mer.</small></label>`:''}
         ${b.packages&&b.status==='sent'?`<div class="muted" style="margin-bottom:6px">Kunden ser: ${b.packages.map(p=>esc(p.name)+' '+kr(p.total)).join(' · ')}</div>`:''}
@@ -1567,8 +1592,20 @@ FX Flytt</textarea>
         ${b.status==='sent'?`<div class="muted" style="margin-top:4px">🔔 ${b.reminders?.length?`Påminnelser: ${b.reminders.map(x=>esc(fmtTs(x))).join(', ')}`:'Ingen påminnelse än'}${b.data?.email?(b.reminders?.length>=2?' · inga fler skickas automatiskt':' · skickas automatiskt efter 1 och 3 dagar'):' · kunden har ingen e-post, påminn via SMS'}</div>`:''}
         ${b.status==='declined'?`<div class="warn"><b>Kunden tackade nej</b>${b.declinedAt?' '+esc(fmtTs(b.declinedAt)):''}${b.decline?`<br>Anledning: <b>${esc(WHY[b.decline.reason]||b.decline.reason)}</b>${b.decline.text?`<br>"${esc(b.decline.text)}"`:''}`:'<br>Ingen anledning angiven.'}</div>`:''}
         ${b.discount?`<div class="okmsg">Rabatt ${b.discount.pct} % – tidigare pris ${kr(b.discount.before)}, nu ${kr(o?.total)}.</div>`:''}
+        ${isOff?`<div class="offx">
+          ${b.renewAskedAt&&b.status==='sent'?`<div class="warn" style="margin-top:0"><b>🔁 Kunden vill ha en ny offert</b> (frågade ${esc(fmtTs(b.renewAskedAt))}). Välj ett nytt slutdatum nedan och skicka igen – eller gör en ny version.</div>`:''}
+          <label class="f" for="vu">Offerten gäller till och med</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="vu" type="date" min="${today()}" value="${esc(b.validUntil||'')}" style="width:auto;flex:1;min-width:150px"><button class="btn sec sm" id="vu_save">Spara datum</button>${b.validUntil?'<button class="btn gray sm" id="vu_none">Ingen slutdag</button>':''}</div>
+          <div class="muted" style="margin-top:4px">${b.validUntil?(b.validUntil<today()?`<b style="color:var(--red)">Gick ut ${esc(fmtDate(b.validUntil))}</b> – kunden kan inte signera förrän du väljer ett nytt datum.`:`Kunden ser en nedräkning i offerten. Inga påminnelser skickas efter slutdagen.`):b.status==='new'?'Sätts automatiskt när du skickar (se Inställningar → Offerten).':'Offerten gäller tills vidare.'}</div>
+          <label class="f" for="intro">Personligt meddelande överst i offerten</label>
+          <div class="ibox">${(()=>{ const i=b.intro; const nmx=i?i.name:''; return i?`<div class="iwho">${i.photo?`<img src="${esc(i.photo)}" alt="">`:`<span class="iini">${esc(nmx.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase())}</span>`}<div><b>${esc(nmx)}</b>${i.title?`<small>${esc(i.title)}</small>`:''}${i.phone?`<small>${esc(i.phone)}</small>`:''}</div></div>`:''; })()}
+            <textarea id="intro" rows="5" maxlength="800" placeholder="${b.status==='new'?'Skrivs från mallen när du skickar – eller skriv ett eget här.':'Inget meddelande. Skriv ett eget eller ta mallen.'}">${esc(b.intro?.text||'')}</textarea>
+            <div class="btns" style="margin-top:6px"><button class="btn sec sm" id="in_save">Spara meddelandet</button><button class="btn gray sm" id="in_ai">✨ Skriv med AI</button><button class="btn gray sm" id="in_tpl">Från mallen</button>${b.intro?'<button class="btn gray sm" id="in_del">Ta bort</button>':''}</div>
+            <div class="muted" style="margin-top:4px">Visas med ditt namn, foto och telefon – <a href="#installningar" data-goprof>ändra din profil</a>.</div></div>
+          <div id="msgo"></div></div>`:''}
+        ${locked?`<div class="btns"><button class="btn gray sm" id="o_pdf">📄 Ladda ner PDF</button></div>`:''}
         ${locked?'':`<button class="btn" id="send">${b.status==='sent'?'Skicka offerten igen':'Skicka offert via e-post'}</button><button class="btn sec" id="link">Kopiera länk (för SMS)</button>
-          <div class="btns" style="margin-top:6px"><button class="btn gray sm" id="o_prev">👁 Förhandsgranska</button>${o&&o.total>0?'<button class="btn gray sm" id="o_tpl">💾 Spara som mall</button>':''}${['sent','declined'].includes(b.status)&&!b.nextId?'<button class="btn gray sm" id="o_ver">📝 Ny version</button>':''}</div>`}
+          <div class="btns" style="margin-top:6px"><button class="btn gray sm" id="o_prev">👁 Förhandsgranska</button><button class="btn gray sm" id="o_pdf">📄 PDF</button>${o&&o.total>0?'<button class="btn gray sm" id="o_tpl">💾 Spara som mall</button>':''}${['sent','declined'].includes(b.status)&&!b.nextId?'<button class="btn gray sm" id="o_ver">📝 Ny version</button>':''}</div>`}
         ${b.status==='sent'&&b.data?.email?'<button class="btn sec" id="remind">Skicka påminnelse nu</button>':''}
         <div id="msg2"></div></div>
       ${closingCard(b)}
@@ -1687,6 +1724,31 @@ FX Flytt</textarea>
       catch(e){ x.disabled=false; x.textContent='🤖 Låt AI läsa bilderna igen'; msg('#cph_msg',e.message,false); } };
     root.querySelectorAll('[data-cphrm]').forEach(x=>x.onclick=async()=>{ if(!confirm('Ta bort bilden?')) return;
       try{ const j=await api('/api/admin/photos?id='+b.id+'&url='+encodeURIComponent(x.dataset.cphrm),{method:'DELETE'}); const i=all.findIndex(y=>y.id===b.id); if(i>=0) all[i]=j.booking; showDetail(b.id,j.booking); }catch(e){ msg('#cph_msg',e.message,false); } });
+    // ---- the offer: end date, personal message, questions, Prisråd, PDF ----
+    const offPost=async(body,ok,el)=>{ try{ const j=await api('/api/admin/offer?id='+b.id,{method:'POST',body:JSON.stringify(body)}); const i=all.findIndex(x=>x.id===b.id); if(i>=0) all[i]=j.booking; updateCounts(); if(ok) notify(typeof ok==='function'?ok(j):ok); showDetail(b.id,j.booking); return j; }catch(e){ msg(el||'#msgo',e.message,false); } };
+    if($('#o_pdf')) $('#o_pdf').onclick=()=>window.open('/api/admin/offer?id='+encodeURIComponent(b.id)+'&pdf=1','_blank');
+    if($('#vu_save')) $('#vu_save').onclick=()=>{ if(!$('#vu').value) return msg('#msgo','Välj ett datum.',false); offPost({validUntil:$('#vu').value},'Slutdatum sparat ✓'); };
+    if($('#vu_none')) $('#vu_none').onclick=()=>offPost({validUntil:''},'Offerten gäller tills vidare');
+    if($('#in_save')) $('#in_save').onclick=()=>offPost({intro:$('#intro').value},'Meddelandet sparat ✓ – syns i offerten');
+    if($('#in_tpl')) $('#in_tpl').onclick=()=>offPost({introTpl:true},'Meddelandet från mallen sparat');
+    if($('#in_del')) $('#in_del').onclick=()=>{ if(confirm('Ta bort det personliga meddelandet?')) offPost({intro:null},'Borttaget'); };
+    if($('#in_ai')) $('#in_ai').onclick=async()=>{ const x=$('#in_ai'); x.disabled=true; x.textContent='✨ Skriver…';
+      try{ const j=await api('/api/admin/offer?id='+b.id,{method:'POST',body:JSON.stringify({introAi:true})}); $('#intro').value=j.text; $('#intro').focus(); msg('#msgo','Läs igenom texten, ändra om du vill och tryck Spara meddelandet.',true); }
+      catch(e){ msg('#msgo',e.message,false); } x.disabled=false; x.textContent='✨ Skriv med AI'; };
+    root.querySelectorAll('[data-goprof]').forEach(a=>a.onclick=()=>{ setTab='profile'; });
+    root.querySelectorAll('[data-qans]').forEach(x=>x.onclick=async()=>{ const t=$('#qa_'+x.dataset.qans).value.trim(); if(t.length<2) return msg('#qa_msg','Skriv ett svar.',false);
+      x.disabled=true; x.textContent='Skickar…'; const j=await offPost({answer:{qid:x.dataset.qans,text:t}},(j)=>j.via?'Svaret skickat via '+j.via+' ✓':'Svaret sparat ✓ – kunden ser det i offerten','#qa_msg'); if(!j){ x.disabled=false; x.textContent='Skicka svaret'; } });
+    if($('#cph_show')) $('#cph_show').onchange=()=>offPost({photoInOffer:$('#cph_show').checked},$('#cph_show').checked?'Bilderna visas i offerten':'Bilderna visas inte i offerten','#cph_msg');
+    if($('#padv')) api('/api/admin/offer?id='+b.id+'&advice=1').then(j=>{ const el=$('#padv'), a=j.advice; if(!el) return;
+      if(!a.ok){ el.innerHTML=`<div class="padv"><b>🎯 Prisråd</b><div class="muted">${esc(a.why)}</div></div>`; return; }
+      const mx=Math.max(...a.points.map(p=>p.chance),1);
+      el.innerHTML=`<div class="padv"><b>🎯 Prisråd</b> <span class="muted">från ${a.n} liknande offerter (${a.won} vunna, ${a.lost} förlorade)</span>
+        ${a.wonMedian?`<div style="margin-top:6px">Liknande ${esc(String(Math.round(a.area)))} m² vann vi oftast för <b>ca ${kr(a.wonMedian)}</b>${a.lostMedian?` · förlorade låg på ca ${kr(a.lostMedian)}`:''}.</div>`:''}
+        <div class="pts">${a.points.map(p=>`<button class="pt${p.current?' cur':''}${p.best?' best':''}" data-pp="${p.price}" title="Använd det här priset"><span class="pp">${kr(p.price)}</span><span class="bar"><i style="width:${Math.round(p.chance*100/mx)}%"></i></span><span class="pc">${p.chance} %</span>${p.current?'<span class="tag">nu</span>':''}${p.best?'<span class="tag ok">mest pengar</span>':''}</button>`).join('')}</div>
+        <div class="muted" style="font-size:12px;margin-top:4px">Chans att kunden signerar, räknat på dina egna offerter. Tryck på ett pris för att använda det (glöm inte Spara).</div>
+        <details style="margin-top:6px"><summary class="muted" style="cursor:pointer">Visa liknande offerter</summary>${a.examples.map(x=>`<div class="todo"><a href="#${esc(x.id)}"><b>${esc(x.name)}</b><small>${esc(String(x.areaM2))} m² · ${esc(fmtDate(x.date))}</small></a><span class="tag ${x.won?'ok':'no'}">${kr(x.total)} · ${x.won?'vunnen':'förlorad'}</span></div>`).join('')}</details></div>`;
+      el.querySelectorAll('[data-pp]').forEach(x=>x.onclick=()=>{ $('#tot').value=x.dataset.pp; $('#tot').focus(); el.querySelectorAll('.pt').forEach(y=>y.classList.toggle('sel',y===x)); });
+    }).catch(()=>{});
     // ---- duplicates ----
     root.querySelectorAll('[data-merge]').forEach(x=>x.onclick=async()=>{ if(!confirm('Slå ihop den andra förfrågan med den här? Den andra tas bort.')) return;
       await salesAct(b,{merge:x.dataset.merge},'Sammanslagna ✓'); all=all.filter(y=>y.id!==x.dataset.merge); updateCounts(); if(location.hash.slice(1)===b.id) showDetail(b.id); });
@@ -2098,6 +2160,8 @@ FX Flytt</textarea>
     const soon=(b)=>booked(b)&&b.status==='signed'&&b.date>=t&&b.date<=in14;
     const groups=[
       ['Obesvarade förfrågningar','no',all.filter(b=>waitMin(b)!=null).sort((x,y)=>x.createdAt-y.createdAt).map(b=>({b,sub:`Kom in för ${esc(waitTxt(waitMin(b)))} sedan${(b.data||{}).phone?'':''}`,act:(b.data||{}).phone?`<a class="btn sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
+      ['❓ Frågor från kunder i offerten','no',all.filter(b=>openQ(b)&&!['cancelled'].includes(b.status)).map(b=>({b,sub:esc((b.qa.filter(x=>!x.a).slice(-1)[0].q||'').slice(0,90)),act:`<a class="btn sm" href="#${esc(b.id)}">Svara</a>`}))],
+      ['🔁 Vill ha en ny offert','no',all.filter(b=>b.renewAskedAt&&b.status==='sent').map(b=>({b,sub:`Offerten gick ut ${esc(fmtDate(b.validUntil))}`,act:`<a class="btn sm" href="#${esc(b.id)}">Öppna</a>`}))],
       ['Ring i dag','wn',all.filter(b=>followDue(b)&&!['signed','done','cancelled','declined'].includes(b.status)).sort((x,y)=>x.followUp.at.localeCompare(y.followUp.at)).map(b=>({b,sub:`${b.followUp.at.slice(0,10)<today()?'<b style="color:var(--red)">sen</b> · ':''}kl. ${esc(b.followUp.at.slice(11))}${b.followUp.note?' · '+esc(b.followUp.note):''}`,act:(b.data||{}).phone?`<a class="btn sec sm" href="${esc(tel(b.data.phone))}">Ring</a>`:''}))],
       ['🎁 Belöningar att ge','ok',all.flatMap(b=>(b.refRewards||[]).filter(r=>!r.givenAt).map(r=>({b,sub:`${esc(r.name)} bokade med koden ${esc(b.refCode||'')}`})))],
       ['⚠️ Skador att hantera','no',dmgAll.filter(d=>d.status==='new').map(d=>({b:{id:'skador',data:{name:d.kind==='vehicle'?d.vehicle:d.customer}},sub:`${esc(d.title)} · ${esc(d.createdBy)}`}))],
@@ -2247,7 +2311,7 @@ FX Flytt</textarea>
     return `<div class="bcard" data-drag data-id="${esc(b.id)}"><b>${esc(d.name)}</b>
       <div class="muted">${esc([d.from,d.to].filter(Boolean).map(town).join(' → ')||d.size||'')}</div>
       <div class="bmeta"><span>${b.offer?kr(b.offer.total):''}</span><span class="muted">${esc(fmtDate(b.date))}</span></div>
-      <div class="tags">${chanceTag(b)}${b.lead==='calc'&&b.status==='new'?'<span class="tag wn">💡 Prisräknaren</span>':''}${w!=null?`<span class="tag ${w>=60?'no':'wn'}">⏱ obesvarad ${waitTxt(w)}</span>`:''}
+      <div class="tags">${openQ(b)?`<span class="tag no">❓ ${openQ(b)}</span>`:''}${b.renewAskedAt&&b.status==='sent'?'<span class="tag no">🔁 ny offert</span>':''}${chanceTag(b)}${b.lead==='calc'&&b.status==='new'?'<span class="tag wn">💡 Prisräknaren</span>':''}${w!=null?`<span class="tag ${w>=60?'no':'wn'}">⏱ obesvarad ${waitTxt(w)}</span>`:''}
         ${b.followUp?`<span class="tag ${followDue(b)?'no':''}">📞 ${esc(b.followUp.at.slice(5,10).replace('-','/'))} ${esc(b.followUp.at.slice(11))}</span>`:''}
         ${last&&stageOf(b)!=='won'?`<span class="tag">${esc(OUT[last.outcome])}</span>`:''}${b.views&&b.status==='sent'?`<span class="tag seen">👁 ${b.views}×</span>`:''}</div></div>`;
   }
@@ -2277,7 +2341,12 @@ FX Flytt</textarea>
   function offerStats(){
     const from=Date.now()-30*864e5, sent=all.filter(b=>b.sentAt&&b.sentAt>=from), opened=sent.filter(b=>b.views), won=sent.filter(b=>b.signedAt);
     const nw=all.filter(b=>b.status==='new').length, rate=sent.length?Math.round(won.length*100/sent.length):0;
-    return `<div class="ostat"><span><b>${nw}</b> nya</span><span><b>${sent.length}</b> skickade</span><span><b>${opened.length}</b> öppnade</span><span><b>${won.length}</b> signerade</span><span><b>${rate} %</b> acceptansgrad</span><small>senaste 30 dagarna</small></div>`;
+    // Lost in the same period, and why (the customer's answer, or that the offer ran out / was never answered).
+    const lost=sent.filter(b=>!b.nextId&&(b.status==='declined'||isExpired(b))), why={};
+    for(const b of lost){ const k=b.status==='declined'?(WHY[b.decline?.reason]||'Ingen anledning'):(b.validUntil&&b.validUntil<today()?'Gick ut':'Inget svar'); why[k]=(why[k]||0)+1; }
+    const wl=Object.entries(why).sort((a,b)=>b[1]-a[1]);
+    return `<div class="ostat"><span><b>${nw}</b> nya</span><span><b>${sent.length}</b> skickade</span><span><b>${opened.length}</b> öppnade</span><span><b>${won.length}</b> signerade</span><span><b>${rate} %</b> acceptansgrad</span><small>senaste 30 dagarna</small></div>
+      ${lost.length?`<div class="olost"><b>${lost.length} förlorade</b>${wl.map(([k,n])=>`<span class="tag no">${esc(k)} ${n}</span>`).join('')}${isOwner()?'<a href="#forlorade">🔍 Varför vi förlorar →</a>':''}</div>`:''}`;
   }
   const listToggle=()=>`<div class="seg" id="lmode" style="margin-bottom:12px"><button data-m="list" class="${listMode==='list'?'on':''}">Lista</button><button data-m="board" class="${listMode==='board'?'on':''}">Försäljningstavla</button></div>`;
   const bindListToggle=()=>root.querySelectorAll('#lmode button').forEach(x=>x.onclick=()=>{ listMode=x.dataset.m; try{ localStorage.setItem('fx_listmode',listMode); }catch(_){} showList(); });
@@ -2653,6 +2722,48 @@ FX Flytt</textarea>
       <label class="f" for="co_insr">Försäkringsbolag (valfritt)</label><input id="co_insr" value="${esc(s.insurer||'')}" placeholder="T.ex. If Skadeförsäkring">
       <div class="btns"><button class="btn" id="co_save">Spara</button></div><div id="co_msg"></div></div>`;
     $('#co_save').onclick=async()=>{ try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({orgNr:$('#co_org').value,fskatt:$('#co_fs').checked,insured:$('#co_ins').checked,insurer:$('#co_insr').value})}); $('#co_msg').innerHTML='<div class="okmsg">Sparat ✓ – syns i offerten.</div>'; }catch(e){ $('#co_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
+  };
+  // Inställningar → Min profil (everyone): name, title, phone and photo shown with the greeting in the offers you send.
+  SET_TABS.push(['profile','Min profil',false]);
+  SETTINGS.profile=async(el)=>{
+    let p; try{ p=(await api('/api/admin/offer?profile=1')).profile; }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    const draw=()=>{
+      el.innerHTML=`<div class="card"><h3>Min profil i offerten</h3>
+        <div class="muted">Kunden ser ditt foto, namn och telefon överst i offerterna du skickar. Ett ansikte gör att fler vågar boka.</div>
+        <div style="display:flex;gap:16px;align-items:center;margin-top:14px"><div class="pav">${p.photo?`<img src="${esc(p.photo)}" alt="">`:`<span>${esc((p.name||'?').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase())}</span>`}</div>
+          <div><input type="file" id="pf_file" accept="image/*" hidden><button class="btn sec sm" id="pf_pick">📷 ${p.photo?'Byt foto':'Lägg till foto'}</button>${p.photo?' <button class="btn gray sm" id="pf_rm">Ta bort</button>':''}<div class="muted" style="font-size:12.5px;margin-top:4px">Ett vanligt foto där ansiktet syns – gärna i arbetskläder.</div></div></div>
+        <label class="f" for="pf_name">Namn som kunden ser</label><input id="pf_name" value="${esc(p.name)}" placeholder="T.ex. Ammar Hassan">
+        <label class="f" for="pf_title">Titel</label><input id="pf_title" value="${esc(p.title)}" placeholder="T.ex. Flyttkonsult">
+        <label class="f" for="pf_phone">Telefon</label><input id="pf_phone" value="${esc(p.phone)}" inputmode="tel" placeholder="076-300 07 23">
+        <div class="btns"><button class="btn" id="pf_save">Spara</button></div><div id="pf_msg"></div></div>`;
+      const save=async(body,ok)=>{ try{ p=(await api('/api/admin/offer?profile=1',{method:'POST',body:JSON.stringify(body)})).profile; draw(); msg2('#pf_msg',ok,true); }catch(e){ msg2('#pf_msg',e.message,false); } };
+      $('#pf_save').onclick=()=>save({name:$('#pf_name').value,title:$('#pf_title').value,phone:$('#pf_phone').value},'Sparat ✓ – syns i nästa offert du skickar.');
+      if($('#pf_rm')) $('#pf_rm').onclick=()=>save({photo:''},'Fotot är borttaget.');
+      $('#pf_pick').onclick=()=>$('#pf_file').click();
+      $('#pf_file').onchange=async()=>{ const f=$('#pf_file').files[0]; if(!f) return; msg2('#pf_msg','Laddar upp…',true);
+        try{ const img=await createImageBitmap(f), k=Math.min(1,480/Math.min(img.width,img.height)), c=document.createElement('canvas'), w=Math.round(img.width*k), h=Math.round(img.height*k), side=Math.min(w,h);
+          c.width=side; c.height=side; c.getContext('2d').drawImage(img,(img.width-side/k)/2,(img.height-side/k)/2,side/k,side/k,0,0,side,side);
+          const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));
+          const r=await fetch('/api/admin/offer?profile=1&photo=1',{method:'POST',headers:{'Content-Type':'image/jpeg'},body:blob}); const j=await r.json().catch(()=>({}));
+          if(!r.ok) throw new Error(j.error||'Kunde inte ladda upp.'); p=j.profile; draw(); msg2('#pf_msg','Fotot är sparat ✓',true);
+        }catch(e){ msg2('#pf_msg',e.message,false); } };
+    };
+    const msg2=(sel,t,ok)=>{ const x=$(sel); if(x) x.innerHTML=`<div class="${ok?'okmsg':'err'}">${esc(t)}</div>`; };
+    draw();
+  };
+  // Inställningar → Offerten (owner): how long the price holds, and the template for the personal greeting.
+  SET_TABS.push(['offer','Offerten',true]);
+  SETTINGS.offer=async(el)=>{
+    let s; try{ s=await api('/api/admin/settings'); }catch(e){ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; return; }
+    el.innerHTML=`<div class="card"><h3>⏳ Hur länge gäller offerten?</h3>
+        <div class="muted">När du skickar får offerten ett slutdatum – kunden ser en nedräkning, och det får fler att bestämma sig. Slutdatumet blir aldrig senare än dagen före flytten. Du kan ändra det i varje offert.</div>
+        <label class="f" for="of_days">Antal dagar</label><select id="of_days" style="width:auto">${[0,3,5,7,10,14,21,30].map(n=>`<option value="${n}"${s.offerValidDays===n?' selected':''}>${n?n+' dagar':'Inget slutdatum'}</option>`).join('')}</select></div>
+      <div class="card"><h3>👋 Personligt meddelande</h3>
+        <label class="pkgsw" style="margin-top:0"><input type="checkbox" id="of_on"${s.introOn?' checked':''}> Lägg till ett personligt meddelande från säljaren när offerten skickas<small>Med säljarens foto, namn och telefon (Inställningar → Min profil). Det går att ändra eller låta AI skriva i varje offert.</small></label>
+        <label class="f" for="of_tpl">Mall</label><textarea id="of_tpl" rows="6" maxlength="800">${esc(s.introTpl||'')}</textarea>
+        <div class="muted" style="font-size:12.5px">Fylls i automatiskt: <code>{förnamn}</code> <code>{från}</code> <code>{till}</code> <code>{datum}</code> <code>{säljare}</code>. Saknas orterna tas "från … till …" bort.</div>
+        <div class="btns"><button class="btn" id="of_save">Spara</button></div><div id="of_msg"></div></div>`;
+    $('#of_save').onclick=async()=>{ try{ await api('/api/admin/settings',{method:'PATCH',body:JSON.stringify({offerValidDays:Number($('#of_days').value),introOn:$('#of_on').checked,introTpl:$('#of_tpl').value})}); $('#of_msg').innerHTML='<div class="okmsg">Sparat ✓ – gäller nästa offert du skickar.</div>'; }catch(e){ $('#of_msg').innerHTML=`<div class="err">${esc(e.message)}</div>`; } };
   };
   // Inställningar → AI-teamet (owner): names, what they may send by themselves, limits.
   SET_TABS.push(['ai','AI-teamet',true]);
