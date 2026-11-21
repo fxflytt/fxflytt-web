@@ -6,7 +6,7 @@ import { offerPdf, pdfSafe } from "../lib/booking/offerpdf.ts";
 import { isExpired, reminderDue, publicView, type Booking } from "../lib/booking/store.ts";
 import { INTRO_TPL } from "../lib/booking/settings.ts";
 
-const mk = (o: Partial<Booking> & { data?: Partial<Booking["data"]> } = {}): Booking => ({
+const mk = (o: Omit<Partial<Booking>, "data"> & { data?: Partial<Booking["data"]> } = {}): Booking => ({
   id: "FX261121-ABC123", createdAt: Date.now(), updatedAt: Date.now(), status: "sent", source: "web", history: [],
   ...o, data: { name: "Anna Svensson", phone: "0701234567", email: "anna@example.com", size: "Bara flytt – Bas", areaM2: "60", from: "Storgatan 1, 732 30 Arboga", to: "Ågatan 2, 722 11 Västerås", ...(o.data || {}) } as Booking["data"],
 });
