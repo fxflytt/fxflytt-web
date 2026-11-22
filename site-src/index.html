@@ -293,6 +293,9 @@ body.noscroll .mbar{display:none}
 .menu a.on{color:var(--accent-d)}
 .drawer a.item.on{color:var(--accent-d)}
 @media(max-width:900px){.burger{display:flex}.nav{gap:8px}.logo{margin-right:auto}}
+/* 901–1060 px (tablets, phones in desktop mode): the full menu does not fit, so use the hamburger here too */
+@media(min-width:901px) and (max-width:1060px){.menu{display:none}.burger{display:flex}.nav{gap:8px}.logo{margin-right:auto}}
+.menu a,.btn-phone{white-space:nowrap}
 
 /* Om oss */
 .about{display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center}
@@ -665,7 +668,7 @@ body.noscroll .mbar{display:none}
         <h3>Deluxe</h3><p class="for">Flytt + flyttstäd + packning & montering</p>
         <ul>
           <li><svg><use href="#i-check"/></svg>Allt i Premium</li>
-          <li><svg><use href="#i-check"/></svg>Packning, ned- och montering – du väljer antal timmar (minst 3)</li>
+          <li><svg><use href="#i-check"/></svg><span>Packning, ned- och montering – du väljer antal timmar (minst 3)</span></li>
           <li><svg><use href="#i-check"/></svg>20 % rabatt på flytt, flyttstäd och körsträcka</li>
         </ul>
         <p class="pk-price">Flytt + städ med <b>−20 %</b> + packningstimmar</p>
@@ -1333,7 +1336,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   function set(o){d.classList.toggle('open',o);b.classList.toggle('x',o);b.setAttribute('aria-expanded',o);document.body.classList.toggle('noscroll',o);}
   b.addEventListener('click',()=>set(!d.classList.contains('open')));
   d.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>set(false)));
-  window.addEventListener('resize',()=>{if(innerWidth>900)set(false);});
+  window.addEventListener('resize',()=>{if(innerWidth>1060)set(false);});
 })();
 
 /* ---- Kubikräknare (shared component in /kubik.js) ---- */

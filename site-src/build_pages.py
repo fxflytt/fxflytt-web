@@ -318,7 +318,7 @@ paket = page("paket.html",
         <p class="small">Leverans ingår.</p></div>
     </div>
   </div>
-</section>""", extra_head="<style>.pl-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.pl-grid h3{color:var(--navy);margin-bottom:10px}.pl-grid .small{color:var(--muted);font-size:.88rem;margin-top:8px}@media(max-width:800px){.pl-grid{grid-template-columns:1fr}}</style>")
+</section>""", extra_head="<style>.pl-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.pl-grid>div{min-width:0}.pl-grid .cmp{min-width:0}.pl-grid h3{color:var(--navy);margin-bottom:10px}.pl-grid .small{color:var(--muted);font-size:.88rem;margin-top:8px}@media(max-width:800px){.pl-grid{grid-template-columns:1fr}}</style>")
 
 # ---------------------------------------------------------------- Om oss
 om = page("om-oss.html",
