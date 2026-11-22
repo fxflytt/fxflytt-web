@@ -183,10 +183,10 @@ def route_section(c):
 """
 
 def CITY_PHOTO(c):
-    i = [x["slug"] for x in CITIES].index(c["slug"])
-    if i % 2 == 0:
-        return photo("movers-truck", f"Flyttare från FX Flytt bär kartonger till flyttbilen i {c['name']}", "margin-top:26px", "center", "2576/1093")
-    return photo("truck-street", f"Flyttbil från FX Flytt med flyttkartonger i {c['name']}", "margin-top:26px", "center", "2576/1093")
+    # Real photos: the office in Kungsör, the loading photo on the other town pages (no false claim about the place).
+    if c["slug"] == "kungsor":
+        return photo("office", "FX Flytts kontor och flyttbilar", "margin-top:26px", "center", "2752/1313")
+    return photo("loading", "Flyttare från FX Flytt spänner fast lasten i flyttbilen", "margin-top:26px", "center 30%", "16/9")
 
 def city_page(c):
     others = "".join(f'<a class="city" href="flyttfirma-{o["slug"]}.html"><svg><use href="#i-pin"/></svg>{o["name"]}</a>'
