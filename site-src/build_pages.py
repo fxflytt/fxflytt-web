@@ -336,6 +336,7 @@ om = page("om-oss.html",
       <p>FX Flytt hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd, packning och bortforsling.</p>
       <p>Bakom FX Flytt står en grundare som har arbetat med flytt sedan 2016. Den erfarenheten märks i planeringen, i hur vi packar och bär – och i att vi vet vad som kan gå fel innan det händer.</p>
       <p>Vi tror på enkla priser, tydlig kommunikation och att göra det vi lovar. Därför får du en fast kontaktperson som följer din flytt från första samtalet till sista kartongen.</p>
+      <p>Följ oss på <a href="https://www.facebook.com/profile.php?id=61596768416539" target="_blank" rel="noopener">Facebook</a> och <a href="https://www.instagram.com/fxflytt.se/" target="_blank" rel="noopener">Instagram</a> – där visar vi flyttar, tips och vardagen i teamet.</p>
     </div>
     <div class="vals">
       <div class="val">{ico("user")}<b>Personlig kontakt</b><span>En person som svarar på dina frågor hela vägen.</span></div>
@@ -1133,7 +1134,7 @@ def _en_chrome(s):
                  (">Flyttfirma Kungsör<", ">Kungsör<"), (">Flyttfirma Örebro<", ">Örebro<"), (">Flyttfirma Eskilstuna<", ">Eskilstuna<"),
                  (">Flyttfirma Västerås<", ">Västerås<"), (">Flyttfirma Katrineholm<", ">Katrineholm<"),
                  (">Flyttfirma Arboga<", ">Arboga<"), (">Flyttfirma Köping<", ">Köping<"), (">Flyttfirma Stockholm<", ">Stockholm<"), (">Flyttfirma Uppsala<", ">Uppsala<"), (">Alla orter →<", ">All towns →<"),
-                 (">Om oss<", ">About us<"), ("Alla rättigheter förbehållna. · Godkänd för F-skatt · Flytt enligt", "All rights reserved. · Approved for F-tax · Moves under"),
+                 (">Om oss<", ">About us<"), ('aria-label="FX Flytt på Facebook"', 'aria-label="FX Flytt on Facebook"'), ('aria-label="FX Flytt på Instagram"', 'aria-label="FX Flytt on Instagram"'), ("Alla rättigheter förbehållna. · Godkänd för F-skatt · Flytt enligt", "All rights reserved. · Approved for F-tax · Moves under"),
                  (">Integritetspolicy<", ">Privacy policy<"), (">Villkor<", ">Terms<"), (">Flyttguider<", ">Moving guides<"),
                  ('<a href="en.html" lang="en">In English</a>', '<a href="index.html" lang="sv">På svenska</a>')]:
         assert a in part, a
