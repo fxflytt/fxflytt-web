@@ -192,7 +192,7 @@ tjanster = page("tjanster.html",
       <div class="how"><div class="num">2</div><h3>Vi planerar</h3><p>Vi går igenom datum, tillval och detaljer med dig och bokar rätt bil och rätt antal flyttare.</p></div>
       <div class="how"><div class="num">3</div><h3>Vi flyttar</h3><p>Vårt team bär, lastar, kör och ställer in allt på plats – och städar om du vill.</p></div>
     </div>
-    {photo("packing", "Flyttare packar porslin i en flyttkartong", "max-width:760px;margin:40px auto 0", "center 45%")}
+    {photo("tape", "Flyttare från FX Flytt tejpar igen en packad flyttkartong", "max-width:760px;margin:40px auto 0", "center", "4/3")}
   </div>
 </section>
 <section style="background:#fff">
@@ -235,7 +235,7 @@ flyttfirma = page("flyttfirma.html",
 <section style="background:#fff">
   <div class="wrap about">
     <div>
-      {photo("truck-street", "Flyttbil från FX Flytt på en gata med flyttkartonger", "margin-bottom:26px", "center", "2576/1093", "(max-width: 900px) 100vw, 560px")}
+      {photo("loading", "Flyttare från FX Flytt spänner fast lasten i flyttbilen", "margin-bottom:26px", "center 30%", "16/9", "(max-width: 900px) 100vw, 560px")}
       <span class="eyebrow">Varför en lokal flyttfirma?</span>
       <h2>Vi känner regionen</h2>
       <p>Vi kör vägarna mellan Örebro, Kungsör, Eskilstuna, Västerås och Katrineholm hela tiden. Det gör att vi kan planera rutter och tider realistiskt – och ge dig ett pris som håller.</p>
@@ -279,7 +279,7 @@ paket = page("paket.html",
  f"""
 <section style="background:#fff">
   <div class="wrap center">
-    {photo("couple", "Glatt par i sitt nya hem bland flyttkartonger", "max-width:760px;margin:0 auto 36px", "center 40%")}
+    {photo("keys", "Flyttare från FX Flytt lämnar över nycklarna till en familj vid flyttbilen", "max-width:760px;margin:0 auto 36px", "center 45%")}
     <span class="eyebrow">Paket</span><h2>Bas, Premium eller Deluxe</h2>
     <div style="text-align:left">{pk}</div>
   </div>
@@ -330,7 +330,7 @@ om = page("om-oss.html",
 <section style="background:#fff">
   <div class="wrap about">
     <div>
-      {photo("movers-truck", "Flyttare från FX Flytt bär kartonger till flyttbilen", "margin-bottom:26px", "center", "2576/1093", "(max-width: 900px) 100vw, 560px")}
+      {photo("office", "FX Flytts kontor och flyttbilar", "margin-bottom:26px", "center", "2752/1313", "(max-width: 900px) 100vw, 560px")}
       <span class="eyebrow">Vilka vi är</span>
       <h2>Ett lokalt flyttföretag med fokus på service</h2>
       <p>FX Flytt hjälper privatpersoner och företag i hela Mellansverige med flytt, flyttstäd, packning och bortforsling.</p>
@@ -1000,9 +1000,21 @@ prisguide = page("vad-kostar-flytt.html",
 """, extra_head=_pg_ld)
 
 # ---------------------------------------------------------------- Service pages
+# Real photos at the top of some service pages (pictures in site-src/img).
+_SERVICE_PHOTO = {
+    "kontorsflytt.html": ("office", "FX Flytts kontor och flyttbilar", "center", "2752/1313"),
+    "pianoflytt.html": ("piano", "Tre flyttare från FX Flytt bär ett piano till flyttbilen", "center", "4/3"),
+    "flytthjalp.html": ("assembly", "Flyttare från FX Flytt monterar en säng", "center", "4/3"),
+    "bohagsflytt.html": ("loading", "Flyttare från FX Flytt spänner fast lasten i flyttbilen", "center 30%", "16/9"),
+    "packning.html": ("tape", "Flyttare från FX Flytt tejpar igen en packad flyttkartong", "center", "4/3"),
+    "flytt-mellan-stader.html": ("loading", "Flyttare från FX Flytt spänner fast lasten i flyttbilen", "center 30%", "16/9"),
+}
+
 def service_page(file, title, desc, crumb, h1, lead, blocks, faq):
     fh, fld = _faq(faq)
-    body = "".join(f'<h2 style="font-size:1.5rem;margin:{"0" if i==0 else "34px"} 0 10px">{t}</h2>{c}' for i,(t,c) in enumerate(blocks))
+    ph = _SERVICE_PHOTO.get(file)
+    top = photo(ph[0], ph[1], "margin-bottom:30px", ph[2], ph[3], "(max-width: 900px) 100vw, 860px") if ph else ""
+    body = top + "".join(f'<h2 style="font-size:1.5rem;margin:{"0" if i==0 else "34px"} 0 10px">{t}</h2>{c}' for i,(t,c) in enumerate(blocks))
     return page(file, title, desc, crumb, h1, lead, f"""
 <section>
   <div class="wrap" style="max-width:860px">
