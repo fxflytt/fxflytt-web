@@ -297,6 +297,9 @@ body.noscroll .mbar{display:none}
 .menu a.on{color:var(--accent-d)}
 .drawer a.item.on{color:var(--accent-d)}
 @media(max-width:900px){.burger{display:flex}.nav{gap:8px}.logo{margin-right:auto}}
+/* 901–1060 px (tablets, phones in desktop mode): the full menu does not fit, so use the hamburger here too */
+@media(min-width:901px) and (max-width:1060px){.menu{display:none}.burger{display:flex}.nav{gap:8px}.logo{margin-right:auto}}
+.menu a,.btn-phone{white-space:nowrap}
 
 /* Om oss */
 .about{display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center}
