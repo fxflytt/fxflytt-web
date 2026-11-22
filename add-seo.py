@@ -17,7 +17,8 @@ BUSINESS = {"@context": "https://schema.org", "@type": "MovingCompany", "@id": B
                 {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "07:00", "closes": "17:00"},
                 {"@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "12:00", "closes": "16:00"},
                 {"@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "12:00", "closes": "16:00"}],
-            "areaServed": [{"@type": "City", "name": c} for c in CITIES]}
+            "areaServed": [{"@type": "City", "name": c} for c in CITIES],
+            "sameAs": ["https://www.facebook.com/profile.php?id=61596768416539", "https://www.instagram.com/fxflytt.se/"]}
 # Internal links point at the canonical clean addresses (/paket, not paket.html; / not index.html),
 # so Google sees one address per page. Old .html addresses redirect permanently (next.config.ts).
 _LINK = re.compile(r'href="(index|[a-z0-9-]+)\.html(#[^"]*)?"')
