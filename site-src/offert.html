@@ -62,6 +62,11 @@ footer .soc{display:flex;gap:10px;margin-top:4px}footer .soc a{display:grid;plac
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;position:relative}
 .hero h1{font-size:clamp(2.1rem,4.6vw,3.4rem);font-weight:800}
 .hero h1 span{color:var(--accent)}
+/* Town that changes in the headline (script "Town in the headline" below). Own line, so nothing else moves. */
+.hero h1 .rot-l{display:block;color:inherit}
+.hero h1 .rot{display:inline-block;color:var(--accent);font-weight:800;transition:opacity .35s ease,transform .35s ease}
+.hero h1 .rot.out{opacity:0;transform:translateY(-.35em)}
+.hero h1 .rot.pre{opacity:0;transform:translateY(.35em);transition:none}
 .hero p.sub{font-size:1.12rem;color:#33475a;margin:18px 0 26px;max-width:540px}
 .badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}
 .badge{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.85);border:1px solid #dfe6ec;color:var(--navy);box-shadow:0 4px 14px rgba(13,42,63,.06);padding:8px 14px;border-radius:999px;font-size:.88rem;font-weight:600}
@@ -481,7 +486,7 @@ html.embed #qform>h2{display:none}
   <div class="wrap hero-grid">
     <div>
       <span class="eyebrow" style="color:#e8650a">Flyttfirma i Mellansverige</span>
-      <h1>Din flytt – <span>snabbt, tryggt</span> och utan stress.</h1>
+      <h1>Din flytt – snabbt, tryggt och utan stress <span class="rot-l">i <b class="rot" id="rot">Kungsör</b></span></h1>
       <p class="sub">FX Flytt planerar och genomför hela din flytt: bärhjälp, lastbil, packning, montering och flyttstäd. Du får en fast kontaktperson från offert till sista kartongen.</p>
       <div class="badges">
         <div class="badge"><svg><use href="#i-pct"/></svg>RUT-avdrag direkt på fakturan</div>
@@ -1339,6 +1344,22 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     const t=TOWNS.find(t=>norm(t[0])===norm(name));
     if(t) el._fxPick({value:t[0],lat:t[2],lon:t[3]}); else el.value=name;
   };
+})();
+
+/* ---- Town in the headline: Kungsör → Västerås → Örebro … (not for visitors who asked for less motion) ---- */
+(function(){
+  const el=document.getElementById('rot');
+  if(!el||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  const towns=['Kungsör','Västerås','Örebro','Eskilstuna','Köping','Arboga','Katrineholm','Stockholm','Uppsala','Norrköping','Linköping','Karlstad'];
+  let i=0;
+  setInterval(()=>{
+    if(document.hidden) return;
+    el.classList.add('out');
+    setTimeout(()=>{
+      i=(i+1)%towns.length; el.textContent=towns[i];
+      el.classList.remove('out'); el.classList.add('pre'); void el.offsetWidth; el.classList.remove('pre');
+    },350);
+  },2600);
 })();
 
 /* ---- Mobile menu ---- */
