@@ -119,6 +119,9 @@ CITIES = [
 
 from extra_cities import EXTRA
 CITIES += EXTRA
+# Towns with our own team and truck: team section, company moves and extra FAQ (site-src/city_team.py).
+from city_team import apply as apply_team
+apply_team(CITIES)
 from city_local import LOCAL
 assert all(c["slug"] in LOCAL for c in CITIES), "a city is missing its Bra att veta text in city_local.py"
 
