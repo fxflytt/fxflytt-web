@@ -252,6 +252,7 @@ def city_page(c):
       <h3 style="color:var(--navy);margin-top:28px">Bra att veta när du flyttar i {c["name"]}</h3>
       {"".join(f"<p>{p}</p>" for p in LOCAL[c["slug"]])}
       <div class="tipbox"><b>Tips inför flytten i {c["name"]}</b><ul>{"".join(f"<li>{t}</li>" for t in c["tips"])}</ul></div>
+      {c.get("extra_html", "")}
     </div>
     <aside class="side">
       <h3>Priser i {c["name"]}</h3>
