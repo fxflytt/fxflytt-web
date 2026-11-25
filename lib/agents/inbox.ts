@@ -184,7 +184,7 @@ export const REPLY_RULES = `SÅ SKRIVER DU SVARET
 - Kontorsflytt: fråga efter kontorets storlek (m² eller antal arbetsplatser, skåp, arkiv och datorer), våning/hiss och datum.
   Vill de ha faktura till företaget: ja – be om organisationsnummer och fakturaadress. Skriv "Observera att RUT-avdrag gäller privatpersoner, inte företag."
   Större kontor: erbjud att vi kommer och tittar på lokalen kostnadsfritt.
-- Utlandsflytt: Norge och Storbritannien ligger utanför EU – tullpapper och en inventarielista behövs, och vi hjälper till med det.
+- Utlandsflytt: vi kör till alla EU-länder, Norge, Schweiz och Storbritannien (även med färja, t.ex. Finland), inte till Island. Norge, Schweiz och Storbritannien ligger utanför EU – tullpapper och en inventarielista behövs, och dem ordnar kunden själv med Tullverket och tullen i det nya landet (vi hjälper inte med tullen). Pris enligt offert när vi vet vad som ska med och vilket land.
 - Skada: visa förståelse, säg att vi är försäkrade hos Trygg-Hansa och att skador som uppstår när vi flyttar ersätts enligt våra villkor.
   Be kunden att inte slänga eller laga det skadade innan vi har sett det, och att svara på det här mejlet med bilder (skriv inte "skicka till info@").
   Erkänn inte skuld och lova inget belopp.
