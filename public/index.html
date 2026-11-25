@@ -1048,8 +1048,9 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       if(el.value.trim() && val) lines.push(el.name+': '+val);
     });
     Object.keys(seen).forEach(k=>lines.push(k+': '+seen[k].join(', ')));
+    if(window.fxAbroad) lines.push('UTLANDSFLYTT: '+window.fxAbroad+' – pris enligt offert');
     if(window.fxDistance) lines.push('Avstånd: ca '+window.fxDistance+' km');
-    if(window.fxPrice){ lines.push(''); lines.push('Pris från prisräknaren (efter RUT): '+window.fxPrice.total.toLocaleString('sv-SE')+' kr'); window.fxPrice.lines.forEach(l=>lines.push('  '+l.label+': '+l.amount.toLocaleString('sv-SE')+' kr')); lines.push('  Prislista: '+window.fxPrice.version); if(window.fxPrice.note) lines.push(window.fxPrice.note); (window.fxPrice.notIncluded||[]).forEach((t,i)=>{ if(!i) lines.push('Ingår inte i priset:'); lines.push('  '+t); }); }
+    if(window.fxPrice&&!window.fxAbroad){ lines.push(''); lines.push('Pris från prisräknaren (efter RUT): '+window.fxPrice.total.toLocaleString('sv-SE')+' kr'); window.fxPrice.lines.forEach(l=>lines.push('  '+l.label+': '+l.amount.toLocaleString('sv-SE')+' kr')); lines.push('  Prislista: '+window.fxPrice.version); if(window.fxPrice.note) lines.push(window.fxPrice.note); (window.fxPrice.notIncluded||[]).forEach((t,i)=>{ if(!i) lines.push('Ingår inte i priset:'); lines.push('  '+t); }); }
     if(window.fxVolume){ lines.push('Beräknad volym: '+String(window.fxVolume.m3).replace('.',',')+' m³ ('+window.fxVolume.items+' föremål)'); lines.push('Möbellista: '+window.fxVolume.list.join(', ')); }
     return lines.join('\n');
   }
@@ -1077,9 +1078,9 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       distanceKm: window.fxDistance ? Number(window.fxDistance) : undefined,
       size:(o=>o?(o.dataset.sv||o.text):'')(document.getElementById('fsvc').selectedOptions[0]), areaM2:v('kvm'), home:v('typ'), date:v('date'),
       floorFrom:cleanOnly?undefined:[v('vf'),v('hf'),'bärsträcka '+v('bf')].join(' · '), floorTo:cleanOnly?undefined:[v('vt'),v('ht'),'bärsträcka '+v('bt')].join(' · '),
-      message:((window.FX_LANG==='en'?'[Kunden använde engelska formuläret – svara på engelska] ':'')+(glasAsked?'Inglasad balkong/altan: '+v('glas')+'. ':'')+v('msg')).trim(),
+      message:((window.fxAbroad?'[UTLANDSFLYTT: '+window.fxAbroad+' – pris enligt offert] ':'')+(window.FX_LANG==='en'?'[Kunden använde engelska formuläret – svara på engelska] ':'')+(glasAsked?'Inglasad balkong/altan: '+v('glas')+'. ':'')+v('msg')).trim(),
       extras:[...form.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value),
-      price: v('fsvc').startsWith('other') ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined,
+      price: (v('fsvc').startsWith('other') || window.fxAbroad) ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined,
       refCode: v('refc').trim() || undefined
     };
     fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data, website:v('website'), ft:Date.now()-(window.FX_T0||0)})}).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
@@ -1177,7 +1178,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   }
   function formNote(total,ni,tip){
     const el=$('f-extras-note'); if(!el) return;
-    if(!fxExtras().length||$('fsvc').value.startsWith('other')){ el.style.display='none'; return; }
+    if(!fxExtras().length||$('fsvc').value.startsWith('other')||window.fxAbroad){ el.style.display='none'; return; }
     el.style.display='';
     el.innerHTML='<b>Pris med dina tillval: '+kr(total)+'</b> <span style="opacity:.75">(efter RUT)</span>'+
       (ni.length?'<div style="margin-top:6px"><b>Ingår inte i priset:</b>'+ni.map(t=>'<div>• '+t+'</div>').join('')+'</div>':'')+tip;
@@ -1197,6 +1198,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   window.addEventListener('fx-volume',calc);
   document.querySelectorAll('a[data-pkg]').forEach(a=>a.addEventListener('click',()=>{$('c-svc').value='move';$('c-pkg').value=a.dataset.pkg;calc();}));
   window.addEventListener('fx-distance',()=>{ if(window.fxDistance){ $('c-km').value=window.fxDistance; calc(); } });
+  window.addEventListener('fx-abroad',calc);
   // Sync quote form <-> price calculator so the price in the request matches what the customer chose
   const fsvc=$('fsvc'), fkvm=$('kvm');
   function formToCalc(){
@@ -1263,21 +1265,28 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     return TOWNS.filter(t=>norm(t[0]).startsWith(n)).concat(TOWNS.filter(t=>!norm(t[0]).startsWith(n)&&norm(t[0]).includes(n)))
       .slice(0,6).map(t=>({main:t[0],sub:t[1]+', Sverige',value:t[0],lat:t[2],lon:t[3]}));
   }
+  // Countries we drive to (utlandsflytt): all EU countries, Norway, Switzerland and the UK – not Iceland.
+  const LAND={SE:'Sverige',NO:'Norge',DK:'Danmark',FI:'Finland',DE:'Tyskland',PL:'Polen',NL:'Nederländerna',BE:'Belgien',LU:'Luxemburg',
+    FR:'Frankrike',ES:'Spanien',PT:'Portugal',IT:'Italien',AT:'Österrike',CH:'Schweiz',GB:'Storbritannien',IE:'Irland',CZ:'Tjeckien',
+    SK:'Slovakien',HU:'Ungern',SI:'Slovenien',HR:'Kroatien',RO:'Rumänien',BG:'Bulgarien',GR:'Grekland',CY:'Cypern',MT:'Malta',
+    EE:'Estland',LV:'Lettland',LT:'Litauen'};
   async function remoteMatches(q){
-    // Photon (OpenStreetMap) – gratis gatuadress-sökning. Fungerar när sidan ligger på er egen domän.
-    const url='https://photon.komoot.io/api/?limit=7&lang=default&bbox=10.5,55.0,24.3,69.1&lat=59.42&lon=16.1&q='+encodeURIComponent(q);
+    // Photon (OpenStreetMap) – gratis gatuadress-sökning. Sverige först (sökningen utgår från Kungsör), sedan Europa.
+    const url='https://photon.komoot.io/api/?limit=12&lang=default&bbox=-11,34,35,71.5&lat=59.42&lon=16.1&q='+encodeURIComponent(q);
     const r=await fetch(url); if(!r.ok) throw 0;
     const j=await r.json(); netOK=true; loadMapLib();
     const seen=new Set();
-    return j.features.filter(f=>f.properties.countrycode==='SE').map(f=>{
+    return j.features.filter(f=>LAND[f.properties.countrycode])
+      .sort((a,b)=>(a.properties.countrycode==='SE'?0:1)-(b.properties.countrycode==='SE'?0:1)).map(f=>{
       const p=f.properties;
       const qn=(q.match(/\b(\d+\s?[a-zA-Z]?)\b/)||[])[1];
       const street=p.street?(p.street+(p.housenumber?' '+p.housenumber:'')):(p.type==='street'&&p.name?p.name+(qn?' '+qn.toUpperCase().replace(' ',''):''):(p.name||''));
       const city=p.city||p.town||p.village||p.locality||p.district||'';
       const main=street||city||p.name;
-      const sub=[p.postcode,street?city:'',p.county].filter(Boolean).join(', ');
-      const value=[street,[p.postcode,city].filter(Boolean).join(' ')].filter(Boolean).join(', ');
-      return {main,sub:sub||'Sverige',value:value||main,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0]};
+      const cc=p.countrycode, land=cc==='SE'?'':LAND[cc];
+      const sub=[p.postcode,street?city:'',cc==='SE'?p.county:'',land].filter(Boolean).join(', ');
+      const value=[street,[p.postcode,city].filter(Boolean).join(' '),land].filter(Boolean).join(', ');
+      return {main,sub:sub||'Sverige',value:value||main,lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],cc};
     }).filter(m=>{const k=m.value;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,6);
   }
 
@@ -1285,12 +1294,12 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     const list=input.parentNode.querySelector('.ac-list');
     const key=input.id; let items=[],act=-1,timer=null,reqId=0;
     function render(){
-      if(!items.length){list.innerHTML='<li class="ac-empty">Inga förslag – skriv hela adressen</li>';list.classList.add('open');return;}
+      if(!items.length){list.innerHTML='<li class="ac-empty">Hittar du inte adressen? Skriv den som den är – det går bra.</li>';list.classList.add('open');return;}
       list.innerHTML=items.map((m,i)=>'<li role="option" data-i="'+i+'" class="'+(i===act?'act':'')+'"><svg><use href="#i-pin"/></svg><div><b>'+esc(m.main)+'</b><small>'+esc(m.sub)+'</small></div></li>').join('');
       list.classList.add('open');
     }
     function close(){list.classList.remove('open');act=-1;}
-    function pick(m){input.value=m.value;pts[key]={lat:m.lat,lon:m.lon};input.style.borderColor='';close();update();}
+    function pick(m){input.value=m.value;pts[key]={lat:m.lat,lon:m.lon,cc:m.cc||'SE'};input.style.borderColor='';close();update();}
     input._fxPick=pick;
     input.addEventListener('input',()=>{
       pts[key]=null;update();
@@ -1318,12 +1327,26 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   let map,layer;
   function update(){
     const box=document.getElementById('route'),txt=document.getElementById('route-txt'),mp=document.getElementById('map');
-    if(!(pts.from&&pts.to)){box.classList.remove('show');mp.classList.remove('show');window.fxDistance=null;return;}
+    // Utlandsflytt: one of the addresses is outside Sweden – no km price, a fixed price comes in the quote
+    const abroad=[pts.from,pts.to].filter(x=>x&&x.cc&&x.cc!=='SE').map(x=>LAND[x.cc]);
+    const was=window.fxAbroad; window.fxAbroad=abroad.length?[...new Set(abroad)].join(', '):null;
+    if(window.fxAbroad){
+      window.fxDistance=null;
+      txt.textContent='Utlandsflytt ('+window.fxAbroad+') – vi skickar ett fast pris i en offert.';
+      box.classList.add('show');
+    }
+    if(was!==window.fxAbroad) window.dispatchEvent(new Event('fx-abroad'));
+    if(!(pts.from&&pts.to)){if(!window.fxAbroad)box.classList.remove('show');mp.classList.remove('show');if(!window.fxAbroad)window.fxDistance=null;return;}
+    if(window.fxAbroad){ drawMap(); return; }
     const road=Math.max(1,Math.round(km(pts.from,pts.to)*1.25));
     const min=Math.round(Math.max(10,road*0.7+5)); // rough estimate, ≈85 km/h
     const tid=min<60?min+' min':Math.floor(min/60)+' tim '+(min%60?min%60+' min':'');
     txt.textContent='Avstånd ca '+road+' km · körtid ca '+tid;
     window.fxDistance=road; box.classList.add('show'); window.dispatchEvent(new Event('fx-distance'));
+    drawMap();
+  }
+  function drawMap(){
+    const mp=document.getElementById('map');
     if(window.L&&netOK){
       mp.classList.add('show');
       if(!map){map=L.map(mp,{zoomControl:false,attributionControl:true,scrollWheelZoom:false});map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
