@@ -1034,21 +1034,23 @@ def _how(steps): return '<div class="how-grid">' + "".join(f'<div class="how"><d
 
 kontorsflytt = service_page("kontorsflytt.html",
  "Kontorsflytt & företagsflytt – kontor och lokaler | FX Flytt",
- "Kontorsflytt och företagsflytt i Mellansverige: planering, packning, märkning, ned- och montering och flytt på tider som passar er. Kostnadsfri offert.",
+ "Kontorsflytt och företagsflytt i Mellansverige – dag, kväll eller helg till samma pris: packning, ned- och montering och it-utrustning. Kostnadsfri offert.",
  "Kontorsflytt", "Kontorsflytt – <span>så att ni snabbt är igång igen</span>",
  "Kontorsflytt och företagsflytt för kontor, butiker och lokaler – planerat efter er verksamhet, så att ni förlorar så lite arbetstid som möjligt.",
  [("Det här hjälper vi till med", _ul([
     "<b>Planering.</b> Vi går igenom lokalerna, volymen och tidplanen med er och ger ett fast pris i offerten.",
     "<b>Packning och märkning.</b> Kartonger märks per rum eller avdelning, så att allt hamnar rätt på nya adressen.",
     "<b>Ned- och montering</b> av skrivbord, hyllor och förvaring.",
-    "<b>Flytt på tider som passar er</b> – kvällar och helger enligt överenskommelse.",
-    "<b>Bortforsling</b> av möbler ni inte tar med, och <b>flyttstäd</b> av lokalen ni lämnar.",
+    "<b>Datorer, skärmar och skrivare</b> packas och flyttas säkert.",
+    "<b>Flytt när det passar er</b> – dag, kväll eller helg, till samma pris, så att verksamheten inte behöver stå still.",
+    "<b>Bortforsling</b> av gamla möbler till återvinning, och <b>flyttstäd</b> av lokalen ni lämnar.",
     "<b>Magasinering</b> om den nya lokalen inte är klar i tid."])),
   ("Så går det till", _how([("Kontakta oss","Berätta om lokalen, antal arbetsplatser och önskat datum."),("Genomgång och offert","Vi tittar på lokalen – på plats eller via bilder – och ger ett fast pris."),("Flyttdagen","Vi packar, kör och ställer in allt på rätt plats.")])),
   ("Bra att veta", _ul(["Företag har inte rätt till RUT-avdrag – offerten för en kontorsflytt räknas därför utan avdrag.",
     "Gör en lista över it-utrustning, servrar och känsliga dokument, och bestäm vem hos er som tar hand om dem.",
     "Boka hiss och lastplats i både gamla och nya fastigheten i god tid."]))],
- [("Kan ni flytta på kvällar och helger?","Ja, enligt överenskommelse – så att verksamheten kan fortsätta under dagtid."),
+ [("Kan ni flytta på kvällar och helger?","Ja – dag, kväll eller helg, till samma pris, så att verksamheten kan fortsätta som vanligt."),
+  ("I vilka orter gör ni kontorsflytt?","I alla orter där vi flyttar – bland annat Örebro, Västerås, Eskilstuna, Linköping, Uppsala, Katrineholm, Arboga och Kungsör. Vi har egna team och flyttbilar på flera orter."),
   ("Får företag RUT-avdrag?","Nej, RUT-avdrag gäller bara privatpersoner. Offerten för en kontorsflytt räknas utan avdrag."),
   ("Hur får vi ett pris?","Kontakta oss med adresser, ungefärlig yta och antal arbetsplatser, så får ni en kostnadsfri offert.")])
 

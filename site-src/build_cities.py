@@ -117,8 +117,23 @@ CITIES = [
        ("Hur får jag ett pris?","Klicka på ”Få offert” och fyll i formuläret, eller ring oss – offerten är gratis och inte bindande.")]),
 ]
 
-from extra_cities import EXTRA
+from extra_cities import EXTRA, price_faq, company_faq, local_team_faq, company_html
 CITIES += EXTRA
+# Örebro: own team and truck in the city, company moves, answers to common searches (owner, 2026-11-25).
+for _c in CITIES:
+    if _c["slug"] == "orebro":
+        _c["desc"] = ("Flyttfirma i Örebro med eget team och egen flyttbil: bohagsflytt, kontorsflytt, packning, montering och "
+                      "flyttstäd till fast pris. RUT-avdrag på fakturan.")
+        _c["lead"] = ("Från lägenheten i centrum till kontoret eller villan i ytterområdet – vi har ett eget team och en egen flyttbil "
+                      "i Örebro och planerar din flytt så att den blir enkel, trygg och utan överraskningar.")
+        _c["faq"] = _c["faq"] + [
+            price_faq("Örebro"),
+            company_faq("Örebro"),
+            ("Kan jag boka flytt i Örebro online?",
+             "Ja. Räkna ut priset i prisräknaren och skicka offertformuläret på sidan – vi hör av oss och bekräftar tiden. Du kan också ringa oss."),
+            local_team_faq("Örebro"),
+        ]
+        _c["extra_html"] = company_html("Örebro")
 from city_local import LOCAL
 assert all(c["slug"] in LOCAL for c in CITIES), "a city is missing its Bra att veta text in city_local.py"
 

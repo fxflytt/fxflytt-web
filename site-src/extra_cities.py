@@ -287,13 +287,40 @@ EXTRA = [
     ("Hur får jag ett pris?", "Klicka på ”Få offert” och fyll i formuläret, eller ring oss.")], far=True),
 ]
 
-# ---- Linköping: own team and moving truck in the city, and company/office moves (owner, 2026-11-25).
-# People searching "kontorsflytt/företagsflytt linköping", "vad kostar flyttfirma linköping" and
-# "vilken flyttfirma ska man välja i linköping" already find this page – these texts answer them.
+# ---- Towns with our own team and truck, and company/office moves (owner, 2026-11-25).
+# Company moves: any time (day, evening, weekend) at the same price, in all towns.
+# People search "kontorsflytt/företagsflytt <ort>", "flyttfirma <ort> pris" – these texts answer them.
 import json as _json, os as _os
 _P = _json.load(open(_os.path.join(_os.path.dirname(__file__), "..", "lib", "pricing", "prices.json"), encoding="utf-8"))
 _p60 = next(r[1] for r in _P["moveFixed"] if r[0] >= 60)
 _kr = lambda n: f"{n:,}".replace(",", "\u00a0") + " kr"
+
+def price_faq(name):
+    return (f"Vad kostar en flyttfirma i {name}?",
+            f"En flytt av en lägenhet på 60 m² kostar {_kr(_p60)} till fast pris efter RUT-avdrag, när avståndet mellan adresserna är under "
+            f"{_P['km']['freeBelowKm']} km. Du kan också boka per timme från {_kr(_P['hourly']['2'])}/tim efter RUT (minst {_P['hourly']['minHours']} timmar). "
+            "Ditt exakta pris räknar du ut i prisräknaren.")
+
+def company_faq(name):
+    return (f"Gör ni kontorsflytt och företagsflytt i {name}?",
+            f"Ja. Vi flyttar kontor och företag i {name} när det passar er – dag, kväll eller helg, till samma pris. Vi monterar ned och upp möbler, "
+            "flyttar datorer, skärmar och skrivare och kan ta med gamla möbler till återvinning.")
+
+def local_team_faq(name):
+    return ("Hur snabbt kan ni komma?",
+            f"Vi har ett eget team och en flyttbil i {name}. Hur snabbt vi kan komma beror på kalendern – ring oss eller fyll i formuläret.")
+
+def company_html(name):
+    return (f'<h3 style="color:var(--navy);margin-top:28px">Flytt för företag och kontor i {name}</h3>'
+            f'<p>Vi har ett eget team och en egen flyttbil i {name} och flyttar både hem och företag – kontor, butiker och lokaler.</p>'
+            '<ul class="ticks" style="display:grid;gap:10px">'
+            '<li><b>När det passar er</b> – dag, kväll eller helg, till samma pris, så att verksamheten inte behöver stå still.</li>'
+            '<li><b>Ned- och montering</b> av skrivbord, hyllor och kontorsmöbler.</li>'
+            '<li><b>Datorer, skärmar och skrivare</b> packas och flyttas säkert.</li>'
+            '<li><b>Gamla möbler</b> kan vi ta med till återvinning (<a href="bortforsling.html">bortforsling</a>).</li>'
+            '</ul>'
+            '<p>Företag har inte rätt till RUT-avdrag – du får ett fast pris i en offert. <a href="kontorsflytt.html">Läs mer om kontorsflytt</a>.</p>')
+
 for _c in EXTRA:
     if _c["slug"] != "linkoping":
         continue
@@ -302,26 +329,11 @@ for _c in EXTRA:
     _c["lead"] = ("Från studentrummet i Ryd till kontoret i centrum – vi har ett eget team och en egen flyttbil i Linköping, "
                   "och hjälper dig att flytta med tydligt pris och personlig kontakt.")
     _c["faq"] = [q for q in _c["faq"] if q[0] != "Hur snabbt kan ni komma?"] + [
-        ("Vad kostar en flyttfirma i Linköping?",
-         f"En flytt av en lägenhet på 60 m² kostar {_kr(_p60)} till fast pris efter RUT-avdrag, när avståndet mellan adresserna är under "
-         f"{_P['km']['freeBelowKm']} km. Du kan också boka per timme från {_kr(_P['hourly']['2'])}/tim efter RUT (minst {_P['hourly']['minHours']} timmar). "
-         "Ditt exakta pris räknar du ut i prisräknaren."),
+        price_faq("Linköping"),
         ("Hur väljer man flyttfirma i Linköping?",
          "Kontrollera att firman har trafiktillstånd och försäkring, att du får ett fast pris i förväg och att RUT-avdraget dras direkt på fakturan – "
          "och läs vad andra kunder tycker. FX Flytt har trafiktillstånd från Transportstyrelsen, är försäkrade hos Trygg-Hansa och ger fast pris innan flytten."),
-        ("Gör ni kontorsflytt och företagsflytt i Linköping?",
-         "Ja. Vi flyttar kontor och företag i Linköping när det passar er – även kvällar och helger, till samma pris. Vi monterar ned och upp möbler, "
-         "flyttar datorer, skärmar och skrivare och kan ta med gamla möbler till återvinning."),
-        ("Hur snabbt kan ni komma?",
-         "Vi har ett eget team och en flyttbil i Linköping. Hur snabbt vi kan komma beror på kalendern – ring oss eller fyll i formuläret."),
+        company_faq("Linköping"),
+        local_team_faq("Linköping"),
     ]
-    _c["extra_html"] = (
-        '<h3 style="color:var(--navy);margin-top:28px">Flytt för företag och kontor i Linköping</h3>'
-        '<p>Vi har ett eget team och en egen flyttbil i Linköping och flyttar både hem och företag – kontor, butiker och lokaler.</p>'
-        '<ul class="ticks" style="display:grid;gap:10px">'
-        '<li><b>När det passar er</b> – dag, kväll eller helg, till samma pris, så att verksamheten inte behöver stå still.</li>'
-        '<li><b>Ned- och montering</b> av skrivbord, hyllor och kontorsmöbler.</li>'
-        '<li><b>Datorer, skärmar och skrivare</b> packas och flyttas säkert.</li>'
-        '<li><b>Gamla möbler</b> kan vi ta med till återvinning (<a href="bortforsling.html">bortforsling</a>).</li>'
-        '</ul>'
-        '<p>Företag har inte rätt till RUT-avdrag – du får ett fast pris i en offert. <a href="kontorsflytt.html">Läs mer om kontorsflytt</a>.</p>')
+    _c["extra_html"] = company_html("Linköping")
