@@ -51,8 +51,10 @@ export async function instantReply(id: string): Promise<void> {
       // Same knowledge and rules as Elsa's e-mail replies: the website pages, the checklist, and the price engine.
       const P = await getPrices();
       const d = b.data;
-      const est = d.price ? null : estimate({ name: d.name, phone: d.phone, from: d.from || "", to: d.to || "", date: d.date || "", size: d.size || "", areaM2: Number(d.areaM2) || 0 }, P, d.message || "");
-      const price = d.price ? `Kunden räknade själv i prisräknaren: ${d.price.total} kr efter RUT (gäller om uppgifterna stämmer).` : est ? `PRISFÖRSLAG (prismotorn):\n${estimateText(est)}` : "Inget pris räknat.";
+      // Utlandsflytt (an address outside Sweden, marked by the form): never an automatic price – it comes in a quote.
+      const abroad = /\[UTLANDSFLYTT/.test(d.message || "");
+      const est = d.price || abroad ? null : estimate({ name: d.name, phone: d.phone, from: d.from || "", to: d.to || "", date: d.date || "", size: d.size || "", areaM2: Number(d.areaM2) || 0 }, P, d.message || "");
+      const price = abroad ? "UTLANDSFLYTT – inget pris: säg att vi skickar ett fast pris i en offert när vi vet vad som ska med och vilket land (broar, färjor och vägavgifter skiljer sig)." : d.price ? `Kunden räknade själv i prisräknaren: ${d.price.total} kr efter RUT (gäller om uppgifterna stämmer).` : est ? `PRISFÖRSLAG (prismotorn):\n${estimateText(est)}` : "Inget pris räknat.";
       const r = await askJson<{ subject: string; body: string }>({
         model: MODEL_WRITE, effort: "low", schema: SCHEMA, maxTokens: 6000,
         system: `${HOUSE_RULES}\n\nDu är ${elsa} i kundservice. En kund har just skickat en förfrågan från hemsidan. Skriv ett varmt, personligt svar direkt:
