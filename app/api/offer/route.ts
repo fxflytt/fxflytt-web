@@ -12,6 +12,8 @@ import { getSettings } from "@/lib/booking/settings.ts";
 import { photoLink } from "@/lib/booking/custphotos.ts";
 import { after } from "next/server";
 import { instantOn, instantReply } from "@/lib/agents/instant.ts";
+import { computePrice } from "@/lib/pricing/pricelist.js";
+import { getPrices } from "@/lib/pricing/current.ts";
 
 export const runtime = "nodejs";
 
@@ -20,6 +22,30 @@ const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 let lastError = "";
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max).trim() : "");
+
+// The price is NEVER taken from the browser (anyone can send "1 kr"). The form sends what the customer chose
+// in the calculator (`calc`); the server computes the price again with the price list in use – like /api/lead.
+const CALC = ["service", "areaM2", "distanceKm", "pkg", "crew", "hours", "boxes", "volumeM3", "extraCleaning", "glazing"];
+type Prices = { hourly: Record<string, number> };
+async function serverPrice(calc: unknown, extras: string[], distanceKm: number | undefined): Promise<OfferData["price"]> {
+  if (!calc || typeof calc !== "object") return undefined;
+  const input: Record<string, unknown> = Object.fromEntries(Object.entries(calc as Record<string, unknown>).filter(([k]) => CALC.includes(k)));
+  if (distanceKm !== undefined) input.distanceKm = distanceKm;   // the distance between the two chosen addresses wins
+  const P = (await getPrices()) as unknown as Prices;
+  let q: { totalAfterRut: number | null; lines: { label: string; amount: number }[]; version?: string };
+  try { q = computePrice(input as never, P as never) as typeof q; } catch { return undefined; }
+  if (q.totalAfterRut == null) return undefined;
+  const svc = String(input.service || ""), pkg = String(input.pkg || ""), h2 = P.hourly["2"] || 595, deluxe = svc === "move" && pkg === "deluxe";
+  // Same "not included" list as the form shows the customer.
+  const ni: string[] = [];
+  if (extras.includes("Packning") && !deluxe) ni.push(`Packning – ${h2} kr/tim (2 pers) efter RUT, du betalar bara för den tid det tar`);
+  if (extras.includes("Montering") && !deluxe) ni.push(`Ned- och montering – ${h2} kr/tim (2 pers) efter RUT, du betalar bara för den tid det tar`);
+  if (extras.includes("Flyttstäd") && svc === "hourly") ni.push("Flyttstäd – fast pris efter boyta, från 2 000 kr efter RUT");
+  if (extras.includes("Pianoflytt")) ni.push("Piano / tunga föremål – pris enligt offert");
+  if (extras.includes("Bortforsling")) ni.push("Bortforsling – pris enligt offert");
+  const note = svc === "hourly" ? `Minst 3 timmar. Du betalar för den tid flytten faktiskt tar (${P.hourly[String(input.crew || 2)] || h2} kr/tim efter RUT).` : undefined;
+  return { total: q.totalAfterRut, lines: q.lines.map((l) => ({ label: l.label, amount: l.amount })), version: q.version, note, notIncluded: ni.length ? ni : undefined };
+}
 
 export async function POST(req: Request) {
   const user = process.env.SMTP_USER, pass = process.env.SMTP_PASS;
@@ -43,18 +69,15 @@ export async function POST(req: Request) {
     date: str(d.date, 20), dateType: str(d.dateType, 60), floorFrom: str(d.floorFrom, 140), floorTo: str(d.floorTo, 140),
     extras: Array.isArray(d.extras) ? d.extras.slice(0, 12).map((x) => str(x, 60)).filter(Boolean) : [],
     message: str(d.message, 3000),
-    price: price && num(price.total) !== undefined && Array.isArray(price.lines) ? {
-      total: num(price.total)!, version: str(price.version, 60),
-      lines: price.lines.slice(0, 12).map((l: any) => ({ label: str(l?.label, 120), amount: typeof l?.amount === "number" && isFinite(l.amount) && Math.abs(l.amount) < 1e7 ? Math.round(l.amount) : 0 })),
-      note: str(price.note, 200) || undefined,
-      notIncluded: Array.isArray(price.notIncluded) ? price.notIncluded.slice(0, 8).map((t: unknown) => str(t, 140)).filter(Boolean) as string[] : undefined,
-    } : undefined,
+    price: undefined,   // set below by serverPrice() – the browser's numbers are ignored
     volume: volume && num(volume.m3) !== undefined ? {
       m3: num(volume.m3)!, items: num(volume.items) ?? 0,
       list: Array.isArray(volume.list) ? volume.list.slice(0, 80).map((x) => str(x, 80)) : [],
     } : undefined,
   };
   if (!data.name || !data.phone) return Response.json({ error: "Namn och telefon behövs." }, { status: 400 });
+  // Only when the customer had a price in the form (not for "Kontorsflytt, piano eller annat" or a move abroad).
+  if (price) data.price = await serverPrice(d.calc, data.extras || [], data.distanceKm).catch(() => undefined);
   // Robots: time trap, limits per device, per phone number and for the whole site (lib/spamGuard.ts).
   const g = await guard("offer", clientIp(req), body.ft, data.phone);
   if (g.action === "drop") return Response.json({ ok: true });

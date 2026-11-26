@@ -1081,7 +1081,8 @@ document.getElementById('yr').textContent = new Date().getFullYear();
       floorFrom:cleanOnly?undefined:[v('vf'),v('hf'),'bärsträcka '+v('bf')].join(' · '), floorTo:cleanOnly?undefined:[v('vt'),v('ht'),'bärsträcka '+v('bt')].join(' · '),
       message:((window.fxAbroad?'[UTLANDSFLYTT: '+window.fxAbroad+' – pris enligt offert] ':'')+(window.FX_LANG==='en'?'[Kunden använde engelska formuläret – svara på engelska] ':'')+(glasAsked?'Inglasad balkong/altan: '+v('glas')+'. ':'')+v('msg')).trim(),
       extras:[...form.querySelectorAll('input[name="Tillval"]:checked')].map(x=>x.value),
-      price: (v('fsvc').startsWith('other') || window.fxAbroad) ? undefined : (window.fxPrice || undefined), volume: window.fxVolume || undefined,
+      price: (v('fsvc').startsWith('other') || window.fxAbroad) ? undefined : (window.fxPrice || undefined),
+      calc: (v('fsvc').startsWith('other') || window.fxAbroad || !window.fxPrice) ? undefined : window.fxCalcInput,   // the server computes the price again from this volume: window.fxVolume || undefined,
       refCode: v('refc').trim() || undefined
     };
     fetch('/api/offer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data, website:v('website'), ft:Date.now()-(window.FX_T0||0)})}).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
