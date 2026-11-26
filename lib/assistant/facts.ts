@@ -50,7 +50,7 @@ ${f.km}
 ${f.hourly}
 ${f.packing}
 - Tidsåtgång: en 2:a tar oftast 4–5 timmar med två flyttare (beror på mängd, våning och avstånd).
-- Kontorsflytt/företagsflytt i alla orter: dag, kväll eller helg till SAMMA pris. Ned- och montering av kontorsmöbler, datorer/skärmar/skrivare, gamla möbler till återvinning. Egna team och flyttbilar bl.a. i Kungsör, Örebro, Linköping och Karlstad.
+- Kontorsflytt/företagsflytt i alla orter: dag, kväll eller helg till SAMMA pris. Ned- och montering av kontorsmöbler, datorer/skärmar/skrivare, gamla möbler till återvinning. Egna team och flyttbilar i Kungsör, Örebro, Linköping, Eskilstuna, Västerås, Strängnäs, Enköping, Motala, Jönköping, Uppsala, Katrineholm och Karlstad. Norrköping körs av teamet i Linköping, Södertälje av teamet i Strängnäs och Nässjö av teamet i Jönköping – körsträckan räknas ändå bara mellan kundens två adresser.
 ${f.cleaning}
 - Inglasad balkong eller altan vid flyttstäd (även i Premium och Deluxe): liten ${n(P.glazing?.liten ?? 250)} kr, mellan ${n(P.glazing?.mellan ?? 500)} kr, stor ${n(P.glazing?.stor ?? 750)} kr efter RUT. Paketrabatten gäller även på detta. Vanlig (ej inglasad) balkong ingår.
 ${f.boxes}

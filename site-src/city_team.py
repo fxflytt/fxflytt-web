@@ -1,4 +1,5 @@
-# Towns where FX Flytt has its own team and moving truck (owner, 2026-11-25), with a section about
+# Towns where FX Flytt has its own team and moving truck (owner, 2026-11-25) – and towns served by a team in a
+# nearby town (Norrköping, Södertälje, Nässjö; owner 2026-11-26) – with a section about
 # company/office moves and extra FAQ. Each town has its OWN wording, so the town pages do not repeat
 # each other (Google ranks pages with unique text better).
 #
@@ -219,6 +220,60 @@ TEAM = {
   faq=[("Vad kostar det att flytta en villa i Katrineholm?", "Ett hus på {m2} m² kostar {pris} till fast pris efter RUT-avdrag, med {bilar}. Ligger adresserna {fri} km eller mer från varandra tillkommer {kmpris} kr per km och flyttbil."),
        ("Gör ni kontorsflytt i Katrineholm?", "Ja, vi flyttar kontor, butiker och lager – dag, kväll eller helg till samma pris."),
        ("Har ni egna flyttare i Katrineholm?", "Ja, vi har ett eget team och en flyttbil i Katrineholm.")]),
+ # ---- Towns without an own base, served by the team in a nearby town (owner, 2026-11-26) ----
+ "norrkoping": dict(
+  m2=75, team_h="Vårt team för Norrköping",
+  lead="Ska du flytta i Norrköping? Vårt team i Linköping hjälper dig – vi planerar flytten tillsammans med dig och ger ett tydligt pris innan vi börjar.",
+  team=["I Norrköping har vi inget eget kontor, men vi har ett eget team och en egen flyttbil i Linköping, bara ett par mil bort. Det är det teamet som kommer när du flyttar i Norrköping – från ett stenhus i centrum, en lägenhet i Navestad eller Hageby eller en villa i Lindö eller Vilbergen.",
+        "Du betalar samma pris som i alla våra orter. Körsträckan räknas aldrig från Linköping, bara mellan din gamla och nya adress – och korta flyttar inom staden kostar ingen körsträcka.",
+        "Flyttar du mellan Norrköping och Linköping, eller vidare mot Söderköping och Finspång, planerar vi flytten så att allt får plats i rätt antal bilar."],
+  biz_h="Företagsflytt i Norrköping",
+  biz_intro="Norrköping är en av Sveriges viktigaste logistikstäder, med hamn, flygplats och järnväg, och här finns också kontor, handel och universitet. Vi hjälper också företag i områden som Händelö och Ingelsta.",
+  biz=["<b>Ni bestämmer tiden</b> – vardag, kväll eller helg, och priset är detsamma.",
+       "<b>Kontorsmöbler och hyllor</b> monteras ned på den gamla adressen och upp på den nya.",
+       "<b>Datorer, skärmar och skrivare</b> packas för sig och märks per arbetsplats.",
+       "<b>Gamla möbler</b> som inte ska med kör vi till återvinning."],
+  biz_outro="Företag kan inte få RUT-avdrag, så ni får ett fast pris i en offert.",
+  drop=["Gör ni kontorsflytt i Norrköping?"],
+  faq=[("Vad kostar det att flytta i Norrköping?", "En bostad på {m2} m² kostar {pris} till fast pris efter RUT-avdrag, och vi kommer med {bilar}. Flyttar du {fri} km eller längre – till exempel från Norrköping till Linköping – tillkommer {kmpris} kr per km och flyttbil."),
+       ("Gör ni kontorsflytt i Norrköping?", "Ja, vi flyttar kontor, butiker och lager i Norrköping – dag, kväll eller helg till samma pris."),
+       ("Varifrån kommer flyttarna när jag flyttar i Norrköping?", "Från vårt team i Linköping, som har en egen flyttbil. Du betalar inte för resan dit – körsträckan räknas bara mellan dina två adresser.")]),
+
+ "sodertalje": dict(
+  m2=65, team_h="Vårt team för Södertälje",
+  lead="Från höghusen i Ronna till villorna i Pershagen – vårt team i Strängnäs hjälper dig att flytta i Södertälje med tydligt pris och en fast kontaktperson.",
+  team=["När du flyttar i Södertälje kommer flyttarna från vårt team i Strängnäs, som har en egen flyttbil. Teamet hjälper till i hela kommunen – från höghusen i Ronna, Hovsjö och Geneta till villorna i Pershagen och Glasberga och ute i Järna och Mölnbo.",
+        "Du betalar samma pris som i alla våra orter. Körsträckan räknas inte från Strängnäs, utan bara mellan din gamla och nya adress – och korta flyttar inom staden kostar ingen körsträcka.",
+        "Södertälje ligger mellan Stockholm och Mälardalen, så många flyttar går vidare mot Stockholm, Nykvarn eller Strängnäs. Berätta vart du ska, så planerar vi rätt antal bilar och flyttare."],
+  biz_h="Flytt för företag och kontor i Södertälje",
+  biz_intro="Södertälje är en industristad med stora arbetsgivare, och här finns också många kontor, butiker och lager. Vi hjälper också företag i områden som Moraberg och Almnäs.",
+  biz=["<b>Vi flyttar när det passar er</b> – en vardag, en kväll eller en helg. Tiden påverkar inte priset.",
+       "<b>Skrivbord, förvaring och mötesmöbler</b> tas isär och byggs ihop igen.",
+       "<b>It-utrustning</b> – datorer, skärmar och skrivare – packas separat.",
+       "<b>Möbler ni inte behöver</b> kan vi köra till återvinning."],
+  biz_outro="RUT-avdrag gäller inte för företag – ni får ett fast pris i en offert.",
+  drop=[],
+  faq=[("Vad kostar det att flytta i Södertälje?", "En lägenhet på {m2} m² kostar {pris} till fast pris efter RUT-avdrag, med {bilar}. Om avståndet mellan adresserna är {fri} km eller mer – till exempel mellan Södertälje och Järna – tillkommer {kmpris} kr per km och flyttbil."),
+       ("Gör ni kontorsflytt i Södertälje?", "Ja, kontor, butiker och lager – dag, kväll eller helg, och priset är detsamma."),
+       ("Varifrån kommer flyttarna när jag flyttar i Södertälje?", "Från vårt team i Strängnäs. Resan dit betalar du inte – körsträckan räknas bara mellan dina två adresser.")]),
+
+ "nassjo": dict(
+  m2=150, team_h="Vårt team för Nässjö",
+  lead="Flyttar du i Nässjö eller på Höglandet? Vårt team i Jönköping hjälper dig med hela flytten – tydligt pris och personlig kontakt.",
+  team=["Flyttar du i Nässjö kommer flyttarna från vårt team i Jönköping, som har en egen flyttbil och känner Höglandet väl. Vi hjälper till i Nässjö centrum och Runneryd och ute i Forserum, Anneberg, Malmbäck och Bodafors. Bor du på landet utanför tätorten, beskriv gärna vägen fram till huset och var bilen kan stå.",
+        "Du betalar samma pris som i alla våra orter. Körsträckan räknas aldrig från Jönköping, bara mellan din gamla och nya adress – flyttar du inom Nässjö kostar den oftast ingenting.",
+        "Nässjö är en gammal järnvägsknut, och många flyttar hit eller härifrån för jobbet – till Jönköping, Eksjö eller Tranås. Säg vilket datum du behöver vara klar, så planerar vi efter det."],
+  biz_h="Företagsflytt i Nässjö",
+  biz_intro="Nässjö är ett logistiknav med en stor kombiterminal, och här finns också industri, kontor och butiker. Vi hjälper också företag i industriområdena Södergården och Norrboda.",
+  biz=["<b>Ni väljer dag och tid</b> – även kväll och helg, till samma pris.",
+       "<b>Kontorsmöbler, hyllor och arkiv</b> demonteras och monteras på den nya adressen.",
+       "<b>Datorer, skärmar och skrivare</b> packas och märks.",
+       "<b>Det som inte ska med</b> kör vi till återvinning."],
+  biz_outro="Företag får ett fast pris i en offert eftersom RUT-avdrag bara gäller privatpersoner.",
+  drop=[],
+  faq=[("Vad kostar det att flytta en villa i Nässjö?", "En villa på {m2} m² kostar {pris} till fast pris efter RUT-avdrag, och vi kommer med {bilar}. Flyttar du {fri} km eller längre – till exempel till Jönköping – tillkommer {kmpris} kr per km och flyttbil."),
+       ("Gör ni företagsflytt i Nässjö?", "Ja, vi flyttar kontor, butiker och lager i Nässjö – dag, kväll eller helg, till samma pris."),
+       ("Varifrån kommer flyttarna när jag flyttar i Nässjö?", "Från vårt team i Jönköping. Resan dit betalar du inte – körsträckan räknas bara mellan dina två adresser.")]),
 }
 
 def apply(cities):
@@ -234,7 +289,7 @@ def apply(cities):
         c["faq"] = [f for f in c["faq"] if f[0] not in t["drop"] and f[0] not in new_q] + \
                    [(q, _fill(a, m2)) for q, a in t["faq"]]
         c["extra_html"] = (
-            f'<h3 style="color:var(--navy);margin-top:28px">Vårt team i {n}</h3>'
+            f'<h3 style="color:var(--navy);margin-top:28px">{t.get("team_h", "Vårt team i " + n)}</h3>'
             + "".join(f"<p>{p}</p>" for p in t["team"])
             + f'<h3 style="color:var(--navy);margin-top:28px">{t["biz_h"]}</h3>'
             + f'<p>{t["biz_intro"]}</p>'
