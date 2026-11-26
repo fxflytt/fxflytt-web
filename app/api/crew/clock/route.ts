@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const me = await crewUser(req); if (!me) return Response.json({ error: "unauthorized" }, { status: 401 });
-  if (rateLimited("clock:" + me.id + clientIp(req), 20, 10 * 60_000)) return Response.json({ error: "För många försök. Vänta en stund." }, { status: 429 });
+  if (await rateLimited("clock:" + me.id + clientIp(req), 20, 10 * 60_000)) return Response.json({ error: "För många försök. Vänta en stund." }, { status: 429 });
   const d = (await req.json().catch(() => ({}))) as { action?: unknown; lat?: unknown; lon?: unknown; acc?: unknown };
   const place = checkPlace(await getSettings(), d);
   if (!place.ok) return Response.json({ error: place.error }, { status: 403 });

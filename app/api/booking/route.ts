@@ -18,7 +18,7 @@ const SITE = process.env.SITE_URL || "https://www.fxflytt.se";
 
 export async function GET(req: Request) {
   if (!kvConfigured()) return Response.json({ error: "unavailable" }, { status: 503 });
-  if (rateLimited("bview:" + clientIp(req), 60, 10 * 60_000)) return Response.json({ error: "busy" }, { status: 429 });
+  if (await rateLimited("bview:" + clientIp(req), 60, 10 * 60_000)) return Response.json({ error: "busy" }, { status: 429 });
   const b = await bookingByToken(new URL(req.url).searchParams.get("t") || "");
   if (!b || b.status === "cancelled") return Response.json({ error: "not-found" }, { status: 404 });
   // Count the customer's opens (not the admin's own previews).
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   if (!kvConfigured()) return Response.json({ error: "unavailable" }, { status: 503 });
   const ip = clientIp(req);
-  if (rateLimited("bsign:" + ip, 10, 10 * 60_000)) return Response.json({ error: "För många försök." }, { status: 429 });
+  if (await rateLimited("bsign:" + ip, 10, 10 * 60_000)) return Response.json({ error: "För många försök." }, { status: 429 });
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const b = await bookingByToken(typeof body.t === "string" ? body.t : "");
   if (!b || b.status === "cancelled") return Response.json({ error: "Offerten finns inte längre." }, { status: 404 });
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
   // A question about the offer: saved in the offer, the office gets a notice and answers from the admin page.
   if (body.action === "ask") {
-    if (rateLimited("bask:" + ip, 6, 60 * 60_000)) return Response.json({ error: "Du har skickat många frågor – ring oss på 076-300 07 23." }, { status: 429 });
+    if (await rateLimited("bask:" + ip, 6, 60 * 60_000)) return Response.json({ error: "Du har skickat många frågor – ring oss på 076-300 07 23." }, { status: 429 });
     let x;
     try { x = addQuestion(b, body.text); } catch (e) { return Response.json({ error: (e as Error).message }, { status: 400 }); }
     await saveBooking(b, "Kunden frågade: " + x.q.slice(0, 160));

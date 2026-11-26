@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 const err = (error: string, status: number) => Response.json({ error }, { status });
 
 async function open(req: Request): Promise<Booking | Response> {
-  if (rateLimited("order:" + clientIp(req), 120, 10 * 60_000)) return err("För många försök. Vänta en stund.", 429);
+  if (await rateLimited("order:" + clientIp(req), 120, 10 * 60_000)) return err("För många försök. Vänta en stund.", 429);
   if (!kvConfigured()) return err("Tjänsten är inte tillgänglig.", 503);
   const b = await bookingByWorkToken(new URL(req.url).searchParams.get("t") || "");
   if (!b) return err("Länken gäller inte.", 404);

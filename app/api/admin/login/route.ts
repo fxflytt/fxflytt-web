@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (rateLimited("login:" + clientIp(req), 8, 15 * 60_000)) return Response.json({ error: "För många försök. Vänta en stund." }, { status: 429 });
+  if (await rateLimited("login:" + clientIp(req), 8, 15 * 60_000)) return Response.json({ error: "För många försök. Vänta en stund." }, { status: 429 });
   if (!adminConfigured()) return Response.json({ error: "Lösenord saknas i Vercel (ADMIN_PASSWORD)." }, { status: 503 });
   const body = (await req.json().catch(() => ({}))) as { username?: unknown; password?: unknown };
   let cookie = "";

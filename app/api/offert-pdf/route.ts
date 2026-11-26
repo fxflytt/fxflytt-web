@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   if (!kvConfigured()) return new Response("Inte tillgänglig", { status: 503 });
-  if (rateLimited("bpdf:" + clientIp(req), 20, 10 * 60_000)) return new Response("För många försök", { status: 429 });
+  if (await rateLimited("bpdf:" + clientIp(req), 20, 10 * 60_000)) return new Response("För många försök", { status: 429 });
   const b = await bookingByToken(new URL(req.url).searchParams.get("t") || "");
   if (!b || b.status === "cancelled" || b.status === "declined") return new Response("Offerten hittades inte", { status: 404 });
   const pdf = await offerPdf(b, await getSettings().then(trustView).catch(() => null));
