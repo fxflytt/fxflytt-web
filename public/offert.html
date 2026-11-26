@@ -64,7 +64,8 @@ footer .soc{display:flex;gap:10px;margin-top:4px}footer .soc a{display:grid;plac
 .hero h1 span{color:var(--accent)}
 /* Town that changes in the headline (script "Town in the headline" below). Own line, so nothing else moves. */
 .hero h1 .rot-l{display:block;color:inherit}
-.hero h1 .rot{display:inline-block;color:var(--accent);font-weight:800;transition:opacity .35s ease,transform .35s ease}
+/* darker orange than the buttons: readable on the light hero photo (contrast 3.9) */
+.hero h1 .rot{display:inline-block;color:#c2530a;font-weight:800;transition:opacity .35s ease,transform .35s ease}
 .hero h1 .rot.out{opacity:0;transform:translateY(-.35em)}
 .hero h1 .rot.pre{opacity:0;transform:translateY(.35em);transition:none}
 .hero p.sub{font-size:1.12rem;color:#33475a;margin:18px 0 26px;max-width:540px}
@@ -485,7 +486,7 @@ html.embed #qform>h2{display:none}
 <section class="hero" id="top">
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow" style="color:#e8650a">Flyttfirma i Mellansverige</span>
+      <span class="eyebrow" style="color:var(--accent-d)">Flyttfirma i Mellansverige</span>
       <h1>Din flytt – snabbt, tryggt och utan stress <span class="rot-l">i <b class="rot" id="rot">Kungsör</b></span></h1>
       <p class="sub">FX Flytt planerar och genomför hela din flytt: bärhjälp, lastbil, packning, montering och flyttstäd. Du får en fast kontaktperson från offert till sista kartongen.</p>
       <div class="badges">
