@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (rateLimited("crewlogin:" + clientIp(req), 20, 15 * 60_000)) return Response.json({ error: "För många försök. Vänta en stund." }, { status: 429 });
+  if (await rateLimited("crewlogin:" + clientIp(req), 20, 15 * 60_000)) return Response.json({ error: "För många försök. Vänta en stund." }, { status: 429 });
   if (!kvConfigured() || !process.env.ADMIN_PASSWORD) return Response.json({ error: "Appen är inte igång. Ring kontoret." }, { status: 503 });
   const d = (await req.json().catch(() => ({}))) as { phone?: unknown; pin?: unknown };
   const r = await login(d.phone, d.pin);

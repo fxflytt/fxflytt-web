@@ -13,7 +13,7 @@ const ALLOWED_KEYS = new Set([
 ]);
 
 export async function POST(req: Request) {
-  if (rateLimited("quote:" + clientIp(req), 60, 60_000)) {
+  if (await rateLimited("quote:" + clientIp(req), 60, 60_000)) {
     return Response.json({ error: "För många förfrågningar. Försök igen om en stund." }, { status: 429 });
   }
   let body: unknown;

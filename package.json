@@ -9,7 +9,7 @@
     "test": "node --test tests/*.test.ts"
   },
   "dependencies": {
-    "@vercel/blob": "0.27.3",
+    "@vercel/blob": "2.4.0",
     "imapflow": "2.12.1",
     "mailparser": "3.14.5",
     "next": "16.4.6",

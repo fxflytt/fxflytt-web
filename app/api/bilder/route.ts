@@ -25,7 +25,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   if (!kvConfigured()) return err("unavailable", 503);
-  if (rateLimited("bilder:" + clientIp(req), 40, 10 * 60_000)) return err("För många bilder på en gång. Vänta en stund.", 429);
+  if (await rateLimited("bilder:" + clientIp(req), 40, 10 * 60_000)) return err("För många bilder på en gång. Vänta en stund.", 429);
   const q = new URL(req.url).searchParams;
   const b = await bookingByPhotoToken(q.get("t") || "");
   if (!b) return err("Länken fungerar inte längre. Ring oss på 076-300 07 23.", 404);

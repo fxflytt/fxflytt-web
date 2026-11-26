@@ -4,6 +4,10 @@ import { rateLimited, clientIp } from "@/lib/rateLimit.ts";
 import { systemPrompt } from "@/lib/assistant/facts.ts";
 import { getPrices } from "@/lib/pricing/current.ts";
 import { quoteRoute, RAKNA_FLYTT_TOOL } from "@/lib/assistant/distance.ts";
+import { notifyAll } from "@/lib/booking/push.ts";
+import { after } from "next/server";
+
+const CHAT_PER_DAY = 500;
 
 export const runtime = "nodejs";
 
@@ -17,8 +21,15 @@ export async function POST(req: Request) {
     return Response.json({ fallback: true }, { status: 503 });
   }
   const ip = clientIp(req);
-  if (rateLimited("chat-min:" + ip, 10, 60_000) || rateLimited("chat-day:" + ip, 150, 86_400_000)) {
+  if (await rateLimited("chat-min:" + ip, 10, 60_000) || await rateLimited("chat-day:" + ip, 150, 86_400_000)) {
     return Response.json({ error: "Du har skickat många meddelanden. Ring oss gärna på 076-300 07 23." }, { status: 429 });
+  }
+  // Whole site: at most CHAT_PER_DAY AI answers a day (each answer costs money at Anthropic). Above that the
+  // chat bubble uses its built-in answers, and the owner gets one push notice that day.
+  if (await rateLimited("chat-site", CHAT_PER_DAY, 86_400_000)) {
+    if (!(await rateLimited("chat-site-alert", 1, 86_400_000)))
+      after(() => notifyAll({ cat: "new", title: "⚠️ Chatten har nått dagens gräns", body: `Fler än ${CHAT_PER_DAY} chattsvar i dag – kan vara missbruk. Chatten visar färdiga svar resten av dygnet.`, url: "/admin" }).then(() => {}, () => {}));
+    return Response.json({ fallback: true }, { status: 503 });
   }
   let body: unknown;
   try { body = await req.json(); } catch { return Response.json({ error: "Ogiltig förfrågan" }, { status: 400 }); }
